@@ -46,6 +46,7 @@ export default function Profile() {
     phone: "+63 912 345 6789",
     carUnit: "Toyota Vios 2020",
     plateNumber: "ABC 1234",
+    vehicleType: "Sedan",
     membershipType: "VIP Gold Ultimate",
     joinDate: "2024-01-15",
   });
