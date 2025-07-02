@@ -4,7 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Smartphone, Mail, Lock } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Smartphone,
+  Mail,
+  Lock,
+  Fingerprint,
+  Zap,
+} from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Login() {
@@ -24,7 +32,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
+    // Simulate API call with modern loading
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Check for admin login
@@ -88,74 +96,90 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col theme-transition">
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      {/* Futuristic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
+        <div className="absolute top-1/2 left-1/6 w-32 h-32 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl animate-float animate-delay-300"></div>
+      </div>
+
       {/* Theme Toggle */}
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
+      <div className="absolute top-6 right-6 z-20">
+        <div className="glass rounded-full p-1 animate-fade-in-scale">
+          <ThemeToggle />
+        </div>
       </div>
 
-      {/* Header with Logo */}
-      <div className="text-center py-8 px-6">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-          alt="Fayeed Auto Care Logo"
-          className="h-16 w-auto mx-auto mb-4"
-        />
-        <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">
-          Welcome Back
-        </h1>
-        <p className="text-muted-foreground font-medium">
-          Sign in to your FAC account
-        </p>
+      {/* Header with Modern Logo */}
+      <div className="text-center py-12 px-6 relative z-10">
+        <div className="animate-fade-in-up">
+          <div className="relative inline-block mb-6">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-20 w-auto mx-auto animate-pulse-glow"
+            />
+          </div>
+          <h1 className="text-4xl font-black text-foreground tracking-tight mb-3 animate-fade-in-up animate-delay-100">
+            Welcome{" "}
+            <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+              Back
+            </span>
+          </h1>
+          <p className="text-muted-foreground font-medium animate-fade-in-up animate-delay-200">
+            Access your FAC account in the future
+          </p>
+        </div>
       </div>
 
-      {/* Login Form */}
-      <div className="flex-1 px-6 py-8 max-w-md mx-auto w-full">
-        <Card className="bg-card border-border shadow-sm theme-transition">
-          <CardHeader className="pb-6">
+      {/* Futuristic Login Form */}
+      <div className="flex-1 px-6 py-8 max-w-md mx-auto w-full relative z-10">
+        <Card className="glass border-border shadow-2xl hover-lift animate-fade-in-scale animate-delay-300">
+          <CardHeader className="pb-8">
             <CardTitle className="text-center">
-              <div className="bg-fac-orange-500 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Lock className="h-6 w-6 text-white" />
+              <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                <Lock className="h-8 w-8 text-white" />
               </div>
-              <span className="text-xl font-black text-foreground">
-                Sign In
+              <span className="text-2xl font-black text-foreground">
+                Secure Access
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-6">
-              {/* Email Field */}
-              <div>
+            <form onSubmit={handleLogin} className="space-y-8">
+              {/* Email Field with Modern Styling */}
+              <div className="space-y-3">
                 <Label
                   htmlFor="email"
-                  className="font-bold text-foreground mb-2"
+                  className="font-bold text-foreground text-sm"
                 >
                   Email Address
                 </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="your.email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-10 py-3 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background theme-transition"
+                    className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background/50 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div>
+              {/* Password Field with Modern Styling */}
+              <div className="space-y-3">
                 <Label
                   htmlFor="password"
-                  className="font-bold text-foreground mb-2"
+                  className="font-bold text-foreground text-sm"
                 >
                   Password
                 </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -164,14 +188,14 @@ export default function Login() {
                     onChange={(e) =>
                       handleInputChange("password", e.target.value)
                     }
-                    className="pl-10 pr-10 py-3 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background theme-transition"
+                    className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background/50 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -183,23 +207,33 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Forgot Password */}
+              {/* Forgot Password Link */}
               <div className="text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600"
+                  className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600 transition-colors hover:underline"
                 >
                   Forgot Password?
                 </Link>
               </div>
 
-              {/* Login Button */}
+              {/* Modern Login Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-black py-4 text-lg rounded-xl"
+                className="btn-futuristic w-full py-4 text-lg rounded-xl font-black relative overflow-hidden group"
               >
-                {isLoading ? "SIGNING IN..." : "SIGN IN"}
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="spinner mr-3"></div>
+                    AUTHENTICATING...
+                  </div>
+                ) : (
+                  <span className="relative z-10 flex items-center justify-center">
+                    SIGN IN
+                    <Zap className="h-5 w-5 ml-3 group-hover:scale-125 transition-transform duration-300" />
+                  </span>
+                )}
               </Button>
 
               {/* Biometric Login Option */}
@@ -208,54 +242,65 @@ export default function Login() {
                 variant="outline"
                 onClick={handleBiometricLogin}
                 disabled={isLoading}
-                className="w-full border-border text-foreground hover:bg-accent font-bold py-4 rounded-xl theme-transition"
+                className="w-full border-border text-foreground hover:bg-accent font-bold py-4 rounded-xl theme-transition glass hover-glow group"
               >
-                <Smartphone className="h-5 w-5 mr-2" />
-                {isLoading ? "Authenticating..." : "Use Biometric Login"}
+                <Fingerprint className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                {isLoading ? "Authenticating..." : "Biometric Login"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         {/* Sign Up Link */}
-        <div className="text-center mt-8">
-          <p className="text-muted-foreground font-medium">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-fac-orange-500 font-black hover:text-fac-orange-600"
-            >
-              Sign Up
-            </Link>
-          </p>
+        <div className="text-center mt-8 animate-fade-in-up animate-delay-500">
+          <div className="glass rounded-2xl p-4">
+            <p className="text-muted-foreground font-medium">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-fac-orange-500 font-black hover:text-fac-orange-600 transition-colors hover:underline"
+              >
+                Join the Future
+              </Link>
+            </p>
+          </div>
         </div>
 
-        {/* Demo Users */}
-        <Card className="mt-8 bg-muted border-border theme-transition">
-          <CardContent className="p-4">
-            <h3 className="font-black text-foreground text-sm mb-3">
-              Demo Access:
+        {/* Modern Demo Users */}
+        <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">
+          <CardContent className="p-6">
+            <h3 className="font-black text-foreground text-base mb-4 flex items-center">
+              <Smartphone className="h-5 w-5 mr-2 text-fac-orange-500" />
+              Demo Access Portal
             </h3>
-            <div className="space-y-2 text-xs font-medium">
-              <p className="text-muted-foreground">
-                <strong>Customer:</strong> any email/password
-              </p>
-              <p className="text-muted-foreground">
-                <strong>Admin:</strong> admin@fac.com / admin123
-              </p>
-              <p className="text-muted-foreground">
-                <strong>Super Admin:</strong> superadmin@fac.com / super123
-              </p>
+            <div className="space-y-3 text-sm font-medium">
+              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                <span className="text-muted-foreground">
+                  <strong>Customer:</strong> any email/password
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                <span className="text-muted-foreground">
+                  <strong>Admin:</strong> admin@fac.com / admin123
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                <span className="text-muted-foreground">
+                  <strong>Super Admin:</strong> superadmin@fac.com / super123
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Footer */}
-      <div className="text-center py-6 px-6">
-        <p className="text-xs text-muted-foreground font-medium">
-          © 2024 Fayeed Auto Care. All rights reserved.
-        </p>
+      <div className="text-center py-8 px-6 relative z-10">
+        <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-700">
+          <p className="text-xs text-muted-foreground font-medium">
+            © 2025 Fayeed Auto Care. Secured by quantum encryption.
+          </p>
+        </div>
       </div>
     </div>
   );

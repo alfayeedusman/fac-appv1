@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import modern animations */
+@import "./styles/animations.css";
+
 @layer base {
   /**
    * Tailwind CSS theme
