@@ -25,6 +25,7 @@ import {
   Settings,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import VehicleSelector from "@/components/VehicleSelector";
 
 interface UserProfile {
   name: string;
