@@ -331,6 +331,86 @@ export default function AdminDashboard() {
     setEditingFeatures(pkg.features.join("\n"));
   };
 
+  // Enhanced package management handlers
+  const handleOpenPackageModal = (
+    mode: "add" | "edit",
+    pkg?: ServicePackage,
+  ) => {
+    setPackageModalMode(mode);
+    if (mode === "edit" && pkg) {
+      setCurrentPackage(pkg);
+      setNewPackage({
+        name: pkg.name,
+        basePrice: pkg.basePrice,
+        duration: pkg.duration,
+        features: pkg.features,
+        active: pkg.active,
+      });
+      setEditingFeatures(pkg.features.join("\n"));
+    } else {
+      setCurrentPackage(null);
+      setNewPackage({
+        name: "",
+        basePrice: 0,
+        duration: "",
+        features: [],
+        active: true,
+      });
+      setEditingFeatures("");
+    }
+    setIsPackageModalOpen(true);
+  };
+
+  const handleSavePackageModal = () => {
+    if (packageModalMode === "edit" && currentPackage) {
+      // Update existing package
+      const updatedPackage = {
+        ...currentPackage,
+        name: newPackage.name!,
+        basePrice: newPackage.basePrice!,
+        duration: newPackage.duration!,
+        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
+        active: newPackage.active!,
+      };
+      setPackages((prev) =>
+        prev.map((pkg) =>
+          pkg.id === currentPackage.id ? updatedPackage : pkg,
+        ),
+      );
+      alert("Package updated successfully!");
+    } else {
+      // Add new package
+      if (newPackage.name && newPackage.basePrice) {
+        const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
+        const features = editingFeatures
+          .split("\n")
+          .filter((f) => f.trim() !== "");
+        setPackages((prev) => [
+          ...prev,
+          {
+            id,
+            name: newPackage.name!,
+            basePrice: newPackage.basePrice!,
+            duration: newPackage.duration || "30 mins",
+            features,
+            active: true,
+          },
+        ]);
+        alert("Package added successfully!");
+      }
+    }
+    setIsPackageModalOpen(false);
+    setCurrentPackage(null);
+    setNewPackage({
+      name: "",
+      basePrice: 0,
+      duration: "",
+      features: [],
+      active: true,
+    });
+    setEditingFeatures("");
+  };
+
   // Inline editing handlers
   const handleStartInlineEdit = (
     packageId: string,
