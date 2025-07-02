@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Smartphone, Mail, Lock } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -87,7 +88,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col theme-transition">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       {/* Header with Logo */}
       <div className="text-center py-8 px-6">
         <img
@@ -95,39 +101,46 @@ export default function Login() {
           alt="Fayeed Auto Care Logo"
           className="h-16 w-auto mx-auto mb-4"
         />
-        <h1 className="text-3xl font-black text-black tracking-tight mb-2">
+        <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">
           Welcome Back
         </h1>
-        <p className="text-gray-500 font-medium">Sign in to your FAC account</p>
+        <p className="text-muted-foreground font-medium">
+          Sign in to your FAC account
+        </p>
       </div>
 
       {/* Login Form */}
       <div className="flex-1 px-6 py-8 max-w-md mx-auto w-full">
-        <Card className="bg-white border border-gray-100 shadow-sm">
+        <Card className="bg-card border-border shadow-sm theme-transition">
           <CardHeader className="pb-6">
             <CardTitle className="text-center">
               <div className="bg-fac-orange-500 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Lock className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-black text-black">Sign In</span>
+              <span className="text-xl font-black text-foreground">
+                Sign In
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email Field */}
               <div>
-                <Label htmlFor="email" className="font-bold text-black mb-2">
+                <Label
+                  htmlFor="email"
+                  className="font-bold text-foreground mb-2"
+                >
                   Email Address
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="your.email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-10 py-3 text-black font-medium border-gray-300 focus:border-fac-orange-500 focus:ring-fac-orange-500"
+                    className="pl-10 py-3 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background theme-transition"
                     required
                   />
                 </div>
@@ -135,11 +148,14 @@ export default function Login() {
 
               {/* Password Field */}
               <div>
-                <Label htmlFor="password" className="font-bold text-black mb-2">
+                <Label
+                  htmlFor="password"
+                  className="font-bold text-foreground mb-2"
+                >
                   Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -148,7 +164,7 @@ export default function Login() {
                     onChange={(e) =>
                       handleInputChange("password", e.target.value)
                     }
-                    className="pl-10 pr-10 py-3 text-black font-medium border-gray-300 focus:border-fac-orange-500 focus:ring-fac-orange-500"
+                    className="pl-10 pr-10 py-3 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background theme-transition"
                     required
                   />
                   <Button
@@ -192,7 +208,7 @@ export default function Login() {
                 variant="outline"
                 onClick={handleBiometricLogin}
                 disabled={isLoading}
-                className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold py-4 rounded-xl"
+                className="w-full border-border text-foreground hover:bg-accent font-bold py-4 rounded-xl theme-transition"
               >
                 <Smartphone className="h-5 w-5 mr-2" />
                 {isLoading ? "Authenticating..." : "Use Biometric Login"}
@@ -203,7 +219,7 @@ export default function Login() {
 
         {/* Sign Up Link */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 font-medium">
+          <p className="text-muted-foreground font-medium">
             Don't have an account?{" "}
             <Link
               to="/signup"
@@ -215,17 +231,19 @@ export default function Login() {
         </div>
 
         {/* Demo Users */}
-        <Card className="mt-8 bg-gray-50 border border-gray-200">
+        <Card className="mt-8 bg-muted border-border theme-transition">
           <CardContent className="p-4">
-            <h3 className="font-black text-black text-sm mb-3">Demo Access:</h3>
+            <h3 className="font-black text-foreground text-sm mb-3">
+              Demo Access:
+            </h3>
             <div className="space-y-2 text-xs font-medium">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 <strong>Customer:</strong> any email/password
               </p>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 <strong>Admin:</strong> admin@fac.com / admin123
               </p>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 <strong>Super Admin:</strong> superadmin@fac.com / super123
               </p>
             </div>
@@ -235,7 +253,7 @@ export default function Login() {
 
       {/* Footer */}
       <div className="text-center py-6 px-6">
-        <p className="text-xs text-gray-400 font-medium">
+        <p className="text-xs text-muted-foreground font-medium">
           © 2024 Fayeed Auto Care. All rights reserved.
         </p>
       </div>
