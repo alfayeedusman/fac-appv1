@@ -32,6 +32,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface BookingData {
   service: string;
