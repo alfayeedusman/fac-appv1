@@ -35,6 +35,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      <StickyHeader showBack={false} title="Fayeed Auto Care" />
+
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-fac-orange-500/10 to-purple-500/10 blur-xl animate-float"></div>
