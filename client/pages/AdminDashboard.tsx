@@ -500,7 +500,7 @@ export default function AdminDashboard() {
             id,
             name: newPackage.name!,
             basePrice: newPackage.basePrice!,
-            duration: newPackage.duration || "30 mins",
+            duration: newPackage.duration || "Monthly",
             features,
             active: true,
           },
