@@ -1136,7 +1136,8 @@ export default function AdminDashboard() {
                               <p className="text-sm text-gray-600 font-medium">
                                 Duration: {pkg.duration}
                               </p>
-                              {userRole === "superadmin" && (
+                              {(userRole === "superadmin" ||
+                                userRole === "admin") && (
                                 <Button
                                   size="sm"
                                   variant="ghost"
