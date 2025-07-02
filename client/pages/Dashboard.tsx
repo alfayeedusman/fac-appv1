@@ -312,7 +312,7 @@ export default function Dashboard() {
                         <Droplets className="h-4 w-4 text-white" />
                       </div>
                       <span className="font-semibold text-foreground">
-                        AI Classic
+                        Classic
                       </span>
                     </div>
                     <Badge className="bg-green-500 text-white text-xs">
