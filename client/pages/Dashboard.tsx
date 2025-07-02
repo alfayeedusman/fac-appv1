@@ -29,24 +29,32 @@ import {
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 
-interface Service {
+interface WashLog {
   id: string;
-  name: string;
-  price: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  duration: string;
-  popular?: boolean;
-  category: "wash" | "detail" | "maintenance";
+  service: string;
+  date: string;
+  status: "completed" | "scheduled" | "cancelled";
+  amount: number;
+  branch: string;
 }
 
-interface RecentService {
-  id: string;
-  service: Service;
-  date: string;
-  status: "completed" | "scheduled";
-  branch: string;
+interface MembershipData {
+  package: string;
+  daysLeft: number;
+  currentCycleStart: string;
+  currentCycleEnd: string;
+  daysLeftInCycle: number;
+  autoRenewal: boolean;
+  remainingWashes: {
+    classic: number;
+    vipProMax: number;
+    premium: number;
+  };
+  totalWashes: {
+    classic: number;
+    vipProMax: number;
+    premium: number;
+  };
 }
 
 export default function Dashboard() {
