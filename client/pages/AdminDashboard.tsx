@@ -976,9 +976,17 @@ export default function AdminDashboard() {
               {/* Existing Packages */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
-                    Service Packages
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
+                      Service Packages
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      Role: {userRole} | Editing:{" "}
+                      {userRole === "superadmin" || userRole === "admin"
+                        ? "Enabled"
+                        : "Disabled"}
+                    </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
