@@ -13,6 +13,7 @@ import {
   Shield,
   CheckCircle,
 } from "lucide-react";
+import StickyHeader from "@/components/StickyHeader";
 
 export default function CredentialSetup() {
   const navigate = useNavigate();
