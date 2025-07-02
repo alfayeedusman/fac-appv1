@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
+import StickyHeader from "@/components/StickyHeader";
 
 interface WashHistory {
   id: string;
