@@ -175,12 +175,7 @@ export default function Dashboard() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => {
-                if (confirm("Are you sure you want to logout?")) {
-                  localStorage.clear();
-                  window.location.href = "/login";
-                }
-              }}
+              onClick={() => setShowLogoutModal(true)}
               className="rounded-full hover:bg-muted hover:text-red-500 transition-colors"
               title="Logout"
             >
