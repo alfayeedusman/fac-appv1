@@ -68,22 +68,34 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
           <div className="grid grid-cols-5 items-center h-16">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.to);
+              const active = item.to ? isActive(item.to) : false;
 
               if (item.isCenter) {
                 return (
                   <div key={item.id} className="flex justify-center">
-                    <Link
-                      to={item.to}
-                      className={cn(
-                        "w-14 h-14 rounded-full flex items-center justify-center shadow-xl transform -translate-y-4 transition-all duration-300 z-10",
-                        active
-                          ? "bg-fac-orange-500 text-white scale-110"
-                          : "bg-fac-orange-500 hover:bg-fac-orange-600 text-white hover:scale-110 active:scale-95",
-                      )}
-                    >
-                      <Icon className="h-7 w-7" />
-                    </Link>
+                    {item.action === "qr-scan" ? (
+                      <button
+                        onClick={() => handleItemClick(item)}
+                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl transform -translate-y-4 transition-all duration-300 hover:scale-110 active:scale-95 z-10 relative"
+                      >
+                        <Icon className="h-8 w-8" />
+                        {/* Pulse animation ring */}
+                        <div className="absolute inset-0 rounded-full bg-fac-orange-500 animate-ping opacity-20"></div>
+                        <div className="absolute inset-0 rounded-full bg-fac-orange-400 animate-pulse opacity-30"></div>
+                      </button>
+                    ) : (
+                      <Link
+                        to={item.to!}
+                        className={cn(
+                          "w-14 h-14 rounded-full flex items-center justify-center shadow-xl transform -translate-y-4 transition-all duration-300 z-10",
+                          active
+                            ? "bg-fac-orange-500 text-white scale-110"
+                            : "bg-fac-orange-500 hover:bg-fac-orange-600 text-white hover:scale-110 active:scale-95",
+                        )}
+                      >
+                        <Icon className="h-7 w-7" />
+                      </Link>
+                    )}
                   </div>
                 );
               }
@@ -91,7 +103,7 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
               return (
                 <Link
                   key={item.id}
-                  to={item.to}
+                  to={item.to!}
                   className={cn(
                     "flex flex-col items-center justify-center space-y-1 p-2 transition-all duration-200 active:scale-95 rounded-lg",
                     active
