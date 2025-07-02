@@ -1148,11 +1148,11 @@ export default function AdminDashboard() {
                                 userRole === "admin") && (
                                 <Button
                                   size="sm"
-                                  variant="ghost"
+                                  variant="outline"
                                   onClick={() =>
                                     handleStartInlineEdit(pkg.id, "duration")
                                   }
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  className="h-7 w-7 p-0 border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50"
                                   title="Edit Duration"
                                 >
                                   <Edit className="h-3 w-3" />
