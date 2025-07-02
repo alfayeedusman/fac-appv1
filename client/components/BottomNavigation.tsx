@@ -26,10 +26,10 @@ const BottomNavigation = () => {
       isCenter: true,
     },
     {
-      to: "/history",
-      icon: History,
-      label: "History",
-      id: "history",
+      to: "/voucher",
+      icon: Gift,
+      label: "Voucher",
+      id: "voucher",
     },
     {
       to: "/profile",
