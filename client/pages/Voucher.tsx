@@ -47,6 +47,9 @@ export default function Voucher() {
     null,
   );
 
+  const { showQRScanner, openQRScanner, closeQRScanner, handleScanSuccess } =
+    useQRScanner();
+
   const [availableVouchers] = useState<Voucher[]>([
     {
       id: "1",
