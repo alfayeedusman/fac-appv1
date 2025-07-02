@@ -301,6 +301,21 @@ export default function AdminDashboard() {
           : customer,
       ),
     );
+    // Add approval notification
+    const approvedCustomer = customers.find((c) => c.id === userId);
+    if (approvedCustomer) {
+      setNotifications((prev) => [
+        {
+          id: Date.now().toString(),
+          type: "system",
+          title: "Customer Approved",
+          message: `${approvedCustomer.name} has been approved and activated.`,
+          timestamp: new Date(),
+          read: false,
+        },
+        ...prev,
+      ]);
+    }
     alert("User approved successfully!");
   };
 
@@ -336,6 +351,22 @@ export default function AdminDashboard() {
     );
     alert("User unbanned successfully!");
   };
+
+  const handleMarkNotificationAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
+  };
+
+  const handleMarkAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true })),
+    );
+  };
+
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   const handleSavePackage = () => {
     if (editingPackage) {
