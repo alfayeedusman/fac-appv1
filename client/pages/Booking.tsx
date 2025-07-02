@@ -56,6 +56,7 @@ export default function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState<string>("");
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   const services = [
     {
