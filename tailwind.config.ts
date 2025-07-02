@@ -14,12 +14,14 @@ export default {
     },
     extend: {
       colors: {
-        "fac-blue": {
-          50: "#eff6ff",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          900: "#1e3a8a",
+        "fac-orange": {
+          50: "#fff4ed",
+          100: "#ffe6d3",
+          400: "#ff7a35",
+          500: "#ff6b1f",
+          600: "#e55a14",
+          700: "#bd4a0f",
+          900: "#7c2d04",
         },
         "fac-gold": {
           100: "#fef3c7",

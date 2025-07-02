@@ -17,8 +17,11 @@ import {
   User,
   Bell,
   RefreshCw,
+  QrCode,
+  Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MobileLayout from "@/components/MobileLayout";
 
 interface WashLog {
   id: string;
@@ -139,53 +142,60 @@ export default function Dashboard() {
   const urgency = getRenewalUrgency();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
+    <MobileLayout>
+      <div className="px-4 py-6 space-y-6">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
               alt="Fayeed Auto Care Logo"
-              className="h-12 w-auto object-contain"
+              className="h-10 w-auto object-contain"
             />
             <div>
-              <h1 className="text-2xl font-bold text-fac-blue-900">
-                Dashboard
-              </h1>
-              <p className="text-fac-blue-700">Welcome back, John!</p>
+              <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-sm text-gray-600">Welcome back, John!</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
+            >
+              <Bell className="h-5 w-5 text-fac-orange-600" />
             </Button>
             <Link to="/profile">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
+              >
+                <User className="h-5 w-5 text-fac-orange-600" />
               </Button>
             </Link>
           </div>
         </div>
 
         {/* Membership Status Card */}
-        <Card className="mb-6 border-l-4 border-l-fac-blue-600">
-          <CardHeader>
+        <Card className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center">
-                <Crown className="h-5 w-5 mr-2 text-fac-gold-500" />
-                {membershipData.package} Membership
+              <CardTitle className="flex items-center text-white">
+                <Crown className="h-6 w-6 mr-3 text-yellow-300" />
+                <div>
+                  <p className="text-lg font-bold">{membershipData.package}</p>
+                  <p className="text-sm opacity-90">Membership</p>
+                </div>
               </CardTitle>
-              <Badge
-                className={cn(
-                  "text-white",
-                  urgency === "urgent" && "bg-red-500",
-                  urgency === "warning" && "bg-orange-500",
-                  urgency === "normal" && "bg-green-500",
-                )}
-              >
-                {membershipData.daysLeft} days left
-              </Badge>
+              <div className="text-right">
+                <div className="bg-white/20 rounded-full px-3 py-1">
+                  <p className="text-xs font-medium">EXPIRES IN</p>
+                  <p className="text-lg font-bold">
+                    {membershipData.daysLeft} days
+                  </p>
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -250,75 +260,136 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+        {/* Quick Actions Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <Link to="/booking">
+            <Card className="bg-white hover:shadow-md transition-shadow border-0 shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="bg-fac-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Calendar className="h-6 w-6 text-fac-orange-600" />
+                </div>
+                <p className="font-semibold text-gray-900 mb-1">Book Wash</p>
+                <p className="text-xs text-gray-600">Schedule service</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/profile">
+            <Card className="bg-white hover:shadow-md transition-shadow border-0 shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="bg-fac-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <QrCode className="h-6 w-6 text-fac-orange-600" />
+                </div>
+                <p className="font-semibold text-gray-900 mb-1">QR Code</p>
+                <p className="text-xs text-gray-600">Quick scan</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         {/* Remaining Washes */}
-        <Card className="mb-6">
-          <CardHeader>
+        <Card className="bg-white shadow-sm border-0">
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
-                <Droplets className="h-5 w-5 mr-2 text-fac-blue-600" />
-                Remaining Washes
+                <Droplets className="h-5 w-5 mr-2 text-fac-orange-600" />
+                <span className="text-lg">Monthly Benefits</span>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <RefreshCw className="h-4 w-4 mr-1" />
+              <Badge
+                variant="outline"
+                className="border-fac-orange-200 text-fac-orange-700"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
                 Resets {formatDate(membershipData.nextResetDate)}
-              </div>
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {/* Classic Wash */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Classic Wash</span>
-                  <span className="text-sm text-gray-600">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="bg-fac-orange-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                      <Droplets className="h-4 w-4 text-fac-orange-600" />
+                    </div>
+                    <span className="font-semibold">Classic Wash</span>
+                  </div>
+                  <span className="text-sm font-bold text-fac-orange-600">
                     {membershipData.remainingWashes.classic === 999
-                      ? "Unlimited"
-                      : `${membershipData.remainingWashes.classic} left`}
+                      ? "∞"
+                      : membershipData.remainingWashes.classic}
                   </span>
                 </div>
-                <Progress
-                  value={getProgressPercentage(
-                    membershipData.remainingWashes.classic,
-                    membershipData.totalWashes.classic,
-                  )}
-                  className="h-2"
-                />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-fac-orange-500 h-2 rounded-full transition-all"
+                    style={{
+                      width:
+                        membershipData.remainingWashes.classic === 999
+                          ? "100%"
+                          : `${getProgressPercentage(membershipData.remainingWashes.classic, membershipData.totalWashes.classic)}%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  {membershipData.remainingWashes.classic === 999
+                    ? "Unlimited access"
+                    : `${membershipData.remainingWashes.classic} of ${membershipData.totalWashes.classic} remaining`}
+                </p>
               </div>
 
               {/* VIP ProMax */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">VIP ProMax</span>
-                  <span className="text-sm text-gray-600">
-                    {membershipData.remainingWashes.vipProMax} of{" "}
-                    {membershipData.totalWashes.vipProMax} left
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="bg-fac-orange-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                      <Crown className="h-4 w-4 text-fac-orange-600" />
+                    </div>
+                    <span className="font-semibold">VIP ProMax</span>
+                  </div>
+                  <span className="text-sm font-bold text-fac-orange-600">
+                    {membershipData.remainingWashes.vipProMax}
                   </span>
                 </div>
-                <Progress
-                  value={getProgressPercentage(
-                    membershipData.remainingWashes.vipProMax,
-                    membershipData.totalWashes.vipProMax,
-                  )}
-                  className="h-2"
-                />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-fac-orange-500 h-2 rounded-full transition-all"
+                    style={{
+                      width: `${getProgressPercentage(membershipData.remainingWashes.vipProMax, membershipData.totalWashes.vipProMax)}%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  {membershipData.remainingWashes.vipProMax} of{" "}
+                  {membershipData.totalWashes.vipProMax} remaining
+                </p>
               </div>
 
               {/* Premium Wash */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Premium Wash</span>
-                  <span className="text-sm text-gray-600">
-                    {membershipData.remainingWashes.premium} of{" "}
-                    {membershipData.totalWashes.premium} left
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="bg-fac-orange-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                      <Gift className="h-4 w-4 text-fac-orange-600" />
+                    </div>
+                    <span className="font-semibold">Premium Wash</span>
+                  </div>
+                  <span className="text-sm font-bold text-fac-orange-600">
+                    {membershipData.remainingWashes.premium}
                   </span>
                 </div>
-                <Progress
-                  value={getProgressPercentage(
-                    membershipData.remainingWashes.premium,
-                    membershipData.totalWashes.premium,
-                  )}
-                  className="h-2"
-                />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-fac-orange-500 h-2 rounded-full transition-all"
+                    style={{
+                      width: `${getProgressPercentage(membershipData.remainingWashes.premium, membershipData.totalWashes.premium)}%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  {membershipData.remainingWashes.premium} of{" "}
+                  {membershipData.totalWashes.premium} remaining
+                </p>
               </div>
             </div>
 
@@ -344,21 +415,24 @@ export default function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="mb-6">
-          <CardHeader>
+        <Card className="bg-white shadow-sm border-0">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-fac-blue-600" />
-                Recent Car Wash Logs
+              <CardTitle className="flex items-center text-lg">
+                <Clock className="h-5 w-5 mr-2 text-fac-orange-600" />
+                Recent Activity
               </CardTitle>
-              <Button variant="ghost" size="sm">
+              <Link
+                to="/booking"
+                className="text-fac-orange-600 text-sm font-medium"
+              >
                 View All
-              </Button>
+              </Link>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {washLogs.slice(0, 4).map((log) => (
+              {washLogs.slice(0, 3).map((log) => (
                 <div
                   key={log.id}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -400,68 +474,34 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="text-center p-4">
-            <div className="bg-fac-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Car className="h-6 w-6 text-fac-blue-600" />
-            </div>
-            <p className="text-2xl font-bold text-fac-blue-900">
-              {washLogs.length}
-            </p>
-            <p className="text-sm text-gray-600">Total Washes</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="bg-gradient-to-br from-fac-orange-400 to-fac-orange-500 text-white shadow-sm">
+            <CardContent className="p-4 text-center">
+              <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Car className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-2xl font-bold">{washLogs.length}</p>
+              <p className="text-xs opacity-90">Total Washes</p>
+            </CardContent>
           </Card>
 
-          <Card className="text-center p-4">
-            <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="h-6 w-6 text-green-600" />
-            </div>
-            <p className="text-2xl font-bold text-green-700">
-              {washLogs.filter((log) => log.date.startsWith("2024-01")).length}
-            </p>
-            <p className="text-sm text-gray-600">This Month</p>
-          </Card>
-
-          <Card className="text-center p-4">
-            <div className="bg-fac-gold-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Crown className="h-6 w-6 text-fac-gold-600" />
-            </div>
-            <p className="text-2xl font-bold text-fac-gold-700">150</p>
-            <p className="text-sm text-gray-600">Loyalty Points</p>
-          </Card>
-
-          <Card className="text-center p-4">
-            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <MapPin className="h-6 w-6 text-purple-600" />
-            </div>
-            <p className="text-2xl font-bold text-purple-700">2</p>
-            <p className="text-sm text-gray-600">Branches Visited</p>
+          <Card className="bg-gradient-to-br from-green-400 to-green-500 text-white shadow-sm">
+            <CardContent className="p-4 text-center">
+              <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-2xl font-bold">
+                {
+                  washLogs.filter((log) => log.date.startsWith("2024-01"))
+                    .length
+                }
+              </p>
+              <p className="text-xs opacity-90">This Month</p>
+            </CardContent>
           </Card>
         </div>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <Link to="/booking">
-                <Button variant="outline" className="w-full h-16 flex-col">
-                  <Calendar className="h-6 w-6 mb-1" />
-                  <span>Book Wash</span>
-                </Button>
-              </Link>
-              <Link to="/profile">
-                <Button variant="outline" className="w-full h-16 flex-col">
-                  <User className="h-6 w-6 mb-1" />
-                  <span>QR Code</span>
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 }
