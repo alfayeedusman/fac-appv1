@@ -57,7 +57,7 @@ export default function Booking() {
   const services = [
     {
       id: "classic",
-      name: "AI Classic Wash",
+      name: "Classic Wash",
       price: "₱0",
       duration: "30 mins",
       description: "Smart exterior cleaning with AI optimization",
