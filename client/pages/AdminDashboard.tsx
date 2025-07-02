@@ -606,7 +606,10 @@ export default function AdminDashboard() {
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80 p-0">
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-80 p-0 bg-background border-border"
+                  >
                     <div className="p-4 border-b border-border">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-foreground">
@@ -640,7 +643,7 @@ export default function AdminDashboard() {
                     <ScrollArea className="h-80">
                       <div className="p-2">
                         {notifications.slice(0, 5).length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
+                          <div className="text-center py-8 text-muted-foreground">
                             <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
                             <p className="text-sm">No notifications</p>
                           </div>
@@ -648,7 +651,7 @@ export default function AdminDashboard() {
                           notifications.slice(0, 5).map((notification) => (
                             <div
                               key={notification.id}
-                              className={`p-3 rounded-lg border-l-4 mb-2 transition-all hover:bg-gray-50 cursor-pointer ${
+                              className={`p-3 rounded-lg border-l-4 mb-2 transition-all hover:bg-accent cursor-pointer ${
                                 notification.type === "new_customer"
                                   ? "border-l-blue-500"
                                   : notification.type === "subscription"
@@ -660,8 +663,8 @@ export default function AdminDashboard() {
                                         : "border-l-purple-500"
                               } ${
                                 notification.read
-                                  ? "bg-gray-50 opacity-75"
-                                  : "bg-white"
+                                  ? "bg-muted opacity-75"
+                                  : "bg-card"
                               }`}
                               onClick={() => {
                                 if (!notification.read) {
@@ -696,17 +699,17 @@ export default function AdminDashboard() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2 mb-1">
-                                    <h4 className="text-sm font-bold text-black truncate">
+                                    <h4 className="text-sm font-bold text-foreground truncate">
                                       {notification.title}
                                     </h4>
                                     {!notification.read && (
                                       <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
                                     )}
                                   </div>
-                                  <p className="text-xs text-gray-600 mb-1 line-clamp-2">
+                                  <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
                                     {notification.message}
                                   </p>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(
                                       notification.timestamp,
                                       {
@@ -818,17 +821,17 @@ export default function AdminDashboard() {
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <Card
-                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
                   onClick={() => setActiveTab("packages")}
                 >
                   <CardHeader>
-                    <CardTitle className="flex items-center text-lg">
+                    <CardTitle className="flex items-center text-lg text-foreground">
                       <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
                       Package Management
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 text-sm mb-4">
+                    <p className="text-muted-foreground text-sm mb-4">
                       Create, edit, and manage service packages
                     </p>
                     <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
@@ -838,17 +841,17 @@ export default function AdminDashboard() {
                 </Card>
 
                 <Card
-                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
                   onClick={() => setActiveTab("analytics")}
                 >
                   <CardHeader>
-                    <CardTitle className="flex items-center text-lg">
+                    <CardTitle className="flex items-center text-lg text-foreground">
                       <BarChart3 className="h-5 w-5 mr-2 text-fac-orange-500" />
                       Customer Analytics
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 text-sm mb-4">
+                    <p className="text-muted-foreground text-sm mb-4">
                       View detailed customer insights and behavior
                     </p>
                     <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
@@ -858,17 +861,17 @@ export default function AdminDashboard() {
                 </Card>
 
                 <Card
-                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
                   onClick={() => setActiveTab("branches")}
                 >
                   <CardHeader>
-                    <CardTitle className="flex items-center text-lg">
+                    <CardTitle className="flex items-center text-lg text-foreground">
                       <MapPin className="h-5 w-5 mr-2 text-fac-orange-500" />
                       Branch Management
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 text-sm mb-4">
+                    <p className="text-muted-foreground text-sm mb-4">
                       Manage locations and branch operations
                     </p>
                     <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
@@ -902,18 +905,18 @@ export default function AdminDashboard() {
                   {customers.map((customer) => (
                     <div
                       key={customer.id}
-                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 gap-4"
+                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-lg hover:bg-accent gap-4 theme-transition"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-black text-black truncate">
+                            <h3 className="font-black text-foreground truncate">
                               {customer.name}
                             </h3>
-                            <p className="text-sm text-gray-600 font-medium truncate">
+                            <p className="text-sm text-muted-foreground font-medium truncate">
                               {customer.email} • {customer.phone}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
+                            <p className="text-sm text-muted-foreground truncate">
                               {customer.carUnit} • {customer.plateNumber}
                             </p>
                           </div>
@@ -941,7 +944,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <div className="text-left sm:text-right">
-                          <p className="text-sm font-bold text-black">
+                          <p className="text-sm font-bold text-foreground">
                             {customer.totalWashes} washes
                           </p>
                           <p className="text-sm text-green-600 font-bold">
@@ -1087,14 +1090,14 @@ export default function AdminDashboard() {
 
                         {/* Duration */}
                         <div>
-                          <p className="text-sm text-gray-600 font-medium">
+                          <p className="text-sm text-muted-foreground font-medium">
                             <strong>Duration:</strong> {pkg.duration}
                           </p>
                         </div>
 
                         {/* Features */}
                         <div>
-                          <p className="text-sm font-bold text-gray-700 mb-2">
+                          <p className="text-sm font-bold text-foreground mb-2">
                             Features:
                           </p>
                           <div className="space-y-1">
