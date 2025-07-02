@@ -36,37 +36,37 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Update CSS custom properties for immediate theme change
     if (newTheme === "dark") {
-      root.style.setProperty("--background", "12 10 9"); // bg-stone-950
-      root.style.setProperty("--foreground", "250 250 249"); // text-stone-50
-      root.style.setProperty("--card", "28 25 23"); // bg-stone-900
-      root.style.setProperty("--card-foreground", "250 250 249");
-      root.style.setProperty("--primary", "255 122 53"); // fac-orange-500
-      root.style.setProperty("--primary-foreground", "255 255 255");
-      root.style.setProperty("--secondary", "41 37 36"); // bg-stone-800
-      root.style.setProperty("--secondary-foreground", "231 229 228");
-      root.style.setProperty("--muted", "41 37 36");
-      root.style.setProperty("--muted-foreground", "168 162 158");
-      root.style.setProperty("--accent", "41 37 36");
-      root.style.setProperty("--accent-foreground", "231 229 228");
-      root.style.setProperty("--border", "68 64 60");
-      root.style.setProperty("--input", "68 64 60");
-      root.style.setProperty("--ring", "255 122 53");
+      root.style.setProperty("--background", "222.2 84% 4.9%");
+      root.style.setProperty("--foreground", "210 40% 98%");
+      root.style.setProperty("--card", "222.2 84% 4.9%");
+      root.style.setProperty("--card-foreground", "210 40% 98%");
+      root.style.setProperty("--primary", "22 100% 60%");
+      root.style.setProperty("--primary-foreground", "0 0% 100%");
+      root.style.setProperty("--secondary", "217.2 32.6% 17.5%");
+      root.style.setProperty("--secondary-foreground", "210 40% 98%");
+      root.style.setProperty("--muted", "217.2 32.6% 17.5%");
+      root.style.setProperty("--muted-foreground", "215 20.2% 65.1%");
+      root.style.setProperty("--accent", "217.2 32.6% 17.5%");
+      root.style.setProperty("--accent-foreground", "210 40% 98%");
+      root.style.setProperty("--border", "217.2 32.6% 17.5%");
+      root.style.setProperty("--input", "217.2 32.6% 17.5%");
+      root.style.setProperty("--ring", "22 100% 60%");
     } else {
-      root.style.setProperty("--background", "255 255 255");
-      root.style.setProperty("--foreground", "2 8 23");
-      root.style.setProperty("--card", "255 255 255");
-      root.style.setProperty("--card-foreground", "2 8 23");
-      root.style.setProperty("--primary", "255 122 53");
-      root.style.setProperty("--primary-foreground", "255 255 255");
-      root.style.setProperty("--secondary", "249 250 251");
-      root.style.setProperty("--secondary-foreground", "17 24 39");
-      root.style.setProperty("--muted", "249 250 251");
-      root.style.setProperty("--muted-foreground", "107 114 128");
-      root.style.setProperty("--accent", "249 250 251");
-      root.style.setProperty("--accent-foreground", "17 24 39");
-      root.style.setProperty("--border", "229 231 235");
-      root.style.setProperty("--input", "229 231 235");
-      root.style.setProperty("--ring", "255 122 53");
+      root.style.setProperty("--background", "0 0% 100%");
+      root.style.setProperty("--foreground", "222.2 84% 4.9%");
+      root.style.setProperty("--card", "0 0% 100%");
+      root.style.setProperty("--card-foreground", "222.2 84% 4.9%");
+      root.style.setProperty("--primary", "22 100% 60%");
+      root.style.setProperty("--primary-foreground", "0 0% 100%");
+      root.style.setProperty("--secondary", "240 4.8% 95.9%");
+      root.style.setProperty("--secondary-foreground", "240 5.9% 10%");
+      root.style.setProperty("--muted", "210 40% 96.1%");
+      root.style.setProperty("--muted-foreground", "215.4 16.3% 46.9%");
+      root.style.setProperty("--accent", "210 40% 96.1%");
+      root.style.setProperty("--accent-foreground", "222.2 47.4% 11.2%");
+      root.style.setProperty("--border", "214.3 31.8% 91.4%");
+      root.style.setProperty("--input", "214.3 31.8% 91.4%");
+      root.style.setProperty("--ring", "222.2 84% 4.9%");
     }
   };
 
