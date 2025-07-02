@@ -60,7 +60,7 @@ export default function Profile() {
     level: "VIP Gold Ultimate",
     tier: "Premium",
     perks: [
-      "Unlimited AI washes",
+      "Unlimited washes",
       "VIP concierge service",
       "Premium lounge access",
       "Priority booking",
