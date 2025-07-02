@@ -164,14 +164,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-2">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-muted"
-              onClick={() => alert("🔔 No new notifications at the moment!")}
-            >
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationDropdown />
             <Button
               variant="ghost"
               size="icon"
