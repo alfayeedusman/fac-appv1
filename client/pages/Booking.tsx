@@ -60,9 +60,9 @@ export default function Booking() {
       name: "Classic Wash",
       price: "₱0",
       duration: "30 mins",
-      description: "Smart exterior cleaning with AI optimization",
+      description: "Smart exterior cleaning with quality optimization",
       features: [
-        "AI-powered wash system",
+        "Professional wash system",
         "Exterior cleaning",
         "Tire shine",
         "Basic protection",
