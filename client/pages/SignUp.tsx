@@ -319,6 +319,82 @@ export default function SignUp() {
 
                     <div className="space-y-3">
                       <Label
+                        htmlFor="password"
+                        className="text-foreground font-semibold flex items-center"
+                      >
+                        <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
+                        Password *
+                      </Label>
+                      <div className="relative group">
+                        <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Create a strong password"
+                          value={formData.password}
+                          onChange={(e) =>
+                            handleInputChange("password", e.target.value)
+                          }
+                          required
+                          className="pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="confirmPassword"
+                        className="text-foreground font-semibold flex items-center"
+                      >
+                        <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
+                        Confirm Password *
+                      </Label>
+                      <div className="relative group">
+                        <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          value={formData.confirmPassword}
+                          onChange={(e) =>
+                            handleInputChange("confirmPassword", e.target.value)
+                          }
+                          required
+                          className="pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label
                         htmlFor="contactNumber"
                         className="text-foreground font-semibold"
                       >
@@ -581,6 +657,8 @@ export default function SignUp() {
                   (currentStep === 1 &&
                     (!formData.fullName ||
                       !formData.email ||
+                      !formData.password ||
+                      !formData.confirmPassword ||
                       !formData.contactNumber ||
                       !formData.address)) ||
                   (currentStep === 2 &&
