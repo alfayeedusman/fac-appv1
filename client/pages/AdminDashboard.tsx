@@ -1455,7 +1455,7 @@ export default function AdminDashboard() {
                 className="mt-1 min-h-[120px]"
                 rows={6}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Enter each feature on a new line
               </p>
             </div>
