@@ -561,7 +561,7 @@ export default function AdminDashboard() {
           <div className="mb-8 ml-12 lg:ml-0">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-black text-black tracking-tight">
+                <h1 className="text-2xl lg:text-3xl font-black text-foreground tracking-tight">
                   {activeTab === "overview" && "Dashboard Overview"}
                   {activeTab === "customers" && "Customer Management"}
                   {activeTab === "packages" && "Package Management"}
