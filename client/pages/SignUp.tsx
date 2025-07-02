@@ -708,6 +708,15 @@ export default function SignUp() {
           </div>
         </div>
       </div>
+
+      {/* Registration Success Modal */}
+      <RegistrationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        onContinueToLogin={handleContinueToLogin}
+        userEmail={formData.email}
+        packageType={formData.packageToAvail}
+      />
     </div>
   );
 }
