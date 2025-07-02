@@ -395,7 +395,7 @@ export default function AdminDashboard() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               <Card className="bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
