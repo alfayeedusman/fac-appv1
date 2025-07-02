@@ -36,6 +36,7 @@ const App = () => (
           <Route path="/credential-setup" element={<CredentialSetup />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/manage-subscription" element={<ManageSubscription />} />
