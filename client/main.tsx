@@ -31,29 +31,33 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/credential-setup" element={<CredentialSetup />} />
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="/manage-subscription" element={<ManageSubscription />} />
-          <Route
-            path="/notification-settings"
-            element={<NotificationSettings />}
-          />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/security-settings" element={<SecuritySettings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/credential-setup" element={<CredentialSetup />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route
+              path="/manage-subscription"
+              element={<ManageSubscription />}
+            />
+            <Route
+              path="/notification-settings"
+              element={<NotificationSettings />}
+            />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/security-settings" element={<SecuritySettings />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 createRoot(document.getElementById("root")!).render(<App />);
