@@ -77,7 +77,7 @@ export default function Booking() {
       duration: "60 mins",
       description: "Premium wash with advanced care systems",
       features: [
-        "Premium AI wash",
+        "Premium wash",
         "Interior deep clean",
         "Paint protection",
         "Wax application",
