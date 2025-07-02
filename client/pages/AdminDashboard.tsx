@@ -520,12 +520,12 @@ export default function AdminDashboard() {
           <TabsContent value="customers" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center">
                     <Users className="h-5 w-5 mr-2 text-fac-orange-500" />
                     Customer Management
                   </div>
-                  <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                  <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Customer
                   </Button>
@@ -536,43 +536,112 @@ export default function AdminDashboard() {
                   {customers.map((customer) => (
                     <div
                       key={customer.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 gap-4"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <h3 className="font-black text-black">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-black text-black truncate">
                               {customer.name}
                             </h3>
-                            <p className="text-sm text-gray-600 font-medium">
+                            <p className="text-sm text-gray-600 font-medium truncate">
                               {customer.email} • {customer.phone}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 truncate">
                               {customer.carUnit} • {customer.plateNumber}
                             </p>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={`${customer.membershipType === "VIP Gold" ? "bg-yellow-500" : customer.membershipType === "VIP Silver" ? "bg-gray-400" : "bg-blue-500"} text-white font-bold`}
+                            >
+                              {customer.membershipType}
+                            </Badge>
+                            <Badge
+                              className={`${
+                                customer.approvalStatus === "approved"
+                                  ? "bg-green-500"
+                                  : customer.approvalStatus === "pending"
+                                    ? "bg-yellow-500"
+                                    : customer.approvalStatus === "banned"
+                                      ? "bg-red-500"
+                                      : "bg-gray-500"
+                              } text-white font-bold`}
+                            >
+                              {customer.approvalStatus.toUpperCase()}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right space-y-1">
-                        <Badge
-                          className={`${customer.membershipType === "VIP Gold" ? "bg-yellow-500" : customer.membershipType === "VIP Silver" ? "bg-gray-400" : "bg-blue-500"} text-white font-bold`}
-                        >
-                          {customer.membershipType}
-                        </Badge>
-                        <p className="text-sm font-bold text-black">
-                          {customer.totalWashes} washes
-                        </p>
-                        <p className="text-sm text-green-600 font-bold">
-                          {formatCurrency(customer.totalSpent)}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Smartphone className="h-4 w-4" />
-                        </Button>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="text-left sm:text-right">
+                          <p className="text-sm font-bold text-black">
+                            {customer.totalWashes} washes
+                          </p>
+                          <p className="text-sm text-green-600 font-bold">
+                            {formatCurrency(customer.totalSpent)}
+                          </p>
+                        </div>
+                        <div className="flex items-center flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Edit Customer"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="View Details"
+                          >
+                            <Smartphone className="h-4 w-4" />
+                          </Button>
+                          {customer.approvalStatus === "pending" && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-green-600 border-green-300 hover:bg-green-50"
+                                onClick={() => handleApproveUser(customer.id)}
+                                title="Approve User"
+                              >
+                                <UserCheck className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                onClick={() => handleRejectUser(customer.id)}
+                                title="Reject User"
+                              >
+                                <UserX className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          {customer.approvalStatus === "approved" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                              onClick={() => handleBanUser(customer.id)}
+                              title="Ban User"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {customer.approvalStatus === "banned" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-600 border-green-300 hover:bg-green-50"
+                              onClick={() => handleUnbanUser(customer.id)}
+                              title="Unban User"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
