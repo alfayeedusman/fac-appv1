@@ -895,25 +895,183 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-lg font-bold text-fac-orange-500">
-                          {formatCurrency(pkg.basePrice)}
-                        </p>
-                        <p className="text-sm text-gray-600 font-medium">
-                          Duration: {pkg.duration}
-                        </p>
-                        <div className="space-y-1">
-                          <p className="text-sm font-bold text-gray-700 mb-1">
-                            Features:
-                          </p>
-                          {pkg.features.map((feature, index) => (
-                            <p
-                              key={index}
-                              className="text-sm text-gray-600 font-medium pl-2"
-                            >
-                              • {feature}
+                      <div className="space-y-3">
+                        {/* Editable Price */}
+                        <div className="flex items-center justify-between group">
+                          {inlineEditingPrice === pkg.id ? (
+                            <div className="flex items-center space-x-2 flex-1">
+                              <Input
+                                type="number"
+                                value={tempPrice}
+                                onChange={(e) =>
+                                  setTempPrice(Number(e.target.value))
+                                }
+                                className="w-32 h-8"
+                                autoFocus
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleSaveInlineEdit(pkg.id, "price")
+                                }
+                                className="h-8 px-2 bg-green-500 hover:bg-green-600"
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCancelInlineEdit("price")}
+                                className="h-8 px-2"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-lg font-bold text-fac-orange-500">
+                                {formatCurrency(pkg.basePrice)}
+                              </p>
+                              {userRole === "superadmin" && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleStartInlineEdit(pkg.id, "price")
+                                  }
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  title="Edit Price"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Editable Duration */}
+                        <div className="flex items-center justify-between group">
+                          {inlineEditingDuration === pkg.id ? (
+                            <div className="flex items-center space-x-2 flex-1">
+                              <Input
+                                value={tempDuration}
+                                onChange={(e) =>
+                                  setTempDuration(e.target.value)
+                                }
+                                className="w-32 h-8"
+                                placeholder="e.g., 45 mins"
+                                autoFocus
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleSaveInlineEdit(pkg.id, "duration")
+                                }
+                                className="h-8 px-2 bg-green-500 hover:bg-green-600"
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleCancelInlineEdit("duration")
+                                }
+                                className="h-8 px-2"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Duration: {pkg.duration}
+                              </p>
+                              {userRole === "superadmin" && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleStartInlineEdit(pkg.id, "duration")
+                                  }
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  title="Edit Duration"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Editable Features */}
+                        <div className="space-y-2 group">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-bold text-gray-700">
+                              Features:
                             </p>
-                          ))}
+                            {userRole === "superadmin" &&
+                              inlineEditingFeatures !== pkg.id && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleStartInlineEdit(pkg.id, "features")
+                                  }
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  title="Edit Features"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              )}
+                          </div>
+
+                          {inlineEditingFeatures === pkg.id ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={tempFeatures}
+                                onChange={(e) =>
+                                  setTempFeatures(e.target.value)
+                                }
+                                className="min-h-[100px] text-sm"
+                                placeholder="Enter each feature on a new line"
+                                autoFocus
+                              />
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleSaveInlineEdit(pkg.id, "features")
+                                  }
+                                  className="bg-green-500 hover:bg-green-600 text-white"
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleCancelInlineEdit("features")
+                                  }
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              {pkg.features.map((feature, index) => (
+                                <p
+                                  key={index}
+                                  className="text-sm text-gray-600 font-medium pl-2"
+                                >
+                                  • {feature}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
