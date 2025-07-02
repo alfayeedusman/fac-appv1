@@ -311,53 +311,17 @@ export default function ManageSubscription() {
 
                 <div className="mt-6 pt-6 border-t">
                   <div className="flex flex-col sm:flex-row gap-4">
+                    <Button className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Renew Subscription
+                    </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-50"
+                      className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50"
                     >
-                      <Clock className="h-4 w-4 mr-2" />
-                      Pause Subscription
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade Plan
                     </Button>
-                    <AlertDialog
-                      open={showCancelDialog}
-                      onOpenChange={setShowCancelDialog}
-                    >
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-red-500 text-red-600 hover:bg-red-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Cancel Subscription
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="flex items-center">
-                            <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-                            Cancel Subscription
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to cancel your subscription?
-                            You will continue to have access until{" "}
-                            {formatDate(currentSubscription.endDate)}, and no
-                            refund will be provided for the current billing
-                            period.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>
-                            Keep Subscription
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleCancellation}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Yes, Cancel
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>
