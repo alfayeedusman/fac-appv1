@@ -114,8 +114,16 @@ export default function Voucher() {
   };
 
   const handleRemoveVoucher = (voucherCode: string) => {
-    setAppliedVouchers((prev) => prev.filter((code) => code !== voucherCode));
-    alert(`Voucher ${voucherCode} removed from your applied vouchers.`);
+    setVoucherToRemove(voucherCode);
+    setShowRemoveModal(true);
+  };
+
+  const confirmRemoveVoucher = () => {
+    setAppliedVouchers((prev) =>
+      prev.filter((code) => code !== voucherToRemove),
+    );
+    setShowRemoveModal(false);
+    setVoucherToRemove("");
   };
 
   const copyVoucherCode = (code: string) => {
