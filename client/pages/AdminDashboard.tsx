@@ -60,7 +60,8 @@ interface Customer {
   joinDate: string;
   totalWashes: number;
   totalSpent: number;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "pending" | "banned";
+  approvalStatus: "approved" | "pending" | "rejected" | "banned";
 }
 
 interface ServicePackage {
