@@ -443,8 +443,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
+          {/* Content based on active tab */}
+          {activeTab === "overview" && (
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               <Card className="bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white">
