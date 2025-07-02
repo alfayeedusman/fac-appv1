@@ -118,18 +118,18 @@ export default function Login() {
       <div className="text-center py-12 px-6 relative z-10">
         <div className="animate-fade-in-up">
           <div className="relative inline-block mb-6">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-              alt="Fayeed Auto Care Logo"
-              className="h-20 w-auto mx-auto animate-pulse-glow"
-            />
+            <h1 className="text-5xl font-black text-foreground tracking-tight">
+              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                Fayeed Auto Care
+              </span>
+            </h1>
           </div>
-          <h1 className="text-4xl font-black text-foreground tracking-tight mb-3 animate-fade-in-up animate-delay-100">
+          <h2 className="text-3xl font-black text-foreground tracking-tight mb-3 animate-fade-in-up animate-delay-100">
             Welcome{" "}
             <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
               Back
             </span>
-          </h1>
+          </h2>
           <p className="text-muted-foreground font-medium animate-fade-in-up animate-delay-200">
             Access your FAC account in the future
           </p>
@@ -151,12 +151,13 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-8">
-              {/* Email Field with Modern Styling */}
+              {/* Email Field with Icons */}
               <div className="space-y-3">
                 <Label
                   htmlFor="email"
-                  className="font-bold text-foreground text-sm"
+                  className="font-bold text-foreground text-sm flex items-center"
                 >
+                  <Mail className="h-4 w-4 mr-2 text-fac-orange-500" />
                   Email Address
                 </Label>
                 <div className="relative group">
@@ -173,12 +174,13 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password Field with Modern Styling */}
+              {/* Password Field with Icons */}
               <div className="space-y-3">
                 <Label
                   htmlFor="password"
-                  className="font-bold text-foreground text-sm"
+                  className="font-bold text-foreground text-sm flex items-center"
                 >
+                  <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
                   Password
                 </Label>
                 <div className="relative group">

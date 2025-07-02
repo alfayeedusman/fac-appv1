@@ -27,6 +27,7 @@ import {
   Zap,
   Shield,
   CheckCircle,
+  Mail,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
@@ -84,10 +85,23 @@ export default function SignUp() {
 
   const packages = [
     {
+      value: "regular",
+      label: "Regular Member",
+      price: "Free",
+      description: "Basic app access for wash monitoring",
+      features: [
+        "Wash monitoring",
+        "History logs",
+        "Voucher access",
+        "Basic notifications",
+      ],
+      gradient: "from-gray-500 to-gray-600",
+    },
+    {
       value: "classic",
       label: "Classic Pro",
       price: "₱500/month",
-      description: "4 AI-powered wash sessions",
+      description: "4 professional wash sessions",
       features: [
         "Smart exterior cleaning",
         "Basic protection",
@@ -163,25 +177,21 @@ export default function SignUp() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-                alt="Fayeed Auto Care Logo"
-                className="h-12 w-auto object-contain animate-pulse-glow"
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-foreground">
-                Join{" "}
-                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                  FAC 2025
-                </span>
-              </h1>
-              <p className="text-muted-foreground font-medium">
-                Step into the future of car care
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-black text-foreground mb-2">
+              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                Fayeed Auto Care
+              </span>
+            </h1>
+            <h2 className="text-xl font-black text-foreground">
+              Join{" "}
+              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                FAC 2025
+              </span>
+            </h2>
+            <p className="text-muted-foreground font-medium">
+              Step into the future of car care
+            </p>
           </div>
         </div>
 
@@ -260,21 +270,25 @@ export default function SignUp() {
                     <div className="space-y-3">
                       <Label
                         htmlFor="email"
-                        className="text-foreground font-semibold"
+                        className="text-foreground font-semibold flex items-center"
                       >
+                        <Mail className="h-4 w-4 mr-2 text-fac-orange-500" />
                         Email Address *
                       </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your.email@example.com"
-                        value={formData.email}
-                        onChange={(e) =>
-                          handleInputChange("email", e.target.value)
-                        }
-                        required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
-                      />
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="your.email@example.com"
+                          value={formData.email}
+                          onChange={(e) =>
+                            handleInputChange("email", e.target.value)
+                          }
+                          required
+                          className="pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-3">
