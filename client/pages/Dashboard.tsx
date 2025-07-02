@@ -233,36 +233,28 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Actions with Modern Design */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <Link to="/booking" className="animate-fade-in-up animate-delay-200">
-            <Card className="glass border-border shadow-xl hover-lift transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-8 text-center relative z-10">
-                <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-                  <Calendar className="h-8 w-8 text-white" />
+            <Card className="bg-card border shadow-md hover:shadow-lg transition-all duration-300 group">
+              <CardContent className="p-6 text-center">
+                <div className="bg-fac-orange-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-300">
+                  <Calendar className="h-6 w-6 text-white" />
                 </div>
-                <p className="font-black text-foreground mb-2 text-lg">
-                  Book Wash
-                </p>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Schedule AI service
+                <p className="font-semibold text-foreground mb-1">Book Wash</p>
+                <p className="text-xs text-muted-foreground">
+                  Schedule service
                 </p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/profile" className="animate-fade-in-up animate-delay-300">
-            <Card className="glass border-border shadow-xl hover-lift transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-8 text-center relative z-10">
-                <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-                  <QrCode className="h-8 w-8 text-white" />
+            <Card className="bg-card border shadow-md hover:shadow-lg transition-all duration-300 group">
+              <CardContent className="p-6 text-center">
+                <div className="bg-blue-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-300">
+                  <QrCode className="h-6 w-6 text-white" />
                 </div>
-                <p className="font-black text-foreground mb-2 text-lg">
-                  Smart QR
-                </p>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Instant access
-                </p>
+                <p className="font-semibold text-foreground mb-1">Smart QR</p>
+                <p className="text-xs text-muted-foreground">Instant access</p>
               </CardContent>
             </Card>
           </Link>
