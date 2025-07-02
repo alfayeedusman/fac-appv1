@@ -971,7 +971,7 @@ export default function AdminDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-green-600 border-green-300 hover:bg-green-50"
+                                className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950"
                                 onClick={() => handleApproveUser(customer.id)}
                                 title="Approve User"
                               >
@@ -980,7 +980,7 @@ export default function AdminDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
                                 onClick={() => handleRejectUser(customer.id)}
                                 title="Reject User"
                               >
@@ -992,7 +992,7 @@ export default function AdminDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 border-red-300 hover:bg-red-50"
+                              className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
                               onClick={() => handleBanUser(customer.id)}
                               title="Ban User"
                             >
@@ -1003,7 +1003,7 @@ export default function AdminDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-green-600 border-green-300 hover:bg-green-50"
+                              className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950"
                               onClick={() => handleUnbanUser(customer.id)}
                               title="Unban User"
                             >
