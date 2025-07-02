@@ -201,6 +201,7 @@ export default function AdminDashboard() {
     features: [],
     active: true,
   });
+  const [editingFeatures, setEditingFeatures] = useState<string>("");
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
