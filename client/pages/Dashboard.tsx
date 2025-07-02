@@ -155,6 +155,33 @@ export default function Dashboard() {
     window.location.href = "/login";
   };
 
+  const handleQRScan = () => {
+    setShowQRScanner(true);
+  };
+
+  const handleScanSuccess = (result: QRScanResult) => {
+    setScanResult(result);
+    setShowScanSuccess(true);
+
+    // Update membership data based on scan
+    if (result.type === "branch") {
+      // Simulate service usage - decrement wash count
+      // This would normally update via API
+      console.log(`Checked in at ${result.branchName} (${result.branchId})`);
+    }
+  };
+
+  const handleStartService = () => {
+    // Start the actual washing service
+    alert(`🚿 Service started at ${scanResult?.branchName}!
+
+Your wash has begun. You'll receive a notification when it's complete.
+Estimated time: 30-45 minutes.`);
+
+    // This would normally trigger actual service start via API
+    setScanResult(null);
+  };
+
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
       <StickyHeader showBack={false} title="Dashboard" />
