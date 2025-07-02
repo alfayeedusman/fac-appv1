@@ -280,6 +280,20 @@ export default function AdminDashboard() {
   });
   const [editingFeatures, setEditingFeatures] = useState<string>("");
 
+  // Inline editing states
+  const [inlineEditingPrice, setInlineEditingPrice] = useState<string | null>(
+    null,
+  );
+  const [inlineEditingDuration, setInlineEditingDuration] = useState<
+    string | null
+  >(null);
+  const [inlineEditingFeatures, setInlineEditingFeatures] = useState<
+    string | null
+  >(null);
+  const [tempPrice, setTempPrice] = useState<number>(0);
+  const [tempDuration, setTempDuration] = useState<string>("");
+  const [tempFeatures, setTempFeatures] = useState<string>("");
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role !== "admin" && role !== "superadmin") {
