@@ -1061,23 +1061,36 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "packages" && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {/* Existing Packages */}
+            <div className="space-y-6">
+              {/* Package Management Header */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
-                      Service Packages
+                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center space-x-2">
+                      <Package className="h-5 w-5 text-fac-orange-500" />
+                      <span>Package Management</span>
+                      <Badge variant="outline" className="text-xs">
+                        Role: {userRole} | Editing:{" "}
+                        {userRole === "superadmin" || userRole === "admin"
+                          ? "Enabled"
+                          : "Disabled"}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      Role: {userRole} | Editing:{" "}
-                      {userRole === "superadmin" || userRole === "admin"
-                        ? "Enabled"
-                        : "Disabled"}
-                    </Badge>
+                    {(userRole === "superadmin" || userRole === "admin") && (
+                      <Button
+                        onClick={() => handleOpenPackageModal("add")}
+                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Package
+                      </Button>
+                    )}
                   </CardTitle>
                 </CardHeader>
+              </Card>
+
+              {/* Package Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <CardContent className="space-y-4">
                   {packages.map((pkg) => (
                     <div
