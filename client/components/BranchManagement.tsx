@@ -254,11 +254,11 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       case "active":
         return "bg-green-500";
       case "inactive":
-        return "bg-gray-500";
+        return "bg-muted";
       case "maintenance":
         return "bg-yellow-500";
       default:
-        return "bg-gray-500";
+        return "bg-muted";
     }
   };
 
@@ -626,7 +626,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                   </div>
 
                   {/* Stats */}
-                  <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                  <div className="bg-muted p-3 rounded-lg space-y-2 theme-transition">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
                         Monthly Revenue
@@ -701,12 +701,12 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                   {selectedBranch.washHistory.map((wash) => (
                     <div
                       key={wash.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                      className="border border-border rounded-lg p-4 hover:bg-accent theme-transition"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="font-bold text-black">
+                            <h4 className="font-bold text-foreground">
                               {wash.customerName}
                             </h4>
                             <Badge
@@ -715,7 +715,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                               {wash.status.toUpperCase()}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                             <span>
                               <strong>Car:</strong> {wash.carModel}
                             </span>
@@ -734,7 +734,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                           <p className="text-lg font-bold text-green-600">
                             {formatCurrency(wash.amount)}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {formatDistanceToNow(wash.washDate, {
                               addSuffix: true,
                             })}
