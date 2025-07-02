@@ -516,6 +516,25 @@ You'll receive a confirmation shortly.`);
       </div>
 
       <BottomNavigation />
+
+      <ConfirmModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        onConfirm={confirmBooking}
+        title="Confirm Your Booking"
+        description={`Please confirm your booking details:
+
+Service: ${bookingData.service}
+Vehicle: ${bookingData.vehicleType}${bookingData.motorcycleType ? ` (${bookingData.motorcycleType})` : ""}
+Date: ${bookingData.date}
+Time: ${bookingData.time}
+Branch: ${bookingData.branch}
+
+Proceed with this booking?`}
+        confirmText="Yes, Book Now"
+        cancelText="Review Details"
+        type="info"
+      />
     </div>
   );
 }
