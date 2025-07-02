@@ -122,7 +122,7 @@ export default function Booking() {
       id: "tumaga",
       name: "Tumaga Hub",
       address: "Main Street, Tumaga District",
-      features: ["AI Wash Bay", "VIP Lounge", "Express Service"],
+      features: ["Premium Wash Bay", "VIP Lounge", "Express Service"],
     },
     {
       id: "boalan",
