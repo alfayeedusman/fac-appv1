@@ -135,6 +135,11 @@ export default function Dashboard() {
 
   const urgency = getRenewalUrgency();
 
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
       {/* Futuristic Background Elements */}
