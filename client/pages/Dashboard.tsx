@@ -136,60 +136,28 @@ export default function Dashboard() {
 
       <div className="px-6 py-8 max-w-md mx-auto relative z-10">
         {/* Modern Header */}
-        <div className="flex items-center justify-between mb-10 animate-fade-in-up">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between mb-8 animate-fade-in-up">
+          <div className="flex items-center space-x-3">
             <div className="relative">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                 alt="Fayeed Auto Care Logo"
-                className="h-14 w-auto object-contain animate-pulse-glow"
+                className="h-12 w-auto object-contain"
               />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-foreground tracking-tight">
-                Hey,{" "}
-                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                  John
-                </span>
-                !
+              <h1 className="text-2xl font-bold text-foreground">
+                Hey, <span className="text-fac-orange-500">John</span>!
               </h1>
-              <p className="text-sm text-muted-foreground font-medium">
+              <p className="text-sm text-muted-foreground">
                 Ready for your next wash? ✨
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <ThemeToggle
-              variant="ghost"
-              size="icon"
-              className="glass rounded-full"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="glass rounded-full hover-lift"
-            >
-              <Bell className="h-5 w-5 text-foreground" />
-            </Button>
-            <Link to="/profile">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="glass rounded-full hover-lift"
-              >
-                <User className="h-5 w-5 text-foreground" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                localStorage.clear();
-                window.location.href = "/login";
-              }}
-              className="glass hover:bg-accent border-border text-foreground hover:text-fac-orange-500 rounded-full transition-all duration-300"
-            >
-              <RefreshCw className="h-5 w-5" />
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Bell className="h-5 w-5" />
             </Button>
           </div>
         </div>
