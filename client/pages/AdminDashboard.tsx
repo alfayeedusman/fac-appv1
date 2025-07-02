@@ -84,6 +84,23 @@ interface DashboardStats {
   topPackage: string;
 }
 
+interface Notification {
+  id: string;
+  type:
+    | "new_customer"
+    | "subscription"
+    | "approval_request"
+    | "payment"
+    | "system";
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  customerName?: string;
+  amount?: number;
+  actionRequired?: boolean;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
