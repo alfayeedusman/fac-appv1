@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import StickyHeader from "@/components/StickyHeader";
 
 export default function Login() {
   const navigate = useNavigate();
