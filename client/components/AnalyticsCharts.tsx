@@ -181,8 +181,13 @@ export default function AnalyticsCharts({
           <ResponsiveContainer width="100%" height={400}>
             <AreaChart data={currentData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 12 }}
+                axisLine={true}
+                tickLine={true}
+              />
+              <YAxis tick={{ fontSize: 12 }} axisLine={true} tickLine={true} />
               <Tooltip
                 formatter={(value, name) => [
                   name === "sales" ? formatCurrency(Number(value)) : value,
