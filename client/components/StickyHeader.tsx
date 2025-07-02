@@ -24,6 +24,18 @@ export default function StickyHeader({
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
 
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+
+  // Define public routes where StickyHeader should not appear
+  const publicRoutes = ["/", "/login", "/signup"];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
+
+  // Don't render StickyHeader on public routes or if not authenticated
+  if (isPublicRoute && !isAuthenticated) {
+    return null;
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;

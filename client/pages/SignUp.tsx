@@ -71,22 +71,117 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleInputChange = (field: keyof SignUpFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^(\+?63|0)?[0-9]{10}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ""));
+  };
+
+  const validateStep = (step: number) => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (step === 1) {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+      } else if (formData.fullName.trim().length < 2) {
+        newErrors.fullName = "Full name must be at least 2 characters";
+      }
+
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = "Please enter a valid email address";
+      }
+
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters long";
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+        newErrors.password =
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number";
+      }
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+
+      if (!formData.contactNumber.trim()) {
+        newErrors.contactNumber = "Contact number is required";
+      } else if (!validatePhone(formData.contactNumber)) {
+        newErrors.contactNumber =
+          "Please enter a valid Philippine phone number";
+      }
+
+      if (!formData.address.trim()) {
+        newErrors.address = "Address is required";
+      } else if (formData.address.trim().length < 10) {
+        newErrors.address = "Please provide a complete address";
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.carUnit.trim()) {
+        newErrors.carUnit = "Car model is required";
+      }
+
+      if (!formData.carPlateNumber.trim()) {
+        newErrors.carPlateNumber = "Plate number is required";
+      } else if (
+        !/^[A-Z0-9\s]{6,8}$/.test(
+          formData.carPlateNumber.toUpperCase().replace(/\s/g, ""),
+        )
+      ) {
+        newErrors.carPlateNumber =
+          "Please enter a valid plate number (e.g., ABC 1234)";
+      }
+
+      if (!formData.carType) {
+        newErrors.carType = "Vehicle type is required";
+      }
+
+      if (!formData.branchLocation) {
+        newErrors.branchLocation = "Preferred branch is required";
+      }
+    }
+
+    if (step === 3) {
+      if (!formData.packageToAvail) {
+        newErrors.packageToAvail = "Please select a package";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate password match
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match. Please try again.");
-      return;
-    }
+    // Validate all steps
+    const isStep1Valid = validateStep(1);
+    const isStep2Valid = validateStep(2);
+    const isStep3Valid = validateStep(3);
 
-    if (formData.password.length < 6) {
-      alert("Password must be at least 6 characters long.");
+    if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
+      alert("Please fill all required fields correctly before submitting.");
       return;
     }
 
@@ -166,7 +261,9 @@ export default function SignUp() {
   ];
 
   const nextStep = () => {
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep) && currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const prevStep = () => {
