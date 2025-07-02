@@ -86,10 +86,11 @@ export default function ManageSubscription() {
       name: "Classic",
       basePrice: 500,
       features: [
-        "4 classic wash sessions",
+        "4 classic wash sessions per month",
         "Basic member benefits",
         "Online booking access",
         "Customer support",
+        "Monthly reset of all benefits",
       ],
     },
     {
@@ -97,11 +98,12 @@ export default function ManageSubscription() {
       name: "VIP Silver",
       basePrice: 1500,
       features: [
-        "8 classic wash sessions",
-        "2 VIP ProMax wash sessions",
+        "8 classic wash sessions per month",
+        "2 VIP ProMax wash sessions per month",
         "Member discounts",
         "Priority support",
         "Loyalty points earning",
+        "Monthly reset of all benefits",
       ],
     },
     {
@@ -110,13 +112,14 @@ export default function ManageSubscription() {
       basePrice: 3000,
       popular: true,
       features: [
-        "Unlimited classic wash sessions",
-        "5 VIP ProMax wash sessions",
-        "1 Premium wash session",
+        "Unlimited classic wash sessions per month",
+        "5 VIP ProMax wash sessions per month",
+        "1 Premium wash session per month",
         "Priority booking",
         "Exclusive member benefits",
         "Premium customer support",
         "Maximum loyalty points",
+        "Monthly reset of all benefits",
       ],
     },
   ];
@@ -526,7 +529,20 @@ export default function ManageSubscription() {
                       )}
                   </div>
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t space-y-3">
+                    <div className="bg-fac-blue-100 p-3 rounded-lg">
+                      <div className="flex items-center text-sm text-fac-blue-700 mb-1">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        <span className="font-medium">
+                          Monthly Reset System
+                        </span>
+                      </div>
+                      <p className="text-xs text-fac-blue-600">
+                        All package benefits reset to full amount at the start
+                        of each billing cycle. Unused washes from previous
+                        months do not carry over.
+                      </p>
+                    </div>
                     <Button
                       className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
                       onClick={handleRenewal}
@@ -544,27 +560,49 @@ export default function ManageSubscription() {
               <CardHeader>
                 <CardTitle className="flex items-center text-orange-700">
                   <AlertTriangle className="h-5 w-5 mr-2" />
-                  Important Lock-in Terms
+                  Important Terms & Conditions
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm text-orange-700">
-                  <p>
-                    • <strong>3-Month Lock-in:</strong> Minimum commitment of 3
-                    months. Early cancellation incurs 50% penalty.
-                  </p>
-                  <p>
-                    • <strong>6-Month Lock-in:</strong> Minimum commitment of 6
-                    months. Early cancellation incurs 60% penalty.
-                  </p>
-                  <p>
-                    • <strong>1-Year Lock-in:</strong> Minimum commitment of 12
-                    months. Early cancellation incurs 70% penalty.
-                  </p>
-                  <p>
-                    • <strong>Flexible Plan:</strong> Cancel anytime with 30
-                    days notice, no penalty.
-                  </p>
+                <div className="space-y-3 text-sm text-orange-700">
+                  <div>
+                    <h5 className="font-semibold mb-2">
+                      Monthly Reset Policy:
+                    </h5>
+                    <p>
+                      • All package benefits (wash sessions) reset to full
+                      amount at the start of each monthly billing cycle
+                    </p>
+                    <p>
+                      • Unused washes from previous months do{" "}
+                      <strong>NOT</strong> carry over
+                    </p>
+                    <p>
+                      • Each billing cycle is independent - benefits are
+                      consumed once per month only
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-orange-200">
+                    <h5 className="font-semibold mb-2">Lock-in Terms:</h5>
+                    <p>
+                      • <strong>3-Month Lock-in:</strong> Minimum commitment of
+                      3 months. Early cancellation incurs 50% penalty.
+                    </p>
+                    <p>
+                      • <strong>6-Month Lock-in:</strong> Minimum commitment of
+                      6 months. Early cancellation incurs 60% penalty.
+                    </p>
+                    <p>
+                      • <strong>1-Year Lock-in:</strong> Minimum commitment of
+                      12 months. Early cancellation incurs 70% penalty.
+                    </p>
+                    <p>
+                      • <strong>Flexible Plan:</strong> Cancel anytime with 30
+                      days notice, no penalty.
+                    </p>
+                  </div>
+
                   <p className="pt-2 border-t border-orange-200">
                     <strong>Note:</strong> Lock-in discounts are applied
                     upfront. Penalties are calculated based on remaining months
