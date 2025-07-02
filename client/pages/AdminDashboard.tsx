@@ -607,9 +607,11 @@ export default function AdminDashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 p-0">
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b border-border">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-black">Notifications</h3>
+                        <h3 className="font-bold text-foreground">
+                          Notifications
+                        </h3>
                         <div className="flex items-center space-x-2">
                           {unreadNotificationCount > 0 && (
                             <Button
