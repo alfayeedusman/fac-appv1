@@ -25,6 +25,8 @@ import {
   Plus,
   Filter,
   ChevronRight,
+  RefreshCw,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
