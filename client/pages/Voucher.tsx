@@ -141,6 +141,8 @@ export default function Voucher() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <StickyHeader showBack={true} title="Vouchers" />
+
       {/* Header */}
       <div className="bg-card border-b p-4 sticky top-0 z-40">
         <div className="max-w-md mx-auto">
