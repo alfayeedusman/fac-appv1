@@ -394,7 +394,13 @@ export default function Voucher() {
         )}
       </div>
 
-      <BottomNavigation />
+      <BottomNavigation onQRScan={openQRScanner} />
+
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={closeQRScanner}
+        onScanSuccess={handleScanSuccess}
+      />
 
       <ConfirmModal
         isOpen={showRemoveModal}
