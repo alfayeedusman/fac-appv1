@@ -245,7 +245,7 @@ export default function AdminDashboard() {
       id: "classic",
       name: "Classic",
       basePrice: 500,
-      duration: "30 mins",
+      duration: "Weekly",
       features: ["Basic exterior wash", "Tire cleaning", "Basic dry"],
       active: true,
     },
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
       id: "vip-silver",
       name: "VIP Silver",
       basePrice: 1500,
-      duration: "45 mins",
+      duration: "Monthly",
       features: [
         "Premium exterior wash",
         "Interior vacuum",
@@ -266,7 +266,7 @@ export default function AdminDashboard() {
       id: "vip-gold",
       name: "VIP Gold",
       basePrice: 3000,
-      duration: "60 mins",
+      duration: "Yearly",
       features: [
         "Complete exterior detail",
         "Full interior clean",
