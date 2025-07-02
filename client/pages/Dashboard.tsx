@@ -25,6 +25,8 @@ import {
   Star,
   Shield,
   Settings,
+  Home,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
