@@ -97,6 +97,20 @@ export default function StickyHeader({
               >
                 <Bell className="h-5 w-5" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
+                onClick={() => {
+                  if (confirm("Are you sure you want to logout?")) {
+                    localStorage.clear();
+                    window.location.href = "/login";
+                  }
+                }}
+                title="Logout"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
               <ThemeToggle />
             </div>
           </div>
