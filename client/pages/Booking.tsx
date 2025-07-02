@@ -280,6 +280,33 @@ export default function Booking() {
             </CardContent>
           </Card>
 
+          {/* Vehicle Type Selection */}
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-200">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground text-2xl">
+                <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <Car className="h-6 w-6 text-white" />
+                </div>
+                Select Your Vehicle
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VehicleSelector
+                value={{
+                  vehicleType: bookingData.vehicleType,
+                  motorcycleType: bookingData.motorcycleType,
+                }}
+                onChange={(value) =>
+                  setBookingData({
+                    ...bookingData,
+                    vehicleType: value.vehicleType,
+                    motorcycleType: value.motorcycleType,
+                  })
+                }
+              />
+            </CardContent>
+          </Card>
+
           {/* Date & Time Selection */}
           <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-200">
             <CardHeader>
