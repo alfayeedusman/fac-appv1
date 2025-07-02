@@ -65,11 +65,23 @@ interface MembershipData {
   };
 }
 
+interface QRScanResult {
+  type: "branch" | "service" | "customer";
+  branchId?: string;
+  branchName?: string;
+  serviceId?: string;
+  customerId?: string;
+  timestamp: string;
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"benefits" | "activity">(
     "benefits",
   );
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showScanSuccess, setShowScanSuccess] = useState(false);
+  const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
 
   const [membershipData] = useState<MembershipData>({
     package: "VIP Gold Ultimate",
