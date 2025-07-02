@@ -86,12 +86,7 @@ interface DashboardStats {
 
 interface Notification {
   id: string;
-  type:
-    | "new_customer"
-    | "subscription"
-    | "approval_request"
-    | "payment"
-    | "system";
+  type: "new_customer" | "subscription" | "approval_request" | "payment" | "system";
   title: string;
   message: string;
   timestamp: Date;
@@ -105,9 +100,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [timeFilter, setTimeFilter] = useState<
-    "daily" | "weekly" | "monthly" | "yearly"
-  >("monthly");
+  const [timeFilter, setTimeFilter] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 1247,
     totalRevenue: 156780,
@@ -122,8 +115,7 @@ export default function AdminDashboard() {
       id: "1",
       type: "approval_request",
       title: "New Customer Approval",
-      message:
-        "Ana Rodriguez is requesting account approval for VIP Silver membership.",
+      message: "Ana Rodriguez is requesting account approval for VIP Silver membership.",
       timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
       read: false,
       customerName: "Ana Rodriguez",
@@ -133,8 +125,7 @@ export default function AdminDashboard() {
       id: "2",
       type: "new_customer",
       title: "New Registration",
-      message:
-        "Carlos Reyes has completed registration and is awaiting approval.",
+      message: "Carlos Reyes has completed registration and is awaiting approval.",
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       read: false,
       customerName: "Carlos Reyes",
@@ -290,89 +281,76 @@ export default function AdminDashboard() {
 
   const handleEditPackage = (pkg: ServicePackage) => {
     setEditingPackage({ ...pkg });
-    setEditingFeatures(pkg.features.join("\n"));
+    setEditingFeatures(pkg.features.join('\n'));
   };
 
   const handleApproveUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "active", approvalStatus: "approved" }
-          : customer,
-      ),
-    );
+    setCustomers(prev => prev.map(customer =>
+      customer.id === userId
+        ? { ...customer, status: "active", approvalStatus: "approved" }
+        : customer
+    ));
     // Add approval notification
-    const approvedCustomer = customers.find((c) => c.id === userId);
+    const approvedCustomer = customers.find(c => c.id === userId);
     if (approvedCustomer) {
-      setNotifications((prev) => [
-        {
-          id: Date.now().toString(),
-          type: "system",
-          title: "Customer Approved",
-          message: `${approvedCustomer.name} has been approved and activated.`,
-          timestamp: new Date(),
-          read: false,
-        },
-        ...prev,
-      ]);
+      setNotifications(prev => [{
+        id: Date.now().toString(),
+        type: "system",
+        title: "Customer Approved",
+        message: `${approvedCustomer.name} has been approved and activated.`,
+        timestamp: new Date(),
+        read: false,
+      }, ...prev]);
     }
     alert("User approved successfully!");
   };
 
   const handleRejectUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "inactive", approvalStatus: "rejected" }
-          : customer,
-      ),
-    );
+    setCustomers(prev => prev.map(customer =>
+      customer.id === userId
+        ? { ...customer, status: "inactive", approvalStatus: "rejected" }
+        : customer
+    ));
     alert("User rejected successfully!");
   };
 
   const handleBanUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "banned", approvalStatus: "banned" }
-          : customer,
-      ),
-    );
+    setCustomers(prev => prev.map(customer =>
+      customer.id === userId
+        ? { ...customer, status: "banned", approvalStatus: "banned" }
+        : customer
+    ));
     alert("User banned successfully!");
   };
 
   const handleUnbanUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "active", approvalStatus: "approved" }
-          : customer,
-      ),
-    );
+    setCustomers(prev => prev.map(customer =>
+      customer.id === userId
+        ? { ...customer, status: "active", approvalStatus: "approved" }
+        : customer
+    ));
     alert("User unbanned successfully!");
   };
 
   const handleMarkNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification,
-      ),
-    );
+    setNotifications(prev => prev.map(notification =>
+      notification.id === id ? { ...notification, read: true } : notification
+    ));
   };
 
   const handleMarkAllNotificationsAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true })),
-    );
+    setNotifications(prev => prev.map(notification =>
+      ({ ...notification, read: true })
+    ));
   };
 
-  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
+  const unreadNotificationCount = notifications.filter(n => !n.read).length;
 
   const handleSavePackage = () => {
     if (editingPackage) {
       const updatedPackage = {
         ...editingPackage,
-        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
+        features: editingFeatures.split('\n').filter(f => f.trim() !== '')
       };
       setPackages((prev) =>
         prev.map((pkg) =>
@@ -395,9 +373,7 @@ export default function AdminDashboard() {
   const handleAddPackage = () => {
     if (newPackage.name && newPackage.basePrice) {
       const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
-      const features = editingFeatures
-        .split("\n")
-        .filter((f) => f.trim() !== "");
+      const features = editingFeatures.split('\n').filter(f => f.trim() !== '');
       setPackages((prev) => [
         ...prev,
         {
@@ -425,79 +401,47 @@ export default function AdminDashboard() {
   if (!userRole) return null;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="px-6 py-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-              alt="Fayeed Auto Care Logo"
-              className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
-            />
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-black text-black tracking-tight">
-                Admin Dashboard
-              </h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2 mt-1">
-                <Badge
-                  className={`${userRole === "superadmin" ? "bg-red-500" : "bg-fac-orange-500"} text-white font-bold w-fit`}
-                >
-                  {userRole === "superadmin" ? (
-                    <>
-                      <Shield className="h-3 w-3 mr-1" />
-                      SUPER ADMIN
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="h-3 w-3 mr-1" />
-                      ADMIN
-                    </>
-                  )}
-                </Badge>
-                <span className="text-xs sm:text-sm text-gray-500 font-medium">
-                  Fayeed Auto Care Management
-                </span>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <AdminSidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        userRole={userRole}
+        notificationCount={unreadNotificationCount}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-4 lg:p-8">
+          {/* Header */}
+          <div className="mb-8 ml-12 lg:ml-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-black text-black tracking-tight">
+                  {activeTab === "overview" && "Dashboard Overview"}
+                  {activeTab === "customers" && "Customer Management"}
+                  {activeTab === "packages" && "Package Management"}
+                  {activeTab === "branches" && "Branch Management"}
+                  {activeTab === "analytics" && "Analytics & Reports"}
+                  {activeTab === "sales" && "Sales Dashboard"}
+                  {activeTab === "notifications" && "Notification Center"}
+                </h1>
+                <p className="text-gray-600 font-medium mt-1">
+                  {activeTab === "overview" && "Monitor your business performance and key metrics"}
+                  {activeTab === "customers" && "Manage customer accounts and approvals"}
+                  {activeTab === "packages" && "Configure service packages and pricing"}
+                  {activeTab === "branches" && "Oversee all branch locations and operations"}
+                  {activeTab === "analytics" && "Detailed insights and performance reports"}
+                  {activeTab === "sales" && "Track revenue and sales performance"}
+                  {activeTab === "notifications" && "System alerts and customer notifications"}
+                </p>
               </div>
+              <Button variant="outline" className="hidden lg:flex">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
-            <Button variant="outline" className="font-bold flex-1 sm:flex-none">
-              <RefreshCw className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Refresh Data</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                localStorage.clear();
-                navigate("/login");
-              }}
-              className="border-red-300 text-red-600 hover:bg-red-50 p-2"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
-            <TabsTrigger value="overview" className="text-xs sm:text-sm">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="customers" className="text-xs sm:text-sm">
-              Customers
-            </TabsTrigger>
-            <TabsTrigger value="packages" className="text-xs sm:text-sm">
-              Packages
-            </TabsTrigger>
-            <TabsTrigger value="sales" className="text-xs sm:text-sm">
-              Sales
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs sm:text-sm">
-              Analytics
-            </TabsTrigger>
-          </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
@@ -666,13 +610,9 @@ export default function AdminDashboard() {
                             </Badge>
                             <Badge
                               className={`${
-                                customer.approvalStatus === "approved"
-                                  ? "bg-green-500"
-                                  : customer.approvalStatus === "pending"
-                                    ? "bg-yellow-500"
-                                    : customer.approvalStatus === "banned"
-                                      ? "bg-red-500"
-                                      : "bg-gray-500"
+                                customer.approvalStatus === "approved" ? "bg-green-500" :
+                                customer.approvalStatus === "pending" ? "bg-yellow-500" :
+                                customer.approvalStatus === "banned" ? "bg-red-500" : "bg-gray-500"
                               } text-white font-bold`}
                             >
                               {customer.approvalStatus.toUpperCase()}
@@ -690,18 +630,10 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <div className="flex items-center flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            title="Edit Customer"
-                          >
+                          <Button variant="outline" size="sm" title="Edit Customer">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            title="View Details"
-                          >
+                          <Button variant="outline" size="sm" title="View Details">
                             <Smartphone className="h-4 w-4" />
                           </Button>
                           {customer.approvalStatus === "pending" && (
@@ -807,18 +739,14 @@ export default function AdminDashboard() {
                                   <DialogHeader>
                                     <DialogTitle>Delete Package</DialogTitle>
                                     <DialogDescription>
-                                      Are you sure you want to delete the "
-                                      {pkg.name}" package? This action cannot be
-                                      undone.
+                                      Are you sure you want to delete the "{pkg.name}" package? This action cannot be undone.
                                     </DialogDescription>
                                   </DialogHeader>
                                   <DialogFooter>
                                     <Button variant="outline">Cancel</Button>
                                     <Button
                                       variant="destructive"
-                                      onClick={() =>
-                                        handleDeletePackage(pkg.id)
-                                      }
+                                      onClick={() => handleDeletePackage(pkg.id)}
                                     >
                                       Delete Package
                                     </Button>
@@ -837,9 +765,7 @@ export default function AdminDashboard() {
                           Duration: {pkg.duration}
                         </p>
                         <div className="space-y-1">
-                          <p className="text-sm font-bold text-gray-700 mb-1">
-                            Features:
-                          </p>
+                          <p className="text-sm font-bold text-gray-700 mb-1">Features:</p>
                           {pkg.features.map((feature, index) => (
                             <p
                               key={index}
