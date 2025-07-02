@@ -426,7 +426,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 gap-6 mb-10">
+        <div className="grid grid-cols-2 gap-4 mb-20">
           <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-600">
             <CardContent className="p-8 text-center">
               <div className="gradient-primary w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
