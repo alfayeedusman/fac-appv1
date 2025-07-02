@@ -282,6 +282,34 @@ export default function AdminDashboard() {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
 
+  // Customer management state
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    carUnit: "",
+    plateNumber: "",
+    membershipType: "Classic",
+  });
+
+  // Package management state
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
+    "add",
+  );
+  const [currentPackage, setCurrentPackage] = useState<ServicePackage | null>(
+    null,
+  );
+  const [newPackage, setNewPackage] = useState<Partial<ServicePackage>>({
+    name: "",
+    basePrice: 0,
+    duration: "",
+    features: [],
+    active: true,
+  });
+  const [editingFeatures, setEditingFeatures] = useState<string>("");
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role !== "admin" && role !== "superadmin") {
