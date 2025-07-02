@@ -1,148 +1,189 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Car, Droplets, Star, MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Car,
+  Droplets,
+  Star,
+  MapPin,
+  ArrowRight,
+  Shield,
+  Crown,
+} from "lucide-react";
 
 export default function Index() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    if (isAuthenticated === "true") {
+      const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
+      if (hasSeenWelcome === "true") {
+        navigate("/dashboard");
+      } else {
+        navigate("/welcome");
+      }
+    }
+  }, [navigate]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100">
-      {/* Header */}
-      <div className="container mx-auto px-4 pt-8">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-              alt="Fayeed Auto Care Logo"
-              className="h-20 w-auto object-contain"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-fac-blue-900">FAC App</h1>
-          <p className="text-fac-blue-700 font-medium">
-            Your Premium Car Care Partner
-          </p>
-        </div>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <div className="px-6 py-12 text-center">
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+          alt="Fayeed Auto Care Logo"
+          className="h-20 w-auto mx-auto mb-8"
+        />
+        <h1 className="text-4xl font-black text-black tracking-tight mb-4">
+          Premium Car Care
+        </h1>
+        <p className="text-xl text-gray-600 font-medium mb-2">
+          Professional car wash services
+        </p>
+        <p className="text-gray-500 font-medium mb-8">in Zamboanga City</p>
 
-        {/* Hero Section */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome to Premium Car Care
-            </h2>
-            <p className="text-gray-600 text-lg leading-relaxed">
-              Experience the finest car wash services in Zamboanga City.
-              Professional care for your vehicle with convenient mobile booking.
-            </p>
+        {/* Feature Highlights */}
+        <div className="grid grid-cols-3 gap-4 mb-12 max-w-sm mx-auto">
+          <div className="text-center">
+            <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
+              <Droplets className="h-6 w-6 text-fac-orange-600" />
+            </div>
+            <p className="text-xs font-bold text-black">Premium</p>
+            <p className="text-xs text-gray-500">Wash</p>
           </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="text-center p-4">
-              <div className="bg-fac-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Droplets className="h-8 w-8 text-fac-blue-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Premium Wash</h3>
-              <p className="text-gray-600 text-sm">
-                Professional cleaning with high-quality products
-              </p>
+          <div className="text-center">
+            <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
+              <Crown className="h-6 w-6 text-fac-orange-600" />
             </div>
-            <div className="text-center p-4">
-              <div className="bg-fac-gold-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Star className="h-8 w-8 text-fac-gold-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">VIP Packages</h3>
-              <p className="text-gray-600 text-sm">
-                Exclusive membership plans with amazing benefits
-              </p>
-            </div>
-            <div className="text-center p-4">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                <MapPin className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Multiple Branches
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Convenient locations across Zamboanga City
-              </p>
-            </div>
+            <p className="text-xs font-bold text-black">VIP</p>
+            <p className="text-xs text-gray-500">Packages</p>
           </div>
-
-          {/* CTA Buttons */}
-          <div className="space-y-4">
-            <Link to="/signup" className="block">
-              <Button className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 text-white py-4 text-lg font-semibold rounded-xl">
-                Get Started - Sign Up Now
-              </Button>
-            </Link>
-            <Link to="/dashboard" className="block">
-              <Button
-                variant="outline"
-                className="w-full border-fac-blue-600 text-fac-blue-600 hover:bg-fac-blue-50 py-4 text-lg font-semibold rounded-xl"
-              >
-                Already a Member? View Dashboard
-              </Button>
-            </Link>
+          <div className="text-center">
+            <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
+              <MapPin className="h-6 w-6 text-fac-orange-600" />
+            </div>
+            <p className="text-xs font-bold text-black">Multiple</p>
+            <p className="text-xs text-gray-500">Locations</p>
           </div>
         </div>
 
-        {/* Business Info */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">
-            Why Choose Fayeed Auto Care?
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <div className="bg-fac-blue-100 w-6 h-6 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                <div className="w-2 h-2 bg-fac-blue-600 rounded-full"></div>
-              </div>
-              <p className="text-gray-700">
-                Professional staff with years of experience
-              </p>
-            </div>
-            <div className="flex items-start">
-              <div className="bg-fac-blue-100 w-6 h-6 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                <div className="w-2 h-2 bg-fac-blue-600 rounded-full"></div>
-              </div>
-              <p className="text-gray-700">
-                Eco-friendly products and water conservation
-              </p>
-            </div>
-            <div className="flex items-start">
-              <div className="bg-fac-blue-100 w-6 h-6 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                <div className="w-2 h-2 bg-fac-blue-600 rounded-full"></div>
-              </div>
-              <p className="text-gray-700">
-                Loyalty rewards and membership benefits
-              </p>
-            </div>
-            <div className="flex items-start">
-              <div className="bg-fac-blue-100 w-6 h-6 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                <div className="w-2 h-2 bg-fac-blue-600 rounded-full"></div>
-              </div>
-              <p className="text-gray-700">
-                Convenient QR code system for quick service
-              </p>
-            </div>
-          </div>
+        {/* CTA Buttons */}
+        <div className="space-y-4 max-w-sm mx-auto">
+          <Link to="/signup">
+            <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-black py-4 text-lg rounded-xl">
+              GET STARTED
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
+          </Link>
+          <Link to="/login">
+            <Button
+              variant="outline"
+              className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold py-4 rounded-xl"
+            >
+              SIGN IN
+            </Button>
+          </Link>
         </div>
+      </div>
 
-        {/* Branch Locations */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">
-            Our Locations
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-fac-blue-700">Tumaga Branch</h4>
-              <p className="text-gray-600 text-sm">
-                Professional car wash services
-              </p>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-fac-blue-700">Boalan Branch</h4>
-              <p className="text-gray-600 text-sm">Full-service auto care</p>
-            </div>
-          </div>
+      {/* Features Section */}
+      <div className="px-6 py-8">
+        <h2 className="text-2xl font-black text-black text-center mb-8">
+          Why Choose FAC?
+        </h2>
+
+        <div className="space-y-4 max-w-md mx-auto">
+          <Card className="bg-white border border-gray-100 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="bg-fac-orange-500 w-12 h-12 rounded-2xl flex items-center justify-center">
+                  <Star className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-black text-black">
+                    Professional Service
+                  </h3>
+                  <p className="text-sm text-gray-600 font-medium">
+                    Expert staff with years of experience
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-100 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="bg-green-500 w-12 h-12 rounded-2xl flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-black text-black">Eco-Friendly</h3>
+                  <p className="text-sm text-gray-600 font-medium">
+                    Green products and water conservation
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-100 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="bg-blue-500 w-12 h-12 rounded-2xl flex items-center justify-center">
+                  <Car className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-black text-black">Convenient Booking</h3>
+                  <p className="text-sm text-gray-600 font-medium">
+                    Mobile app with QR code system
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+      </div>
+
+      {/* Locations Section */}
+      <div className="px-6 py-8 bg-gray-50">
+        <h2 className="text-2xl font-black text-black text-center mb-8">
+          Our Locations
+        </h2>
+
+        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="bg-fac-orange-100 w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <MapPin className="h-5 w-5 text-fac-orange-600" />
+              </div>
+              <h3 className="font-black text-black text-sm">Tumaga Branch</h3>
+              <p className="text-xs text-gray-500 font-medium">Main Location</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="bg-fac-orange-100 w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <MapPin className="h-5 w-5 text-fac-orange-600" />
+              </div>
+              <h3 className="font-black text-black text-sm">Boalan Branch</h3>
+              <p className="text-xs text-gray-500 font-medium">Full Service</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-8 text-center">
+        <p className="text-xs text-gray-400 font-medium mb-2">
+          © 2024 Fayeed Auto Care
+        </p>
+        <p className="text-xs text-gray-400 font-medium">
+          Professional car wash services in Zamboanga City
+        </p>
       </div>
     </div>
   );

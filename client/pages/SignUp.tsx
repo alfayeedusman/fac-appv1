@@ -60,9 +60,10 @@ export default function SignUp() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // For now, just log the data and redirect
+    // For demo purposes, create account and redirect to login
     console.log("Form submitted:", formData);
-    alert("Registration successful! Welcome to Fayeed Auto Care!");
+    alert("Registration successful! Please sign in to continue.");
+    window.location.href = "/login";
     setIsSubmitting(false);
   };
 
@@ -89,8 +90,8 @@ export default function SignUp() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-white">
+      <div className="px-6 py-8 max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
           <Link to="/" className="mr-4">
