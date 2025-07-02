@@ -17,6 +17,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
+import StickyHeader from "@/components/StickyHeader";
 
 interface NotificationSetting {
   id: string;
