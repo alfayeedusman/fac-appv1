@@ -169,6 +169,23 @@ You'll receive a confirmation shortly.`);
     return today.toISOString().split("T")[0];
   };
 
+  const handleQRScan = () => {
+    setShowQRScanner(true);
+  };
+
+  const handleScanSuccess = (result: any) => {
+    // Auto-fill branch based on QR scan
+    if (result.type === "branch" && result.branchName) {
+      setBookingData({
+        ...bookingData,
+        branch: result.branchName,
+      });
+      alert(
+        `✅ Branch selected: ${result.branchName}\nPlease complete your booking details.`,
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={true} title="Book Service" />
