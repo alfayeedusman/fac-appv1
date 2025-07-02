@@ -71,19 +71,39 @@ export default function Index() {
         </div>
 
         {/* CTA Buttons */}
-        <div className="space-y-4 max-w-sm mx-auto">
+        <div className="space-y-6 max-w-sm mx-auto">
           <Link to="/signup">
-            <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-black py-4 text-lg rounded-xl">
-              GET STARTED
-              <ArrowRight className="h-5 w-5 ml-2" />
+            <Button className="group relative w-full bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-black py-5 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] border-0">
+              <span className="relative z-10 flex items-center justify-center">
+                GET STARTED
+                <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>
           </Link>
+
+          <div className="my-8">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">
+                  Already have an account?
+                </span>
+              </div>
+            </div>
+          </div>
+
           <Link to="/login">
             <Button
               variant="outline"
-              className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold py-4 rounded-xl"
+              className="group w-full border-2 border-gray-300 hover:border-black text-black hover:bg-black hover:text-white font-black py-5 text-lg rounded-2xl transition-all duration-300 transform hover:scale-[1.02] bg-white"
             >
-              SIGN IN
+              <span className="flex items-center justify-center">
+                SIGN IN
+                <div className="ml-3 w-2 h-2 bg-current rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+              </span>
             </Button>
           </Link>
         </div>

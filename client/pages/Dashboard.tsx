@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import MobileLayout from "@/components/MobileLayout";
 import NotificationPanel from "@/components/NotificationPanel";
+import LogoutButton from "@/components/LogoutButton";
 
 interface WashLog {
   id: string;
@@ -182,6 +183,7 @@ export default function Dashboard() {
                 <User className="h-5 w-5 text-black" />
               </Button>
             </Link>
+            <LogoutButton className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-black hover:text-fac-orange-500" />
           </div>
         </div>
 

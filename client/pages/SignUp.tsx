@@ -60,10 +60,11 @@ export default function SignUp() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // For demo purposes, create account and redirect to login
+    // Store registration data and redirect to credential setup
+    localStorage.setItem("registrationData", JSON.stringify(formData));
     console.log("Form submitted:", formData);
-    alert("Registration successful! Please sign in to continue.");
-    window.location.href = "/login";
+    alert("Registration successful! Now set up your login credentials.");
+    window.location.href = "/credential-setup";
     setIsSubmitting(false);
   };
 
