@@ -925,7 +925,7 @@ export default function AdminDashboard() {
 
           {/* Sales Tab */}
           <TabsContent value="sales" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               <Card className="bg-white border border-gray-100">
                 <CardContent className="p-6 text-center">
                   <DollarSign className="h-12 w-12 text-fac-orange-500 mx-auto mb-4" />
