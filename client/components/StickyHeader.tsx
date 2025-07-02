@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Bell, Search, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 interface StickyHeaderProps {
   title?: string;
