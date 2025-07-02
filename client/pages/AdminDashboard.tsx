@@ -1029,7 +1029,10 @@ export default function AdminDashboard() {
                       </Badge>
                     </div>
                     {(userRole === "superadmin" || userRole === "admin") && (
-                      <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                      <Button
+                        onClick={() => handleOpenPackageModal("add")}
+                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold"
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Package
                       </Button>
