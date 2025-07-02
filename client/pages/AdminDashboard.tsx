@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Users,
@@ -30,6 +40,12 @@ import {
   MapPin,
   Shield,
   Smartphone,
+  X,
+  Check,
+  Ban,
+  UserCheck,
+  UserX,
+  LogOut,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
