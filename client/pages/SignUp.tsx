@@ -386,8 +386,17 @@ export default function SignUp() {
                           handleInputChange("fullName", e.target.value)
                         }
                         required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          errors.fullName
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
                       />
+                      {errors.fullName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.fullName}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -409,9 +418,18 @@ export default function SignUp() {
                             handleInputChange("email", e.target.value)
                           }
                           required
-                          className="pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                          className={`pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                            errors.email
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              : ""
+                          }`}
                         />
                       </div>
+                      {errors.email && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -433,7 +451,11 @@ export default function SignUp() {
                             handleInputChange("password", e.target.value)
                           }
                           required
-                          className="pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                            errors.password
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              : ""
+                          }`}
                         />
                         <Button
                           type="button"
@@ -449,6 +471,11 @@ export default function SignUp() {
                           )}
                         </Button>
                       </div>
+                      {errors.password && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.password}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
