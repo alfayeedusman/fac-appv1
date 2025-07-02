@@ -289,33 +289,35 @@ export default function Dashboard() {
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <Link to="/booking">
-            <Card className="bg-white border border-gray-100 hover:shadow-lg hover:border-fac-orange-500 transition-all group">
+            <Card className="bg-card border-border hover:shadow-lg hover:border-fac-orange-500 transition-all group theme-transition">
               <CardContent className="p-6 text-center">
-                <div className="bg-black w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
-                  <Calendar className="h-7 w-7 text-white" />
+                <div className="bg-foreground w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
+                  <Calendar className="h-7 w-7 text-background" />
                 </div>
-                <p className="font-black text-black mb-2">Book Wash</p>
-                <p className="text-xs text-gray-500 font-medium">
+                <p className="font-black text-foreground mb-2">Book Wash</p>
+                <p className="text-xs text-muted-foreground font-medium">
                   Schedule service
                 </p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/profile">
-            <Card className="bg-white border border-gray-100 hover:shadow-lg hover:border-fac-orange-500 transition-all group">
+            <Card className="bg-card border-border hover:shadow-lg hover:border-fac-orange-500 transition-all group theme-transition">
               <CardContent className="p-6 text-center">
-                <div className="bg-black w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
-                  <QrCode className="h-7 w-7 text-white" />
+                <div className="bg-foreground w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
+                  <QrCode className="h-7 w-7 text-background" />
                 </div>
-                <p className="font-black text-black mb-2">QR Code</p>
-                <p className="text-xs text-gray-500 font-medium">Quick scan</p>
+                <p className="font-black text-foreground mb-2">QR Code</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Quick scan
+                </p>
               </CardContent>
             </Card>
           </Link>
         </div>
 
         {/* Remaining Washes */}
-        <Card className="bg-white border border-gray-100 shadow-sm">
+        <Card className="bg-card border-border shadow-sm theme-transition">
           <CardHeader className="pb-6">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
