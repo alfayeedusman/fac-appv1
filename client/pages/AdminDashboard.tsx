@@ -59,6 +59,7 @@ import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 import BranchManagement from "@/components/BranchManagement";
+import PackageManagement from "@/components/PackageManagement";
 import { formatDistanceToNow } from "date-fns";
 
 interface Customer {
