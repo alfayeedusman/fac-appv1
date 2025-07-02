@@ -131,7 +131,9 @@ export default function AdminSidebar({
                     className="h-8 w-auto object-contain"
                   />
                   <div>
-                    <h2 className="text-lg font-black text-black">FAC Admin</h2>
+                    <h2 className="text-lg font-black text-foreground">
+                      FAC Admin
+                    </h2>
                     <Badge
                       className={`${
                         userRole === "superadmin"
