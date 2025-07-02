@@ -21,6 +21,7 @@ export default function StickyHeader({
   className,
 }: StickyHeaderProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
