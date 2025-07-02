@@ -86,7 +86,12 @@ interface DashboardStats {
 
 interface Notification {
   id: string;
-  type: "new_customer" | "subscription" | "approval_request" | "payment" | "system";
+  type:
+    | "new_customer"
+    | "subscription"
+    | "approval_request"
+    | "payment"
+    | "system";
   title: string;
   message: string;
   timestamp: Date;
@@ -100,7 +105,10 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [timeFilter, setTimeFilter] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
+  const [timeFilter, setTimeFilter] = useState<
+    "daily" | "weekly" | "monthly" | "yearly"
+  >("monthly");
+
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 1247,
     totalRevenue: 156780,
@@ -115,8 +123,9 @@ export default function AdminDashboard() {
       id: "1",
       type: "approval_request",
       title: "New Customer Approval",
-      message: "Ana Rodriguez is requesting account approval for VIP Silver membership.",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      message:
+        "Ana Rodriguez is requesting account approval for VIP Silver membership.",
+      timestamp: new Date(Date.now() - 30 * 60 * 1000),
       read: false,
       customerName: "Ana Rodriguez",
       actionRequired: true,
@@ -125,8 +134,9 @@ export default function AdminDashboard() {
       id: "2",
       type: "new_customer",
       title: "New Registration",
-      message: "Carlos Reyes has completed registration and is awaiting approval.",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      message:
+        "Carlos Reyes has completed registration and is awaiting approval.",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
       read: false,
       customerName: "Carlos Reyes",
       actionRequired: true,
@@ -136,7 +146,7 @@ export default function AdminDashboard() {
       type: "subscription",
       title: "VIP Gold Subscription",
       message: "John Dela Cruz upgraded to VIP Gold membership.",
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
       read: false,
       customerName: "John Dela Cruz",
       amount: 3000,
@@ -146,7 +156,7 @@ export default function AdminDashboard() {
       type: "payment",
       title: "Payment Received",
       message: "Monthly subscription payment received from Maria Santos.",
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
       read: true,
       customerName: "Maria Santos",
       amount: 1500,
@@ -156,7 +166,7 @@ export default function AdminDashboard() {
       type: "system",
       title: "Branch Update",
       message: "Tumaga branch has achieved 95% customer satisfaction rating.",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       read: true,
     },
   ]);
@@ -281,76 +291,72 @@ export default function AdminDashboard() {
 
   const handleEditPackage = (pkg: ServicePackage) => {
     setEditingPackage({ ...pkg });
-    setEditingFeatures(pkg.features.join('\n'));
+    setEditingFeatures(pkg.features.join("\n"));
   };
 
   const handleApproveUser = (userId: string) => {
-    setCustomers(prev => prev.map(customer =>
-      customer.id === userId
-        ? { ...customer, status: "active", approvalStatus: "approved" }
-        : customer
-    ));
-    // Add approval notification
-    const approvedCustomer = customers.find(c => c.id === userId);
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "active", approvalStatus: "approved" }
+          : customer,
+      ),
+    );
+    const approvedCustomer = customers.find((c) => c.id === userId);
     if (approvedCustomer) {
-      setNotifications(prev => [{
-        id: Date.now().toString(),
-        type: "system",
-        title: "Customer Approved",
-        message: `${approvedCustomer.name} has been approved and activated.`,
-        timestamp: new Date(),
-        read: false,
-      }, ...prev]);
+      setNotifications((prev) => [
+        {
+          id: Date.now().toString(),
+          type: "system",
+          title: "Customer Approved",
+          message: `${approvedCustomer.name} has been approved and activated.`,
+          timestamp: new Date(),
+          read: false,
+        },
+        ...prev,
+      ]);
     }
     alert("User approved successfully!");
   };
 
   const handleRejectUser = (userId: string) => {
-    setCustomers(prev => prev.map(customer =>
-      customer.id === userId
-        ? { ...customer, status: "inactive", approvalStatus: "rejected" }
-        : customer
-    ));
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "inactive", approvalStatus: "rejected" }
+          : customer,
+      ),
+    );
     alert("User rejected successfully!");
   };
 
   const handleBanUser = (userId: string) => {
-    setCustomers(prev => prev.map(customer =>
-      customer.id === userId
-        ? { ...customer, status: "banned", approvalStatus: "banned" }
-        : customer
-    ));
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "banned", approvalStatus: "banned" }
+          : customer,
+      ),
+    );
     alert("User banned successfully!");
   };
 
   const handleUnbanUser = (userId: string) => {
-    setCustomers(prev => prev.map(customer =>
-      customer.id === userId
-        ? { ...customer, status: "active", approvalStatus: "approved" }
-        : customer
-    ));
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "active", approvalStatus: "approved" }
+          : customer,
+      ),
+    );
     alert("User unbanned successfully!");
   };
-
-  const handleMarkNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.map(notification =>
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
-  };
-
-  const handleMarkAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(notification =>
-      ({ ...notification, read: true })
-    ));
-  };
-
-  const unreadNotificationCount = notifications.filter(n => !n.read).length;
 
   const handleSavePackage = () => {
     if (editingPackage) {
       const updatedPackage = {
         ...editingPackage,
-        features: editingFeatures.split('\n').filter(f => f.trim() !== '')
+        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
       };
       setPackages((prev) =>
         prev.map((pkg) =>
@@ -373,7 +379,9 @@ export default function AdminDashboard() {
   const handleAddPackage = () => {
     if (newPackage.name && newPackage.basePrice) {
       const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
-      const features = editingFeatures.split('\n').filter(f => f.trim() !== '');
+      const features = editingFeatures
+        .split("\n")
+        .filter((f) => f.trim() !== "");
       setPackages((prev) => [
         ...prev,
         {
@@ -391,12 +399,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleMarkNotificationAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
+  };
+
+  const handleMarkAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true })),
+    );
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: "PHP",
     }).format(amount);
   };
+
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   if (!userRole) return null;
 
@@ -427,13 +451,20 @@ export default function AdminDashboard() {
                   {activeTab === "notifications" && "Notification Center"}
                 </h1>
                 <p className="text-gray-600 font-medium mt-1">
-                  {activeTab === "overview" && "Monitor your business performance and key metrics"}
-                  {activeTab === "customers" && "Manage customer accounts and approvals"}
-                  {activeTab === "packages" && "Configure service packages and pricing"}
-                  {activeTab === "branches" && "Oversee all branch locations and operations"}
-                  {activeTab === "analytics" && "Detailed insights and performance reports"}
-                  {activeTab === "sales" && "Track revenue and sales performance"}
-                  {activeTab === "notifications" && "System alerts and customer notifications"}
+                  {activeTab === "overview" &&
+                    "Monitor your business performance and key metrics"}
+                  {activeTab === "customers" &&
+                    "Manage customer accounts and approvals"}
+                  {activeTab === "packages" &&
+                    "Configure service packages and pricing"}
+                  {activeTab === "branches" &&
+                    "Oversee all branch locations and operations"}
+                  {activeTab === "analytics" &&
+                    "Detailed insights and performance reports"}
+                  {activeTab === "sales" &&
+                    "Track revenue and sales performance"}
+                  {activeTab === "notifications" &&
+                    "System alerts and customer notifications"}
                 </p>
               </div>
               <Button variant="outline" className="hidden lg:flex">
@@ -445,130 +476,152 @@ export default function AdminDashboard() {
 
           {/* Content based on active tab */}
           {activeTab === "overview" && (
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              <Card className="bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-orange-100 text-sm font-medium">
-                        Total Customers
-                      </p>
-                      <p className="text-3xl font-black">
-                        {stats.totalCustomers.toLocaleString()}
-                      </p>
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <Card
+                  className="bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("customers")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-orange-100 text-sm font-medium">
+                          Total Customers
+                        </p>
+                        <p className="text-3xl font-black">
+                          {stats.totalCustomers.toLocaleString()}
+                        </p>
+                      </div>
+                      <Users className="h-12 w-12 text-orange-200" />
                     </div>
-                    <Users className="h-12 w-12 text-orange-200" />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-sm font-medium">
-                        Total Revenue
-                      </p>
-                      <p className="text-3xl font-black">
-                        {formatCurrency(stats.totalRevenue)}
-                      </p>
+                <Card
+                  className="bg-gradient-to-br from-green-500 to-green-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("sales")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-100 text-sm font-medium">
+                          Total Revenue
+                        </p>
+                        <p className="text-3xl font-black">
+                          {formatCurrency(stats.totalRevenue)}
+                        </p>
+                      </div>
+                      <DollarSign className="h-12 w-12 text-green-200" />
                     </div>
-                    <DollarSign className="h-12 w-12 text-green-200" />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-sm font-medium">
-                        Total Washes
-                      </p>
-                      <p className="text-3xl font-black">
-                        {stats.totalWashes.toLocaleString()}
-                      </p>
+                <Card
+                  className="bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("analytics")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-100 text-sm font-medium">
+                          Total Washes
+                        </p>
+                        <p className="text-3xl font-black">
+                          {stats.totalWashes.toLocaleString()}
+                        </p>
+                      </div>
+                      <Car className="h-12 w-12 text-blue-200" />
                     </div>
-                    <Car className="h-12 w-12 text-blue-200" />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-sm font-medium">
-                        Active Subscriptions
-                      </p>
-                      <p className="text-3xl font-black">
-                        {stats.activeSubscriptions}
-                      </p>
+                <Card
+                  className="bg-gradient-to-br from-purple-500 to-purple-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-100 text-sm font-medium">
+                          Active Subscriptions
+                        </p>
+                        <p className="text-3xl font-black">
+                          {stats.activeSubscriptions}
+                        </p>
+                      </div>
+                      <Crown className="h-12 w-12 text-purple-200" />
                     </div>
-                    <Crown className="h-12 w-12 text-purple-200" />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <Card
+                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
+                      Package Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Create, edit, and manage service packages
+                    </p>
+                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                      Manage Packages
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setActiveTab("analytics")}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <BarChart3 className="h-5 w-5 mr-2 text-fac-orange-500" />
+                      Customer Analytics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 text-sm mb-4">
+                      View detailed customer insights and behavior
+                    </p>
+                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                      View Analytics
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="bg-white border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setActiveTab("branches")}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <MapPin className="h-5 w-5 mr-2 text-fac-orange-500" />
+                      Branch Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Manage locations and branch operations
+                    </p>
+                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                      View Branches
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          )}
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              <Card className="bg-white border border-gray-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
-                    Package Management
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Create, edit, and manage service packages
-                  </p>
-                  <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
-                    Manage Packages
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <Users className="h-5 w-5 mr-2 text-fac-orange-500" />
-                    Customer Analytics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-sm mb-4">
-                    View detailed customer insights and behavior
-                  </p>
-                  <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <BarChart3 className="h-5 w-5 mr-2 text-fac-orange-500" />
-                    Sales Reports
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Generate and export detailed sales reports
-                  </p>
-                  <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
-                    Generate Reports
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Customers Tab */}
-          <TabsContent value="customers" className="space-y-6">
+          {activeTab === "customers" && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -610,9 +663,13 @@ export default function AdminDashboard() {
                             </Badge>
                             <Badge
                               className={`${
-                                customer.approvalStatus === "approved" ? "bg-green-500" :
-                                customer.approvalStatus === "pending" ? "bg-yellow-500" :
-                                customer.approvalStatus === "banned" ? "bg-red-500" : "bg-gray-500"
+                                customer.approvalStatus === "approved"
+                                  ? "bg-green-500"
+                                  : customer.approvalStatus === "pending"
+                                    ? "bg-yellow-500"
+                                    : customer.approvalStatus === "banned"
+                                      ? "bg-red-500"
+                                      : "bg-gray-500"
                               } text-white font-bold`}
                             >
                               {customer.approvalStatus.toUpperCase()}
@@ -630,10 +687,18 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <div className="flex items-center flex-wrap gap-2">
-                          <Button variant="outline" size="sm" title="Edit Customer">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Edit Customer"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" title="View Details">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="View Details"
+                          >
                             <Smartphone className="h-4 w-4" />
                           </Button>
                           {customer.approvalStatus === "pending" && (
@@ -687,10 +752,9 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Packages Tab */}
-          <TabsContent value="packages" className="space-y-6">
+          {activeTab === "packages" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Existing Packages */}
               <Card>
@@ -739,14 +803,18 @@ export default function AdminDashboard() {
                                   <DialogHeader>
                                     <DialogTitle>Delete Package</DialogTitle>
                                     <DialogDescription>
-                                      Are you sure you want to delete the "{pkg.name}" package? This action cannot be undone.
+                                      Are you sure you want to delete the "
+                                      {pkg.name}" package? This action cannot be
+                                      undone.
                                     </DialogDescription>
                                   </DialogHeader>
                                   <DialogFooter>
                                     <Button variant="outline">Cancel</Button>
                                     <Button
                                       variant="destructive"
-                                      onClick={() => handleDeletePackage(pkg.id)}
+                                      onClick={() =>
+                                        handleDeletePackage(pkg.id)
+                                      }
                                     >
                                       Delete Package
                                     </Button>
@@ -765,7 +833,9 @@ export default function AdminDashboard() {
                           Duration: {pkg.duration}
                         </p>
                         <div className="space-y-1">
-                          <p className="text-sm font-bold text-gray-700 mb-1">Features:</p>
+                          <p className="text-sm font-bold text-gray-700 mb-1">
+                            Features:
+                          </p>
                           {pkg.features.map((feature, index) => (
                             <p
                               key={index}
@@ -954,112 +1024,75 @@ export default function AdminDashboard() {
                 </Card>
               )}
             </div>
-          </TabsContent>
+          )}
 
-          {/* Sales Tab */}
-          <TabsContent value="sales" className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              <Card className="bg-white border border-gray-100">
-                <CardContent className="p-6 text-center">
-                  <DollarSign className="h-12 w-12 text-fac-orange-500 mx-auto mb-4" />
-                  <p className="text-3xl font-black text-black mb-2">
-                    {formatCurrency(156780)}
-                  </p>
-                  <p className="text-sm font-bold text-gray-600">
-                    Monthly Revenue
-                  </p>
-                </CardContent>
-              </Card>
+          {activeTab === "branches" && <BranchManagement userRole={userRole} />}
 
-              <Card className="bg-white border border-gray-100">
-                <CardContent className="p-6 text-center">
-                  <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <p className="text-3xl font-black text-black mb-2">
-                    +{stats.monthlyGrowth}%
-                  </p>
-                  <p className="text-sm font-bold text-gray-600">Growth Rate</p>
-                </CardContent>
-              </Card>
+          {activeTab === "analytics" && (
+            <AnalyticsCharts
+              timeFilter={timeFilter}
+              onTimeFilterChange={setTimeFilter}
+            />
+          )}
 
-              <Card className="bg-white border border-gray-100">
-                <CardContent className="p-6 text-center">
-                  <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                  <p className="text-lg font-black text-black mb-2">
-                    {stats.topPackage}
-                  </p>
-                  <p className="text-sm font-bold text-gray-600">Top Package</p>
-                </CardContent>
-              </Card>
+          {activeTab === "sales" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <Card className="bg-white border border-gray-100">
+                  <CardContent className="p-6 text-center">
+                    <DollarSign className="h-12 w-12 text-fac-orange-500 mx-auto mb-4" />
+                    <p className="text-3xl font-black text-black mb-2">
+                      {formatCurrency(156780)}
+                    </p>
+                    <p className="text-sm font-bold text-gray-600">
+                      Monthly Revenue
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white border border-gray-100">
+                  <CardContent className="p-6 text-center">
+                    <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <p className="text-3xl font-black text-black mb-2">
+                      +{stats.monthlyGrowth}%
+                    </p>
+                    <p className="text-sm font-bold text-gray-600">
+                      Growth Rate
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white border border-gray-100">
+                  <CardContent className="p-6 text-center">
+                    <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                    <p className="text-lg font-black text-black mb-2">
+                      {stats.topPackage}
+                    </p>
+                    <p className="text-sm font-bold text-gray-600">
+                      Top Package
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sales Analytics Chart */}
+              <AnalyticsCharts
+                timeFilter={timeFilter}
+                onTimeFilterChange={setTimeFilter}
+              />
             </div>
-          </TabsContent>
+          )}
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Branch Performance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <MapPin className="h-5 w-5 text-fac-orange-500 mr-2" />
-                        <span className="font-bold">Tumaga Branch</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-black">
-                          {formatCurrency(89560)}
-                        </p>
-                        <p className="text-sm text-gray-600">This Month</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <MapPin className="h-5 w-5 text-fac-orange-500 mr-2" />
-                        <span className="font-bold">Boalan Branch</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-black">
-                          {formatCurrency(67220)}
-                        </p>
-                        <p className="text-sm text-gray-600">This Month</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Top Customers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {customers.slice(0, 3).map((customer, index) => (
-                      <div
-                        key={customer.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center">
-                          <div className="bg-fac-orange-500 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3">
-                            {index + 1}
-                          </div>
-                          <span className="font-bold text-black">
-                            {customer.name}
-                          </span>
-                        </div>
-                        <span className="font-bold text-green-600">
-                          {formatCurrency(customer.totalSpent)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+          {activeTab === "notifications" && (
+            <NotificationCenter
+              notifications={notifications}
+              onMarkAsRead={handleMarkNotificationAsRead}
+              onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+              onApproveCustomer={handleApproveUser}
+              onRejectCustomer={handleRejectUser}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
