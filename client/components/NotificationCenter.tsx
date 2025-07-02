@@ -63,7 +63,7 @@ export default function NotificationCenter({
       case "system":
         return <Info className="h-4 w-4 text-purple-500" />;
       default:
-        return <Bell className="h-4 w-4 text-gray-500" />;
+        return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -119,28 +119,26 @@ export default function NotificationCenter({
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-lg border-l-4 transition-all hover:bg-gray-50 ${getNotificationColor(
+                  className={`p-3 rounded-lg border-l-4 transition-all hover:bg-accent theme-transition ${getNotificationColor(
                     notification.type,
-                  )} ${
-                    notification.read ? "bg-gray-50 opacity-75" : "bg-white"
-                  }`}
+                  )} ${notification.read ? "bg-muted opacity-75" : "bg-card"}`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         {getNotificationIcon(notification.type)}
-                        <h4 className="text-sm font-bold text-black">
+                        <h4 className="text-sm font-bold text-foreground">
                           {notification.title}
                         </h4>
                         {!notification.read && (
                           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">
                         {notification.message}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(notification.timestamp, {
                             addSuffix: true,
                           })}
