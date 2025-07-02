@@ -275,7 +275,7 @@ export default function Dashboard() {
                   <Link to="/manage-subscription" className="flex-1">
                     <Button
                       variant="outline"
-                      className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold rounded-lg"
+                      className="w-full border-border text-foreground hover:bg-accent font-bold rounded-lg theme-transition"
                     >
                       Manage
                     </Button>
