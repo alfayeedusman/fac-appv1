@@ -69,12 +69,12 @@ export default function Index() {
                 Get Started - Sign Up Now
               </Button>
             </Link>
-            <Link to="/profile" className="block">
+            <Link to="/dashboard" className="block">
               <Button
                 variant="outline"
                 className="w-full border-fac-blue-600 text-fac-blue-600 hover:bg-fac-blue-50 py-4 text-lg font-semibold rounded-xl"
               >
-                Already a Member? Sign In
+                Already a Member? View Dashboard
               </Button>
             </Link>
           </div>
