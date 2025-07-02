@@ -497,7 +497,11 @@ export default function SignUp() {
                             handleInputChange("confirmPassword", e.target.value)
                           }
                           required
-                          className="pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                            errors.confirmPassword
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              : ""
+                          }`}
                         />
                         <Button
                           type="button"
@@ -515,6 +519,11 @@ export default function SignUp() {
                           )}
                         </Button>
                       </div>
+                      {errors.confirmPassword && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.confirmPassword}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -533,8 +542,17 @@ export default function SignUp() {
                           handleInputChange("contactNumber", e.target.value)
                         }
                         required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          errors.contactNumber
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
                       />
+                      {errors.contactNumber && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.contactNumber}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -553,8 +571,17 @@ export default function SignUp() {
                           handleInputChange("address", e.target.value)
                         }
                         required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          errors.address
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
                       />
+                      {errors.address && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
