@@ -1160,7 +1160,8 @@ export default function AdminDashboard() {
                             <p className="text-sm font-bold text-gray-700">
                               Features:
                             </p>
-                            {userRole === "superadmin" &&
+                            {(userRole === "superadmin" ||
+                              userRole === "admin") &&
                               inlineEditingFeatures !== pkg.id && (
                                 <Button
                                   size="sm"
