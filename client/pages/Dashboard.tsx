@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import {
   Calendar,
@@ -11,20 +10,18 @@ import {
   Crown,
   Clock,
   MapPin,
-  AlertCircle,
   CheckCircle,
-  TrendingUp,
   User,
   Bell,
-  RefreshCw,
   QrCode,
-  Gift,
-  CreditCard,
-  Zap,
-  Sparkles,
   Star,
-  Shield,
-  Settings,
+  ArrowRight,
+  Heart,
+  Search,
+  Filter,
+  Plus,
+  ChevronLeft,
+  ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
