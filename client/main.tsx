@@ -54,6 +54,12 @@ const App = () => (
             />
             <Route path="/settings" element={<Settings />} />
             <Route path="/security-settings" element={<SecuritySettings />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/voucher" element={<Voucher />} />
+            <Route
+              path="/admin-notifications"
+              element={<AdminNotifications />}
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
