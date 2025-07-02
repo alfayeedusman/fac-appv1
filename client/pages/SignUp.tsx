@@ -622,8 +622,17 @@ export default function SignUp() {
                           handleInputChange("carUnit", e.target.value)
                         }
                         required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          errors.carUnit
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
                       />
+                      {errors.carUnit && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.carUnit}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -642,8 +651,17 @@ export default function SignUp() {
                           handleInputChange("carPlateNumber", e.target.value)
                         }
                         required
-                        className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          errors.carPlateNumber
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
                       />
+                      {errors.carPlateNumber && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.carPlateNumber}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
