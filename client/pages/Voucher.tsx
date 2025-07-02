@@ -79,11 +79,39 @@ export default function Voucher() {
     setRedeeming(true);
     // Simulate API call
     setTimeout(() => {
+      const voucher = availableVouchers.find(
+        (v) => v.code === voucherCode && v.status === "available",
+      );
+
+      if (voucher) {
+        setAppliedVouchers((prev) => [...prev, voucher.code]);
+        setVoucherCode("");
+        alert(
+          `Voucher ${voucherCode} redeemed successfully! 🎉\nDiscount: ${voucher.discountType === "percentage" ? `${voucher.discountValue}% OFF` : `₱${voucher.discountValue} OFF`}`,
+        );
+      } else {
+        alert(`Invalid or expired voucher code: ${voucherCode} ❌`);
+      }
+
       setRedeeming(false);
-      setVoucherCode("");
-      // Show success/error message
-      alert(`Voucher ${voucherCode} redeemed successfully! 🎉`);
     }, 1500);
+  };
+
+  const handleApplyVoucher = (voucher: Voucher) => {
+    if (appliedVouchers.includes(voucher.code)) {
+      alert(`Voucher ${voucher.code} is already applied! ✅`);
+      return;
+    }
+
+    setAppliedVouchers((prev) => [...prev, voucher.code]);
+    alert(
+      `Voucher ${voucher.code} applied successfully! 🎉\nYou can now use this discount during checkout.`,
+    );
+  };
+
+  const handleRemoveVoucher = (voucherCode: string) => {
+    setAppliedVouchers((prev) => prev.filter((code) => code !== voucherCode));
+    alert(`Voucher ${voucherCode} removed from your applied vouchers.`);
   };
 
   const copyVoucherCode = (code: string) => {
