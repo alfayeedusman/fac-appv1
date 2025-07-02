@@ -462,38 +462,59 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Futuristic Mobile Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 glass border-t border-border z-50 md:hidden animate-slide-in-left">
-        <div className="grid grid-cols-4 h-16 px-2 py-3">
-          <Link
-            to="/dashboard"
-            className="flex flex-col items-center justify-center space-y-1 bg-fac-orange-50 dark:bg-fac-orange-950 text-fac-orange-500 rounded-xl mx-1 py-2"
-          >
-            <Crown className="h-5 w-5" />
-            <span className="text-xs font-bold">Home</span>
-          </Link>
-          <Link
-            to="/booking"
-            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground transition-colors mx-1 py-2 rounded-xl hover:bg-muted/30"
-          >
-            <Calendar className="h-5 w-5" />
-            <span className="text-xs font-medium">Book</span>
-          </Link>
-          <Link
-            to="/manage-subscription"
-            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground transition-colors mx-1 py-2 rounded-xl hover:bg-muted/30"
-          >
-            <CreditCard className="h-5 w-5" />
-            <span className="text-xs font-medium">Plans</span>
-          </Link>
-          <Link
-            to="/profile"
-            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground transition-colors mx-1 py-2 rounded-xl hover:bg-muted/30"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-xs font-medium">Profile</span>
-          </Link>
+      {/* Modern Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        {/* Background Bar */}
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <div className="max-w-md mx-auto px-4 py-2">
+            <div className="grid grid-cols-5 items-center h-14">
+              <Link
+                to="/booking"
+                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+              >
+                <Calendar className="h-5 w-5" />
+                <span className="text-xs">Book</span>
+              </Link>
+
+              <Link
+                to="/manage-subscription"
+                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+              >
+                <CreditCard className="h-5 w-5" />
+                <span className="text-xs">Plans</span>
+              </Link>
+
+              {/* Floating Home Button */}
+              <div className="flex justify-center">
+                <Link
+                  to="/dashboard"
+                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform -translate-y-3 transition-all duration-300 hover:scale-105"
+                >
+                  <Crown className="h-6 w-6" />
+                </Link>
+              </div>
+
+              <Link
+                to="/history"
+                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+              >
+                <Clock className="h-5 w-5" />
+                <span className="text-xs">History</span>
+              </Link>
+
+              <Link
+                to="/profile"
+                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+              >
+                <User className="h-5 w-5" />
+                <span className="text-xs">Profile</span>
+              </Link>
+            </div>
+          </div>
         </div>
+
+        {/* Home Button Background Circle */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700"></div>
       </div>
     </div>
   );
