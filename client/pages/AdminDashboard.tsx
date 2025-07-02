@@ -374,12 +374,22 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="sales">Sales</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="text-xs sm:text-sm">
+              Customers
+            </TabsTrigger>
+            <TabsTrigger value="packages" className="text-xs sm:text-sm">
+              Packages
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="text-xs sm:text-sm">
+              Sales
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm">
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
