@@ -58,60 +58,48 @@ interface MembershipData {
 }
 
 export default function Dashboard() {
-  const [popularServices] = useState<Service[]>([
+  const [membershipData] = useState<MembershipData>({
+    package: "VIP Gold Ultimate",
+    daysLeft: 28,
+    currentCycleStart: "2024-01-01",
+    currentCycleEnd: "2024-01-31",
+    daysLeftInCycle: 15,
+    autoRenewal: true,
+    remainingWashes: {
+      classic: 999,
+      vipProMax: 3,
+      premium: 1,
+    },
+    totalWashes: {
+      classic: 999,
+      vipProMax: 5,
+      premium: 1,
+    },
+  });
+
+  const [washLogs] = useState<WashLog[]>([
     {
       id: "1",
-      name: "Premium ProMax Wash",
-      price: "$25",
-      image:
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop&crop=center",
-      rating: 4.8,
-      reviews: 124,
-      duration: "45 min",
-      popular: true,
-      category: "wash",
+      service: "VIP ProMax Wash",
+      date: "2024-01-15",
+      status: "completed",
+      amount: 0,
+      branch: "Tumaga Hub",
     },
     {
       id: "2",
-      name: "AI Interior Detail",
-      price: "$35",
-      image:
-        "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop&crop=center",
-      rating: 4.9,
-      reviews: 89,
-      duration: "60 min",
-      popular: true,
-      category: "detail",
+      service: "Classic AI Wash",
+      date: "2024-01-10",
+      status: "completed",
+      amount: 0,
+      branch: "Boalan Hub",
     },
     {
       id: "3",
-      name: "Express Wash",
-      price: "$15",
-      image:
-        "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=300&fit=crop&crop=center",
-      rating: 4.6,
-      reviews: 256,
-      duration: "20 min",
-      category: "wash",
-    },
-  ]);
-
-  const [recentServices] = useState<RecentService[]>([
-    {
-      id: "1",
-      service: {
-        id: "4",
-        name: "VIP Full Detail",
-        price: "$75",
-        image:
-          "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop&crop=center",
-        rating: 4.9,
-        reviews: 45,
-        duration: "120 min",
-        category: "detail",
-      },
-      date: "2024-01-15",
+      service: "Premium Detail",
+      date: "2024-01-05",
       status: "completed",
+      amount: 0,
       branch: "Tumaga Hub",
     },
   ]);
