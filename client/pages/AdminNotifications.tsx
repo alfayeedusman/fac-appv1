@@ -155,6 +155,12 @@ export default function AdminNotifications() {
 
   return (
     <div className="min-h-screen bg-background">
+      <StickyHeader
+        showBack={true}
+        backTo="/admin-dashboard"
+        title="Push Notifications"
+      />
+
       {/* Header */}
       <div className="bg-card border-b p-4 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto">
