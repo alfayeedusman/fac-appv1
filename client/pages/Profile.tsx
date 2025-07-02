@@ -544,6 +544,8 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 }
