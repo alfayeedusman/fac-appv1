@@ -1070,6 +1070,9 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() =>
+                                handleOpenPackageModal("edit", pkg)
+                              }
                               className="border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50"
                             >
                               <Edit className="h-3 w-3 mr-1" />
