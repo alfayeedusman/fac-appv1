@@ -31,6 +31,7 @@ import {
 import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
 import BottomNavigation from "@/components/BottomNavigation";
+import StickyHeader from "@/components/StickyHeader";
 
 interface BookingData {
   service: string;
