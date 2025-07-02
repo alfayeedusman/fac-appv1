@@ -19,6 +19,7 @@ import {
   RefreshCw,
   QrCode,
   Gift,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MobileLayout from "@/components/MobileLayout";
@@ -143,60 +144,73 @@ export default function Dashboard() {
   const urgency = getRenewalUrgency();
 
   return (
-    <MobileLayout>
-      <div className="px-4 py-6 space-y-6">
-        {/* Mobile Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+    <div className="min-h-screen bg-white">
+      <div className="px-6 py-8 max-w-md mx-auto">
+        {/* Modern Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
               alt="Fayeed Auto Care Logo"
-              className="h-10 w-auto object-contain"
+              className="h-12 w-auto object-contain"
             />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, John!</p>
+              <h1 className="text-2xl font-black text-black tracking-tight">
+                Dashboard
+              </h1>
+              <p className="text-sm text-gray-500 font-medium">
+                Welcome back, John!
+              </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <NotificationPanel>
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
+                className="rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200"
               >
-                <Bell className="h-5 w-5 text-fac-orange-600" />
+                <Bell className="h-5 w-5 text-black" />
               </Button>
             </NotificationPanel>
             <Link to="/profile">
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
+                className="rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200"
               >
-                <User className="h-5 w-5 text-fac-orange-600" />
+                <User className="h-5 w-5 text-black" />
               </Button>
             </Link>
           </div>
         </div>
 
         {/* Membership Status Card */}
-        <Card className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
-          <CardHeader className="pb-4">
+        <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center text-white">
-                <Crown className="h-6 w-6 mr-3 text-yellow-300" />
-                <div>
-                  <p className="text-lg font-bold">{membershipData.package}</p>
-                  <p className="text-sm opacity-90">Membership</p>
+              <div className="flex items-center space-x-4">
+                <div className="bg-fac-orange-500 p-3 rounded-xl">
+                  <Crown className="h-6 w-6 text-white" />
                 </div>
-              </CardTitle>
-              <div className="text-right">
-                <div className="bg-white/20 rounded-full px-3 py-1">
-                  <p className="text-xs font-medium">EXPIRES IN</p>
-                  <p className="text-lg font-bold">
-                    {membershipData.daysLeft} days
+                <div>
+                  <p className="text-xl font-black text-black">
+                    {membershipData.package}
                   </p>
+                  <p className="text-sm text-gray-500 font-medium">
+                    Membership Plan
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+                  <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                    EXPIRES IN
+                  </p>
+                  <p className="text-2xl font-black text-fac-orange-500">
+                    {membershipData.daysLeft}
+                  </p>
+                  <p className="text-xs font-medium text-gray-500">days</p>
                 </div>
               </div>
             </div>
@@ -236,70 +250,77 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Renewal Actions */}
-              <div className="space-y-2">
-                {urgency === "urgent" && (
-                  <Button className="w-full bg-red-600 hover:bg-red-700">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Renew Now
-                  </Button>
-                )}
-                {urgency === "warning" && (
-                  <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Renew Early
-                  </Button>
-                )}
-                <Link to="/manage-subscription">
-                  <Button
-                    variant="outline"
-                    className="w-full border-fac-blue-600 text-fac-blue-600"
-                  >
-                    Manage Subscription
-                  </Button>
-                </Link>
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex space-x-3">
+                  {urgency === "urgent" && (
+                    <Button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Renew Now
+                    </Button>
+                  )}
+                  {urgency === "warning" && (
+                    <Button className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold rounded-lg">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Renew Early
+                    </Button>
+                  )}
+                  <Link to="/manage-subscription" className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold rounded-lg"
+                    >
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           <Link to="/booking">
-            <Card className="bg-white hover:shadow-md transition-shadow border-0 shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="bg-fac-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Calendar className="h-6 w-6 text-fac-orange-600" />
+            <Card className="bg-white border border-gray-100 hover:shadow-lg hover:border-fac-orange-500 transition-all group">
+              <CardContent className="p-6 text-center">
+                <div className="bg-black w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
+                  <Calendar className="h-7 w-7 text-white" />
                 </div>
-                <p className="font-semibold text-gray-900 mb-1">Book Wash</p>
-                <p className="text-xs text-gray-600">Schedule service</p>
+                <p className="font-black text-black mb-2">Book Wash</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  Schedule service
+                </p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/profile">
-            <Card className="bg-white hover:shadow-md transition-shadow border-0 shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="bg-fac-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <QrCode className="h-6 w-6 text-fac-orange-600" />
+            <Card className="bg-white border border-gray-100 hover:shadow-lg hover:border-fac-orange-500 transition-all group">
+              <CardContent className="p-6 text-center">
+                <div className="bg-black w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-fac-orange-500 transition-colors">
+                  <QrCode className="h-7 w-7 text-white" />
                 </div>
-                <p className="font-semibold text-gray-900 mb-1">QR Code</p>
-                <p className="text-xs text-gray-600">Quick scan</p>
+                <p className="font-black text-black mb-2">QR Code</p>
+                <p className="text-xs text-gray-500 font-medium">Quick scan</p>
               </CardContent>
             </Card>
           </Link>
         </div>
 
         {/* Remaining Washes */}
-        <Card className="bg-white shadow-sm border-0">
-          <CardHeader className="pb-4">
+        <Card className="bg-white border border-gray-100 shadow-sm">
+          <CardHeader className="pb-6">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
-                <Droplets className="h-5 w-5 mr-2 text-fac-orange-600" />
-                <span className="text-lg">Monthly Benefits</span>
+                <div className="bg-fac-orange-500 p-2 rounded-lg mr-3">
+                  <Droplets className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-black text-black">
+                  Monthly Benefits
+                </span>
               </div>
               <Badge
                 variant="outline"
-                className="border-fac-orange-200 text-fac-orange-700"
+                className="border-gray-300 text-gray-600 font-bold"
               >
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Resets {formatDate(membershipData.nextResetDate)}
@@ -309,23 +330,25 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {/* Classic Wash */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="bg-fac-orange-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                      <Droplets className="h-4 w-4 text-fac-orange-600" />
+                    <div className="bg-black w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                      <Droplets className="h-5 w-5 text-white" />
                     </div>
-                    <span className="font-semibold">Classic Wash</span>
+                    <span className="font-black text-black">Classic Wash</span>
                   </div>
-                  <span className="text-sm font-bold text-fac-orange-600">
-                    {membershipData.remainingWashes.classic === 999
-                      ? "∞"
-                      : membershipData.remainingWashes.classic}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-fac-orange-500">
+                      {membershipData.remainingWashes.classic === 999
+                        ? "∞"
+                        : membershipData.remainingWashes.classic}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-300 rounded-full h-3">
                   <div
-                    className="bg-fac-orange-500 h-2 rounded-full transition-all"
+                    className="bg-fac-orange-500 h-3 rounded-full transition-all"
                     style={{
                       width:
                         membershipData.remainingWashes.classic === 999
@@ -334,37 +357,39 @@ export default function Dashboard() {
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
+                <p className="text-xs text-gray-500 font-medium mt-3">
                   {membershipData.remainingWashes.classic === 999
-                    ? "Unlimited access"
-                    : `${membershipData.remainingWashes.classic} of ${membershipData.totalWashes.classic} remaining`}
+                    ? "UNLIMITED ACCESS"
+                    : `${membershipData.remainingWashes.classic} OF ${membershipData.totalWashes.classic} REMAINING`}
                 </p>
               </div>
 
               {/* VIP ProMax */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="bg-fac-orange-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                      <Crown className="h-4 w-4 text-fac-orange-600" />
+                    <div className="bg-black w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                      <Crown className="h-5 w-5 text-white" />
                     </div>
-                    <span className="font-semibold">VIP ProMax</span>
+                    <span className="font-black text-black">VIP ProMax</span>
                   </div>
-                  <span className="text-sm font-bold text-fac-orange-600">
-                    {membershipData.remainingWashes.vipProMax}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-fac-orange-500">
+                      {membershipData.remainingWashes.vipProMax}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-300 rounded-full h-3">
                   <div
-                    className="bg-fac-orange-500 h-2 rounded-full transition-all"
+                    className="bg-fac-orange-500 h-3 rounded-full transition-all"
                     style={{
                       width: `${getProgressPercentage(membershipData.remainingWashes.vipProMax, membershipData.totalWashes.vipProMax)}%`,
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  {membershipData.remainingWashes.vipProMax} of{" "}
-                  {membershipData.totalWashes.vipProMax} remaining
+                <p className="text-xs text-gray-500 font-medium mt-3">
+                  {membershipData.remainingWashes.vipProMax} OF{" "}
+                  {membershipData.totalWashes.vipProMax} REMAINING
                 </p>
               </div>
 
@@ -418,40 +443,44 @@ export default function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="bg-white shadow-sm border-0">
-          <CardHeader className="pb-4">
+        <Card className="bg-white border border-gray-100 shadow-sm">
+          <CardHeader className="pb-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center text-lg">
-                <Clock className="h-5 w-5 mr-2 text-fac-orange-600" />
-                Recent Activity
+              <CardTitle className="flex items-center text-xl">
+                <div className="bg-fac-orange-500 p-2 rounded-lg mr-3">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <span className="font-black text-black">Recent Activity</span>
               </CardTitle>
               <Link
                 to="/booking"
-                className="text-fac-orange-600 text-sm font-medium"
+                className="text-fac-orange-500 text-sm font-bold hover:text-fac-orange-600"
               >
-                View All
+                VIEW ALL
               </Link>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-0">
+            <div className="space-y-4">
               {washLogs.slice(0, 3).map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-white hover:shadow-sm transition-all"
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <div
                       className={cn(
-                        "w-3 h-3 rounded-full",
+                        "w-4 h-4 rounded-full",
                         log.status === "completed"
                           ? "bg-green-500"
                           : "bg-red-500",
                       )}
                     />
                     <div>
-                      <p className="font-medium text-sm">{log.service}</p>
-                      <div className="flex items-center space-x-2 text-xs text-gray-600">
+                      <p className="font-black text-black text-sm">
+                        {log.service}
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-gray-500 font-medium">
                         <span>{formatDate(log.date)}</span>
                         <span>•</span>
                         <span>{log.time}</span>
@@ -467,9 +496,14 @@ export default function Dashboard() {
                     variant={
                       log.status === "completed" ? "default" : "destructive"
                     }
-                    className="text-xs"
+                    className={cn(
+                      "text-xs font-bold",
+                      log.status === "completed"
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-red-100 text-red-700 border-red-200",
+                    )}
                   >
-                    {log.status}
+                    {log.status.toUpperCase()}
                   </Badge>
                 </div>
               ))}
@@ -478,33 +512,73 @@ export default function Dashboard() {
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-gradient-to-br from-fac-orange-400 to-fac-orange-500 text-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Car className="h-5 w-5 text-white" />
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="bg-fac-orange-500 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Car className="h-6 w-6 text-white" />
               </div>
-              <p className="text-2xl font-bold">{washLogs.length}</p>
-              <p className="text-xs opacity-90">Total Washes</p>
+              <p className="text-3xl font-black text-black mb-1">
+                {washLogs.length}
+              </p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                TOTAL WASHES
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-400 to-green-500 text-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="h-5 w-5 text-white" />
+          <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="bg-black w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <p className="text-2xl font-bold">
+              <p className="text-3xl font-black text-black mb-1">
                 {
                   washLogs.filter((log) => log.date.startsWith("2024-01"))
                     .length
                 }
               </p>
-              <p className="text-xs opacity-90">This Month</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                THIS MONTH
+              </p>
             </CardContent>
           </Card>
         </div>
       </div>
-    </MobileLayout>
+
+      {/* Mobile Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
+        <div className="grid grid-cols-4 h-16">
+          <Link
+            to="/dashboard"
+            className="flex flex-col items-center justify-center space-y-1 bg-fac-orange-50 text-fac-orange-500"
+          >
+            <Crown className="h-5 w-5" />
+            <span className="text-xs font-bold">Home</span>
+          </Link>
+          <Link
+            to="/booking"
+            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+          >
+            <Calendar className="h-5 w-5" />
+            <span className="text-xs font-medium">Booking</span>
+          </Link>
+          <Link
+            to="/manage-subscription"
+            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+          >
+            <CreditCard className="h-5 w-5" />
+            <span className="text-xs font-medium">Plans</span>
+          </Link>
+          <Link
+            to="/profile"
+            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+          >
+            <User className="h-5 w-5" />
+            <span className="text-xs font-medium">Profile</span>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
