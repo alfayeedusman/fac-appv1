@@ -124,20 +124,20 @@ export default function Dashboard() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 p-4 shadow-sm">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" className="rounded-full">
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <div className="relative">
+            <div className="relative flex-1">
               <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Find your favourite wash"
-                className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl border-0 focus:ring-2 focus:ring-orange-500 text-sm w-64"
+                className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl border-0 focus:ring-2 focus:ring-orange-500 text-sm w-full"
               />
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ml-2">
             <Button variant="ghost" size="icon" className="rounded-full">
               <Filter className="h-5 w-5" />
             </Button>
