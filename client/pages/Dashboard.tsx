@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 interface WashLog {
   id: string;
