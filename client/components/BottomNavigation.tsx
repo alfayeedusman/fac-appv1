@@ -2,7 +2,11 @@ import { Link, useLocation } from "react-router-dom";
 import { Calendar, CreditCard, QrCode, Gift, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const BottomNavigation = () => {
+interface BottomNavigationProps {
+  onQRScan?: () => void;
+}
+
+const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
   const location = useLocation();
 
   const navItems = [
@@ -19,10 +23,10 @@ const BottomNavigation = () => {
       id: "plans",
     },
     {
-      to: "/dashboard",
-      icon: Home,
-      label: "Home",
-      id: "home",
+      action: "qr-scan",
+      icon: QrCode,
+      label: "Scan",
+      id: "qr-scan",
       isCenter: true,
     },
     {
