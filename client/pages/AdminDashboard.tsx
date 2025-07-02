@@ -304,7 +304,7 @@ export default function AdminDashboard() {
   const [newPackage, setNewPackage] = useState<Partial<ServicePackage>>({
     name: "",
     basePrice: 0,
-    duration: "",
+    duration: "Monthly",
     features: [],
     active: true,
   });
