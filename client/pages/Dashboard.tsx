@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import MobileLayout from "@/components/MobileLayout";
 import NotificationPanel from "@/components/NotificationPanel";
 import LogoutButton from "@/components/LogoutButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface WashLog {
   id: string;
@@ -145,7 +146,7 @@ export default function Dashboard() {
   const urgency = getRenewalUrgency();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background theme-transition">
       <div className="px-6 py-8 max-w-md mx-auto">
         {/* Modern Header */}
         <div className="flex items-center justify-between mb-8">
@@ -156,34 +157,35 @@ export default function Dashboard() {
               className="h-12 w-auto object-contain"
             />
             <div>
-              <h1 className="text-2xl font-black text-black tracking-tight">
+              <h1 className="text-2xl font-black text-foreground tracking-tight">
                 Dashboard
               </h1>
-              <p className="text-sm text-gray-500 font-medium">
+              <p className="text-sm text-muted-foreground font-medium">
                 Welcome back, John!
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
             <NotificationPanel>
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200"
+                className="rounded-full bg-muted hover:bg-accent border-border theme-transition"
               >
-                <Bell className="h-5 w-5 text-black" />
+                <Bell className="h-5 w-5 text-foreground" />
               </Button>
             </NotificationPanel>
             <Link to="/profile">
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200"
+                className="rounded-full bg-muted hover:bg-accent border-border theme-transition"
               >
-                <User className="h-5 w-5 text-black" />
+                <User className="h-5 w-5 text-foreground" />
               </Button>
             </Link>
-            <LogoutButton className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-black hover:text-fac-orange-500" />
+            <LogoutButton className="bg-muted hover:bg-accent border-border text-foreground hover:text-fac-orange-500 theme-transition" />
           </div>
         </div>
 
