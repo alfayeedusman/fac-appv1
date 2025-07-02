@@ -263,12 +263,17 @@ export default function AdminDashboard() {
 
   const handleSavePackage = () => {
     if (editingPackage) {
+      const updatedPackage = {
+        ...editingPackage,
+        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
+      };
       setPackages((prev) =>
         prev.map((pkg) =>
-          pkg.id === editingPackage.id ? editingPackage : pkg,
+          pkg.id === editingPackage.id ? updatedPackage : pkg,
         ),
       );
       setEditingPackage(null);
+      setEditingFeatures("");
       alert("Package updated successfully!");
     }
   };
