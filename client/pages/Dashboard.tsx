@@ -210,12 +210,14 @@ export default function Dashboard() {
                     Renew Early
                   </Button>
                 )}
-                <Button
-                  variant="outline"
-                  className="w-full border-fac-blue-600 text-fac-blue-600"
-                >
-                  Manage Subscription
-                </Button>
+                <Link to="/manage-subscription">
+                  <Button
+                    variant="outline"
+                    className="w-full border-fac-blue-600 text-fac-blue-600"
+                  >
+                    Manage Subscription
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>
