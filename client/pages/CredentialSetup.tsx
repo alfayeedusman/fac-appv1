@@ -117,6 +117,8 @@ export default function CredentialSetup() {
   if (step === 1) {
     return (
       <div className="min-h-screen bg-white">
+        <StickyHeader showBack={true} backTo="/signup" title="Setup Account" />
+
         <div className="px-6 py-8 max-w-md mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
