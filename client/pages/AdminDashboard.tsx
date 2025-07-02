@@ -1080,7 +1080,8 @@ export default function AdminDashboard() {
                               <p className="text-lg font-bold text-fac-orange-500">
                                 {formatCurrency(pkg.basePrice)}
                               </p>
-                              {userRole === "superadmin" && (
+                              {(userRole === "superadmin" ||
+                                userRole === "admin") && (
                                 <Button
                                   size="sm"
                                   variant="ghost"
