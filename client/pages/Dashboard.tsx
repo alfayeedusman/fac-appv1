@@ -143,6 +143,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      <StickyHeader showBack={false} title="Dashboard" />
+
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/3 to-purple-500/3 blur-3xl animate-breathe"></div>
