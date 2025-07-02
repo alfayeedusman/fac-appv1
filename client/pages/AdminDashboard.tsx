@@ -722,6 +722,7 @@ export default function AdminDashboard() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                <ThemeToggle variant="outline" className="hidden lg:flex" />
                 <Button variant="outline" className="hidden lg:flex">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
