@@ -33,6 +33,7 @@ import VehicleSelector from "@/components/VehicleSelector";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import ConfirmModal from "@/components/ConfirmModal";
+import QRScanner from "@/components/QRScanner";
 
 interface BookingData {
   service: string;
