@@ -51,6 +51,9 @@ import {
   UserX,
   LayoutDashboard,
   Bell,
+  UserPlus,
+  CreditCard,
+  Clock,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
