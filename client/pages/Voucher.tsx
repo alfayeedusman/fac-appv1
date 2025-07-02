@@ -401,6 +401,17 @@ export default function Voucher() {
         cancelText="Keep Voucher"
         type="warning"
       />
+
+      {appliedVoucherData && (
+        <VoucherSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          voucherCode={appliedVoucherData.code}
+          voucherTitle={appliedVoucherData.title}
+          discountValue={appliedVoucherData.discountValue}
+          discountType={appliedVoucherData.discountType}
+        />
+      )}
     </div>
   );
 }
