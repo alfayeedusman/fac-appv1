@@ -88,7 +88,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
+      <StickyHeader showBack={true} title="Profile" />
+
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
