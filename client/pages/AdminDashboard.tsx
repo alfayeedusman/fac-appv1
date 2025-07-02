@@ -1513,49 +1513,6 @@ export default function AdminDashboard() {
                                 autoFocus
                               />
                               <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() =>
-                                    handleSaveInlineEdit(pkg.id, "features")
-                                  }
-                                  className="bg-green-500 hover:bg-green-600 text-white"
-                                >
-                                  <Check className="h-3 w-3 mr-1" />
-                                  Save
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleCancelInlineEdit("features")
-                                  }
-                                >
-                                  <X className="h-3 w-3 mr-1" />
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              {pkg.features.map((feature, index) => (
-                                <p
-                                  key={index}
-                                  className="text-sm text-gray-600 font-medium pl-2"
-                                >
-                                  • {feature}
-                                </p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {activeTab === "packages" && (
             <PackageManagement
               userRole={userRole}
