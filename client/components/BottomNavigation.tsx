@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, CreditCard, Home, History, User } from "lucide-react";
+import { Calendar, CreditCard, Home, Gift, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNavigation = () => {
