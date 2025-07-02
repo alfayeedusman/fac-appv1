@@ -589,6 +589,8 @@ export default function ManageSubscription() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 }
