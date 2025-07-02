@@ -339,6 +339,8 @@ export default function CredentialSetup() {
   // Step 2: Email Verification
   return (
     <div className="min-h-screen bg-white">
+      <StickyHeader showBack={true} backTo="/signup" title="Verify Email" />
+
       <div className="px-6 py-8 max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
