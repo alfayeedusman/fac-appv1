@@ -95,7 +95,7 @@ export default function Dashboard() {
     },
     {
       id: "2",
-      service: "Classic AI Wash",
+      service: "Classic Wash",
       date: "2024-01-10",
       status: "completed",
       amount: 0,
