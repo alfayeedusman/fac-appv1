@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   Car,
   Droplets,
@@ -29,7 +30,12 @@ export default function Index() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background theme-transition">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       {/* Hero Section */}
       <div className="px-6 py-12 text-center">
         <img
@@ -37,13 +43,15 @@ export default function Index() {
           alt="Fayeed Auto Care Logo"
           className="h-20 w-auto mx-auto mb-8"
         />
-        <h1 className="text-4xl font-black text-black tracking-tight mb-4">
+        <h1 className="text-4xl font-black text-foreground tracking-tight mb-4">
           Premium Car Care
         </h1>
-        <p className="text-xl text-gray-600 font-medium mb-2">
+        <p className="text-xl text-muted-foreground font-medium mb-2">
           Professional car wash services
         </p>
-        <p className="text-gray-500 font-medium mb-8">in Zamboanga City</p>
+        <p className="text-muted-foreground font-medium mb-8">
+          in Zamboanga City
+        </p>
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-3 gap-4 mb-12 max-w-sm mx-auto">
@@ -51,22 +59,22 @@ export default function Index() {
             <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <Droplets className="h-6 w-6 text-fac-orange-600" />
             </div>
-            <p className="text-xs font-bold text-black">Premium</p>
-            <p className="text-xs text-gray-500">Wash</p>
+            <p className="text-xs font-bold text-foreground">Premium</p>
+            <p className="text-xs text-muted-foreground">Wash</p>
           </div>
           <div className="text-center">
             <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <Crown className="h-6 w-6 text-fac-orange-600" />
             </div>
-            <p className="text-xs font-bold text-black">VIP</p>
-            <p className="text-xs text-gray-500">Packages</p>
+            <p className="text-xs font-bold text-foreground">VIP</p>
+            <p className="text-xs text-muted-foreground">Packages</p>
           </div>
           <div className="text-center">
             <div className="bg-fac-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <MapPin className="h-6 w-6 text-fac-orange-600" />
             </div>
-            <p className="text-xs font-bold text-black">Multiple</p>
-            <p className="text-xs text-gray-500">Locations</p>
+            <p className="text-xs font-bold text-foreground">Multiple</p>
+            <p className="text-xs text-muted-foreground">Locations</p>
           </div>
         </div>
 
@@ -85,10 +93,10 @@ export default function Index() {
           <div className="my-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500 font-medium">
+                <span className="px-4 bg-background text-muted-foreground font-medium">
                   Already have an account?
                 </span>
               </div>
@@ -98,7 +106,7 @@ export default function Index() {
           <Link to="/login">
             <Button
               variant="outline"
-              className="group w-full border-2 border-gray-300 hover:border-black text-black hover:bg-black hover:text-white font-black py-5 text-lg rounded-2xl transition-all duration-300 transform hover:scale-[1.02] bg-white"
+              className="group w-full border-2 border-border hover:border-foreground text-foreground hover:bg-foreground hover:text-background font-black py-5 text-lg rounded-2xl transition-all duration-300 transform hover:scale-[1.02] bg-background theme-transition"
             >
               <span className="flex items-center justify-center">
                 SIGN IN
@@ -111,22 +119,22 @@ export default function Index() {
 
       {/* Features Section */}
       <div className="px-6 py-8">
-        <h2 className="text-2xl font-black text-black text-center mb-8">
+        <h2 className="text-2xl font-black text-foreground text-center mb-8">
           Why Choose FAC?
         </h2>
 
         <div className="space-y-4 max-w-md mx-auto">
-          <Card className="bg-white border border-gray-100 shadow-sm">
+          <Card className="bg-card border-border shadow-sm theme-transition">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-fac-orange-500 w-12 h-12 rounded-2xl flex items-center justify-center">
                   <Star className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-black text-black">
+                  <h3 className="font-black text-foreground">
                     Professional Service
                   </h3>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <p className="text-sm text-muted-foreground font-medium">
                     Expert staff with years of experience
                   </p>
                 </div>
@@ -134,15 +142,15 @@ export default function Index() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-100 shadow-sm">
+          <Card className="bg-card border-border shadow-sm theme-transition">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-green-500 w-12 h-12 rounded-2xl flex items-center justify-center">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-black text-black">Eco-Friendly</h3>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <h3 className="font-black text-foreground">Eco-Friendly</h3>
+                  <p className="text-sm text-muted-foreground font-medium">
                     Green products and water conservation
                   </p>
                 </div>
@@ -150,15 +158,17 @@ export default function Index() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-100 shadow-sm">
+          <Card className="bg-card border-border shadow-sm theme-transition">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-blue-500 w-12 h-12 rounded-2xl flex items-center justify-center">
                   <Car className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-black text-black">Convenient Booking</h3>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <h3 className="font-black text-foreground">
+                    Convenient Booking
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium">
                     Mobile app with QR code system
                   </p>
                 </div>
@@ -169,28 +179,36 @@ export default function Index() {
       </div>
 
       {/* Locations Section */}
-      <div className="px-6 py-8 bg-gray-50">
-        <h2 className="text-2xl font-black text-black text-center mb-8">
+      <div className="px-6 py-8 bg-muted theme-transition">
+        <h2 className="text-2xl font-black text-foreground text-center mb-8">
           Our Locations
         </h2>
 
         <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border-border theme-transition">
             <CardContent className="p-4 text-center">
               <div className="bg-fac-orange-100 w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3">
                 <MapPin className="h-5 w-5 text-fac-orange-600" />
               </div>
-              <h3 className="font-black text-black text-sm">Tumaga Branch</h3>
-              <p className="text-xs text-gray-500 font-medium">Main Location</p>
+              <h3 className="font-black text-foreground text-sm">
+                Tumaga Branch
+              </h3>
+              <p className="text-xs text-muted-foreground font-medium">
+                Main Location
+              </p>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border-border theme-transition">
             <CardContent className="p-4 text-center">
               <div className="bg-fac-orange-100 w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3">
                 <MapPin className="h-5 w-5 text-fac-orange-600" />
               </div>
-              <h3 className="font-black text-black text-sm">Boalan Branch</h3>
-              <p className="text-xs text-gray-500 font-medium">Full Service</p>
+              <h3 className="font-black text-foreground text-sm">
+                Boalan Branch
+              </h3>
+              <p className="text-xs text-muted-foreground font-medium">
+                Full Service
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -198,10 +216,10 @@ export default function Index() {
 
       {/* Footer */}
       <div className="px-6 py-8 text-center">
-        <p className="text-xs text-gray-400 font-medium mb-2">
+        <p className="text-xs text-muted-foreground font-medium mb-2">
           © 2024 Fayeed Auto Care
         </p>
-        <p className="text-xs text-gray-400 font-medium">
+        <p className="text-xs text-muted-foreground font-medium">
           Professional car wash services in Zamboanga City
         </p>
       </div>
