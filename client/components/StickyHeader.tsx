@@ -34,6 +34,11 @@ export default function StickyHeader({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
   const getPageTitle = () => {
     if (title) return title;
 
