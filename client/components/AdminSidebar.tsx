@@ -184,7 +184,7 @@ export default function AdminSidebar({
                     "w-full justify-start relative transition-all duration-200",
                     isActive
                       ? "bg-fac-orange-500 text-white hover:bg-fac-orange-600"
-                      : "text-gray-700 hover:bg-gray-100",
+                      : "text-foreground hover:bg-accent",
                     isCollapsed ? "px-2" : "px-3",
                   )}
                   onClick={() => {
