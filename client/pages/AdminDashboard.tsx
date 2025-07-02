@@ -214,6 +214,51 @@ export default function AdminDashboard() {
 
   const handleEditPackage = (pkg: ServicePackage) => {
     setEditingPackage({ ...pkg });
+    setEditingFeatures(pkg.features.join("\n"));
+  };
+
+  const handleApproveUser = (userId: string) => {
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "active", approvalStatus: "approved" }
+          : customer,
+      ),
+    );
+    alert("User approved successfully!");
+  };
+
+  const handleRejectUser = (userId: string) => {
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "inactive", approvalStatus: "rejected" }
+          : customer,
+      ),
+    );
+    alert("User rejected successfully!");
+  };
+
+  const handleBanUser = (userId: string) => {
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "banned", approvalStatus: "banned" }
+          : customer,
+      ),
+    );
+    alert("User banned successfully!");
+  };
+
+  const handleUnbanUser = (userId: string) => {
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === userId
+          ? { ...customer, status: "active", approvalStatus: "approved" }
+          : customer,
+      ),
+    );
+    alert("User unbanned successfully!");
   };
 
   const handleSavePackage = () => {
