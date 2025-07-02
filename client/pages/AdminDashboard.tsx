@@ -304,6 +304,15 @@ export default function AdminDashboard() {
   const [tempDuration, setTempDuration] = useState<string>("");
   const [tempFeatures, setTempFeatures] = useState<string>("");
 
+  // Package modal states
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
+    "add",
+  );
+  const [currentPackage, setCurrentPackage] = useState<ServicePackage | null>(
+    null,
+  );
+
   // Notification dropdown state
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
