@@ -524,7 +524,20 @@ Estimated time: 30-45 minutes.`);
         </div>
       </div>
 
-      <BottomNavigation />
+      <BottomNavigation onQRScan={handleQRScan} />
+
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScanSuccess={handleScanSuccess}
+      />
+
+      <QRScanSuccessModal
+        isOpen={showScanSuccess}
+        onClose={() => setShowScanSuccess(false)}
+        scanResult={scanResult}
+        onStartService={handleStartService}
+      />
 
       <LogoutModal
         isOpen={showLogoutModal}
