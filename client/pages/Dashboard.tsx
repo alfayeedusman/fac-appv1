@@ -26,9 +26,6 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import MobileLayout from "@/components/MobileLayout";
-import NotificationPanel from "@/components/NotificationPanel";
-import LogoutButton from "@/components/LogoutButton";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface WashLog {
@@ -166,15 +163,13 @@ export default function Dashboard() {
               size="icon"
               className="glass rounded-full"
             />
-            <NotificationPanel>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="glass rounded-full hover-lift"
-              >
-                <Bell className="h-5 w-5 text-foreground" />
-              </Button>
-            </NotificationPanel>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="glass rounded-full hover-lift"
+            >
+              <Bell className="h-5 w-5 text-foreground" />
+            </Button>
             <Link to="/profile">
               <Button
                 variant="ghost"
@@ -184,7 +179,17 @@ export default function Dashboard() {
                 <User className="h-5 w-5 text-foreground" />
               </Button>
             </Link>
-            <LogoutButton className="glass hover:bg-accent border-border text-foreground hover:text-fac-orange-500 rounded-full transition-all duration-300" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = "/login";
+              }}
+              className="glass hover:bg-accent border-border text-foreground hover:text-fac-orange-500 rounded-full transition-all duration-300"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
