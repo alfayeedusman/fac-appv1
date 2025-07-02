@@ -24,6 +24,7 @@ import {
   Sparkles,
   Star,
   Shield,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
