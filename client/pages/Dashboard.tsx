@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface WashLog {
   id: string;
