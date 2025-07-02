@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MobileLayout from "@/components/MobileLayout";
+import NotificationPanel from "@/components/NotificationPanel";
 
 interface WashLog {
   id: string;
@@ -158,13 +159,15 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
-            >
-              <Bell className="h-5 w-5 text-fac-orange-600" />
-            </Button>
+            <NotificationPanel>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-fac-orange-50 hover:bg-fac-orange-100"
+              >
+                <Bell className="h-5 w-5 text-fac-orange-600" />
+              </Button>
+            </NotificationPanel>
             <Link to="/profile">
               <Button
                 variant="ghost"
