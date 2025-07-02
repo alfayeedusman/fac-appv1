@@ -177,15 +177,15 @@ export default function Profile() {
 
               <Button
                 onClick={() => setIsEditing(!isEditing)}
-                className="glass hover-lift font-bold"
+                className="glass hover-lift w-10 h-10 p-0"
                 variant="outline"
+                size="icon"
               >
                 {isEditing ? (
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="h-4 w-4" />
                 ) : (
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="h-4 w-4" />
                 )}
-                {isEditing ? "Cancel" : "Edit Profile"}
               </Button>
             </div>
           </CardHeader>
