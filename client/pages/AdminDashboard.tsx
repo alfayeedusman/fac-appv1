@@ -1538,11 +1538,14 @@ export default function AdminDashboard() {
                           ) : (
                             <div className="space-y-1">
                               {pkg.features.map((feature, index) => (
-                                <p
-                                  key={index}
-                                  className="text-sm text-gray-600 font-medium pl-2"
-                                >
-
+          {activeTab === "packages" && (
+            <PackageManagement
+              userRole={userRole}
+              packages={packages}
+              setPackages={setPackages}
+              formatCurrency={formatCurrency}
+            />
+          )}
 
           {activeTab === "branches" && <BranchManagement userRole={userRole} />}
 
