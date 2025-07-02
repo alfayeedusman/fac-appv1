@@ -29,6 +29,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import StickyHeader from "@/components/StickyHeader";
 
 interface SignUpFormData {
   fullName: string;
