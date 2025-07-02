@@ -184,7 +184,7 @@ export default function Dashboard() {
                   </Button>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1 line-clamp-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1 truncate">
                     {service.name}
                   </h3>
                   <div className="flex items-center space-x-1 mb-2">
