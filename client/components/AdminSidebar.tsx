@@ -213,12 +213,18 @@ export default function AdminSidebar({
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-border theme-transition space-y-2">
+            <ThemeToggle
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              showText={!isCollapsed}
+            />
             <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="w-full border-red-200 text-red-600 hover:bg-red-50"
+              className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
               title={isCollapsed ? "Logout" : undefined}
             >
               <LogOut className={cn("h-4 w-4", !isCollapsed && "mr-3")} />
