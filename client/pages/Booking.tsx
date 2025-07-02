@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface BookingData {
   service: string;
