@@ -43,11 +43,18 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
     },
   ];
 
-  const isActive = (path: string) => {
+  const isActive = (path?: string) => {
+    if (!path) return false;
     if (path === "/dashboard") {
       return location.pathname === "/" || location.pathname === "/dashboard";
     }
     return location.pathname === path;
+  };
+
+  const handleItemClick = (item: any) => {
+    if (item.action === "qr-scan" && onQRScan) {
+      onQRScan();
+    }
   };
 
   return (
