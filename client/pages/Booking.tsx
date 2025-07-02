@@ -188,7 +188,7 @@ export default function Booking() {
               <h1 className="text-3xl font-black text-foreground">
                 Book Your{" "}
                 <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                  AI Wash
+                  Booking
                 </span>
               </h1>
               <p className="text-muted-foreground font-medium">
