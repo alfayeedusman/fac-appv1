@@ -513,7 +513,7 @@ export default function AdminDashboard() {
     setNewPackage({
       name: "",
       basePrice: 0,
-      duration: "",
+      duration: "Monthly",
       features: [],
       active: true,
     });
