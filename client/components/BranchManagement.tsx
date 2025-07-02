@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   MapPin,
   Plus,
@@ -28,7 +36,14 @@ import {
   Navigation,
   TrendingUp,
   Star,
+  Key,
+  Eye,
+  EyeOff,
+  Settings,
+  Calendar,
+  Smartphone,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface Branch {
   id: string;
@@ -41,6 +56,11 @@ interface Branch {
   coordinates: {
     lat: number;
     lng: number;
+  };
+  loginCredentials: {
+    username: string;
+    password: string;
+    lastLogin?: Date;
   };
   stats: {
     monthlyRevenue: number;
@@ -55,6 +75,21 @@ interface Branch {
     days: string[];
   };
   services: string[];
+  washHistory: WashRecord[];
+}
+
+interface WashRecord {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  carModel: string;
+  plateNumber: string;
+  serviceType: string;
+  amount: number;
+  washDate: Date;
+  duration: string;
+  staffMember: string;
+  status: "completed" | "in-progress" | "cancelled";
 }
 
 interface BranchManagementProps {
@@ -72,6 +107,11 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       manager: "Juan Dela Cruz",
       status: "active",
       coordinates: { lat: 6.9214, lng: 122.079 },
+      loginCredentials: {
+        username: "tumaga_branch",
+        password: "tumaga2024",
+        lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      },
       stats: {
         monthlyRevenue: 89560,
         totalCustomers: 567,
@@ -92,6 +132,47 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
         ],
       },
       services: ["Classic Wash", "VIP Silver", "VIP Gold", "Premium Detail"],
+      washHistory: [
+        {
+          id: "w1",
+          customerName: "Maria Santos",
+          customerPhone: "+63 918 765 4321",
+          carModel: "Honda Civic 2019",
+          plateNumber: "XYZ 5678",
+          serviceType: "VIP Silver",
+          amount: 1500,
+          washDate: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+          duration: "45 mins",
+          staffMember: "Carlo Reyes",
+          status: "completed",
+        },
+        {
+          id: "w2",
+          customerName: "John Dela Cruz",
+          customerPhone: "+63 912 345 6789",
+          carModel: "Toyota Vios 2020",
+          plateNumber: "ABC 1234",
+          serviceType: "VIP Gold",
+          amount: 3000,
+          washDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+          duration: "60 mins",
+          staffMember: "Anna Garcia",
+          status: "completed",
+        },
+        {
+          id: "w3",
+          customerName: "Pedro Martinez",
+          customerPhone: "+63 920 987 6543",
+          carModel: "Mitsubishi Montero 2021",
+          plateNumber: "DEF 9012",
+          serviceType: "Classic",
+          amount: 500,
+          washDate: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+          duration: "30 mins",
+          staffMember: "Rico Suave",
+          status: "in-progress",
+        },
+      ],
     },
     {
       id: "2",
@@ -102,6 +183,11 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       manager: "Maria Santos",
       status: "active",
       coordinates: { lat: 6.9094, lng: 122.0736 },
+      loginCredentials: {
+        username: "boalan_branch",
+        password: "boalan2024",
+        lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      },
       stats: {
         monthlyRevenue: 67220,
         totalCustomers: 423,
@@ -122,34 +208,39 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
         ],
       },
       services: ["Classic Wash", "VIP Silver", "VIP Gold"],
-    },
-    {
-      id: "3",
-      name: "Tetuan Branch",
-      address: "Tetuan Road, Zamboanga City",
-      phone: "+63 962 555 7777",
-      email: "tetuan@facautocare.com",
-      manager: "Carlos Rodriguez",
-      status: "maintenance",
-      coordinates: { lat: 6.9167, lng: 122.0833 },
-      stats: {
-        monthlyRevenue: 45890,
-        totalCustomers: 298,
-        totalWashes: 678,
-        averageRating: 4.5,
-        staffCount: 4,
-      },
-      operatingHours: {
-        open: "09:00",
-        close: "17:00",
-        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      },
-      services: ["Classic Wash", "VIP Silver"],
+      washHistory: [
+        {
+          id: "w4",
+          customerName: "Ana Rodriguez",
+          customerPhone: "+63 920 123 4567",
+          carModel: "Ford EcoSport 2021",
+          plateNumber: "GHI 3456",
+          serviceType: "VIP Silver",
+          amount: 1500,
+          washDate: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+          duration: "45 mins",
+          staffMember: "Luis Santos",
+          status: "completed",
+        },
+      ],
     },
   ]);
 
+  const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
-  const [isAddingBranch, setIsAddingBranch] = useState(false);
+  const [showPassword, setShowPassword] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+  const [newBranch, setNewBranch] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    manager: "",
+    username: "",
+    password: "",
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -171,17 +262,90 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getWashStatusColor = (status: string) => {
     switch (status) {
-      case "active":
-        return "Active";
-      case "inactive":
-        return "Inactive";
-      case "maintenance":
-        return "Maintenance";
+      case "completed":
+        return "bg-green-500";
+      case "in-progress":
+        return "bg-blue-500";
+      case "cancelled":
+        return "bg-red-500";
       default:
-        return "Unknown";
+        return "bg-gray-500";
     }
+  };
+
+  const handleAddBranch = () => {
+    if (
+      newBranch.name &&
+      newBranch.address &&
+      newBranch.username &&
+      newBranch.password
+    ) {
+      const id = Date.now().toString();
+      const branch: Branch = {
+        id,
+        name: newBranch.name,
+        address: newBranch.address,
+        phone: newBranch.phone,
+        email: newBranch.email,
+        manager: newBranch.manager,
+        status: "active",
+        coordinates: { lat: 6.9214, lng: 122.079 }, // Default coordinates
+        loginCredentials: {
+          username: newBranch.username,
+          password: newBranch.password,
+        },
+        stats: {
+          monthlyRevenue: 0,
+          totalCustomers: 0,
+          totalWashes: 0,
+          averageRating: 0,
+          staffCount: 0,
+        },
+        operatingHours: {
+          open: "08:00",
+          close: "18:00",
+          days: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ],
+        },
+        services: ["Classic Wash"],
+        washHistory: [],
+      };
+
+      setBranches((prev) => [...prev, branch]);
+      setNewBranch({
+        name: "",
+        address: "",
+        phone: "",
+        email: "",
+        manager: "",
+        username: "",
+        password: "",
+      });
+      setIsAddBranchOpen(false);
+      alert("Branch added successfully!");
+    }
+  };
+
+  const handleDeleteBranch = (branchId: string) => {
+    if (confirm("Are you sure you want to delete this branch?")) {
+      setBranches((prev) => prev.filter((branch) => branch.id !== branchId));
+      alert("Branch deleted successfully!");
+    }
+  };
+
+  const togglePasswordVisibility = (branchId: string) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [branchId]: !prev[branchId],
+    }));
   };
 
   const totalRevenue = branches.reduce(
@@ -203,235 +367,487 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
 
   return (
     <div className="space-y-6">
-      {/* Branch Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm">Total Branches</p>
-                <p className="text-2xl font-black">{branches.length}</p>
-              </div>
-              <MapPin className="h-8 w-8 text-blue-200" />
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="branches">Branches</TabsTrigger>
+          <TabsTrigger value="wash-history">Wash History</TabsTrigger>
+          <TabsTrigger value="credentials">Credentials</TabsTrigger>
+        </TabsList>
 
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm">Total Revenue</p>
-                <p className="text-2xl font-black">
-                  {formatCurrency(totalRevenue)}
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-200" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm">Total Customers</p>
-                <p className="text-2xl font-black">
-                  {totalCustomers.toLocaleString()}
-                </p>
-              </div>
-              <Users className="h-8 w-8 text-purple-200" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm">Total Staff</p>
-                <p className="text-2xl font-black">{totalStaff}</p>
-              </div>
-              <Users className="h-8 w-8 text-orange-200" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Branch Management Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5 text-fac-orange-500" />
-              <span>Branch Management</span>
-            </div>
-            {userRole === "superadmin" && (
-              <Dialog open={isAddingBranch} onOpenChange={setIsAddingBranch}>
-                <DialogTrigger asChild>
-                  <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Branch
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Add New Branch</DialogTitle>
-                    <DialogDescription>
-                      Create a new branch location for Fayeed Auto Care.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Branch Name</Label>
-                      <Input placeholder="e.g., Downtown Branch" />
-                    </div>
-                    <div>
-                      <Label>Address</Label>
-                      <Textarea placeholder="Complete address" rows={3} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Phone</Label>
-                        <Input placeholder="+63 962 XXX XXXX" />
-                      </div>
-                      <div>
-                        <Label>Email</Label>
-                        <Input placeholder="branch@facautocare.com" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Manager</Label>
-                      <Input placeholder="Manager name" />
-                    </div>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Branch Overview Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-sm">Total Branches</p>
+                    <p className="text-2xl font-black">{branches.length}</p>
                   </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsAddingBranch(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="bg-fac-orange-500 hover:bg-fac-orange-600"
-                      onClick={() => setIsAddingBranch(false)}
-                    >
-                      Add Branch
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </CardTitle>
-        </CardHeader>
-      </Card>
+                  <MapPin className="h-8 w-8 text-blue-200" />
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Branches Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {branches.map((branch) => (
-          <Card key={branch.id} className="hover:shadow-lg transition-shadow">
+            <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-100 text-sm">Total Revenue</p>
+                    <p className="text-2xl font-black">
+                      {formatCurrency(totalRevenue)}
+                    </p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm">Total Customers</p>
+                    <p className="text-2xl font-black">
+                      {totalCustomers.toLocaleString()}
+                    </p>
+                  </div>
+                  <Users className="h-8 w-8 text-purple-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-100 text-sm">Total Staff</p>
+                    <p className="text-2xl font-black">{totalStaff}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-orange-200" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Branches Tab */}
+        <TabsContent value="branches" className="space-y-6">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-5 w-5 text-fac-orange-500" />
-                  <span className="text-lg font-black">{branch.name}</span>
+                  <span>Branch Management</span>
                 </div>
-                <Badge
-                  className={`${getStatusColor(branch.status)} text-white font-bold`}
-                >
-                  {getStatusLabel(branch.status)}
-                </Badge>
+                {userRole === "superadmin" && (
+                  <Dialog
+                    open={isAddBranchOpen}
+                    onOpenChange={setIsAddBranchOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Branch
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Add New Branch</DialogTitle>
+                        <DialogDescription>
+                          Create a new branch location with login credentials.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Branch Name</Label>
+                            <Input
+                              value={newBranch.name}
+                              onChange={(e) =>
+                                setNewBranch({
+                                  ...newBranch,
+                                  name: e.target.value,
+                                })
+                              }
+                              placeholder="e.g., Downtown Branch"
+                            />
+                          </div>
+                          <div>
+                            <Label>Manager</Label>
+                            <Input
+                              value={newBranch.manager}
+                              onChange={(e) =>
+                                setNewBranch({
+                                  ...newBranch,
+                                  manager: e.target.value,
+                                })
+                              }
+                              placeholder="Manager name"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Address</Label>
+                          <Textarea
+                            value={newBranch.address}
+                            onChange={(e) =>
+                              setNewBranch({
+                                ...newBranch,
+                                address: e.target.value,
+                              })
+                            }
+                            placeholder="Complete address"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Phone</Label>
+                            <Input
+                              value={newBranch.phone}
+                              onChange={(e) =>
+                                setNewBranch({
+                                  ...newBranch,
+                                  phone: e.target.value,
+                                })
+                              }
+                              placeholder="+63 962 XXX XXXX"
+                            />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input
+                              value={newBranch.email}
+                              onChange={(e) =>
+                                setNewBranch({
+                                  ...newBranch,
+                                  email: e.target.value,
+                                })
+                              }
+                              placeholder="branch@facautocare.com"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-4">
+                          <h4 className="font-bold mb-3">Login Credentials</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label>Username</Label>
+                              <Input
+                                value={newBranch.username}
+                                onChange={(e) =>
+                                  setNewBranch({
+                                    ...newBranch,
+                                    username: e.target.value,
+                                  })
+                                }
+                                placeholder="branch_username"
+                              />
+                            </div>
+                            <div>
+                              <Label>Password</Label>
+                              <Input
+                                type="password"
+                                value={newBranch.password}
+                                onChange={(e) =>
+                                  setNewBranch({
+                                    ...newBranch,
+                                    password: e.target.value,
+                                  })
+                                }
+                                placeholder="secure_password"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsAddBranchOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="bg-fac-orange-500 hover:bg-fac-orange-600"
+                          onClick={handleAddBranch}
+                        >
+                          Add Branch
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Branch Info */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Navigation className="h-4 w-4" />
-                  <span>{branch.address}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Phone className="h-4 w-4" />
-                  <span>{branch.phone}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Mail className="h-4 w-4" />
-                  <span>{branch.email}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Users className="h-4 w-4" />
-                  <span>Manager: {branch.manager}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {branch.operatingHours.open} - {branch.operatingHours.close}
-                  </span>
-                </div>
-              </div>
+          </Card>
 
-              {/* Stats */}
-              <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Monthly Revenue</span>
-                  <span className="font-bold text-green-600">
-                    {formatCurrency(branch.stats.monthlyRevenue)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Customers</span>
-                  <span className="font-bold">
-                    {branch.stats.totalCustomers}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Washes</span>
-                  <span className="font-bold">{branch.stats.totalWashes}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Rating</span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="font-bold">
-                      {branch.stats.averageRating}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Staff</span>
-                  <span className="font-bold">{branch.stats.staffCount}</span>
-                </div>
-              </div>
-
-              {/* Services */}
-              <div>
-                <p className="text-sm font-medium mb-2">Services:</p>
-                <div className="flex flex-wrap gap-1">
-                  {branch.services.map((service, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {service}
+          {/* Branches Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {branches.map((branch) => (
+              <Card
+                key={branch.id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-5 w-5 text-fac-orange-500" />
+                      <span className="text-lg font-black">{branch.name}</span>
+                    </div>
+                    <Badge
+                      className={`${getStatusColor(branch.status)} text-white font-bold`}
+                    >
+                      {branch.status.toUpperCase()}
                     </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Branch Info */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Navigation className="h-4 w-4" />
+                      <span>{branch.address}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Phone className="h-4 w-4" />
+                      <span>{branch.phone}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Users className="h-4 w-4" />
+                      <span>Manager: {branch.manager}</span>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Monthly Revenue
+                      </span>
+                      <span className="font-bold text-green-600">
+                        {formatCurrency(branch.stats.monthlyRevenue)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Washes</span>
+                      <span className="font-bold">
+                        {branch.stats.totalWashes}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Staff</span>
+                      <span className="font-bold">
+                        {branch.stats.staffCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex space-x-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setSelectedBranch(branch)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Washes
+                    </Button>
+                    {userRole === "superadmin" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        onClick={() => handleDeleteBranch(branch.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Wash History Tab */}
+        <TabsContent value="wash-history" className="space-y-6">
+          {selectedBranch ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Car className="h-5 w-5 text-fac-orange-500" />
+                    <span>Wash History - {selectedBranch.name}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedBranch(null)}
+                  >
+                    View All
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {selectedBranch.washHistory.map((wash) => (
+                    <div
+                      key={wash.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className="font-bold text-black">
+                              {wash.customerName}
+                            </h4>
+                            <Badge
+                              className={`${getWashStatusColor(wash.status)} text-white font-bold`}
+                            >
+                              {wash.status.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                            <span>
+                              <strong>Car:</strong> {wash.carModel}
+                            </span>
+                            <span>
+                              <strong>Plate:</strong> {wash.plateNumber}
+                            </span>
+                            <span>
+                              <strong>Service:</strong> {wash.serviceType}
+                            </span>
+                            <span>
+                              <strong>Staff:</strong> {wash.staffMember}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-green-600">
+                            {formatCurrency(wash.amount)}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {formatDistanceToNow(wash.washDate, {
+                              addSuffix: true,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-black mb-2">
+                  Select a Branch
+                </h3>
+                <p className="text-gray-600">
+                  Choose a branch to view its wash history
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-              {/* Actions */}
-              {userRole === "superadmin" && (
-                <div className="flex space-x-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Analytics
-                  </Button>
-                </div>
-              )}
+        {/* Credentials Tab */}
+        <TabsContent value="credentials" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Key className="h-5 w-5 text-fac-orange-500" />
+                <span>Branch Login Credentials</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {branches.map((branch) => (
+                  <div
+                    key={branch.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-black">{branch.name}</h4>
+                      <Badge
+                        className={`${getStatusColor(branch.status)} text-white font-bold`}
+                      >
+                        {branch.status.toUpperCase()}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">
+                          Username
+                        </Label>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Input
+                            type="text"
+                            value={branch.loginCredentials.username}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">
+                          Password
+                        </Label>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Input
+                            type={showPassword[branch.id] ? "text" : "password"}
+                            value={branch.loginCredentials.password}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => togglePasswordVisibility(branch.id)}
+                            className="px-2"
+                          >
+                            {showPassword[branch.id] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">
+                          Last Login
+                        </Label>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {branch.loginCredentials.lastLogin
+                            ? formatDistanceToNow(
+                                branch.loginCredentials.lastLogin,
+                                { addSuffix: true },
+                              )
+                            : "Never logged in"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
