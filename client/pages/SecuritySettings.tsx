@@ -46,6 +46,12 @@ export default function SecuritySettings() {
 
   return (
     <div className="min-h-screen bg-white">
+      <StickyHeader
+        showBack={true}
+        backTo="/settings"
+        title="Security Settings"
+      />
+
       <div className="px-6 py-8 max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center mb-8">
