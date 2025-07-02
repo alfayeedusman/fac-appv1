@@ -570,7 +570,7 @@ export default function AdminDashboard() {
                   {activeTab === "sales" && "Sales Dashboard"}
                   {activeTab === "notifications" && "Notification Center"}
                 </h1>
-                <p className="text-gray-600 font-medium mt-1">
+                <p className="text-muted-foreground font-medium mt-1">
                   {activeTab === "overview" &&
                     "Monitor your business performance and key metrics"}
                   {activeTab === "customers" &&
