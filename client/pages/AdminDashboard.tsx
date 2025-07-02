@@ -1104,7 +1104,7 @@ export default function AdminDashboard() {
                             {pkg.features.map((feature, index) => (
                               <p
                                 key={index}
-                                className="text-sm text-gray-600 font-medium"
+                                className="text-sm text-muted-foreground font-medium"
                               >
                                 • {feature}
                               </p>
@@ -1132,7 +1132,7 @@ export default function AdminDashboard() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-red-600 border-red-300 hover:bg-red-50"
+                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1179,37 +1179,37 @@ export default function AdminDashboard() {
           {activeTab === "sales" && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                <Card className="bg-white border border-gray-100">
+                <Card className="bg-card border-border theme-transition">
                   <CardContent className="p-6 text-center">
                     <DollarSign className="h-12 w-12 text-fac-orange-500 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-black mb-2">
+                    <p className="text-3xl font-black text-foreground mb-2">
                       {formatCurrency(156780)}
                     </p>
-                    <p className="text-sm font-bold text-gray-600">
+                    <p className="text-sm font-bold text-muted-foreground">
                       Monthly Revenue
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-100">
+                <Card className="bg-card border-border theme-transition">
                   <CardContent className="p-6 text-center">
                     <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-black mb-2">
+                    <p className="text-3xl font-black text-foreground mb-2">
                       +{stats.monthlyGrowth}%
                     </p>
-                    <p className="text-sm font-bold text-gray-600">
+                    <p className="text-sm font-bold text-muted-foreground">
                       Growth Rate
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-100">
+                <Card className="bg-card border-border theme-transition">
                   <CardContent className="p-6 text-center">
                     <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                    <p className="text-lg font-black text-black mb-2">
+                    <p className="text-lg font-black text-foreground mb-2">
                       {stats.topPackage}
                     </p>
-                    <p className="text-sm font-bold text-gray-600">
+                    <p className="text-sm font-bold text-muted-foreground">
                       Top Package
                     </p>
                   </CardContent>
