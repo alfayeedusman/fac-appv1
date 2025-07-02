@@ -995,7 +995,8 @@ export default function AdminDashboard() {
                           >
                             {pkg.active ? "Active" : "Inactive"}
                           </Badge>
-                          {userRole === "superadmin" && (
+                          {(userRole === "superadmin" ||
+                            userRole === "admin") && (
                             <>
                               <Button
                                 variant="outline"
