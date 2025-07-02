@@ -144,7 +144,14 @@ export default function Booking() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    alert("🚀 Booking confirmed! You'll receive a confirmation shortly.");
+    alert(`🚀 Booking confirmed!
+Service: ${bookingData.service}
+Vehicle: ${bookingData.vehicleType}${bookingData.motorcycleType ? ` (${bookingData.motorcycleType})` : ""}
+Date: ${bookingData.date}
+Time: ${bookingData.time}
+Branch: ${bookingData.branch}
+
+You'll receive a confirmation shortly.`);
     setIsSubmitting(false);
   };
 
