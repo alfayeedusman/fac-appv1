@@ -481,6 +481,12 @@ export default function Dashboard() {
       </div>
 
       <BottomNavigation />
+
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }
