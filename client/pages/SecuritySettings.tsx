@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import StickyHeader from "@/components/StickyHeader";
 
 export default function SecuritySettings() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
