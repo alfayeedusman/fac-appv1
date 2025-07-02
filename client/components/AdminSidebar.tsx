@@ -93,7 +93,7 @@ export default function AdminSidebar({
       <Button
         variant="outline"
         size="sm"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-background border-border theme-transition"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         {isMobileOpen ? (
