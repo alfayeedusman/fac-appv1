@@ -102,12 +102,7 @@ export default function StickyHeader({
                 variant="ghost"
                 size="icon"
                 className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
-                onClick={() => {
-                  if (confirm("Are you sure you want to logout?")) {
-                    localStorage.clear();
-                    window.location.href = "/login";
-                  }
-                }}
+                onClick={() => setShowLogoutModal(true)}
                 title="Logout"
               >
                 <LogOut className="h-5 w-5" />
