@@ -109,6 +109,12 @@ export default function NotificationSettings() {
 
   return (
     <MobileLayout>
+      <StickyHeader
+        showBack={true}
+        backTo="/dashboard"
+        title="Notification Settings"
+      />
+
       <div className="px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center mb-6">
