@@ -264,164 +264,164 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Monthly Benefits with Futuristic Design */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-400">
-          <CardHeader className="pb-6">
-            <CardTitle>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="gradient-futuristic p-3 rounded-xl animate-pulse-glow">
-                    <Sparkles className="h-6 w-6 text-white" />
-                  </div>
-                  <span className="text-xl font-black text-foreground">
-                    AI Benefits Hub
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  className="glass border-border text-muted-foreground font-bold hover-lift"
-                >
-                  View Details
-                </Button>
+        {/* Tabbed Content */}
+        <Card className="bg-card border shadow-md mb-6 animate-fade-in-up animate-delay-400">
+          {/* Tab Headers */}
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab("benefits")}
+              className={cn(
+                "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+                activeTab === "benefits"
+                  ? "border-b-2 border-fac-orange-500 text-fac-orange-500"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Sparkles className="h-4 w-4" />
+                <span>Benefits</span>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Classic Unlimited */}
-            <div className="glass rounded-2xl p-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full blur-xl"></div>
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-green-500 p-2 rounded-xl">
-                    <Droplets className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="font-black text-foreground">AI Classic</span>
-                </div>
-                <Badge className="bg-green-500 text-white text-xs font-bold">
-                  UNLIMITED
-                </Badge>
+            </button>
+            <button
+              onClick={() => setActiveTab("activity")}
+              className={cn(
+                "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+                activeTab === "activity"
+                  ? "border-b-2 border-fac-orange-500 text-fac-orange-500"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Clock className="h-4 w-4" />
+                <span>Recent Activity</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-3 relative z-10">
-                <div className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full w-full animate-shimmer"></div>
-              </div>
-              <p className="text-xs text-muted-foreground font-medium mt-3 relative z-10">
-                ∞ Unlimited AI-powered washes this month
-              </p>
-            </div>
+            </button>
+          </div>
 
-            {/* VIP ProMax */}
-            <div className="glass rounded-2xl p-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-xl"></div>
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-purple-500 p-2 rounded-xl">
-                    <Crown className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="font-black text-foreground">VIP ProMax</span>
-                </div>
-                <Badge className="bg-purple-500 text-white text-xs font-bold">
-                  {membershipData.remainingWashes.vipProMax} LEFT
-                </Badge>
-              </div>
-              <div className="w-full bg-muted rounded-full h-3 relative z-10">
-                <div
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${getProgressPercentage(
-                      membershipData.remainingWashes.vipProMax,
-                      membershipData.totalWashes.vipProMax,
-                    )}%`,
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground font-medium mt-3 relative z-10">
-                {membershipData.remainingWashes.vipProMax} of{" "}
-                {membershipData.totalWashes.vipProMax} premium washes
-              </p>
-            </div>
-
-            {/* Premium Detail */}
-            <div className="glass rounded-2xl p-5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-fac-orange-500/20 to-yellow-500/20 rounded-full blur-lg"></div>
-              <div className="flex items-center justify-between mb-3 relative z-10">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-fac-orange-500 p-2 rounded-lg">
-                    <Star className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="font-bold text-foreground text-sm">
-                    Premium Detail
-                  </span>
-                </div>
-                <Badge className="bg-fac-orange-500 text-white text-xs">
-                  {membershipData.remainingWashes.premium} LEFT
-                </Badge>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2 relative z-10">
-                <div
-                  className="bg-gradient-to-r from-fac-orange-500 to-yellow-500 h-2 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${getProgressPercentage(
-                      membershipData.remainingWashes.premium,
-                      membershipData.totalWashes.premium,
-                    )}%`,
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 relative z-10">
-                {membershipData.remainingWashes.premium} luxury detail remaining
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity with Modern Cards */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-500">
-          <CardHeader className="pb-6">
-            <CardTitle>
-              <div className="flex items-center space-x-3">
-                <div className="gradient-secondary p-3 rounded-xl animate-pulse-glow">
-                  <Clock className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-black text-foreground">
-                  Recent Activity
-                </span>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {washLogs.slice(0, 3).map((log, index) => (
-                <div
-                  key={log.id}
-                  className={`glass rounded-2xl p-5 hover-lift cursor-pointer transition-all duration-300 animate-fade-in-up`}
-                  style={{ animationDelay: `${0.6 + index * 0.1}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="gradient-primary p-2 rounded-xl">
-                        <Car className="h-5 w-5 text-white" />
+          <CardContent className="p-4">
+            {activeTab === "benefits" && (
+              <div className="space-y-4">
+                {/* Classic Unlimited */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-green-500 p-2 rounded-lg">
+                        <Droplets className="h-4 w-4 text-white" />
                       </div>
-                      <div>
-                        <p className="font-black text-foreground text-sm">
-                          {log.service}
-                        </p>
-                        <div className="flex items-center space-x-2 text-xs text-muted-foreground font-medium">
-                          <span>{formatDate(log.date)}</span>
-                          <span>•</span>
-                          <span>{log.branch}</span>
+                      <span className="font-semibold text-foreground">
+                        AI Classic
+                      </span>
+                    </div>
+                    <Badge className="bg-green-500 text-white text-xs">
+                      UNLIMITED
+                    </Badge>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full w-full"></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    ∞ Unlimited AI-powered washes this month
+                  </p>
+                </div>
+
+                {/* VIP ProMax */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-purple-500 p-2 rounded-lg">
+                        <Crown className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-semibold text-foreground">
+                        VIP ProMax
+                      </span>
+                    </div>
+                    <Badge className="bg-purple-500 text-white text-xs">
+                      {membershipData.remainingWashes.vipProMax} LEFT
+                    </Badge>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${getProgressPercentage(
+                          membershipData.remainingWashes.vipProMax,
+                          membershipData.totalWashes.vipProMax,
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {membershipData.remainingWashes.vipProMax} of{" "}
+                    {membershipData.totalWashes.vipProMax} premium washes
+                  </p>
+                </div>
+
+                {/* Premium Detail */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-fac-orange-500 p-2 rounded-lg">
+                        <Star className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-semibold text-foreground">
+                        Premium Detail
+                      </span>
+                    </div>
+                    <Badge className="bg-fac-orange-500 text-white text-xs">
+                      {membershipData.remainingWashes.premium} LEFT
+                    </Badge>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-fac-orange-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${getProgressPercentage(
+                          membershipData.remainingWashes.premium,
+                          membershipData.totalWashes.premium,
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {membershipData.remainingWashes.premium} luxury detail
+                    remaining
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "activity" && (
+              <div className="space-y-3">
+                {washLogs.slice(0, 3).map((log, index) => (
+                  <div
+                    key={log.id}
+                    className="bg-muted/30 rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-fac-orange-500 p-2 rounded-lg">
+                          <Car className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground text-sm">
+                            {log.service}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                            <span>{formatDate(log.date)}</span>
+                            <span>•</span>
+                            <span>{log.branch}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
                       <Badge className="bg-green-500 text-white text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         COMPLETED
                       </Badge>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
