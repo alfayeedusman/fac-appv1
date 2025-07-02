@@ -34,6 +34,7 @@ interface Voucher {
 export default function Voucher() {
   const [voucherCode, setVoucherCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
+  const [appliedVouchers, setAppliedVouchers] = useState<string[]>([]);
 
   const [availableVouchers] = useState<Voucher[]>([
     {
