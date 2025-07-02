@@ -427,26 +427,26 @@ export default function Dashboard() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 gap-4 mb-20">
-          <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-600">
-            <CardContent className="p-8 text-center">
-              <div className="gradient-primary w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
-                <TrendingUp className="h-7 w-7 text-white" />
+          <Card className="bg-card border shadow-md hover:shadow-lg transition-shadow animate-fade-in-up animate-delay-600">
+            <CardContent className="p-6 text-center">
+              <div className="bg-fac-orange-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <p className="text-3xl font-black text-foreground mb-1">
+              <p className="text-2xl font-bold text-foreground mb-1">
                 {washLogs.length}
               </p>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 TOTAL WASHES
               </p>
             </CardContent>
           </Card>
 
-          <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-700">
-            <CardContent className="p-8 text-center">
-              <div className="gradient-secondary w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
-                <Calendar className="h-7 w-7 text-white" />
+          <Card className="bg-card border shadow-md hover:shadow-lg transition-shadow animate-fade-in-up animate-delay-700">
+            <CardContent className="p-6 text-center">
+              <div className="bg-blue-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Calendar className="h-6 w-6 text-white" />
               </div>
-              <p className="text-3xl font-black text-foreground mb-1">
+              <p className="text-2xl font-bold text-foreground mb-1">
                 {
                   washLogs.filter(
                     (log) =>
@@ -454,7 +454,7 @@ export default function Dashboard() {
                   ).length
                 }
               </p>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 THIS MONTH
               </p>
             </CardContent>
