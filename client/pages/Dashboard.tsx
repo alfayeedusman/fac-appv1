@@ -506,7 +506,7 @@ export default function Dashboard() {
 
       {/* Futuristic Mobile Navigation */}
       <div className="fixed bottom-0 left-0 right-0 glass border-t border-border z-50 md:hidden animate-slide-in-left">
-        <div className="grid grid-cols-4 h-18 px-2 py-3">
+        <div className="grid grid-cols-4 h-16 px-2 py-3">
           <Link
             to="/dashboard"
             className="flex flex-col items-center justify-center space-y-1 bg-fac-orange-50 dark:bg-fac-orange-950 text-fac-orange-500 rounded-xl mx-1 py-2"
