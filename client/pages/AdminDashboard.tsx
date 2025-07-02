@@ -652,7 +652,7 @@ export default function AdminDashboard() {
 
           {/* Packages Tab */}
           <TabsContent value="packages" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Existing Packages */}
               <Card>
                 <CardHeader>
@@ -667,9 +667,9 @@ export default function AdminDashboard() {
                       key={pkg.id}
                       className="border border-gray-200 rounded-lg p-4"
                     >
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
                         <h3 className="font-black text-black">{pkg.name}</h3>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center flex-wrap gap-2">
                           <Badge
                             className={`${pkg.active ? "bg-green-500" : "bg-gray-400"} text-white font-bold`}
                           >
@@ -681,16 +681,43 @@ export default function AdminDashboard() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditPackage(pkg)}
+                                title="Edit Package"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeletePackage(pkg.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 border-red-300 hover:bg-red-50"
+                                    title="Delete Package"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Delete Package</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to delete the "
+                                      {pkg.name}" package? This action cannot be
+                                      undone.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter>
+                                    <Button variant="outline">Cancel</Button>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() =>
+                                        handleDeletePackage(pkg.id)
+                                      }
+                                    >
+                                      Delete Package
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                             </>
                           )}
                         </div>
@@ -703,10 +730,13 @@ export default function AdminDashboard() {
                           Duration: {pkg.duration}
                         </p>
                         <div className="space-y-1">
+                          <p className="text-sm font-bold text-gray-700 mb-1">
+                            Features:
+                          </p>
                           {pkg.features.map((feature, index) => (
                             <p
                               key={index}
-                              className="text-xs text-gray-500 font-medium"
+                              className="text-sm text-gray-600 font-medium pl-2"
                             >
                               • {feature}
                             </p>
@@ -720,10 +750,22 @@ export default function AdminDashboard() {
 
               {/* Add/Edit Package */}
               {userRole === "superadmin" && (
-                <Card>
+                <Card className="h-fit">
                   <CardHeader>
-                    <CardTitle>
+                    <CardTitle className="flex items-center justify-between">
                       {editingPackage ? "Edit Package" : "Add New Package"}
+                      {editingPackage && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingPackage(null);
+                            setEditingFeatures("");
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -747,6 +789,7 @@ export default function AdminDashboard() {
                                 name: e.target.value,
                               })
                         }
+                        placeholder="e.g., Premium VIP"
                         className="mt-1"
                       />
                     </div>
@@ -774,6 +817,7 @@ export default function AdminDashboard() {
                                 basePrice: Number(e.target.value),
                               })
                         }
+                        placeholder="e.g., 1500"
                         className="mt-1"
                       />
                     </div>
@@ -800,12 +844,49 @@ export default function AdminDashboard() {
                                 duration: e.target.value,
                               })
                         }
-                        placeholder="e.g., 30 mins"
+                        placeholder="e.g., 45 mins"
                         className="mt-1"
                       />
                     </div>
 
-                    <div className="flex space-x-2">
+                    <div>
+                      <Label htmlFor="packageFeatures" className="font-bold">
+                        Package Features
+                      </Label>
+                      <Textarea
+                        id="packageFeatures"
+                        value={editingFeatures}
+                        onChange={(e) => setEditingFeatures(e.target.value)}
+                        placeholder="Enter each feature on a new line&#10;e.g.:&#10;Premium exterior wash&#10;Interior vacuum&#10;Tire shine&#10;Dashboard clean"
+                        className="mt-1 min-h-[120px]"
+                        rows={6}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Enter each feature on a new line
+                      </p>
+                    </div>
+
+                    {editingPackage && (
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="packageActive" className="font-bold">
+                          Active Package
+                        </Label>
+                        <input
+                          type="checkbox"
+                          id="packageActive"
+                          checked={editingPackage.active}
+                          onChange={(e) =>
+                            setEditingPackage({
+                              ...editingPackage,
+                              active: e.target.checked,
+                            })
+                          }
+                          className="w-4 h-4 text-fac-orange-500 border-gray-300 rounded focus:ring-fac-orange-500"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-2">
                       {editingPackage ? (
                         <>
                           <Button
@@ -816,7 +897,10 @@ export default function AdminDashboard() {
                           </Button>
                           <Button
                             variant="outline"
-                            onClick={() => setEditingPackage(null)}
+                            onClick={() => {
+                              setEditingPackage(null);
+                              setEditingFeatures("");
+                            }}
                             className="flex-1"
                           >
                             Cancel
@@ -826,6 +910,7 @@ export default function AdminDashboard() {
                         <Button
                           onClick={handleAddPackage}
                           className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold"
+                          disabled={!newPackage.name || !newPackage.basePrice}
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Package
