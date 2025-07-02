@@ -26,14 +26,63 @@ export default function Login() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // For demo purposes, accept any email/password
-    if (formData.email && formData.password) {
+    // Check for admin login
+    if (
+      formData.email === "admin@fac.com" &&
+      formData.password === "admin123"
+    ) {
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userEmail", formData.email);
+      localStorage.setItem("userRole", "admin");
+      navigate("/admin-dashboard");
+    } else if (
+      formData.email === "superadmin@fac.com" &&
+      formData.password === "super123"
+    ) {
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userEmail", formData.email);
+      localStorage.setItem("userRole", "superadmin");
+      navigate("/admin-dashboard");
+    } else if (formData.email && formData.password) {
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userEmail", formData.email);
+      localStorage.setItem("userRole", "user");
       navigate("/welcome");
     } else {
       alert("Please fill in all fields");
     }
+    setIsLoading(false);
+  };
+
+  const handleBiometricLogin = async () => {
+    setIsLoading(true);
+
+    try {
+      // Check if Web Authentication API is supported
+      if (!window.PublicKeyCredential) {
+        alert("Biometric authentication is not supported on this device");
+        setIsLoading(false);
+        return;
+      }
+
+      // Simulate biometric authentication
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // For demo purposes, simulate successful biometric auth
+      const simulatedUser =
+        localStorage.getItem("biometricUser") || "demo@fac.com";
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userEmail", simulatedUser);
+      localStorage.setItem("userRole", "user");
+
+      alert("Biometric authentication successful!");
+      navigate("/welcome");
+    } catch (error) {
+      alert(
+        "Biometric authentication failed. Please try again or use email/password.",
+      );
+    }
+
     setIsLoading(false);
   };
 
@@ -141,10 +190,12 @@ export default function Login() {
               <Button
                 type="button"
                 variant="outline"
+                onClick={handleBiometricLogin}
+                disabled={isLoading}
                 className="w-full border-gray-300 text-black hover:bg-gray-50 font-bold py-4 rounded-xl"
               >
                 <Smartphone className="h-5 w-5 mr-2" />
-                Use Biometric Login
+                {isLoading ? "Authenticating..." : "Use Biometric Login"}
               </Button>
             </form>
           </CardContent>
@@ -167,9 +218,17 @@ export default function Login() {
         <Card className="mt-8 bg-gray-50 border border-gray-200">
           <CardContent className="p-4">
             <h3 className="font-black text-black text-sm mb-3">Demo Access:</h3>
-            <p className="text-xs text-gray-600 font-medium">
-              Use any email and password to sign in for demo purposes
-            </p>
+            <div className="space-y-2 text-xs font-medium">
+              <p className="text-gray-600">
+                <strong>Customer:</strong> any email/password
+              </p>
+              <p className="text-gray-600">
+                <strong>Admin:</strong> admin@fac.com / admin123
+              </p>
+              <p className="text-gray-600">
+                <strong>Super Admin:</strong> superadmin@fac.com / super123
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

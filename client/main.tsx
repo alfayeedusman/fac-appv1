@@ -12,6 +12,7 @@ import SignUp from "./pages/SignUp";
 import CredentialSetup from "./pages/CredentialSetup";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import ManageSubscription from "./pages/ManageSubscription";

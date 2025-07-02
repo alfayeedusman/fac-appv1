@@ -360,10 +360,10 @@ export default function SignUp() {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 text-white py-4 text-lg font-semibold rounded-xl"
+            className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-black py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Creating Account..." : "Create Account"}
+            {isSubmitting ? "SUBMITTING DETAILS..." : "SUBMIT REGISTRATION"}
           </Button>
         </form>
 
