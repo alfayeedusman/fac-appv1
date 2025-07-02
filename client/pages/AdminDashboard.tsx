@@ -1231,7 +1231,7 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Add/Edit Package */}
-              {userRole === "superadmin" && (
+              {(userRole === "superadmin" || userRole === "admin") && (
                 <Card className="h-fit">
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
