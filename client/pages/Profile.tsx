@@ -32,6 +32,8 @@ interface UserProfile {
   phone: string;
   carUnit: string;
   plateNumber: string;
+  vehicleType: string;
+  motorcycleType?: string;
   membershipType: string;
   joinDate: string;
   profilePicture?: string;
