@@ -884,7 +884,10 @@ export default function AdminDashboard() {
                     <Users className="h-5 w-5 mr-2 text-fac-orange-500" />
                     Customer Management
                   </div>
-                  <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold w-full sm:w-auto">
+                  <Button
+                    onClick={() => setIsAddCustomerModalOpen(true)}
+                    className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold w-full sm:w-auto"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Customer
                   </Button>
