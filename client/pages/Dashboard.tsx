@@ -190,7 +190,7 @@ export default function Dashboard() {
         </div>
 
         {/* Membership Status Card */}
-        <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow theme-transition">
           <CardHeader className="pb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -198,23 +198,25 @@ export default function Dashboard() {
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-xl font-black text-black">
+                  <p className="text-xl font-black text-foreground">
                     {membershipData.package}
                   </p>
-                  <p className="text-sm text-gray-500 font-medium">
+                  <p className="text-sm text-muted-foreground font-medium">
                     Membership Plan
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-                  <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                <div className="bg-muted border-border rounded-lg px-4 py-2 theme-transition">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                     EXPIRES IN
                   </p>
                   <p className="text-2xl font-black text-fac-orange-500">
                     {membershipData.daysLeft}
                   </p>
-                  <p className="text-xs font-medium text-gray-500">days</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    days
+                  </p>
                 </div>
               </div>
             </div>
@@ -224,14 +226,16 @@ export default function Dashboard() {
               {/* Expiry Information */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Current Cycle:</span>
-                  <span className="font-semibold text-sm">
+                  <span className="text-muted-foreground">Current Cycle:</span>
+                  <span className="font-semibold text-sm text-foreground">
                     {formatDate(membershipData.currentCycleStart)} -{" "}
                     {formatDate(membershipData.currentCycleEnd)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Cycle Resets In:</span>
+                  <span className="text-muted-foreground">
+                    Cycle Resets In:
+                  </span>
                   <div className="flex items-center">
                     <RefreshCw className="h-4 w-4 text-fac-blue-500 mr-1" />
                     <span className="font-semibold text-fac-blue-600">
@@ -240,7 +244,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Auto-renewal:</span>
+                  <span className="text-muted-foreground">Auto-renewal:</span>
                   <div className="flex items-center">
                     {membershipData.autoRenewal ? (
                       <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
