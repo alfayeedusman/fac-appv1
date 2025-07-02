@@ -37,6 +37,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import StickyHeader from "@/components/StickyHeader";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface SubscriptionPlan {
   id: string;
