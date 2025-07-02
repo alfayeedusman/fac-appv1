@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import ManageSubscription from "./pages/ManageSubscription";
+import NotificationSettings from "./pages/NotificationSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,10 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/manage-subscription" element={<ManageSubscription />} />
+          <Route
+            path="/notification-settings"
+            element={<NotificationSettings />}
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
