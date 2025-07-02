@@ -1,433 +1,492 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   User,
-  Car,
-  Crown,
-  QrCode,
-  MapPin,
-  Phone,
   Mail,
-  Calendar,
-  Edit,
-  Settings,
-  Copy,
-  Check,
+  Phone,
+  Car,
+  QrCode,
+  Crown,
   Star,
   Shield,
+  Edit,
+  Save,
+  X,
+  Camera,
+  Smartphone,
+  Zap,
+  CheckCircle,
+  Settings,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface UserProfile {
-  id: string;
-  fullName: string;
+  name: string;
   email: string;
-  contactNumber: string;
-  address: string;
-  memberSince: string;
-  profileImage?: string;
-}
-
-interface VehicleInfo {
+  phone: string;
   carUnit: string;
-  carPlateNumber: string;
-  carType: string;
-  color: string;
-}
-
-interface MembershipInfo {
-  package: string;
-  status: "active" | "expiring" | "expired";
-  startDate: string;
-  expiryDate: string;
-  autoRenewal: boolean;
-  branchPreference: string;
+  plateNumber: string;
+  membershipType: string;
+  joinDate: string;
+  profilePicture?: string;
 }
 
 export default function Profile() {
-  const [userProfile] = useState<UserProfile>({
-    id: "FAC-2024-0001",
-    fullName: "John Dela Cruz",
-    email: "john.delacruz@email.com",
-    contactNumber: "+63 912 345 6789",
-    address: "123 Veteran Avenue, Tumaga, Zamboanga City",
-    memberSince: "2024-01-01",
-    profileImage: undefined,
-  });
-
-  const [vehicleInfo] = useState<VehicleInfo>({
+  const [profile, setProfile] = useState<UserProfile>({
+    name: "John Dela Cruz",
+    email: "john@email.com",
+    phone: "+63 912 345 6789",
     carUnit: "Toyota Vios 2020",
-    carPlateNumber: "ABC 1234",
-    carType: "Sedan",
-    color: "White",
+    plateNumber: "ABC 1234",
+    membershipType: "VIP Gold Ultimate",
+    joinDate: "2024-01-15",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
 
-  const [membershipInfo] = useState<MembershipInfo>({
-    package: "VIP Gold",
-    status: "active",
-    startDate: "2024-01-01",
-    expiryDate: "2024-02-01",
-    autoRenewal: true,
-    branchPreference: "Tumaga",
-  });
-
-  const [qrCodeCopied, setQrCodeCopied] = useState(false);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+  const membershipData = {
+    level: "VIP Gold Ultimate",
+    tier: "Premium",
+    perks: [
+      "Unlimited AI washes",
+      "VIP concierge service",
+      "Premium lounge access",
+      "Priority booking",
+      "Exclusive member events",
+    ],
+    nextReward: "Platinum Status",
+    pointsToNext: 250,
+    currentPoints: 1750,
   };
 
-  const copyQrCode = () => {
-    navigator.clipboard.writeText(userProfile.id);
-    setQrCodeCopied(true);
-    setTimeout(() => setQrCodeCopied(false), 2000);
+  const handleSave = () => {
+    setProfile(editedProfile);
+    setIsEditing(false);
+    // Here you would typically save to backend
+    alert("Profile updated successfully! 🚀");
   };
 
-  const getMembershipStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500";
-      case "expiring":
-        return "bg-orange-500";
-      case "expired":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
+  const handleCancel = () => {
+    setEditedProfile(profile);
+    setIsEditing(false);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+  const generateQRData = () => {
+    return `FAC-MEMBER:${profile.email}:${profile.plateNumber}:${profile.membershipType}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      {/* Futuristic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/8 to-pink-500/8 blur-xl animate-float animate-delay-300"></div>
+      </div>
+
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <div className="glass rounded-full p-1 animate-fade-in-scale">
+          <ThemeToggle />
+        </div>
+      </div>
+
+      <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Link to="/dashboard" className="mr-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-                alt="Fayeed Auto Care Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-fac-blue-900">
-                  Profile
-                </h1>
-                <p className="text-fac-blue-700">Your FAC account details</p>
-              </div>
-            </div>
-          </div>
-          <Link to="/settings">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Settings className="h-5 w-5" />
+        <div className="flex items-center mb-8 animate-fade-in-up">
+          <Link to="/dashboard" className="mr-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full glass hover-lift"
+            >
+              <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
+          <div className="flex items-center space-x-4">
+            <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+              <User className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-foreground">
+                My{" "}
+                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                  Profile
+                </span>
+              </h1>
+              <p className="text-muted-foreground font-medium">
+                Manage your account and preferences
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* User Profile Card */}
-        <Card className="mb-6">
-          <CardHeader>
+        {/* Profile Overview Card */}
+        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-100 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
+          <CardHeader className="relative z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="bg-fac-blue-600 text-white text-lg font-semibold">
-                    {getInitials(userProfile.fullName)}
-                  </AvatarFallback>
-                </Avatar>
+              <div className="flex items-center space-x-6">
+                {/* Profile Picture */}
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fac-orange-500 to-purple-600 flex items-center justify-center animate-pulse-glow">
+                    {profile.profilePicture ? (
+                      <img
+                        src={profile.profilePicture}
+                        alt="Profile"
+                        className="w-full h-full rounded-2xl object-cover"
+                      />
+                    ) : (
+                      <User className="h-10 w-10 text-white" />
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0 bg-background border-2 border-border hover:bg-accent"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Profile Info */}
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {userProfile.fullName}
+                  <h2 className="text-2xl font-black text-foreground">
+                    {profile.name}
                   </h2>
-                  <p className="text-gray-600">Member ID: {userProfile.id}</p>
-                  <div className="flex items-center mt-1">
-                    <Calendar className="h-4 w-4 text-gray-400 mr-1" />
-                    <span className="text-sm text-gray-600">
-                      Member since {formatDate(userProfile.memberSince)}
-                    </span>
+                  <p className="text-muted-foreground font-medium">
+                    {profile.email}
+                  </p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 text-white font-bold animate-pulse-glow">
+                      <Crown className="h-3 w-3 mr-1" />
+                      {profile.membershipType}
+                    </Badge>
+                    <Badge className="bg-green-500 text-white font-bold">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      VERIFIED
+                    </Badge>
                   </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
+
+              <Button
+                onClick={() => setIsEditing(!isEditing)}
+                className="glass hover-lift font-bold"
+                variant="outline"
+              >
+                {isEditing ? (
+                  <X className="h-4 w-4 mr-2" />
+                ) : (
+                  <Edit className="h-4 w-4 mr-2" />
+                )}
+                {isEditing ? "Cancel" : "Edit Profile"}
               </Button>
             </div>
           </CardHeader>
+        </Card>
+
+        {/* QR Code Card */}
+        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground text-2xl">
+              <div className="gradient-secondary p-3 rounded-xl mr-4 animate-pulse-glow">
+                <QrCode className="h-6 w-6 text-white" />
+              </div>
+              Smart QR Access
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 text-gray-400 mr-3" />
-                  <span className="text-gray-700">{userProfile.email}</span>
+            <div className="text-center">
+              <div className="glass rounded-2xl p-8 mb-6 mx-auto max-w-sm">
+                {/* QR Code Placeholder */}
+                <div className="w-48 h-48 mx-auto bg-gradient-to-br from-foreground to-muted-foreground rounded-2xl flex items-center justify-center mb-4 relative overflow-hidden">
+                  {/* Simulated QR code pattern */}
+                  <div className="absolute inset-4 bg-background rounded-lg">
+                    <div className="grid grid-cols-8 gap-1 p-2 h-full">
+                      {Array.from({ length: 64 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`${
+                            Math.random() > 0.5
+                              ? "bg-foreground"
+                              : "bg-transparent"
+                          } rounded-sm`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/10 to-purple-500/10 animate-shimmer"></div>
                 </div>
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 text-gray-400 mr-3" />
-                  <span className="text-gray-700">
-                    {userProfile.contactNumber}
+                <p className="text-sm text-muted-foreground font-medium">
+                  Scan at any FAC location for instant access
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="glass rounded-xl p-4">
+                  <Smartphone className="h-5 w-5 text-fac-orange-500 mx-auto mb-2" />
+                  <p className="font-bold text-foreground">Contactless</p>
+                  <p className="text-muted-foreground">Entry & Payment</p>
+                </div>
+                <div className="glass rounded-xl p-4">
+                  <Zap className="h-5 w-5 text-purple-500 mx-auto mb-2" />
+                  <p className="font-bold text-foreground">Instant</p>
+                  <p className="text-muted-foreground">Service Start</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile Details */}
+        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-300">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground text-2xl">
+              <div className="gradient-futuristic p-3 rounded-xl mr-4 animate-pulse-glow">
+                <Settings className="h-6 w-6 text-white" />
+              </div>
+              Account Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="name" className="font-bold text-foreground">
+                  Full Name
+                </Label>
+                {isEditing ? (
+                  <Input
+                    id="name"
+                    value={editedProfile.name}
+                    onChange={(e) =>
+                      setEditedProfile({
+                        ...editedProfile,
+                        name: e.target.value,
+                      })
+                    }
+                    className="mt-2 glass border-border rounded-xl"
+                  />
+                ) : (
+                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                    {profile.name}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="font-bold text-foreground">
+                  Email Address
+                </Label>
+                {isEditing ? (
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editedProfile.email}
+                    onChange={(e) =>
+                      setEditedProfile({
+                        ...editedProfile,
+                        email: e.target.value,
+                      })
+                    }
+                    className="mt-2 glass border-border rounded-xl"
+                  />
+                ) : (
+                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                    {profile.email}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="font-bold text-foreground">
+                  Phone Number
+                </Label>
+                {isEditing ? (
+                  <Input
+                    id="phone"
+                    value={editedProfile.phone}
+                    onChange={(e) =>
+                      setEditedProfile({
+                        ...editedProfile,
+                        phone: e.target.value,
+                      })
+                    }
+                    className="mt-2 glass border-border rounded-xl"
+                  />
+                ) : (
+                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                    {profile.phone}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="joinDate" className="font-bold text-foreground">
+                  Member Since
+                </Label>
+                <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                  {new Date(profile.joinDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Vehicle Information */}
+            <div className="border-t border-border pt-6">
+              <h3 className="text-lg font-bold text-foreground mb-4 flex items-center">
+                <Car className="h-5 w-5 mr-2 text-fac-orange-500" />
+                Vehicle Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label
+                    htmlFor="carUnit"
+                    className="font-bold text-foreground"
+                  >
+                    Car Model
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      id="carUnit"
+                      value={editedProfile.carUnit}
+                      onChange={(e) =>
+                        setEditedProfile({
+                          ...editedProfile,
+                          carUnit: e.target.value,
+                        })
+                      }
+                      className="mt-2 glass border-border rounded-xl"
+                    />
+                  ) : (
+                    <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                      {profile.carUnit}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="plateNumber"
+                    className="font-bold text-foreground"
+                  >
+                    Plate Number
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      id="plateNumber"
+                      value={editedProfile.plateNumber}
+                      onChange={(e) =>
+                        setEditedProfile({
+                          ...editedProfile,
+                          plateNumber: e.target.value,
+                        })
+                      }
+                      className="mt-2 glass border-border rounded-xl"
+                    />
+                  ) : (
+                    <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                      {profile.plateNumber}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="flex space-x-4 pt-6">
+                <Button
+                  onClick={handleSave}
+                  className="btn-futuristic flex-1 py-3 rounded-xl font-bold"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="flex-1 glass py-3 rounded-xl font-bold"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Membership Benefits */}
+        <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground text-2xl">
+              <div className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 p-3 rounded-xl mr-4 animate-pulse-glow">
+                <Crown className="h-6 w-6 text-white" />
+              </div>
+              Membership Benefits
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Membership Level */}
+              <div className="text-center">
+                <div className="glass rounded-2xl p-6 mb-4">
+                  <h3 className="text-2xl font-black text-foreground mb-2">
+                    {membershipData.level}
+                  </h3>
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 text-white font-bold text-sm px-4 py-2">
+                    {membershipData.tier} Tier
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Benefits List */}
+              <div className="grid grid-cols-1 gap-3">
+                {membershipData.perks.map((perk, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 glass rounded-xl p-4"
+                  >
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-foreground font-medium">{perk}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Loyalty Progress */}
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-bold text-foreground">
+                    Progress to {membershipData.nextReward}
+                  </h4>
+                  <span className="text-sm text-muted-foreground">
+                    {membershipData.pointsToNext} points needed
                   </span>
                 </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-start">
-                  <MapPin className="h-4 w-4 text-gray-400 mr-3 mt-0.5" />
-                  <span className="text-gray-700">{userProfile.address}</span>
+                <div className="w-full bg-muted rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-fac-orange-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${
+                        (membershipData.currentPoints /
+                          (membershipData.currentPoints +
+                            membershipData.pointsToNext)) *
+                        100
+                      }%`,
+                    }}
+                  ></div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Vehicle Information */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Car className="h-5 w-5 mr-2 text-fac-blue-600" />
-              Vehicle Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Car Unit
-                  </label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {vehicleInfo.carUnit}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Plate Number
-                  </label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {vehicleInfo.carPlateNumber}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Car Type
-                  </label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {vehicleInfo.carType}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Color
-                  </label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {vehicleInfo.color}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Membership Status */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Crown className="h-5 w-5 mr-2 text-fac-gold-500" />
-                Membership Status
-              </div>
-              <Badge
-                className={cn(
-                  "text-white",
-                  getMembershipStatusColor(membershipInfo.status),
-                )}
-              >
-                {membershipInfo.status.charAt(0).toUpperCase() +
-                  membershipInfo.status.slice(1)}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Current Package
-                  </label>
-                  <div className="flex items-center mt-1">
-                    <Crown className="h-4 w-4 text-fac-gold-500 mr-2" />
-                    <span className="text-lg font-semibold text-gray-900">
-                      {membershipInfo.package}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Preferred Branch
-                  </label>
-                  <div className="flex items-center mt-1">
-                    <MapPin className="h-4 w-4 text-fac-blue-500 mr-2" />
-                    <span className="text-lg font-semibold text-gray-900">
-                      {membershipInfo.branchPreference}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Membership Period
-                  </label>
-                  <p className="text-gray-900">
-                    {formatDate(membershipInfo.startDate)} -{" "}
-                    {formatDate(membershipInfo.expiryDate)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Auto Renewal
-                  </label>
-                  <div className="flex items-center mt-1">
-                    {membershipInfo.autoRenewal ? (
-                      <Shield className="h-4 w-4 text-green-500 mr-2" />
-                    ) : (
-                      <Shield className="h-4 w-4 text-gray-400 mr-2" />
-                    )}
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        membershipInfo.autoRenewal
-                          ? "text-green-700"
-                          : "text-gray-500",
-                      )}
-                    >
-                      {membershipInfo.autoRenewal ? "Enabled" : "Disabled"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* QR Code Section */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <QrCode className="h-5 w-5 mr-2 text-fac-blue-600" />
-              Your QR Code
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              Show this QR code at any FAC branch for quick service
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center space-y-4">
-              {/* QR Code Display */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-                <div className="w-48 h-48 bg-gray-100 rounded-lg flex flex-col items-center justify-center">
-                  <QrCode className="h-24 w-24 text-gray-400 mb-4" />
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-gray-700">
-                      QR Code Preview
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      ID: {userProfile.id}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* QR Code Info */}
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-600">
-                  Scan this code at any branch to:
+                <p className="text-sm text-muted-foreground mt-2">
+                  Current Points:{" "}
+                  {membershipData.currentPoints.toLocaleString()}
                 </p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    <Star className="h-3 w-3 mr-1" />
-                    Log your visit
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    <Crown className="h-3 w-3 mr-1" />
-                    Redeem services
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Track history
-                  </Badge>
-                </div>
               </div>
-
-              {/* Copy ID Button */}
-              <Button
-                variant="outline"
-                className="w-full max-w-xs"
-                onClick={copyQrCode}
-              >
-                {qrCodeCopied ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2 text-green-500" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Member ID
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link to="/dashboard">
-                <Button variant="outline" className="w-full h-16 flex-col">
-                  <Crown className="h-6 w-6 mb-1 text-fac-blue-600" />
-                  <span>Dashboard</span>
-                </Button>
-              </Link>
-              <Link to="/booking">
-                <Button variant="outline" className="w-full h-16 flex-col">
-                  <Calendar className="h-6 w-6 mb-1 text-fac-blue-600" />
-                  <span>Book Service</span>
-                </Button>
-              </Link>
-              <Button variant="outline" className="w-full h-16 flex-col">
-                <Settings className="h-6 w-6 mb-1 text-fac-blue-600" />
-                <span>Settings</span>
-              </Button>
             </div>
           </CardContent>
         </Card>

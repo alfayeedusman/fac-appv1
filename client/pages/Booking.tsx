@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -10,741 +12,457 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Calendar as CalendarIcon,
+  Calendar,
   Clock,
   MapPin,
-  Droplets,
-  Crown,
+  Car,
+  Sparkles,
   CheckCircle,
-  XCircle,
   Star,
-  Plus,
-  Filter,
-  ChevronRight,
-  RefreshCw,
-  User,
+  Crown,
+  Zap,
+  Shield,
+  Camera,
+  Smartphone,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
-interface Branch {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  operatingHours: string;
-  services: string[];
-}
-
-interface TimeSlot {
-  time: string;
-  available: boolean;
-}
-
-interface BookingHistory {
-  id: string;
+interface BookingData {
+  service: string;
   date: string;
   time: string;
   branch: string;
-  branchAddress: string;
-  service: string;
-  status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
-  price: number;
-  estimatedDuration: string;
-  progress?: number; // 0-100 for in-progress bookings
-  progressStage?: string;
-  qrCodeScanned?: boolean;
-  staff?: string;
-  notes?: string;
-}
-
-interface ServicePackage {
-  id: string;
-  name: string;
-  duration: string;
-  price: number;
-  description: string;
-  icon: string;
+  notes: string;
 }
 
 export default function Booking() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
-  );
-  const [selectedBranch, setSelectedBranch] = useState<string>("");
+  const [bookingData, setBookingData] = useState<BookingData>({
+    service: "",
+    date: "",
+    time: "",
+    branch: "",
+    notes: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
 
-  const branches: Branch[] = [
-    {
-      id: "tumaga",
-      name: "Tumaga Branch",
-      address: "123 Tumaga Road, Zamboanga City",
-      phone: "+63 912 345 6789",
-      operatingHours: "8:00 AM - 6:00 PM",
-      services: ["Classic Wash", "VIP ProMax", "Premium Wash"],
-    },
-    {
-      id: "boalan",
-      name: "Boalan Branch",
-      address: "456 Boalan Street, Zamboanga City",
-      phone: "+63 912 987 6543",
-      operatingHours: "8:00 AM - 6:00 PM",
-      services: ["Classic Wash", "VIP ProMax", "Premium Wash"],
-    },
-  ];
-
-  const servicePackages: ServicePackage[] = [
+  const services = [
     {
       id: "classic",
-      name: "Classic Wash",
+      name: "AI Classic Wash",
+      price: "₱0",
       duration: "30 mins",
-      price: 150,
-      description: "Basic exterior wash and dry",
-      icon: "droplets",
+      description: "Smart exterior cleaning with AI optimization",
+      features: [
+        "AI-powered wash system",
+        "Exterior cleaning",
+        "Tire shine",
+        "Basic protection",
+      ],
+      gradient: "from-blue-500 to-cyan-500",
+      popular: false,
     },
     {
       id: "vip-promax",
       name: "VIP ProMax",
-      duration: "45 mins",
-      price: 300,
-      description: "Premium wash with interior cleaning",
-      icon: "star",
-    },
-    {
-      id: "premium",
-      name: "Premium Wash",
+      price: "₱0",
       duration: "60 mins",
-      price: 500,
-      description: "Complete detailing service",
-      icon: "crown",
+      description: "Premium wash with advanced care systems",
+      features: [
+        "Premium AI wash",
+        "Interior deep clean",
+        "Paint protection",
+        "Wax application",
+        "Dashboard treatment",
+      ],
+      gradient: "from-purple-500 to-pink-500",
+      popular: true,
+    },
+    {
+      id: "premium-detail",
+      name: "Premium Detail",
+      price: "₱0",
+      duration: "90 mins",
+      description: "Ultimate luxury detailing experience",
+      features: [
+        "Complete exterior detail",
+        "Full interior restoration",
+        "Ceramic coating",
+        "Engine bay clean",
+        "Leather conditioning",
+        "Paint correction",
+      ],
+      gradient: "from-fac-orange-500 to-yellow-500",
+      popular: false,
     },
   ];
 
-  const timeSlots: TimeSlot[] = [
-    { time: "8:00 AM", available: true },
-    { time: "9:00 AM", available: true },
-    { time: "10:00 AM", available: false },
-    { time: "11:00 AM", available: true },
-    { time: "12:00 PM", available: true },
-    { time: "1:00 PM", available: false },
-    { time: "2:00 PM", available: true },
-    { time: "3:00 PM", available: true },
-    { time: "4:00 PM", available: true },
-    { time: "5:00 PM", available: true },
+  const timeSlots = [
+    "08:00 AM",
+    "09:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "01:00 PM",
+    "02:00 PM",
+    "03:00 PM",
+    "04:00 PM",
+    "05:00 PM",
   ];
 
-  const bookingHistory: BookingHistory[] = [
+  const branches = [
     {
-      id: "1",
-      date: "2024-01-25",
-      time: "10:30 AM",
-      branch: "Tumaga",
-      branchAddress: "123 Tumaga Road, Zamboanga City",
-      service: "VIP ProMax",
-      status: "completed",
-      price: 300,
-      estimatedDuration: "45 mins",
-      qrCodeScanned: true,
-      staff: "Mario Santos",
-      notes: "Excellent service, car looks great!",
+      id: "tumaga",
+      name: "Tumaga Hub",
+      address: "Main Street, Tumaga District",
+      features: ["AI Wash Bay", "VIP Lounge", "Express Service"],
     },
     {
-      id: "2",
-      date: "2024-01-30",
-      time: "2:00 PM",
-      branch: "Boalan",
-      branchAddress: "456 Boalan Street, Zamboanga City",
-      service: "Classic Wash",
-      status: "confirmed",
-      price: 150,
-      estimatedDuration: "30 mins",
-      qrCodeScanned: false,
-    },
-    {
-      id: "3",
-      date: "2024-01-29",
-      time: "11:00 AM",
-      branch: "Tumaga",
-      branchAddress: "123 Tumaga Road, Zamboanga City",
-      service: "Premium Wash",
-      status: "in-progress",
-      price: 500,
-      estimatedDuration: "60 mins",
-      progress: 65,
-      progressStage: "Interior Cleaning",
-      qrCodeScanned: true,
-      staff: "Juan Dela Cruz",
-    },
-    {
-      id: "4",
-      date: "2024-01-28",
-      time: "9:00 AM",
-      branch: "Tumaga",
-      branchAddress: "123 Tumaga Road, Zamboanga City",
-      service: "Premium Wash",
-      status: "completed",
-      price: 500,
-      estimatedDuration: "60 mins",
-      qrCodeScanned: true,
-      staff: "Mario Santos",
-      notes: "Premium detailing completed perfectly",
-    },
-    {
-      id: "5",
-      date: "2024-01-27",
-      time: "4:00 PM",
-      branch: "Boalan",
-      branchAddress: "456 Boalan Street, Zamboanga City",
-      service: "Classic Wash",
-      status: "pending",
-      price: 150,
-      estimatedDuration: "30 mins",
-      qrCodeScanned: false,
-    },
-    {
-      id: "6",
-      date: "2024-01-15",
-      time: "3:30 PM",
-      branch: "Boalan",
-      branchAddress: "456 Boalan Street, Zamboanga City",
-      service: "Classic Wash",
-      status: "cancelled",
-      price: 150,
-      estimatedDuration: "30 mins",
-      notes: "Cancelled due to weather conditions",
+      id: "boalan",
+      name: "Boalan Hub",
+      address: "Commercial Center, Boalan",
+      features: ["Premium Bay", "Customer Lounge", "Full Service"],
     },
   ];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "confirmed":
-        return <Clock className="h-4 w-4 text-blue-500" />;
-      case "pending":
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case "cancelled":
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      case "in-progress":
-        return <RefreshCw className="h-4 w-4 text-orange-500 animate-spin" />;
-      default:
-        return null;
-    }
+  const handleInputChange = (field: keyof BookingData, value: string) => {
+    setBookingData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-700 border-green-200";
-      case "confirmed":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "cancelled":
-        return "bg-red-100 text-red-700 border-red-200";
-      case "in-progress":
-        return "bg-orange-100 text-orange-700 border-orange-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    alert("🚀 Booking confirmed! You'll receive a confirmation shortly.");
+    setIsSubmitting(false);
   };
 
-  const getServiceIcon = (iconType: string) => {
-    switch (iconType) {
-      case "droplets":
-        return <Droplets className="h-5 w-5" />;
-      case "star":
-        return <Star className="h-5 w-5" />;
-      case "crown":
-        return <Crown className="h-5 w-5" />;
-      default:
-        return <Droplets className="h-5 w-5" />;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const handleBooking = () => {
-    if (selectedDate && selectedBranch && selectedService && selectedTime) {
-      alert(
-        `Booking confirmed!\nDate: ${selectedDate.toDateString()}\nTime: ${selectedTime}\nBranch: ${selectedBranch}\nService: ${selectedService}`,
-      );
-    } else {
-      alert("Please fill in all booking details.");
-    }
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      {/* Futuristic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/8 to-purple-500/8 blur-3xl animate-breathe"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/8 to-fac-orange-500/8 blur-2xl animate-float"></div>
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl animate-float animate-delay-300"></div>
+      </div>
+
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <div className="glass rounded-full p-1 animate-fade-in-scale">
+          <ThemeToggle />
+        </div>
+      </div>
+
+      <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-8 animate-fade-in-up">
           <Link to="/dashboard" className="mr-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full glass hover-lift"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div className="flex items-center space-x-4">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-              alt="Fayeed Auto Care Logo"
-              className="h-10 w-auto object-contain"
-            />
+            <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-fac-blue-900">Booking</h1>
-              <p className="text-fac-blue-700">
-                Schedule your car wash service
+              <h1 className="text-3xl font-black text-foreground">
+                Book Your{" "}
+                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                  AI Wash
+                </span>
+              </h1>
+              <p className="text-muted-foreground font-medium">
+                Choose your perfect car care experience
               </p>
             </div>
           </div>
         </div>
 
-        <Tabs defaultValue="schedule" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="schedule" className="flex items-center">
-              <CalendarIcon className="h-4 w-4 mr-2" />
-              Schedule
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center">
-              <Clock className="h-4 w-4 mr-2" />
-              History
-            </TabsTrigger>
-            <TabsTrigger value="branches" className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              Branches
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Schedule Tab */}
-          <TabsContent value="schedule" className="space-y-6">
-            {/* Service Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Service</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {servicePackages.map((service) => (
-                    <div
-                      key={service.id}
-                      className={cn(
-                        "border rounded-lg p-4 cursor-pointer transition-all",
-                        selectedService === service.id
-                          ? "border-fac-blue-600 bg-fac-blue-50"
-                          : "border-gray-200 hover:border-fac-blue-300",
-                      )}
-                      onClick={() => setSelectedService(service.id)}
-                    >
-                      <div className="flex items-center mb-3">
-                        <div className="bg-fac-blue-100 p-2 rounded-full mr-3">
-                          {getServiceIcon(service.icon)}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Service Selection */}
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-100">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground text-2xl">
+                <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                Choose Your Service
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                {services.map((service) => (
+                  <div
+                    key={service.id}
+                    className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover-lift ${
+                      selectedService === service.id
+                        ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 scale-105"
+                        : "border-border glass hover:border-fac-orange-300"
+                    } ${service.popular ? "ring-2 ring-fac-orange-500/30" : ""}`}
+                    onClick={() => {
+                      setSelectedService(service.id);
+                      handleInputChange("service", service.name);
+                    }}
+                  >
+                    {service.popular && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span className="gradient-primary px-4 py-1 rounded-full text-white text-xs font-bold shadow-lg animate-pulse-glow">
+                          MOST POPULAR
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`bg-gradient-to-r ${service.gradient} p-3 rounded-xl animate-pulse-glow`}
+                        >
+                          {service.id === "classic" && (
+                            <Car className="h-6 w-6 text-white" />
+                          )}
+                          {service.id === "vip-promax" && (
+                            <Crown className="h-6 w-6 text-white" />
+                          )}
+                          {service.id === "premium-detail" && (
+                            <Star className="h-6 w-6 text-white" />
+                          )}
                         </div>
                         <div>
-                          <h3 className="font-semibold">{service.name}</h3>
-                          <p className="text-sm text-gray-600">
-                            {service.duration}
+                          <h3 className="font-black text-foreground text-xl">
+                            {service.name}
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            {service.description}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {service.description}
-                      </p>
-                      <p className="font-bold text-fac-blue-600">
-                        ₱{service.price}
-                      </p>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-fac-orange-500">
+                          {service.price}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {service.duration}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="grid grid-cols-2 gap-2">
+                      {service.features.map((feature, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center text-sm text-foreground"
+                        >
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Branch & Date Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Branch</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    value={selectedBranch}
-                    onValueChange={setSelectedBranch}
+          {/* Date & Time Selection */}
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-200">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground text-2xl">
+                <div className="gradient-secondary p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <Clock className="h-6 w-6 text-white" />
+                </div>
+                Schedule Your Visit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label
+                    htmlFor="date"
+                    className="text-foreground font-semibold"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a branch" />
+                    Select Date
+                  </Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    min={getMinDate()}
+                    value={bookingData.date}
+                    onChange={(e) => handleInputChange("date", e.target.value)}
+                    required
+                    className="mt-2 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                  />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="time"
+                    className="text-foreground font-semibold"
+                  >
+                    Select Time
+                  </Label>
+                  <Select
+                    value={bookingData.time}
+                    onValueChange={(value) => handleInputChange("time", value)}
+                  >
+                    <SelectTrigger className="mt-2 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
+                      <SelectValue placeholder="Choose time slot" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch.id} value={branch.id}>
-                          {branch.name}
+                    <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
+                      {timeSlots.map((time) => (
+                        <SelectItem key={time} value={time}>
+                          {time}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Date</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date()}
-                    className="rounded-md border"
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Time Slot Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Time Slots</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {timeSlots.map((slot) => (
-                    <Button
-                      key={slot.time}
-                      variant={
-                        selectedTime === slot.time ? "default" : "outline"
-                      }
-                      className={cn(
-                        "h-12",
-                        !slot.available &&
-                          "opacity-50 cursor-not-allowed bg-gray-100",
-                        selectedTime === slot.time &&
-                          "bg-fac-blue-600 hover:bg-fac-blue-700",
-                      )}
-                      disabled={!slot.available}
-                      onClick={() =>
-                        slot.available ? setSelectedTime(slot.time) : null
-                      }
-                    >
-                      {slot.time}
-                    </Button>
-                  ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Booking Summary & Confirm */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Booking Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Service:</span>
-                    <span className="font-semibold">
-                      {selectedService
-                        ? servicePackages.find((s) => s.id === selectedService)
-                            ?.name
-                        : "Not selected"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Branch:</span>
-                    <span className="font-semibold">
-                      {selectedBranch
-                        ? branches.find((b) => b.id === selectedBranch)?.name
-                        : "Not selected"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="font-semibold">
-                      {selectedDate
-                        ? selectedDate.toDateString()
-                        : "Not selected"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Time:</span>
-                    <span className="font-semibold">
-                      {selectedTime || "Not selected"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t pt-3">
-                    <span className="text-gray-600">Total:</span>
-                    <span className="font-bold text-fac-blue-600">
-                      ₱
-                      {selectedService
-                        ? servicePackages.find((s) => s.id === selectedService)
-                            ?.price
-                        : 0}
-                    </span>
-                  </div>
+          {/* Branch Selection */}
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground text-2xl">
+                <div className="gradient-futuristic p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <MapPin className="h-6 w-6 text-white" />
                 </div>
-                <Button
-                  className="w-full bg-fac-blue-600 hover:bg-fac-blue-700"
-                  onClick={handleBooking}
-                  disabled={
-                    !selectedDate ||
-                    !selectedBranch ||
-                    !selectedService ||
-                    !selectedTime
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Confirm Booking
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* History Tab */}
-          <TabsContent value="history" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Booking Status & History</CardTitle>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filter
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {bookingHistory.map((booking) => (
-                    <Card
-                      key={booking.id}
-                      className={cn(
-                        "transition-all hover:shadow-md",
-                        booking.status === "in-progress" &&
-                          "ring-2 ring-orange-200",
-                        booking.status === "confirmed" &&
-                          "ring-2 ring-blue-200",
-                      )}
-                    >
-                      <CardContent className="p-4">
-                        {/* Header Row */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-3">
-                            {getStatusIcon(booking.status)}
-                            <div>
-                              <h4 className="font-semibold text-lg">
-                                {booking.service}
-                              </h4>
-                              <p className="text-sm text-gray-600">
-                                Booking ID: {booking.id}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <Badge
-                              className={cn(
-                                "mb-2 border",
-                                getStatusColor(booking.status),
-                              )}
-                            >
-                              {booking.status.charAt(0).toUpperCase() +
-                                booking.status.slice(1)}
-                            </Badge>
-                            <p className="text-lg font-bold text-fac-blue-600">
-                              ₱{booking.price.toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar for In-Progress Bookings */}
-                        {booking.status === "in-progress" &&
-                          booking.progress && (
-                            <div className="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-orange-700">
-                                  Service Progress
-                                </span>
-                                <span className="text-sm text-orange-600">
-                                  {booking.progress}% Complete
-                                </span>
-                              </div>
-                              <div className="w-full bg-orange-200 rounded-full h-2 mb-2">
-                                <div
-                                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                                  style={{ width: `${booking.progress}%` }}
-                                ></div>
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-orange-600">
-                                  Current Stage: {booking.progressStage}
-                                </span>
-                                {booking.staff && (
-                                  <span className="text-orange-600">
-                                    Staff: {booking.staff}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                        {/* Booking Details Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                              <span className="text-sm text-gray-600">
-                                {formatDate(booking.date)} at {booking.time}
-                              </span>
-                            </div>
-                            <div className="flex items-center">
-                              <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                              <span className="text-sm text-gray-600">
-                                Duration: {booking.estimatedDuration}
-                              </span>
-                            </div>
-                            {booking.qrCodeScanned && (
-                              <div className="flex items-center">
-                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                                <span className="text-sm text-green-600">
-                                  QR Code Scanned
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-start">
-                              <MapPin className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {booking.branch} Branch
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  {booking.branchAddress}
-                                </p>
-                              </div>
-                            </div>
-                            {booking.staff && (
-                              <div className="flex items-center">
-                                <User className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-600">
-                                  Staff: {booking.staff}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Notes */}
-                        {booking.notes && (
-                          <div className="p-3 bg-gray-50 rounded-lg border">
-                            <p className="text-sm text-gray-700">
-                              <strong>Notes:</strong> {booking.notes}
-                            </p>
-                          </div>
+                Choose Your Hub
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                {branches.map((branch) => (
+                  <div
+                    key={branch.id}
+                    className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover-lift ${
+                      bookingData.branch === branch.name
+                        ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50"
+                        : "border-border glass hover:border-fac-orange-300"
+                    }`}
+                    onClick={() => handleInputChange("branch", branch.name)}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-black text-foreground text-lg">
+                          {branch.name}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          {branch.address}
+                        </p>
+                      </div>
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          bookingData.branch === branch.name
+                            ? "border-fac-orange-500 bg-fac-orange-500"
+                            : "border-muted-foreground"
+                        }`}
+                      >
+                        {bookingData.branch === branch.name && (
+                          <CheckCircle className="h-4 w-4 text-white" />
                         )}
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
-                          {booking.status === "confirmed" && (
-                            <>
-                              <Button variant="outline" size="sm">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Reschedule
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-red-300 text-red-600"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Cancel
-                              </Button>
-                            </>
-                          )}
-                          {booking.status === "pending" && (
-                            <Button variant="outline" size="sm">
-                              <Clock className="h-4 w-4 mr-2" />
-                              Awaiting Confirmation
-                            </Button>
-                          )}
-                          {booking.status === "completed" && (
-                            <>
-                              <Button variant="outline" size="sm">
-                                <Star className="h-4 w-4 mr-2" />
-                                Rate Service
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Book Again
-                              </Button>
-                            </>
-                          )}
-                          {booking.status === "in-progress" && (
-                            <Button variant="outline" size="sm">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              Track Location
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Branches Tab */}
-          <TabsContent value="branches" className="space-y-6">
-            {branches.map((branch) => (
-              <Card key={branch.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center">
-                      <MapPin className="h-5 w-5 mr-2 text-fac-blue-600" />
-                      {branch.name}
-                    </CardTitle>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start">
-                      <MapPin className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                      <span className="text-gray-700">{branch.address}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-gray-700">
-                        {branch.operatingHours}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {branch.services.map((service) => (
-                        <Badge key={service} variant="outline">
-                          {service}
+                    <div className="flex flex-wrap gap-2">
+                      {branch.features.map((feature, index) => (
+                        <Badge
+                          key={index}
+                          className="bg-muted text-muted-foreground text-xs"
+                        >
+                          {feature}
                         </Badge>
                       ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-        </Tabs>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Special Notes */}
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground text-2xl">
+                <div className="bg-gradient-to-r from-green-500 to-blue-500 p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+                Special Requests
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <Label
+                  htmlFor="notes"
+                  className="text-foreground font-semibold"
+                >
+                  Additional Notes (Optional)
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={bookingData.notes}
+                  onChange={(e) => handleInputChange("notes", e.target.value)}
+                  placeholder="Any special requests or areas of concern for your vehicle..."
+                  className="mt-2 min-h-[100px] bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02]"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="animate-fade-in-up animate-delay-500">
+            <Button
+              type="submit"
+              className="btn-futuristic w-full py-6 text-xl rounded-2xl font-black relative overflow-hidden group"
+              disabled={
+                isSubmitting ||
+                !bookingData.service ||
+                !bookingData.date ||
+                !bookingData.time ||
+                !bookingData.branch
+              }
+            >
+              {isSubmitting ? (
+                <div className="flex items-center justify-center">
+                  <div className="spinner mr-3"></div>
+                  PROCESSING BOOKING...
+                </div>
+              ) : (
+                <span className="relative z-10 flex items-center justify-center">
+                  CONFIRM BOOKING
+                  <Zap className="h-6 w-6 ml-3 group-hover:scale-125 transition-transform duration-300" />
+                </span>
+              )}
+            </Button>
+          </div>
+        </form>
+
+        {/* Footer Info */}
+        <div className="text-center mt-8 animate-fade-in-up animate-delay-600">
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-center space-x-2 mb-3">
+              <Shield className="h-5 w-5 text-green-500" />
+              <span className="text-foreground font-semibold">
+                Booking Protection
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Free cancellation up to 2 hours before your appointment •
+              Satisfaction guaranteed • AI-optimized service quality
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
