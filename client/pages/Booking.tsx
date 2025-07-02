@@ -534,7 +534,13 @@ You'll receive a confirmation shortly.`);
         </div>
       </div>
 
-      <BottomNavigation />
+      <BottomNavigation onQRScan={handleQRScan} />
+
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScanSuccess={handleScanSuccess}
+      />
 
       <ConfirmModal
         isOpen={showBookingModal}
