@@ -20,6 +20,8 @@ import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import ConfirmModal from "@/components/ConfirmModal";
 import VoucherSuccessModal from "@/components/VoucherSuccessModal";
+import QRScanner from "@/components/QRScanner";
+import { useQRScanner } from "@/hooks/useQRScanner";
 
 interface Voucher {
   id: string;
