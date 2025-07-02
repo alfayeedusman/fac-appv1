@@ -34,6 +34,9 @@ interface MembershipData {
   startDate: string;
   expiryDate: string;
   daysLeft: number;
+  currentCycleStart: string;
+  currentCycleEnd: string;
+  daysLeftInCycle: number;
   remainingWashes: {
     classic: number;
     vipProMax: number;
@@ -45,6 +48,7 @@ interface MembershipData {
     premium: number;
   };
   autoRenewal: boolean;
+  nextResetDate: string;
 }
 
 export default function Dashboard() {
@@ -53,10 +57,13 @@ export default function Dashboard() {
     startDate: "2024-01-01",
     expiryDate: "2024-02-01",
     daysLeft: 8,
+    currentCycleStart: "2024-01-01",
+    currentCycleEnd: "2024-02-01",
+    daysLeftInCycle: 8,
     remainingWashes: {
       classic: 999, // Unlimited
       vipProMax: 3,
-      premium: 1,
+      premium: 0, // Used this month
     },
     totalWashes: {
       classic: 999, // Unlimited
@@ -64,6 +71,7 @@ export default function Dashboard() {
       premium: 1,
     },
     autoRenewal: true,
+    nextResetDate: "2024-02-01",
   });
 
   const [washLogs, setWashLogs] = useState<WashLog[]>([
@@ -176,10 +184,20 @@ export default function Dashboard() {
               {/* Expiry Information */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Expires on:</span>
-                  <span className="font-semibold">
-                    {formatDate(membershipData.expiryDate)}
+                  <span className="text-gray-600">Current Cycle:</span>
+                  <span className="font-semibold text-sm">
+                    {formatDate(membershipData.currentCycleStart)} -{" "}
+                    {formatDate(membershipData.currentCycleEnd)}
                   </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Cycle Resets In:</span>
+                  <div className="flex items-center">
+                    <RefreshCw className="h-4 w-4 text-fac-blue-500 mr-1" />
+                    <span className="font-semibold text-fac-blue-600">
+                      {membershipData.daysLeftInCycle} days
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Auto-renewal:</span>
@@ -226,9 +244,15 @@ export default function Dashboard() {
         {/* Remaining Washes */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Droplets className="h-5 w-5 mr-2 text-fac-blue-600" />
-              Remaining Washes
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Droplets className="h-5 w-5 mr-2 text-fac-blue-600" />
+                Remaining Washes
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Resets {formatDate(membershipData.nextResetDate)}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -289,7 +313,17 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t space-y-3">
+              <div className="bg-fac-blue-50 p-3 rounded-lg">
+                <div className="flex items-center text-sm text-fac-blue-700">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Monthly Reset System:</span>
+                </div>
+                <p className="text-xs text-fac-blue-600 mt-1">
+                  Unused washes expire at cycle end. All benefits reset to full
+                  amount on {formatDate(membershipData.nextResetDate)}.
+                </p>
+              </div>
               <Link to="/booking">
                 <Button className="w-full bg-fac-blue-600 hover:bg-fac-blue-700">
                   <Calendar className="h-4 w-4 mr-2" />
