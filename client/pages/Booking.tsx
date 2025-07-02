@@ -141,7 +141,12 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowBookingModal(true);
+  };
+
+  const confirmBooking = async () => {
     setIsSubmitting(true);
+    setShowBookingModal(false);
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
