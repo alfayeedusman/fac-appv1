@@ -386,6 +386,17 @@ export default function Voucher() {
       </div>
 
       <BottomNavigation />
+
+      <ConfirmModal
+        isOpen={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={confirmRemoveVoucher}
+        title="Remove Voucher"
+        description={`Are you sure you want to remove voucher "${voucherToRemove}" from your cart? You can add it back later.`}
+        confirmText="Yes, Remove"
+        cancelText="Keep Voucher"
+        type="warning"
+      />
     </div>
   );
 }
