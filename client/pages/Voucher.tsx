@@ -40,6 +40,10 @@ export default function Voucher() {
   const [appliedVouchers, setAppliedVouchers] = useState<string[]>([]);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [voucherToRemove, setVoucherToRemove] = useState<string>("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [appliedVoucherData, setAppliedVoucherData] = useState<Voucher | null>(
+    null,
+  );
 
   const [availableVouchers] = useState<Voucher[]>([
     {
