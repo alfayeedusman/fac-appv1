@@ -121,7 +121,7 @@ export default function AdminSidebar({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-border theme-transition">
             <div className="flex items-center justify-between">
               {!isCollapsed && (
                 <div className="flex items-center space-x-3">
