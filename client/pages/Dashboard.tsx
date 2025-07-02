@@ -548,7 +548,7 @@ export default function Dashboard() {
                     .length
                 }
               </p>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 THIS MONTH
               </p>
             </CardContent>
@@ -557,32 +557,32 @@ export default function Dashboard() {
       </div>
 
       {/* Mobile Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 md:hidden theme-transition">
         <div className="grid grid-cols-4 h-16">
           <Link
             to="/dashboard"
-            className="flex flex-col items-center justify-center space-y-1 bg-fac-orange-50 text-fac-orange-500"
+            className="flex flex-col items-center justify-center space-y-1 bg-fac-orange-50 text-fac-orange-500 dark:bg-fac-orange-950"
           >
             <Crown className="h-5 w-5" />
             <span className="text-xs font-bold">Home</span>
           </Link>
           <Link
             to="/booking"
-            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground theme-transition"
           >
             <Calendar className="h-5 w-5" />
             <span className="text-xs font-medium">Booking</span>
           </Link>
           <Link
             to="/manage-subscription"
-            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground theme-transition"
           >
             <CreditCard className="h-5 w-5" />
             <span className="text-xs font-medium">Plans</span>
           </Link>
           <Link
             to="/profile"
-            className="flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-black"
+            className="flex flex-col items-center justify-center space-y-1 text-muted-foreground hover:text-foreground theme-transition"
           >
             <User className="h-5 w-5" />
             <span className="text-xs font-medium">Profile</span>
