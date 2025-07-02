@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { LogoutModal } from "@/components/ConfirmModal";
 
 interface WashLog {
   id: string;
