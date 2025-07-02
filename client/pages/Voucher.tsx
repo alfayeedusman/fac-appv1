@@ -113,9 +113,8 @@ export default function Voucher() {
     }
 
     setAppliedVouchers((prev) => [...prev, voucher.code]);
-    alert(
-      `Voucher ${voucher.code} applied successfully! 🎉\nYou can now use this discount during checkout.`,
-    );
+    setAppliedVoucherData(voucher);
+    setShowSuccessModal(true);
   };
 
   const handleRemoveVoucher = (voucherCode: string) => {
