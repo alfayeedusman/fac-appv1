@@ -288,6 +288,9 @@ export default function AdminDashboard() {
   const handleAddPackage = () => {
     if (newPackage.name && newPackage.basePrice) {
       const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
+      const features = editingFeatures
+        .split("\n")
+        .filter((f) => f.trim() !== "");
       setPackages((prev) => [
         ...prev,
         {
@@ -295,11 +298,12 @@ export default function AdminDashboard() {
           name: newPackage.name!,
           basePrice: newPackage.basePrice!,
           duration: newPackage.duration || "30 mins",
-          features: newPackage.features || [],
+          features,
           active: true,
         },
       ]);
       setNewPackage({ name: "", basePrice: 0, duration: "", features: [] });
+      setEditingFeatures("");
       alert("Package added successfully!");
     }
   };
