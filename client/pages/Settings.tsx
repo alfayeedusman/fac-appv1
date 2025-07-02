@@ -29,6 +29,7 @@ import {
   Star,
   MessageSquare,
 } from "lucide-react";
+import StickyHeader from "@/components/StickyHeader";
 
 interface SettingsSection {
   id: string;
