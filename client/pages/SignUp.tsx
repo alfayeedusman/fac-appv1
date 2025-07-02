@@ -135,6 +135,8 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      <StickyHeader showBack={true} backTo="/" title="Sign Up" />
+
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
