@@ -300,6 +300,10 @@ export default function AdminDashboard() {
   const [tempDuration, setTempDuration] = useState<string>("");
   const [tempFeatures, setTempFeatures] = useState<string>("");
 
+  // Notification dropdown state
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
+    useState(false);
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role !== "admin" && role !== "superadmin") {
