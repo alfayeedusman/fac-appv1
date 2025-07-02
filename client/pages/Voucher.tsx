@@ -184,6 +184,49 @@ export default function Voucher() {
         </div>
       </div>
 
+      {/* Applied Vouchers */}
+      {appliedVouchers.length > 0 && (
+        <div className="max-w-md mx-auto px-4 pt-4">
+          <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h3 className="font-semibold text-green-800 dark:text-green-200">
+                  Applied Vouchers ({appliedVouchers.length})
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {appliedVouchers.map((code) => {
+                  const voucher = availableVouchers.find(
+                    (v) => v.code === code,
+                  );
+                  return voucher ? (
+                    <div
+                      key={code}
+                      className="flex items-center justify-between bg-white dark:bg-green-900 rounded-lg p-2"
+                    >
+                      <div>
+                        <span className="font-medium text-sm">
+                          {voucher.title}
+                        </span>
+                        <div className="text-xs text-muted-foreground">
+                          {code}
+                        </div>
+                      </div>
+                      <Badge className="bg-green-500 text-white">
+                        {voucher.discountType === "percentage"
+                          ? `${voucher.discountValue}% OFF`
+                          : `₱${voucher.discountValue} OFF`}
+                      </Badge>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Vouchers List */}
       <div className="max-w-md mx-auto px-4 py-6 space-y-4">
         <div className="text-sm text-muted-foreground mb-4">
