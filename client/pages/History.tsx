@@ -49,7 +49,7 @@ export default function History() {
     },
     {
       id: "2",
-      service: "Classic AI Wash",
+      service: "Classic Wash",
       vehicleType: "Sedan",
       date: "2024-01-10",
       time: "2:15 PM",
