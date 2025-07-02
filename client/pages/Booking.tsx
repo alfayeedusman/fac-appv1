@@ -47,9 +47,16 @@ interface BookingHistory {
   date: string;
   time: string;
   branch: string;
+  branchAddress: string;
   service: string;
-  status: "completed" | "cancelled" | "upcoming" | "in-progress";
+  status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
   price: number;
+  estimatedDuration: string;
+  progress?: number; // 0-100 for in-progress bookings
+  progressStage?: string;
+  qrCodeScanned?: boolean;
+  staff?: string;
+  notes?: string;
 }
 
 interface ServicePackage {
@@ -134,36 +141,79 @@ export default function Booking() {
       date: "2024-01-25",
       time: "10:30 AM",
       branch: "Tumaga",
+      branchAddress: "123 Tumaga Road, Zamboanga City",
       service: "VIP ProMax",
       status: "completed",
       price: 300,
+      estimatedDuration: "45 mins",
+      qrCodeScanned: true,
+      staff: "Mario Santos",
+      notes: "Excellent service, car looks great!",
     },
     {
       id: "2",
       date: "2024-01-30",
       time: "2:00 PM",
       branch: "Boalan",
+      branchAddress: "456 Boalan Street, Zamboanga City",
       service: "Classic Wash",
-      status: "upcoming",
+      status: "confirmed",
       price: 150,
+      estimatedDuration: "30 mins",
+      qrCodeScanned: false,
     },
     {
       id: "3",
-      date: "2024-01-22",
-      time: "9:00 AM",
+      date: "2024-01-29",
+      time: "11:00 AM",
       branch: "Tumaga",
+      branchAddress: "123 Tumaga Road, Zamboanga City",
       service: "Premium Wash",
-      status: "completed",
+      status: "in-progress",
       price: 500,
+      estimatedDuration: "60 mins",
+      progress: 65,
+      progressStage: "Interior Cleaning",
+      qrCodeScanned: true,
+      staff: "Juan Dela Cruz",
     },
     {
       id: "4",
+      date: "2024-01-28",
+      time: "9:00 AM",
+      branch: "Tumaga",
+      branchAddress: "123 Tumaga Road, Zamboanga City",
+      service: "Premium Wash",
+      status: "completed",
+      price: 500,
+      estimatedDuration: "60 mins",
+      qrCodeScanned: true,
+      staff: "Mario Santos",
+      notes: "Premium detailing completed perfectly",
+    },
+    {
+      id: "5",
+      date: "2024-01-27",
+      time: "4:00 PM",
+      branch: "Boalan",
+      branchAddress: "456 Boalan Street, Zamboanga City",
+      service: "Classic Wash",
+      status: "pending",
+      price: 150,
+      estimatedDuration: "30 mins",
+      qrCodeScanned: false,
+    },
+    {
+      id: "6",
       date: "2024-01-15",
       time: "3:30 PM",
       branch: "Boalan",
+      branchAddress: "456 Boalan Street, Zamboanga City",
       service: "Classic Wash",
       status: "cancelled",
       price: 150,
+      estimatedDuration: "30 mins",
+      notes: "Cancelled due to weather conditions",
     },
   ];
 
@@ -171,12 +221,14 @@ export default function Booking() {
     switch (status) {
       case "completed":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "upcoming":
+      case "confirmed":
         return <Clock className="h-4 w-4 text-blue-500" />;
+      case "pending":
+        return <Clock className="h-4 w-4 text-yellow-500" />;
       case "cancelled":
         return <XCircle className="h-4 w-4 text-red-500" />;
       case "in-progress":
-        return <Clock className="h-4 w-4 text-orange-500" />;
+        return <RefreshCw className="h-4 w-4 text-orange-500 animate-spin" />;
       default:
         return null;
     }
@@ -185,15 +237,17 @@ export default function Booking() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-700";
-      case "upcoming":
-        return "bg-blue-100 text-blue-700";
+        return "bg-green-100 text-green-700 border-green-200";
+      case "confirmed":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "cancelled":
-        return "bg-red-100 text-red-700";
+        return "bg-red-100 text-red-700 border-red-200";
       case "in-progress":
-        return "bg-orange-100 text-orange-700";
+        return "bg-orange-100 text-orange-700 border-orange-200";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
@@ -447,45 +501,195 @@ export default function Booking() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Booking History</CardTitle>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
+                  <CardTitle>Booking Status & History</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {bookingHistory.map((booking) => (
-                    <div
+                    <Card
                       key={booking.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                      className={cn(
+                        "transition-all hover:shadow-md",
+                        booking.status === "in-progress" &&
+                          "ring-2 ring-orange-200",
+                        booking.status === "confirmed" &&
+                          "ring-2 ring-blue-200",
+                      )}
                     >
-                      <div className="flex items-center space-x-4">
-                        {getStatusIcon(booking.status)}
-                        <div>
-                          <h4 className="font-semibold">{booking.service}</h4>
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <span>{formatDate(booking.date)}</span>
-                            <span>•</span>
-                            <span>{booking.time}</span>
-                            <span>•</span>
-                            <div className="flex items-center">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {booking.branch}
+                      <CardContent className="p-4">
+                        {/* Header Row */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            {getStatusIcon(booking.status)}
+                            <div>
+                              <h4 className="font-semibold text-lg">
+                                {booking.service}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                Booking ID: {booking.id}
+                              </p>
                             </div>
                           </div>
+                          <div className="text-right">
+                            <Badge
+                              className={cn(
+                                "mb-2 border",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              {booking.status.charAt(0).toUpperCase() +
+                                booking.status.slice(1)}
+                            </Badge>
+                            <p className="text-lg font-bold text-fac-blue-600">
+                              ₱{booking.price.toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className={getStatusColor(booking.status)}>
-                          {booking.status}
-                        </Badge>
-                        <p className="text-sm font-semibold mt-1">
-                          ₱{booking.price}
-                        </p>
-                      </div>
-                    </div>
+
+                        {/* Progress Bar for In-Progress Bookings */}
+                        {booking.status === "in-progress" &&
+                          booking.progress && (
+                            <div className="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-orange-700">
+                                  Service Progress
+                                </span>
+                                <span className="text-sm text-orange-600">
+                                  {booking.progress}% Complete
+                                </span>
+                              </div>
+                              <div className="w-full bg-orange-200 rounded-full h-2 mb-2">
+                                <div
+                                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${booking.progress}%` }}
+                                ></div>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-orange-600">
+                                  Current Stage: {booking.progressStage}
+                                </span>
+                                {booking.staff && (
+                                  <span className="text-orange-600">
+                                    Staff: {booking.staff}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Booking Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="text-sm text-gray-600">
+                                {formatDate(booking.date)} at {booking.time}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="text-sm text-gray-600">
+                                Duration: {booking.estimatedDuration}
+                              </span>
+                            </div>
+                            {booking.qrCodeScanned && (
+                              <div className="flex items-center">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                <span className="text-sm text-green-600">
+                                  QR Code Scanned
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-start">
+                              <MapPin className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {booking.branch} Branch
+                                </p>
+                                <p className="text-xs text-gray-600">
+                                  {booking.branchAddress}
+                                </p>
+                              </div>
+                            </div>
+                            {booking.staff && (
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 text-gray-400 mr-2" />
+                                <span className="text-sm text-gray-600">
+                                  Staff: {booking.staff}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Notes */}
+                        {booking.notes && (
+                          <div className="p-3 bg-gray-50 rounded-lg border">
+                            <p className="text-sm text-gray-700">
+                              <strong>Notes:</strong> {booking.notes}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+                          {booking.status === "confirmed" && (
+                            <>
+                              <Button variant="outline" size="sm">
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Reschedule
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 text-red-600"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                          {booking.status === "pending" && (
+                            <Button variant="outline" size="sm">
+                              <Clock className="h-4 w-4 mr-2" />
+                              Awaiting Confirmation
+                            </Button>
+                          )}
+                          {booking.status === "completed" && (
+                            <>
+                              <Button variant="outline" size="sm">
+                                <Star className="h-4 w-4 mr-2" />
+                                Rate Service
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Book Again
+                              </Button>
+                            </>
+                          )}
+                          {booking.status === "in-progress" && (
+                            <Button variant="outline" size="sm">
+                              <MapPin className="h-4 w-4 mr-2" />
+                              Track Location
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
