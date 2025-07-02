@@ -323,7 +323,7 @@ export default function Dashboard() {
                     <div className="bg-green-500 h-2 rounded-full w-full"></div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    ∞ Unlimited AI-powered washes this month
+                    ∞ Unlimited washes this month
                   </p>
                 </div>
 
