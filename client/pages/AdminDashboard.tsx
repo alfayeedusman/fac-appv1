@@ -391,6 +391,148 @@ export default function AdminDashboard() {
     );
   };
 
+  // Customer management handlers
+  const handleAddCustomer = () => {
+    if (newCustomer.name && newCustomer.email && newCustomer.phone) {
+      const id = Date.now().toString();
+      const customer: Customer = {
+        id,
+        name: newCustomer.name,
+        email: newCustomer.email,
+        phone: newCustomer.phone,
+        carUnit: newCustomer.carUnit,
+        plateNumber: newCustomer.plateNumber,
+        membershipType: newCustomer.membershipType,
+        joinDate: new Date().toISOString().split("T")[0],
+        totalWashes: 0,
+        totalSpent: 0,
+        status: "pending",
+        approvalStatus: "pending",
+      };
+
+      setCustomers((prev) => [customer, ...prev]);
+      setNewCustomer({
+        name: "",
+        email: "",
+        phone: "",
+        carUnit: "",
+        plateNumber: "",
+        membershipType: "Classic",
+      });
+      setIsAddCustomerModalOpen(false);
+
+      // Add notification for new customer
+      setNotifications((prev) => [
+        {
+          id: Date.now().toString(),
+          type: "new_customer",
+          title: "New Customer Added",
+          message: `${customer.name} has been added and is awaiting approval.`,
+          timestamp: new Date(),
+          read: false,
+          customerName: customer.name,
+          actionRequired: true,
+        },
+        ...prev,
+      ]);
+
+      alert("Customer added successfully!");
+    }
+  };
+
+  // Package management handlers
+  const handleOpenPackageModal = (
+    mode: "add" | "edit",
+    pkg?: ServicePackage,
+  ) => {
+    setPackageModalMode(mode);
+    if (mode === "edit" && pkg) {
+      setCurrentPackage(pkg);
+      setNewPackage({
+        name: pkg.name,
+        basePrice: pkg.basePrice,
+        duration: pkg.duration,
+        features: pkg.features,
+        active: pkg.active,
+      });
+      setEditingFeatures(pkg.features.join("\n"));
+    } else {
+      setCurrentPackage(null);
+      setNewPackage({
+        name: "",
+        basePrice: 0,
+        duration: "",
+        features: [],
+        active: true,
+      });
+      setEditingFeatures("");
+    }
+    setIsPackageModalOpen(true);
+  };
+
+  const handleSavePackageModal = () => {
+    if (packageModalMode === "edit" && currentPackage) {
+      // Update existing package
+      const updatedPackage = {
+        ...currentPackage,
+        name: newPackage.name!,
+        basePrice: newPackage.basePrice!,
+        duration: newPackage.duration!,
+        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
+        active: newPackage.active!,
+      };
+      setPackages((prev) =>
+        prev.map((pkg) =>
+          pkg.id === currentPackage.id ? updatedPackage : pkg,
+        ),
+      );
+      alert("Package updated successfully!");
+    } else {
+      // Add new package
+      if (newPackage.name && newPackage.basePrice) {
+        const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
+        const features = editingFeatures
+          .split("\n")
+          .filter((f) => f.trim() !== "");
+        setPackages((prev) => [
+          ...prev,
+          {
+            id,
+            name: newPackage.name!,
+            basePrice: newPackage.basePrice!,
+            duration: newPackage.duration || "30 mins",
+            features,
+            active: true,
+          },
+        ]);
+        alert("Package added successfully!");
+      }
+    }
+    setIsPackageModalOpen(false);
+    setCurrentPackage(null);
+    setNewPackage({
+      name: "",
+      basePrice: 0,
+      duration: "",
+      features: [],
+      active: true,
+    });
+    setEditingFeatures("");
+  };
+
+  const handleDeletePackage = (id: string) => {
+    const packageToDelete = packages.find((pkg) => pkg.id === id);
+    if (
+      packageToDelete &&
+      confirm(
+        `Are you sure you want to delete the "${packageToDelete.name}" package? This action cannot be undone.`,
+      )
+    ) {
+      setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
+      alert("Package deleted successfully!");
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
       style: "currency",
