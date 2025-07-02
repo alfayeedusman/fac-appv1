@@ -85,6 +85,7 @@ export default function StickyHeader({
                 variant="ghost"
                 size="icon"
                 className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => alert("🔍 Search feature coming soon!")}
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -92,6 +93,7 @@ export default function StickyHeader({
                 variant="ghost"
                 size="icon"
                 className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => alert("🔔 No new notifications at the moment!")}
               >
                 <Bell className="h-5 w-5" />
               </Button>
