@@ -19,6 +19,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import ConfirmModal from "@/components/ConfirmModal";
+import VoucherSuccessModal from "@/components/VoucherSuccessModal";
 
 interface Voucher {
   id: string;
