@@ -465,58 +465,58 @@ export default function Dashboard() {
       </div>
 
       {/* Modern Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        {/* Home Button Background Circle */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-lg"></div>
+
         {/* Background Bar */}
         <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
           <div className="max-w-md mx-auto px-4 py-2">
-            <div className="grid grid-cols-5 items-center h-14">
+            <div className="grid grid-cols-5 items-center h-16">
               <Link
                 to="/booking"
-                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+                className="flex flex-col items-center justify-center space-y-1 p-2 text-gray-400 hover:text-fac-orange-500 transition-all duration-200 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
               >
-                <Calendar className="h-5 w-5" />
-                <span className="text-xs">Book</span>
+                <Calendar className="h-5 w-5 transition-transform duration-200" />
+                <span className="text-xs font-medium">Book</span>
               </Link>
 
               <Link
                 to="/manage-subscription"
-                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+                className="flex flex-col items-center justify-center space-y-1 p-2 text-gray-400 hover:text-fac-orange-500 transition-all duration-200 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
               >
-                <CreditCard className="h-5 w-5" />
-                <span className="text-xs">Plans</span>
+                <CreditCard className="h-5 w-5 transition-transform duration-200" />
+                <span className="text-xs font-medium">Plans</span>
               </Link>
 
               {/* Floating Home Button */}
               <div className="flex justify-center">
                 <Link
                   to="/dashboard"
-                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform -translate-y-3 transition-all duration-300 hover:scale-105"
+                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl transform -translate-y-4 transition-all duration-300 hover:scale-110 active:scale-95 z-10"
                 >
-                  <Crown className="h-6 w-6" />
+                  <Home className="h-7 w-7" />
                 </Link>
               </div>
 
               <Link
                 to="/history"
-                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+                className="flex flex-col items-center justify-center space-y-1 p-2 text-gray-400 hover:text-fac-orange-500 transition-all duration-200 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
               >
-                <Clock className="h-5 w-5" />
-                <span className="text-xs">History</span>
+                <History className="h-5 w-5 transition-transform duration-200" />
+                <span className="text-xs font-medium">History</span>
               </Link>
 
               <Link
                 to="/profile"
-                className="flex flex-col items-center justify-center space-y-1 text-gray-400 hover:text-fac-orange-500 transition-colors"
+                className="flex flex-col items-center justify-center space-y-1 p-2 text-gray-400 hover:text-fac-orange-500 transition-all duration-200 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
               >
-                <User className="h-5 w-5" />
-                <span className="text-xs">Profile</span>
+                <User className="h-5 w-5 transition-transform duration-200" />
+                <span className="text-xs font-medium">Profile</span>
               </Link>
             </div>
           </div>
         </div>
-
-        {/* Home Button Background Circle */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700"></div>
       </div>
     </div>
   );
