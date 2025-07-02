@@ -804,20 +804,7 @@ export default function SignUp() {
                 type="button"
                 onClick={nextStep}
                 className="btn-futuristic py-3 px-8 rounded-xl font-bold"
-                disabled={
-                  (currentStep === 1 &&
-                    (!formData.fullName ||
-                      !formData.email ||
-                      !formData.password ||
-                      !formData.confirmPassword ||
-                      !formData.contactNumber ||
-                      !formData.address)) ||
-                  (currentStep === 2 &&
-                    (!formData.carUnit ||
-                      !formData.carPlateNumber ||
-                      !formData.carType ||
-                      !formData.branchLocation))
-                }
+                disabled={!validateStep(currentStep)}
               >
                 Next Step
                 <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />
