@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
+import StickyHeader from "@/components/StickyHeader";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface UserProfile {
   name: string;
