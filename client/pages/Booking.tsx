@@ -44,6 +44,7 @@ interface BookingData {
 export default function Booking() {
   const [bookingData, setBookingData] = useState<BookingData>({
     service: "",
+    vehicleType: "sedan",
     date: "",
     time: "",
     branch: "",
