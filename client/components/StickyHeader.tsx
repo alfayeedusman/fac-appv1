@@ -5,6 +5,7 @@ import { ArrowLeft, Bell, Search, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { LogoutModal } from "@/components/ConfirmModal";
 
 interface StickyHeaderProps {
   title?: string;
