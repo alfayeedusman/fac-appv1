@@ -1538,6 +1538,24 @@ export default function AdminDashboard() {
                           ) : (
                             <div className="space-y-1">
                               {pkg.features.map((feature, index) => (
+                                <p
+                                  key={index}
+                                  className="text-sm text-gray-600 font-medium pl-2"
+                                >
+                                  • {feature}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {activeTab === "packages" && (
             <PackageManagement
               userRole={userRole}
