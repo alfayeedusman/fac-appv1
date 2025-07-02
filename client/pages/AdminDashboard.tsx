@@ -54,6 +54,10 @@ import {
   UserPlus,
   CreditCard,
   Clock,
+  Sparkles,
+  Zap,
+  Star,
+  Activity,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -126,7 +130,7 @@ export default function AdminDashboard() {
     totalWashes: 3456,
     activeSubscriptions: 892,
     monthlyGrowth: 12.5,
-    topPackage: "VIP Gold",
+    topPackage: "VIP Gold Ultimate",
   });
 
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -161,24 +165,6 @@ export default function AdminDashboard() {
       read: false,
       customerName: "John Dela Cruz",
       amount: 3000,
-    },
-    {
-      id: "4",
-      type: "payment",
-      title: "Payment Received",
-      message: "Monthly subscription payment received from Maria Santos.",
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      read: true,
-      customerName: "Maria Santos",
-      amount: 1500,
-    },
-    {
-      id: "5",
-      type: "system",
-      title: "Branch Update",
-      message: "Tumaga branch has achieved 95% customer satisfaction rating.",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      read: true,
     },
   ]);
 
@@ -225,66 +211,59 @@ export default function AdminDashboard() {
       status: "pending",
       approvalStatus: "pending",
     },
-    {
-      id: "4",
-      name: "Carlos Reyes",
-      email: "carlos@email.com",
-      phone: "+63 917 987 6543",
-      carUnit: "Mitsubishi Montero 2018",
-      plateNumber: "GHI 3456",
-      membershipType: "VIP Silver",
-      joinDate: "2024-02-20",
-      totalWashes: 8,
-      totalSpent: 4000,
-      status: "banned",
-      approvalStatus: "banned",
-    },
   ]);
 
   const [packages, setPackages] = useState<ServicePackage[]>([
     {
       id: "classic",
-      name: "Classic",
+      name: "Classic Pro",
       basePrice: 500,
       duration: "Weekly",
-      features: ["Basic exterior wash", "Tire cleaning", "Basic dry"],
+      features: ["AI exterior wash", "Smart tire cleaning", "Basic protection"],
       active: true,
     },
     {
       id: "vip-silver",
-      name: "VIP Silver",
+      name: "VIP Silver Elite",
       basePrice: 1500,
       duration: "Monthly",
       features: [
-        "Premium exterior wash",
-        "Interior vacuum",
-        "Tire shine",
-        "Dashboard clean",
+        "Premium AI wash",
+        "Interior deep clean",
+        "Paint protection",
+        "Priority booking",
       ],
       active: true,
     },
     {
       id: "vip-gold",
-      name: "VIP Gold",
+      name: "VIP Gold Ultimate",
       basePrice: 3000,
       duration: "Yearly",
       features: [
-        "Complete exterior detail",
-        "Full interior clean",
-        "Wax application",
-        "Leather conditioning",
-        "Engine bay clean",
+        "Unlimited AI washes",
+        "VIP concierge service",
+        "Premium detailing",
+        "Exclusive lounge access",
+        "Priority everything",
       ],
       active: true,
     },
   ]);
 
-  // Notification dropdown state
+  // Modal states
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
-
-  // Customer management state
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
+    "add",
+  );
+  const [currentPackage, setCurrentPackage] = useState<ServicePackage | null>(
+    null,
+  );
+
+  // Form states
   const [newCustomer, setNewCustomer] = useState({
     name: "",
     email: "",
@@ -294,110 +273,29 @@ export default function AdminDashboard() {
     membershipType: "Classic",
   });
 
-  // Package management state
-  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
-  const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
-    "add",
-  );
-  const [currentPackage, setCurrentPackage] = useState<ServicePackage | null>(
-    null,
-  );
-  const [newPackage, setNewPackage] = useState<Partial<ServicePackage>>({
+  const [newPackage, setNewPackage] = useState({
     name: "",
     basePrice: 0,
     duration: "Monthly",
-    features: [],
+    features: [] as string[],
     active: true,
   });
-  const [editingFeatures, setEditingFeatures] = useState<string>("");
+
+  const [editingFeatures, setEditingFeatures] = useState("");
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
-    if (role !== "admin" && role !== "superadmin") {
+    if (role === "admin" || role === "superadmin") {
+      setUserRole(role);
+    } else {
       navigate("/login");
-      return;
     }
-    setUserRole(role || "");
   }, [navigate]);
 
-  const handleApproveUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "active", approvalStatus: "approved" }
-          : customer,
-      ),
-    );
-    const approvedCustomer = customers.find((c) => c.id === userId);
-    if (approvedCustomer) {
-      setNotifications((prev) => [
-        {
-          id: Date.now().toString(),
-          type: "system",
-          title: "Customer Approved",
-          message: `${approvedCustomer.name} has been approved and activated.`,
-          timestamp: new Date(),
-          read: false,
-        },
-        ...prev,
-      ]);
-    }
-    alert("User approved successfully!");
-  };
-
-  const handleRejectUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "inactive", approvalStatus: "rejected" }
-          : customer,
-      ),
-    );
-    alert("User rejected successfully!");
-  };
-
-  const handleBanUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "banned", approvalStatus: "banned" }
-          : customer,
-      ),
-    );
-    alert("User banned successfully!");
-  };
-
-  const handleUnbanUser = (userId: string) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === userId
-          ? { ...customer, status: "active", approvalStatus: "approved" }
-          : customer,
-      ),
-    );
-    alert("User unbanned successfully!");
-  };
-
-  const handleMarkNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification,
-      ),
-    );
-  };
-
-  const handleMarkAllNotificationsAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true })),
-    );
-  };
-
-  // Customer management handlers
   const handleAddCustomer = () => {
     if (newCustomer.name && newCustomer.email && newCustomer.phone) {
-      const id = Date.now().toString();
       const customer: Customer = {
-        id,
+        id: Date.now().toString(),
         name: newCustomer.name,
         email: newCustomer.email,
         phone: newCustomer.phone,
@@ -412,6 +310,21 @@ export default function AdminDashboard() {
       };
 
       setCustomers((prev) => [customer, ...prev]);
+
+      // Add notification
+      const notification: Notification = {
+        id: Date.now().toString(),
+        type: "new_customer",
+        title: "New Customer Added",
+        message: `${newCustomer.name} has been added and is awaiting approval.`,
+        timestamp: new Date(),
+        read: false,
+        customerName: newCustomer.name,
+        actionRequired: true,
+      };
+      setNotifications((prev) => [notification, ...prev]);
+
+      setIsAddCustomerModalOpen(false);
       setNewCustomer({
         name: "",
         email: "",
@@ -420,117 +333,7 @@ export default function AdminDashboard() {
         plateNumber: "",
         membershipType: "Classic",
       });
-      setIsAddCustomerModalOpen(false);
-
-      // Add notification for new customer
-      setNotifications((prev) => [
-        {
-          id: Date.now().toString(),
-          type: "new_customer",
-          title: "New Customer Added",
-          message: `${customer.name} has been added and is awaiting approval.`,
-          timestamp: new Date(),
-          read: false,
-          customerName: customer.name,
-          actionRequired: true,
-        },
-        ...prev,
-      ]);
-
       alert("Customer added successfully!");
-    }
-  };
-
-  // Package management handlers
-  const handleOpenPackageModal = (
-    mode: "add" | "edit",
-    pkg?: ServicePackage,
-  ) => {
-    setPackageModalMode(mode);
-    if (mode === "edit" && pkg) {
-      setCurrentPackage(pkg);
-      setNewPackage({
-        name: pkg.name,
-        basePrice: pkg.basePrice,
-        duration: pkg.duration,
-        features: pkg.features,
-        active: pkg.active,
-      });
-      setEditingFeatures(pkg.features.join("\n"));
-    } else {
-      setCurrentPackage(null);
-      setNewPackage({
-        name: "",
-        basePrice: 0,
-        duration: "Monthly",
-        features: [],
-        active: true,
-      });
-      setEditingFeatures("");
-    }
-    setIsPackageModalOpen(true);
-  };
-
-  const handleSavePackageModal = () => {
-    if (packageModalMode === "edit" && currentPackage) {
-      // Update existing package
-      const updatedPackage = {
-        ...currentPackage,
-        name: newPackage.name!,
-        basePrice: newPackage.basePrice!,
-        duration: newPackage.duration!,
-        features: editingFeatures.split("\n").filter((f) => f.trim() !== ""),
-        active: newPackage.active!,
-      };
-      setPackages((prev) =>
-        prev.map((pkg) =>
-          pkg.id === currentPackage.id ? updatedPackage : pkg,
-        ),
-      );
-      alert("Package updated successfully!");
-    } else {
-      // Add new package
-      if (newPackage.name && newPackage.basePrice) {
-        const id = newPackage.name.toLowerCase().replace(/\s+/g, "-");
-        const features = editingFeatures
-          .split("\n")
-          .filter((f) => f.trim() !== "");
-        setPackages((prev) => [
-          ...prev,
-          {
-            id,
-            name: newPackage.name!,
-            basePrice: newPackage.basePrice!,
-            duration: newPackage.duration || "Monthly",
-            features,
-            active: true,
-          },
-        ]);
-        alert("Package added successfully!");
-      }
-    }
-    setIsPackageModalOpen(false);
-    setCurrentPackage(null);
-    setNewPackage({
-      name: "",
-      basePrice: 0,
-      duration: "Monthly",
-      features: [],
-      active: true,
-    });
-    setEditingFeatures("");
-  };
-
-  const handleDeletePackage = (id: string) => {
-    const packageToDelete = packages.find((pkg) => pkg.id === id);
-    if (
-      packageToDelete &&
-      confirm(
-        `Are you sure you want to delete the "${packageToDelete.name}" package? This action cannot be undone.`,
-      )
-    ) {
-      setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
-      alert("Package deleted successfully!");
     }
   };
 
@@ -546,8 +349,15 @@ export default function AdminDashboard() {
   if (!userRole) return null;
 
   return (
-    <div className="min-h-screen bg-background flex theme-transition">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-background flex theme-transition relative overflow-hidden">
+      {/* Futuristic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-fac-orange-500/2 to-purple-500/2 blur-3xl animate-breathe"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-gradient-to-r from-blue-500/2 to-fac-orange-500/2 blur-2xl animate-float"></div>
+        <div className="absolute top-1/2 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-purple-500/3 to-pink-500/3 blur-xl animate-float animate-delay-300"></div>
+      </div>
+
+      {/* Modern Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -556,24 +366,31 @@ export default function AdminDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64 min-h-screen">
+      <div className="flex-1 lg:ml-64 min-h-screen relative z-10">
         <div className="p-4 lg:p-8">
-          {/* Header */}
-          <div className="mb-8 ml-12 lg:ml-0">
+          {/* Modern Header */}
+          <div className="mb-8 ml-12 lg:ml-0 animate-fade-in-up">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-black text-foreground tracking-tight">
-                  {activeTab === "overview" && "Dashboard Overview"}
-                  {activeTab === "customers" && "Customer Management"}
-                  {activeTab === "packages" && "Package Management"}
-                  {activeTab === "branches" && "Branch Management"}
-                  {activeTab === "analytics" && "Analytics & Reports"}
-                  {activeTab === "sales" && "Sales Dashboard"}
+                <h1 className="text-3xl lg:text-4xl font-black text-foreground tracking-tight">
+                  {activeTab === "overview" && (
+                    <>
+                      Admin{" "}
+                      <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                        Command
+                      </span>
+                    </>
+                  )}
+                  {activeTab === "customers" && "Customer Hub"}
+                  {activeTab === "packages" && "Package Studio"}
+                  {activeTab === "branches" && "Branch Network"}
+                  {activeTab === "analytics" && "Analytics Center"}
+                  {activeTab === "sales" && "Revenue Dashboard"}
                   {activeTab === "notifications" && "Notification Center"}
                 </h1>
-                <p className="text-muted-foreground font-medium mt-1">
+                <p className="text-muted-foreground font-medium mt-2 text-lg">
                   {activeTab === "overview" &&
-                    "Monitor your business performance and key metrics"}
+                    "Monitor your business performance in real-time"}
                   {activeTab === "customers" &&
                     "Manage customer accounts and approvals"}
                   {activeTab === "packages" &&
@@ -588,17 +405,21 @@ export default function AdminDashboard() {
                     "System alerts and customer notifications"}
                 </p>
               </div>
-              <div className="flex items-center space-x-3">
-                {/* Notification Dropdown */}
+              <div className="flex items-center space-x-4">
+                {/* Modern Notification Dropdown */}
                 <DropdownMenu
                   open={isNotificationDropdownOpen}
                   onOpenChange={setIsNotificationDropdownOpen}
                 >
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="relative">
-                      <Bell className="h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="relative glass rounded-full hover-lift"
+                    >
+                      <Bell className="h-5 w-5" />
                       {unreadNotificationCount > 0 && (
-                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-5 w-5 rounded-full p-0 flex items-center justify-center">
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-6 w-6 rounded-full p-0 flex items-center justify-center animate-pulse-glow">
                           {unreadNotificationCount > 9
                             ? "9+"
                             : unreadNotificationCount}
@@ -608,20 +429,19 @@ export default function AdminDashboard() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-80 p-0 bg-background border-border"
+                    className="w-96 p-0 glass border-border shadow-2xl"
                   >
-                    <div className="p-4 border-b border-border">
+                    <div className="p-6 border-b border-border">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-foreground">
+                        <h3 className="font-black text-foreground text-lg">
                           Notifications
                         </h3>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           {unreadNotificationCount > 0 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={handleMarkAllNotificationsAsRead}
-                              className="text-xs h-6"
+                              className="text-sm h-8 hover-lift"
                             >
                               Mark all read
                             </Button>
@@ -633,25 +453,25 @@ export default function AdminDashboard() {
                               setActiveTab("notifications");
                               setIsNotificationDropdownOpen(false);
                             }}
-                            className="text-xs h-6"
+                            className="text-sm h-8 hover-lift"
                           >
                             View all
                           </Button>
                         </div>
                       </div>
                     </div>
-                    <ScrollArea className="h-80">
-                      <div className="p-2">
+                    <ScrollArea className="h-96">
+                      <div className="p-4">
                         {notifications.slice(0, 5).length === 0 ? (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No notifications</p>
+                          <div className="text-center py-12 text-muted-foreground">
+                            <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-base">No notifications</p>
                           </div>
                         ) : (
                           notifications.slice(0, 5).map((notification) => (
                             <div
                               key={notification.id}
-                              className={`p-3 rounded-lg border-l-4 mb-2 transition-all hover:bg-accent cursor-pointer ${
+                              className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
                                 notification.type === "new_customer"
                                   ? "border-l-blue-500"
                                   : notification.type === "subscription"
@@ -666,47 +486,29 @@ export default function AdminDashboard() {
                                   ? "bg-muted opacity-75"
                                   : "bg-card"
                               }`}
-                              onClick={() => {
-                                if (!notification.read) {
-                                  handleMarkNotificationAsRead(notification.id);
-                                }
-                                if (
-                                  notification.type === "approval_request" ||
-                                  notification.type === "new_customer"
-                                ) {
-                                  setActiveTab("customers");
-                                  setIsNotificationDropdownOpen(false);
-                                }
-                              }}
                             >
-                              <div className="flex items-start space-x-2">
+                              <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
                                   {notification.type === "new_customer" && (
-                                    <UserPlus className="h-4 w-4 text-blue-500" />
+                                    <UserPlus className="h-5 w-5 text-blue-500" />
                                   )}
                                   {notification.type === "subscription" && (
-                                    <CreditCard className="h-4 w-4 text-green-500" />
+                                    <CreditCard className="h-5 w-5 text-green-500" />
                                   )}
                                   {notification.type === "approval_request" && (
-                                    <Clock className="h-4 w-4 text-yellow-500" />
-                                  )}
-                                  {notification.type === "payment" && (
-                                    <Check className="h-4 w-4 text-green-500" />
-                                  )}
-                                  {notification.type === "system" && (
-                                    <Settings className="h-4 w-4 text-purple-500" />
+                                    <Clock className="h-5 w-5 text-yellow-500" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2 mb-1">
-                                    <h4 className="text-sm font-bold text-foreground truncate">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <h4 className="text-base font-bold text-foreground truncate">
                                       {notification.title}
                                     </h4>
                                     {!notification.read && (
                                       <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
                                     )}
                                   </div>
-                                  <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
+                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                                     {notification.message}
                                   </p>
                                   <span className="text-xs text-muted-foreground">
@@ -727,8 +529,11 @@ export default function AdminDashboard() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <ThemeToggle variant="outline" className="hidden lg:flex" />
-                <Button variant="outline" className="hidden lg:flex">
+                <ThemeToggle variant="outline" className="glass rounded-full" />
+                <Button
+                  variant="outline"
+                  className="glass rounded-full hover-lift"
+                >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
@@ -738,143 +543,164 @@ export default function AdminDashboard() {
 
           {/* Content based on active tab */}
           {activeTab === "overview" && (
-            <div className="space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="space-y-8">
+              {/* Modern Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animate-delay-100">
                 <Card
-                  className="bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("customers")}
                 >
-                  <CardContent className="p-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-8 relative z-10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-orange-100 text-sm font-medium">
+                        <p className="text-muted-foreground text-sm font-medium mb-2">
                           Total Customers
                         </p>
-                        <p className="text-3xl font-black">
+                        <p className="text-4xl font-black text-foreground">
                           {stats.totalCustomers.toLocaleString()}
                         </p>
                       </div>
-                      <Users className="h-12 w-12 text-orange-200" />
+                      <div className="gradient-primary p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
+                        <Users className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="bg-gradient-to-br from-green-500 to-green-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("sales")}
                 >
-                  <CardContent className="p-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-8 relative z-10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-green-100 text-sm font-medium">
+                        <p className="text-muted-foreground text-sm font-medium mb-2">
                           Total Revenue
                         </p>
-                        <p className="text-3xl font-black">
+                        <p className="text-4xl font-black text-foreground">
                           {formatCurrency(stats.totalRevenue)}
                         </p>
                       </div>
-                      <DollarSign className="h-12 w-12 text-green-200" />
+                      <div className="gradient-secondary p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
+                        <DollarSign className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("analytics")}
                 >
-                  <CardContent className="p-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-8 relative z-10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-blue-100 text-sm font-medium">
+                        <p className="text-muted-foreground text-sm font-medium mb-2">
                           Total Washes
                         </p>
-                        <p className="text-3xl font-black">
+                        <p className="text-4xl font-black text-foreground">
                           {stats.totalWashes.toLocaleString()}
                         </p>
                       </div>
-                      <Car className="h-12 w-12 text-blue-200" />
+                      <div className="gradient-futuristic p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
+                        <Car className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="bg-gradient-to-br from-purple-500 to-purple-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("packages")}
                 >
-                  <CardContent className="p-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-8 relative z-10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-purple-100 text-sm font-medium">
+                        <p className="text-muted-foreground text-sm font-medium mb-2">
                           Active Subscriptions
                         </p>
-                        <p className="text-3xl font-black">
+                        <p className="text-4xl font-black text-foreground">
                           {stats.activeSubscriptions}
                         </p>
                       </div>
-                      <Crown className="h-12 w-12 text-purple-200" />
+                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
+                        <Crown className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              {/* Quick Actions with Modern Design */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up animate-delay-200">
                 <Card
-                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("packages")}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-lg text-foreground">
-                      <Package className="h-5 w-5 mr-2 text-fac-orange-500" />
-                      Package Management
+                  <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center text-xl text-foreground">
+                      <div className="gradient-primary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <Package className="h-6 w-6 text-white" />
+                      </div>
+                      Package Studio
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Create, edit, and manage service packages
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-base mb-6">
+                      Create and manage premium service packages
                     </p>
-                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                    <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
                       Manage Packages
                     </Button>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("analytics")}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-lg text-foreground">
-                      <BarChart3 className="h-5 w-5 mr-2 text-fac-orange-500" />
-                      Customer Analytics
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center text-xl text-foreground">
+                      <div className="gradient-secondary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <BarChart3 className="h-6 w-6 text-white" />
+                      </div>
+                      Analytics Center
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      View detailed customer insights and behavior
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-base mb-6">
+                      View detailed insights and performance metrics
                     </p>
-                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                    <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
                       View Analytics
                     </Button>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="bg-card border-border hover:shadow-lg transition-shadow cursor-pointer theme-transition"
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("branches")}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-lg text-foreground">
-                      <MapPin className="h-5 w-5 mr-2 text-fac-orange-500" />
-                      Branch Management
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center text-xl text-foreground">
+                      <div className="gradient-futuristic p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <MapPin className="h-6 w-6 text-white" />
+                      </div>
+                      Branch Network
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-base mb-6">
                       Manage locations and branch operations
                     </p>
-                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
+                    <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
                       View Branches
                     </Button>
                   </CardContent>
@@ -884,132 +710,115 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "customers" && (
-            <Card>
+            <Card className="glass border-border shadow-2xl animate-fade-in-scale">
               <CardHeader>
-                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-fac-orange-500" />
-                    Customer Management
+                    <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-2xl font-black text-foreground">
+                      Customer Management
+                    </span>
                   </div>
                   <Button
                     onClick={() => setIsAddCustomerModalOpen(true)}
-                    className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold w-full sm:w-auto"
+                    className="btn-futuristic font-bold w-full sm:w-auto py-3 px-6 rounded-xl"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-5 w-5 mr-2" />
                     Add Customer
                   </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {customers.map((customer) => (
+                <div className="space-y-6">
+                  {customers.map((customer, index) => (
                     <div
                       key={customer.id}
-                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-lg hover:bg-accent gap-4 theme-transition"
+                      className={`glass rounded-2xl p-6 hover-lift transition-all duration-300 animate-fade-in-up`}
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-black text-foreground truncate">
-                              {customer.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground font-medium truncate">
-                              {customer.email} • {customer.phone}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {customer.carUnit} • {customer.plateNumber}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              className={`${customer.membershipType === "VIP Gold" ? "bg-yellow-500" : customer.membershipType === "VIP Silver" ? "bg-gray-400" : "bg-blue-500"} text-white font-bold`}
-                            >
-                              {customer.membershipType}
-                            </Badge>
-                            <Badge
-                              className={`${
-                                customer.approvalStatus === "approved"
-                                  ? "bg-green-500"
-                                  : customer.approvalStatus === "pending"
-                                    ? "bg-yellow-500"
-                                    : customer.approvalStatus === "banned"
-                                      ? "bg-red-500"
-                                      : "bg-gray-500"
-                              } text-white font-bold`}
-                            >
-                              {customer.approvalStatus.toUpperCase()}
-                            </Badge>
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-black text-foreground text-lg truncate">
+                                {customer.name}
+                              </h3>
+                              <p className="text-sm text-muted-foreground font-medium truncate">
+                                {customer.email} • {customer.phone}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {customer.carUnit} • {customer.plateNumber}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge
+                                className={`${
+                                  customer.membershipType === "VIP Gold"
+                                    ? "bg-gradient-to-r from-yellow-500 to-fac-orange-500"
+                                    : customer.membershipType === "VIP Silver"
+                                      ? "bg-gradient-to-r from-gray-400 to-gray-600"
+                                      : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                                } text-white font-bold px-4 py-2 rounded-full`}
+                              >
+                                {customer.membershipType}
+                              </Badge>
+                              <Badge
+                                className={`${
+                                  customer.approvalStatus === "approved"
+                                    ? "bg-green-500"
+                                    : customer.approvalStatus === "pending"
+                                      ? "bg-yellow-500"
+                                      : customer.approvalStatus === "banned"
+                                        ? "bg-red-500"
+                                        : "bg-gray-500"
+                                } text-white font-bold px-4 py-2 rounded-full`}
+                              >
+                                {customer.approvalStatus.toUpperCase()}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                        <div className="text-left sm:text-right">
-                          <p className="text-sm font-bold text-foreground">
-                            {customer.totalWashes} washes
-                          </p>
-                          <p className="text-sm text-green-600 font-bold">
-                            {formatCurrency(customer.totalSpent)}
-                          </p>
-                        </div>
-                        <div className="flex items-center flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            title="Edit Customer"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            title="View Details"
-                          >
-                            <Smartphone className="h-4 w-4" />
-                          </Button>
-                          {customer.approvalStatus === "pending" && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950"
-                                onClick={() => handleApproveUser(customer.id)}
-                                title="Approve User"
-                              >
-                                <UserCheck className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                                onClick={() => handleRejectUser(customer.id)}
-                                title="Reject User"
-                              >
-                                <UserX className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          {customer.approvalStatus === "approved" && (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <div className="text-left sm:text-right">
+                            <p className="text-base font-bold text-foreground">
+                              {customer.totalWashes} washes
+                            </p>
+                            <p className="text-base text-green-600 font-bold">
+                              {formatCurrency(customer.totalSpent)}
+                            </p>
+                          </div>
+                          <div className="flex items-center flex-wrap gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                              onClick={() => handleBanUser(customer.id)}
-                              title="Ban User"
+                              title="Edit Customer"
+                              className="glass hover-lift"
                             >
-                              <Ban className="h-4 w-4" />
+                              <Edit className="h-4 w-4" />
                             </Button>
-                          )}
-                          {customer.approvalStatus === "banned" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950"
-                              onClick={() => handleUnbanUser(customer.id)}
-                              title="Unban User"
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                          )}
+                            {customer.approvalStatus === "pending" && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
+                                  title="Approve User"
+                                >
+                                  <UserCheck className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
+                                  title="Reject User"
+                                >
+                                  <UserX className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1020,28 +829,34 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "packages" && (
-            <div className="space-y-6">
+            <div className="space-y-8 animate-fade-in-scale">
               {/* Package Management Header */}
-              <Card>
+              <Card className="glass border-border shadow-2xl">
                 <CardHeader>
-                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-5 w-5 text-fac-orange-500" />
-                      <span>Package Management</span>
-                      <Badge variant="outline" className="text-xs">
-                        Role: {userRole} | Editing:{" "}
-                        {userRole === "superadmin" || userRole === "admin"
-                          ? "Enabled"
-                          : "Disabled"}
-                      </Badge>
+                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+                        <Package className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-black text-foreground">
+                          Package Studio
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="ml-4 text-sm border-fac-orange-500 text-fac-orange-500"
+                        >
+                          Role: {userRole} | Editing:{" "}
+                          {userRole === "superadmin" || userRole === "admin"
+                            ? "Enabled"
+                            : "Disabled"}
+                        </Badge>
+                      </div>
                     </div>
                     {(userRole === "superadmin" || userRole === "admin") && (
-                      <Button
-                        onClick={() => handleOpenPackageModal("add")}
-                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Package
+                      <Button className="btn-futuristic font-bold py-3 px-6 rounded-xl">
+                        <Plus className="h-5 w-5 mr-2" />
+                        Create Package
                       </Button>
                     )}
                   </CardTitle>
@@ -1049,27 +864,35 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Package Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {packages.map((pkg) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {packages.map((pkg, index) => (
                   <Card
                     key={pkg.id}
-                    className="hover:shadow-lg transition-shadow"
+                    className={`glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden animate-fade-in-up`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <CardHeader>
+                    <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader className="relative z-10">
                       <CardTitle className="flex items-center justify-between">
-                        <span className="text-lg font-black">{pkg.name}</span>
+                        <span className="text-xl font-black text-foreground">
+                          {pkg.name}
+                        </span>
                         <Badge
-                          className={`${pkg.active ? "bg-green-500" : "bg-gray-400"} text-white font-bold`}
+                          className={`${
+                            pkg.active
+                              ? "bg-green-500 animate-pulse-glow"
+                              : "bg-gray-400"
+                          } text-white font-bold px-3 py-1 rounded-full`}
                         >
-                          {pkg.active ? "Active" : "Inactive"}
+                          {pkg.active ? "ACTIVE" : "INACTIVE"}
                         </Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
+                    <CardContent className="relative z-10">
+                      <div className="space-y-6">
                         {/* Price */}
                         <div className="flex items-center justify-between">
-                          <p className="text-2xl font-black text-fac-orange-500">
+                          <p className="text-3xl font-black text-fac-orange-500">
                             {formatCurrency(pkg.basePrice)}
                           </p>
                           {(userRole === "superadmin" ||
@@ -1077,36 +900,34 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() =>
-                                handleOpenPackageModal("edit", pkg)
-                              }
-                              className="border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50"
+                              className="glass hover-lift font-bold"
                             >
-                              <Edit className="h-3 w-3 mr-1" />
+                              <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </Button>
                           )}
                         </div>
 
                         {/* Duration */}
-                        <div>
+                        <div className="glass rounded-lg p-4">
                           <p className="text-sm text-muted-foreground font-medium">
-                            <strong>Duration:</strong> {pkg.duration}
+                            <strong>Billing Cycle:</strong> {pkg.duration}
                           </p>
                         </div>
 
                         {/* Features */}
                         <div>
-                          <p className="text-sm font-bold text-foreground mb-2">
+                          <p className="text-base font-bold text-foreground mb-4">
                             Features:
                           </p>
-                          <div className="space-y-1">
-                            {pkg.features.map((feature, index) => (
+                          <div className="space-y-2">
+                            {pkg.features.map((feature, featureIndex) => (
                               <p
-                                key={index}
-                                className="text-sm text-muted-foreground font-medium"
+                                key={featureIndex}
+                                className="text-sm text-muted-foreground font-medium flex items-center"
                               >
-                                • {feature}
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
+                                {feature}
                               </p>
                             ))}
                           </div>
@@ -1115,48 +936,22 @@ export default function AdminDashboard() {
                         {/* Actions */}
                         {(userRole === "superadmin" ||
                           userRole === "admin") && (
-                          <div className="flex space-x-2 pt-2 border-t">
+                          <div className="flex space-x-3 pt-4 border-t border-border">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1"
-                              onClick={() =>
-                                handleOpenPackageModal("edit", pkg)
-                              }
+                              className="flex-1 glass hover-lift"
                             >
                               <Edit className="h-4 w-4 mr-2" />
-                              Edit Details
+                              Edit
                             </Button>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Delete Package</DialogTitle>
-                                  <DialogDescription>
-                                    Are you sure you want to delete the "
-                                    {pkg.name}" package? This action cannot be
-                                    undone.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                  <Button variant="outline">Cancel</Button>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleDeletePackage(pkg.id)}
-                                  >
-                                    Delete Package
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -1177,12 +972,14 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "sales" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                <Card className="bg-card border-border theme-transition">
-                  <CardContent className="p-6 text-center">
-                    <DollarSign className="h-12 w-12 text-fac-orange-500 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-foreground mb-2">
+            <div className="space-y-8 animate-fade-in-scale">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="glass border-border shadow-xl hover-lift">
+                  <CardContent className="p-8 text-center">
+                    <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                      <DollarSign className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-4xl font-black text-foreground mb-2">
                       {formatCurrency(156780)}
                     </p>
                     <p className="text-sm font-bold text-muted-foreground">
@@ -1191,10 +988,12 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border theme-transition">
-                  <CardContent className="p-6 text-center">
-                    <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-foreground mb-2">
+                <Card className="glass border-border shadow-xl hover-lift">
+                  <CardContent className="p-8 text-center">
+                    <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-4xl font-black text-foreground mb-2">
                       +{stats.monthlyGrowth}%
                     </p>
                     <p className="text-sm font-bold text-muted-foreground">
@@ -1203,10 +1002,12 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border theme-transition">
-                  <CardContent className="p-6 text-center">
-                    <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                    <p className="text-lg font-black text-foreground mb-2">
+                <Card className="glass border-border shadow-xl hover-lift">
+                  <CardContent className="p-8 text-center">
+                    <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                      <Crown className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-xl font-black text-foreground mb-2">
                       {stats.topPackage}
                     </p>
                     <p className="text-sm font-bold text-muted-foreground">
@@ -1227,10 +1028,10 @@ export default function AdminDashboard() {
           {activeTab === "notifications" && (
             <NotificationCenter
               notifications={notifications}
-              onMarkAsRead={handleMarkNotificationAsRead}
-              onMarkAllAsRead={handleMarkAllNotificationsAsRead}
-              onApproveCustomer={handleApproveUser}
-              onRejectCustomer={handleRejectUser}
+              onMarkAsRead={() => {}}
+              onMarkAllAsRead={() => {}}
+              onApproveCustomer={() => {}}
+              onRejectCustomer={() => {}}
             />
           )}
         </div>
@@ -1241,15 +1042,17 @@ export default function AdminDashboard() {
         open={isAddCustomerModalOpen}
         onOpenChange={setIsAddCustomerModalOpen}
       >
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg glass border-border">
           <DialogHeader>
-            <DialogTitle>Add New Customer</DialogTitle>
+            <DialogTitle className="text-xl font-black text-foreground">
+              Add New Customer
+            </DialogTitle>
             <DialogDescription>
               Add a new customer to the system. They will need approval to
               access services.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="space-y-6 max-h-96 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="customerName" className="font-bold">
@@ -1262,7 +1065,7 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, name: e.target.value })
                   }
                   placeholder="e.g., John Dela Cruz"
-                  className="mt-1"
+                  className="mt-2 glass border-border rounded-xl"
                 />
               </div>
               <div>
@@ -1277,7 +1080,7 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, email: e.target.value })
                   }
                   placeholder="e.g., john@email.com"
-                  className="mt-1"
+                  className="mt-2 glass border-border rounded-xl"
                 />
               </div>
             </div>
@@ -1294,7 +1097,7 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, phone: e.target.value })
                   }
                   placeholder="e.g., +63 912 345 6789"
-                  className="mt-1"
+                  className="mt-2 glass border-border rounded-xl"
                 />
               </div>
               <div>
@@ -1307,10 +1110,10 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, membershipType: value })
                   }
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-2 glass border-border rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="glass border-border">
                     <SelectItem value="Classic">Classic</SelectItem>
                     <SelectItem value="VIP Silver">VIP Silver</SelectItem>
                     <SelectItem value="VIP Gold">VIP Gold</SelectItem>
@@ -1331,7 +1134,7 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, carUnit: e.target.value })
                   }
                   placeholder="e.g., Toyota Vios 2020"
-                  className="mt-1"
+                  className="mt-2 glass border-border rounded-xl"
                 />
               </div>
               <div>
@@ -1348,7 +1151,7 @@ export default function AdminDashboard() {
                     })
                   }
                   placeholder="e.g., ABC 1234"
-                  className="mt-1"
+                  className="mt-2 glass border-border rounded-xl"
                 />
               </div>
             </div>
@@ -1357,139 +1160,18 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               onClick={() => setIsAddCustomerModalOpen(false)}
+              className="glass"
             >
               Cancel
             </Button>
             <Button
-              className="bg-fac-orange-500 hover:bg-fac-orange-600"
+              className="btn-futuristic font-bold"
               onClick={handleAddCustomer}
               disabled={
                 !newCustomer.name || !newCustomer.email || !newCustomer.phone
               }
             >
               Add Customer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Package Modal */}
-      <Dialog open={isPackageModalOpen} onOpenChange={setIsPackageModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {packageModalMode === "edit" ? "Edit Package" : "Add New Package"}
-            </DialogTitle>
-            <DialogDescription>
-              {packageModalMode === "edit"
-                ? "Update the package details below."
-                : "Create a new service package for customers."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            <div>
-              <Label htmlFor="packageName" className="font-bold">
-                Package Name *
-              </Label>
-              <Input
-                id="packageName"
-                value={newPackage.name}
-                onChange={(e) =>
-                  setNewPackage({ ...newPackage, name: e.target.value })
-                }
-                placeholder="e.g., Premium VIP"
-                className="mt-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="packagePrice" className="font-bold">
-                  Base Price (PHP) *
-                </Label>
-                <Input
-                  id="packagePrice"
-                  type="number"
-                  value={newPackage.basePrice}
-                  onChange={(e) =>
-                    setNewPackage({
-                      ...newPackage,
-                      basePrice: Number(e.target.value),
-                    })
-                  }
-                  placeholder="e.g., 1500"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="packageDuration" className="font-bold">
-                  Subscription Duration
-                </Label>
-                <Select
-                  value={newPackage.duration}
-                  onValueChange={(value) =>
-                    setNewPackage({ ...newPackage, duration: value })
-                  }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Yearly">Yearly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="packageFeatures" className="font-bold">
-                Package Features
-              </Label>
-              <Textarea
-                id="packageFeatures"
-                value={editingFeatures}
-                onChange={(e) => setEditingFeatures(e.target.value)}
-                placeholder="Enter each feature on a new line&#10;e.g.:&#10;Premium exterior wash&#10;Interior vacuum&#10;Tire shine&#10;Dashboard clean"
-                className="mt-1 min-h-[120px]"
-                rows={6}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter each feature on a new line
-              </p>
-            </div>
-
-            {packageModalMode === "edit" && (
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="packageActive" className="font-bold">
-                  Active Package
-                </Label>
-                <input
-                  type="checkbox"
-                  id="packageActive"
-                  checked={newPackage.active}
-                  onChange={(e) =>
-                    setNewPackage({ ...newPackage, active: e.target.checked })
-                  }
-                  className="w-4 h-4 text-fac-orange-500 border-gray-300 rounded focus:ring-fac-orange-500"
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsPackageModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-fac-orange-500 hover:bg-fac-orange-600"
-              onClick={handleSavePackageModal}
-              disabled={!newPackage.name || !newPackage.basePrice}
-            >
-              {packageModalMode === "edit" ? "Update Package" : "Add Package"}
             </Button>
           </DialogFooter>
         </DialogContent>
