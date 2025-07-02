@@ -321,20 +321,20 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-white">
       <div className="px-6 py-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
               alt="Fayeed Auto Care Logo"
-              className="h-12 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
             />
-            <div>
-              <h1 className="text-3xl font-black text-black tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl font-black text-black tracking-tight">
                 Admin Dashboard
               </h1>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2 mt-1">
                 <Badge
-                  className={`${userRole === "superadmin" ? "bg-red-500" : "bg-fac-orange-500"} text-white font-bold`}
+                  className={`${userRole === "superadmin" ? "bg-red-500" : "bg-fac-orange-500"} text-white font-bold w-fit`}
                 >
                   {userRole === "superadmin" ? (
                     <>
@@ -348,22 +348,28 @@ export default function AdminDashboard() {
                     </>
                   )}
                 </Badge>
-                <span className="text-sm text-gray-500 font-medium">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">
                   Fayeed Auto Care Management
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" className="font-bold">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh Data
+          <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
+            <Button variant="outline" className="font-bold flex-1 sm:flex-none">
+              <RefreshCw className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Refresh Data</span>
             </Button>
-            <LogoutButton
+            <Button
               variant="outline"
-              showText={true}
-              className="border-red-300 text-red-600 hover:bg-red-50"
-            />
+              onClick={() => {
+                localStorage.clear();
+                navigate("/login");
+              }}
+              className="border-red-300 text-red-600 hover:bg-red-50 p-2"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
