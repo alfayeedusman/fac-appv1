@@ -308,6 +308,62 @@ export default function AdminDashboard() {
     setEditingFeatures(pkg.features.join("\n"));
   };
 
+  // Inline editing handlers
+  const handleStartInlineEdit = (
+    packageId: string,
+    field: "price" | "duration" | "features",
+  ) => {
+    const pkg = packages.find((p) => p.id === packageId);
+    if (!pkg) return;
+
+    if (field === "price") {
+      setInlineEditingPrice(packageId);
+      setTempPrice(pkg.basePrice);
+    } else if (field === "duration") {
+      setInlineEditingDuration(packageId);
+      setTempDuration(pkg.duration);
+    } else if (field === "features") {
+      setInlineEditingFeatures(packageId);
+      setTempFeatures(pkg.features.join("\n"));
+    }
+  };
+
+  const handleSaveInlineEdit = (
+    packageId: string,
+    field: "price" | "duration" | "features",
+  ) => {
+    setPackages((prev) =>
+      prev.map((pkg) => {
+        if (pkg.id === packageId) {
+          if (field === "price") {
+            return { ...pkg, basePrice: tempPrice };
+          } else if (field === "duration") {
+            return { ...pkg, duration: tempDuration };
+          } else if (field === "features") {
+            return {
+              ...pkg,
+              features: tempFeatures.split("\n").filter((f) => f.trim() !== ""),
+            };
+          }
+        }
+        return pkg;
+      }),
+    );
+
+    // Reset editing states
+    if (field === "price") setInlineEditingPrice(null);
+    if (field === "duration") setInlineEditingDuration(null);
+    if (field === "features") setInlineEditingFeatures(null);
+
+    alert(`Package ${field} updated successfully!`);
+  };
+
+  const handleCancelInlineEdit = (field: "price" | "duration" | "features") => {
+    if (field === "price") setInlineEditingPrice(null);
+    if (field === "duration") setInlineEditingDuration(null);
+    if (field === "features") setInlineEditingFeatures(null);
+  };
+
   const handleApproveUser = (userId: string) => {
     setCustomers((prev) =>
       prev.map((customer) =>
