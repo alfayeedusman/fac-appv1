@@ -1228,6 +1228,259 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* Add Customer Modal */}
+      <Dialog
+        open={isAddCustomerModalOpen}
+        onOpenChange={setIsAddCustomerModalOpen}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Customer</DialogTitle>
+            <DialogDescription>
+              Add a new customer to the system. They will need approval to
+              access services.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customerName" className="font-bold">
+                  Full Name *
+                </Label>
+                <Input
+                  id="customerName"
+                  value={newCustomer.name}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, name: e.target.value })
+                  }
+                  placeholder="e.g., John Dela Cruz"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="customerEmail" className="font-bold">
+                  Email *
+                </Label>
+                <Input
+                  id="customerEmail"
+                  type="email"
+                  value={newCustomer.email}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, email: e.target.value })
+                  }
+                  placeholder="e.g., john@email.com"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customerPhone" className="font-bold">
+                  Phone Number *
+                </Label>
+                <Input
+                  id="customerPhone"
+                  value={newCustomer.phone}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, phone: e.target.value })
+                  }
+                  placeholder="e.g., +63 912 345 6789"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="customerMembership" className="font-bold">
+                  Membership Type
+                </Label>
+                <Select
+                  value={newCustomer.membershipType}
+                  onValueChange={(value) =>
+                    setNewCustomer({ ...newCustomer, membershipType: value })
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Classic">Classic</SelectItem>
+                    <SelectItem value="VIP Silver">VIP Silver</SelectItem>
+                    <SelectItem value="VIP Gold">VIP Gold</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customerCar" className="font-bold">
+                  Car Unit
+                </Label>
+                <Input
+                  id="customerCar"
+                  value={newCustomer.carUnit}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, carUnit: e.target.value })
+                  }
+                  placeholder="e.g., Toyota Vios 2020"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="customerPlate" className="font-bold">
+                  Plate Number
+                </Label>
+                <Input
+                  id="customerPlate"
+                  value={newCustomer.plateNumber}
+                  onChange={(e) =>
+                    setNewCustomer({
+                      ...newCustomer,
+                      plateNumber: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., ABC 1234"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddCustomerModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-fac-orange-500 hover:bg-fac-orange-600"
+              onClick={handleAddCustomer}
+              disabled={
+                !newCustomer.name || !newCustomer.email || !newCustomer.phone
+              }
+            >
+              Add Customer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Package Modal */}
+      <Dialog open={isPackageModalOpen} onOpenChange={setIsPackageModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {packageModalMode === "edit" ? "Edit Package" : "Add New Package"}
+            </DialogTitle>
+            <DialogDescription>
+              {packageModalMode === "edit"
+                ? "Update the package details below."
+                : "Create a new service package for customers."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div>
+              <Label htmlFor="packageName" className="font-bold">
+                Package Name *
+              </Label>
+              <Input
+                id="packageName"
+                value={newPackage.name}
+                onChange={(e) =>
+                  setNewPackage({ ...newPackage, name: e.target.value })
+                }
+                placeholder="e.g., Premium VIP"
+                className="mt-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="packagePrice" className="font-bold">
+                  Base Price (PHP) *
+                </Label>
+                <Input
+                  id="packagePrice"
+                  type="number"
+                  value={newPackage.basePrice}
+                  onChange={(e) =>
+                    setNewPackage({
+                      ...newPackage,
+                      basePrice: Number(e.target.value),
+                    })
+                  }
+                  placeholder="e.g., 1500"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="packageDuration" className="font-bold">
+                  Duration
+                </Label>
+                <Input
+                  id="packageDuration"
+                  value={newPackage.duration}
+                  onChange={(e) =>
+                    setNewPackage({ ...newPackage, duration: e.target.value })
+                  }
+                  placeholder="e.g., 45 mins"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="packageFeatures" className="font-bold">
+                Package Features
+              </Label>
+              <Textarea
+                id="packageFeatures"
+                value={editingFeatures}
+                onChange={(e) => setEditingFeatures(e.target.value)}
+                placeholder="Enter each feature on a new line&#10;e.g.:&#10;Premium exterior wash&#10;Interior vacuum&#10;Tire shine&#10;Dashboard clean"
+                className="mt-1 min-h-[120px]"
+                rows={6}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter each feature on a new line
+              </p>
+            </div>
+
+            {packageModalMode === "edit" && (
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="packageActive" className="font-bold">
+                  Active Package
+                </Label>
+                <input
+                  type="checkbox"
+                  id="packageActive"
+                  checked={newPackage.active}
+                  onChange={(e) =>
+                    setNewPackage({ ...newPackage, active: e.target.checked })
+                  }
+                  className="w-4 h-4 text-fac-orange-500 border-gray-300 rounded focus:ring-fac-orange-500"
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsPackageModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-fac-orange-500 hover:bg-fac-orange-600"
+              onClick={handleSavePackageModal}
+              disabled={!newPackage.name || !newPackage.basePrice}
+            >
+              {packageModalMode === "edit" ? "Update Package" : "Add Package"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
