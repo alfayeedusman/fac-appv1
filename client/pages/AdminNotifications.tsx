@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
+import StickyHeader from "@/components/StickyHeader";
 
 interface Notification {
   id: string;
