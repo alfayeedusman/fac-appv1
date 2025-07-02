@@ -351,6 +351,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex theme-transition relative overflow-hidden">
+      <StickyHeader showBack={false} title="Admin Dashboard" />
+
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-fac-orange-500/2 to-purple-500/2 blur-3xl animate-breathe"></div>
