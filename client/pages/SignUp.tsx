@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Car,
@@ -28,14 +28,20 @@ import {
   Shield,
   CheckCircle,
   Mail,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
+import RegistrationSuccessModal from "@/components/RegistrationSuccessModal";
 
 interface SignUpFormData {
   fullName: string;
   address: string;
   email: string;
+  password: string;
+  confirmPassword: string;
   contactNumber: string;
   carUnit: string;
   carPlateNumber: string;
@@ -45,10 +51,13 @@ interface SignUpFormData {
 }
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<SignUpFormData>({
     fullName: "",
     address: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     contactNumber: "",
     carUnit: "",
     carPlateNumber: "",
@@ -59,6 +68,9 @@ export default function SignUp() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleInputChange = (field: keyof SignUpFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -66,6 +78,18 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match. Please try again.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Simulate API call with modern loading
@@ -74,11 +98,13 @@ export default function SignUp() {
     // Store form data for demo purposes
     localStorage.setItem("signUpData", JSON.stringify(formData));
 
-    alert(
-      "🚀 Registration submitted successfully! Welcome to the future of car care.",
-    );
-
     setIsSubmitting(false);
+    setShowSuccessModal(true);
+  };
+
+  const handleContinueToLogin = () => {
+    setShowSuccessModal(false);
+    navigate("/login");
   };
 
   const branches = ["Tumaga", "Boalan"];
