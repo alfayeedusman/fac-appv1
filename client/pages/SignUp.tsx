@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Car, User, MapPin, CreditCard } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface SignUpFormData {
   fullName: string;
@@ -47,10 +48,7 @@ export default function SignUp() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: keyof SignUpFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,15 +58,15 @@ export default function SignUp() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Store registration data and redirect to credential setup
-    localStorage.setItem("registrationData", JSON.stringify(formData));
-    console.log("Form submitted:", formData);
-    alert("Registration successful! Now set up your login credentials.");
-    window.location.href = "/credential-setup";
+    // Store form data for demo purposes
+    localStorage.setItem("signUpData", JSON.stringify(formData));
+
+    alert(
+      "Registration submitted successfully! Admin will review your application.",
+    );
+
     setIsSubmitting(false);
   };
-
-  const carTypes = ["Sedan", "SUV", "Pickup", "Hatchback", "Van", "Truck"];
 
   const branches = ["Tumaga", "Boalan"];
 
@@ -76,7 +74,7 @@ export default function SignUp() {
     {
       value: "classic",
       label: "Classic - ₱500/month",
-      description: "Basic wash package",
+      description: "4 wash sessions per month",
     },
     {
       value: "vip-silver",
@@ -91,7 +89,12 @@ export default function SignUp() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background theme-transition">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       <div className="px-6 py-8 max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
@@ -107,8 +110,8 @@ export default function SignUp() {
               className="h-10 w-auto object-contain"
             />
             <div>
-              <h1 className="text-2xl font-bold text-fac-blue-900">Join FAC</h1>
-              <p className="text-fac-blue-700">
+              <h1 className="text-2xl font-bold text-foreground">Join FAC</h1>
+              <p className="text-muted-foreground">
                 Create your Fayeed Auto Care account
               </p>
             </div>
@@ -117,17 +120,21 @@ export default function SignUp() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
-          <Card>
+          <Card className="bg-card border-border theme-transition">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="h-5 w-5 mr-2 text-fac-blue-600" />
+              <CardTitle className="flex items-center text-foreground">
+                <User className="h-5 w-5 mr-2 text-fac-orange-500" />
                 Personal Information
               </CardTitle>
-              <CardDescription>Tell us about yourself</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                Tell us about yourself
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="fullName" className="text-foreground">
+                  Full Name *
+                </Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -137,12 +144,14 @@ export default function SignUp() {
                     handleInputChange("fullName", e.target.value)
                   }
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
 
               <div>
-                <Label htmlFor="address">Address *</Label>
+                <Label htmlFor="address" className="text-foreground">
+                  Address *
+                </Label>
                 <Input
                   id="address"
                   type="text"
@@ -150,65 +159,75 @@ export default function SignUp() {
                   value={formData.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email" className="text-foreground">
+                  Email Address *
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your.email@example.com"
+                  placeholder="Enter your email address"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
 
               <div>
-                <Label htmlFor="contactNumber">Contact Number *</Label>
+                <Label htmlFor="contactNumber" className="text-foreground">
+                  Contact Number *
+                </Label>
                 <Input
                   id="contactNumber"
                   type="tel"
-                  placeholder="+63 9XX XXX XXXX"
+                  placeholder="Enter your contact number"
                   value={formData.contactNumber}
                   onChange={(e) =>
                     handleInputChange("contactNumber", e.target.value)
                   }
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Vehicle Information */}
-          <Card>
+          <Card className="bg-card border-border theme-transition">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Car className="h-5 w-5 mr-2 text-fac-blue-600" />
+              <CardTitle className="flex items-center text-foreground">
+                <Car className="h-5 w-5 mr-2 text-fac-orange-500" />
                 Vehicle Information
               </CardTitle>
-              <CardDescription>Details about your car</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                Tell us about your vehicle
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="carUnit">Car Unit *</Label>
+                <Label htmlFor="carUnit" className="text-foreground">
+                  Car Unit/Model *
+                </Label>
                 <Input
                   id="carUnit"
                   type="text"
-                  placeholder="e.g., Toyota Vios 2020"
+                  placeholder="e.g., Toyota Camry 2020"
                   value={formData.carUnit}
                   onChange={(e) => handleInputChange("carUnit", e.target.value)}
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
 
               <div>
-                <Label htmlFor="carPlateNumber">Car Plate Number *</Label>
+                <Label htmlFor="carPlateNumber" className="text-foreground">
+                  Car Plate Number *
+                </Label>
                 <Input
                   id="carPlateNumber"
                   type="text"
@@ -218,25 +237,28 @@ export default function SignUp() {
                     handleInputChange("carPlateNumber", e.target.value)
                   }
                   required
-                  className="mt-1"
+                  className="mt-1 bg-background border-border text-foreground theme-transition"
                 />
               </div>
 
               <div>
-                <Label htmlFor="carType">Car Type *</Label>
+                <Label htmlFor="carType" className="text-foreground">
+                  Car Type *
+                </Label>
                 <Select
                   value={formData.carType}
                   onValueChange={(value) => handleInputChange("carType", value)}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 bg-background border-border text-foreground theme-transition">
                     <SelectValue placeholder="Select your car type" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {carTypes.map((type) => (
-                      <SelectItem key={type} value={type.toLowerCase()}>
-                        {type}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="sedan">Sedan</SelectItem>
+                    <SelectItem value="suv">SUV</SelectItem>
+                    <SelectItem value="hatchback">Hatchback</SelectItem>
+                    <SelectItem value="pickup">Pickup Truck</SelectItem>
+                    <SelectItem value="van">Van</SelectItem>
+                    <SelectItem value="motorcycle">Motorcycle</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -244,29 +266,31 @@ export default function SignUp() {
           </Card>
 
           {/* Service Preferences */}
-          <Card>
+          <Card className="bg-card border-border theme-transition">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="h-5 w-5 mr-2 text-fac-blue-600" />
+              <CardTitle className="flex items-center text-foreground">
+                <MapPin className="h-5 w-5 mr-2 text-fac-orange-500" />
                 Service Preferences
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground">
                 Choose your preferred branch and package
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="branchLocation">Preferred Branch *</Label>
+                <Label htmlFor="branchLocation" className="text-foreground">
+                  Preferred Branch *
+                </Label>
                 <Select
                   value={formData.branchLocation}
                   onValueChange={(value) =>
                     handleInputChange("branchLocation", value)
                   }
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 bg-background border-border text-foreground theme-transition">
                     <SelectValue placeholder="Select your preferred branch" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border-border">
                     {branches.map((branch) => (
                       <SelectItem key={branch} value={branch.toLowerCase()}>
                         {branch} Branch
@@ -277,22 +301,26 @@ export default function SignUp() {
               </div>
 
               <div>
-                <Label htmlFor="packageToAvail">Membership Package *</Label>
+                <Label htmlFor="packageToAvail" className="text-foreground">
+                  Membership Package *
+                </Label>
                 <Select
                   value={formData.packageToAvail}
                   onValueChange={(value) =>
                     handleInputChange("packageToAvail", value)
                   }
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 bg-background border-border text-foreground theme-transition">
                     <SelectValue placeholder="Choose your membership package" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border-border">
                     {packages.map((pkg) => (
                       <SelectItem key={pkg.value} value={pkg.value}>
                         <div>
-                          <div className="font-medium">{pkg.label}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="font-medium text-foreground">
+                            {pkg.label}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
                             {pkg.description}
                           </div>
                         </div>
@@ -306,9 +334,9 @@ export default function SignUp() {
 
           {/* Package Details */}
           {formData.packageToAvail && (
-            <Card className="border-fac-gold-200 bg-fac-gold-50">
+            <Card className="border-fac-orange-200 bg-fac-orange-50 dark:border-fac-orange-800 dark:bg-fac-orange-950 theme-transition">
               <CardHeader>
-                <CardTitle className="flex items-center text-fac-gold-700">
+                <CardTitle className="flex items-center text-fac-orange-700 dark:text-fac-orange-300">
                   <CreditCard className="h-5 w-5 mr-2" />
                   Package Details
                 </CardTitle>
@@ -316,10 +344,10 @@ export default function SignUp() {
               <CardContent>
                 {formData.packageToAvail === "vip-gold" && (
                   <div className="space-y-2">
-                    <h4 className="font-semibold text-fac-gold-800">
+                    <h4 className="font-semibold text-fac-orange-800 dark:text-fac-orange-200">
                       VIP Gold Package - ₱3,000/month
                     </h4>
-                    <ul className="text-sm text-fac-gold-700 space-y-1">
+                    <ul className="text-sm text-fac-orange-700 dark:text-fac-orange-300 space-y-1">
                       <li>• Unlimited classic wash sessions</li>
                       <li>• 5 VIP ProMax wash sessions</li>
                       <li>• 1 Premium wash session</li>
@@ -330,10 +358,10 @@ export default function SignUp() {
                 )}
                 {formData.packageToAvail === "vip-silver" && (
                   <div className="space-y-2">
-                    <h4 className="font-semibold text-fac-gold-800">
+                    <h4 className="font-semibold text-fac-orange-800 dark:text-fac-orange-200">
                       VIP Silver Package - ₱1,500/month
                     </h4>
-                    <ul className="text-sm text-fac-gold-700 space-y-1">
+                    <ul className="text-sm text-fac-orange-700 dark:text-fac-orange-300 space-y-1">
                       <li>• 8 classic wash sessions</li>
                       <li>• 2 VIP ProMax wash sessions</li>
                       <li>• Member discounts</li>
@@ -343,10 +371,10 @@ export default function SignUp() {
                 )}
                 {formData.packageToAvail === "classic" && (
                   <div className="space-y-2">
-                    <h4 className="font-semibold text-fac-gold-800">
+                    <h4 className="font-semibold text-fac-orange-800 dark:text-fac-orange-200">
                       Classic Package - ₱500/month
                     </h4>
-                    <ul className="text-sm text-fac-gold-700 space-y-1">
+                    <ul className="text-sm text-fac-orange-700 dark:text-fac-orange-300 space-y-1">
                       <li>• 4 classic wash sessions</li>
                       <li>• Basic member benefits</li>
                       <li>• Online booking access</li>
@@ -368,11 +396,11 @@ export default function SignUp() {
         </form>
 
         <div className="text-center mt-6">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Already have an account?{" "}
             <Link
-              to="/profile"
-              className="text-fac-blue-600 font-semibold hover:underline"
+              to="/login"
+              className="text-fac-orange-500 font-semibold hover:underline"
             >
               Sign in here
             </Link>
