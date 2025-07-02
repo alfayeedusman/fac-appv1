@@ -58,6 +58,10 @@ interface MembershipData {
 }
 
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<"benefits" | "activity">(
+    "benefits",
+  );
+
   const [membershipData] = useState<MembershipData>({
     package: "VIP Gold Ultimate",
     daysLeft: 28,
