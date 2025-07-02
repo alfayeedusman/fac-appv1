@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface Voucher {
   id: string;
