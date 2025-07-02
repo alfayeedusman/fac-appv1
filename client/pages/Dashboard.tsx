@@ -34,6 +34,8 @@ import BottomNavigation from "@/components/BottomNavigation";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { LogoutModal } from "@/components/ConfirmModal";
 import StickyHeader from "@/components/StickyHeader";
+import QRScanner from "@/components/QRScanner";
+import QRScanSuccessModal from "@/components/QRScanSuccessModal";
 
 interface WashLog {
   id: string;
