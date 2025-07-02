@@ -163,79 +163,73 @@ export default function Dashboard() {
         </div>
 
         {/* Premium Membership Status Card */}
-        <Card className="glass border-border shadow-2xl hover-lift mb-8 animate-fade-in-up animate-delay-100 relative overflow-hidden">
-          {/* Animated gradient border */}
-          <div className="absolute inset-0 bg-gradient-to-r from-fac-orange-500 via-purple-500 to-fac-orange-500 opacity-20 animate-shimmer"></div>
-          <div className="relative bg-background/80 backdrop-blur-sm m-[1px] rounded-lg">
-            <CardHeader className="pb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="gradient-primary p-4 rounded-2xl animate-pulse-glow">
-                    <Crown className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-black text-foreground">
-                      {membershipData.package}
-                    </p>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      Premium Member
-                    </p>
-                  </div>
+        <Card className="bg-card border shadow-md mb-6 animate-fade-in-up animate-delay-100">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-fac-orange-500 p-3 rounded-xl">
+                  <Crown className="h-6 w-6 text-white" />
                 </div>
-                <div className="text-right">
-                  <div className="glass rounded-2xl px-4 py-3 border border-fac-orange-500/30">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                      EXPIRES IN
-                    </p>
-                    <p className="text-3xl font-black text-fac-orange-500">
-                      {membershipData.daysLeft}
-                    </p>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      days
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">
+                    {membershipData.package}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Premium Member
+                  </p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="glass rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-muted-foreground text-sm">
-                        Cycle Resets
-                      </span>
-                      <RefreshCw className="h-4 w-4 text-fac-orange-500" />
-                    </div>
-                    <p className="font-bold text-foreground">
-                      {membershipData.daysLeftInCycle} days
-                    </p>
-                  </div>
-                  <div className="glass rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-muted-foreground text-sm">
-                        Auto-Renewal
-                      </span>
-                      {membershipData.autoRenewal ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                    <p className="font-bold text-foreground">
-                      {membershipData.autoRenewal ? "Active" : "Disabled"}
-                    </p>
-                  </div>
+              <div className="text-right">
+                <div className="bg-fac-orange-50 dark:bg-fac-orange-950 rounded-xl px-3 py-2 border border-fac-orange-200 dark:border-fac-orange-800">
+                  <p className="text-xs font-medium text-muted-foreground uppercase">
+                    EXPIRES IN
+                  </p>
+                  <p className="text-2xl font-bold text-fac-orange-500">
+                    {membershipData.daysLeft}
+                  </p>
+                  <p className="text-xs text-muted-foreground">days</p>
                 </div>
-                <Link to="/manage-subscription">
-                  <Button className="w-full glass border-border text-foreground hover:bg-fac-orange-500 hover:text-white font-bold rounded-xl py-3 transition-all duration-300 hover-lift">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Manage Subscription
-                  </Button>
-                </Link>
               </div>
-            </CardContent>
-          </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-muted-foreground text-sm">
+                      Cycle Resets
+                    </span>
+                    <RefreshCw className="h-4 w-4 text-fac-orange-500" />
+                  </div>
+                  <p className="font-semibold text-foreground">
+                    {membershipData.daysLeftInCycle} days
+                  </p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-muted-foreground text-sm">
+                      Auto-Renewal
+                    </span>
+                    {membershipData.autoRenewal ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
+                  <p className="font-semibold text-foreground">
+                    {membershipData.autoRenewal ? "Active" : "Disabled"}
+                  </p>
+                </div>
+              </div>
+              <Link to="/manage-subscription">
+                <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-semibold rounded-lg py-2">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Subscription
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Quick Actions with Modern Design */}
