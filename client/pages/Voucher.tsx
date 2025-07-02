@@ -279,12 +279,38 @@ export default function Voucher() {
               </div>
 
               {voucher.status === "available" && (
-                <Button
-                  size="sm"
-                  className="w-full mt-3 bg-fac-orange-500 hover:bg-fac-orange-600"
-                >
-                  Use Voucher
-                </Button>
+                <div className="mt-3 space-y-2">
+                  {appliedVouchers.includes(voucher.code) ? (
+                    <div className="space-y-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full border-green-500 text-green-600 bg-green-50"
+                        disabled
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Applied to Cart
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => handleRemoveVoucher(voucher.code)}
+                      >
+                        Remove from Cart
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="w-full bg-fac-orange-500 hover:bg-fac-orange-600"
+                      onClick={() => handleApplyVoucher(voucher)}
+                    >
+                      <Gift className="h-4 w-4 mr-2" />
+                      Apply Voucher
+                    </Button>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
