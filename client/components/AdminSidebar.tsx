@@ -114,7 +114,7 @@ export default function AdminSidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50 transition-all duration-300 ease-in-out",
+          "fixed left-0 top-0 h-full bg-background border-r border-border z-50 transition-all duration-300 ease-in-out theme-transition",
           isCollapsed ? "w-16" : "w-64",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
