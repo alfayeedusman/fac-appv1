@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -22,7 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   Car,
@@ -30,7 +29,6 @@ import {
   DollarSign,
   Crown,
   Package,
-  Calendar,
   BarChart3,
   Settings,
   Edit,
@@ -45,9 +43,13 @@ import {
   Ban,
   UserCheck,
   UserX,
-  LogOut,
+  LayoutDashboard,
+  Bell,
 } from "lucide-react";
-import LogoutButton from "@/components/LogoutButton";
+import AdminSidebar from "@/components/AdminSidebar";
+import NotificationCenter from "@/components/NotificationCenter";
+import AnalyticsCharts from "@/components/AnalyticsCharts";
+import BranchManagement from "@/components/BranchManagement";
 
 interface Customer {
   id: string;
