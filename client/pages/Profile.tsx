@@ -139,9 +139,11 @@ export default function Profile() {
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Settings className="h-5 w-5" />
-          </Button>
+          <Link to="/settings">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </Link>
         </div>
 
         {/* User Profile Card */}
