@@ -104,6 +104,10 @@ interface Notification {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [timeFilter, setTimeFilter] = useState<
+    "daily" | "weekly" | "monthly" | "yearly"
+  >("monthly");
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 1247,
     totalRevenue: 156780,
@@ -112,6 +116,59 @@ export default function AdminDashboard() {
     monthlyGrowth: 12.5,
     topPackage: "VIP Gold",
   });
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "1",
+      type: "approval_request",
+      title: "New Customer Approval",
+      message:
+        "Ana Rodriguez is requesting account approval for VIP Silver membership.",
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      read: false,
+      customerName: "Ana Rodriguez",
+      actionRequired: true,
+    },
+    {
+      id: "2",
+      type: "new_customer",
+      title: "New Registration",
+      message:
+        "Carlos Reyes has completed registration and is awaiting approval.",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      read: false,
+      customerName: "Carlos Reyes",
+      actionRequired: true,
+    },
+    {
+      id: "3",
+      type: "subscription",
+      title: "VIP Gold Subscription",
+      message: "John Dela Cruz upgraded to VIP Gold membership.",
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      read: false,
+      customerName: "John Dela Cruz",
+      amount: 3000,
+    },
+    {
+      id: "4",
+      type: "payment",
+      title: "Payment Received",
+      message: "Monthly subscription payment received from Maria Santos.",
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+      read: true,
+      customerName: "Maria Santos",
+      amount: 1500,
+    },
+    {
+      id: "5",
+      type: "system",
+      title: "Branch Update",
+      message: "Tumaga branch has achieved 95% customer satisfaction rating.",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      read: true,
+    },
+  ]);
 
   const [customers, setCustomers] = useState<Customer[]>([
     {
