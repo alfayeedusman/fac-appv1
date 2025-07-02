@@ -105,26 +105,19 @@ export default function Dashboard() {
     },
   ]);
 
-  const getRenewalUrgency = () => {
-    if (membershipData.daysLeft <= 7) return "urgent";
-    if (membershipData.daysLeft <= 14) return "warning";
-    return "normal";
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={cn(
+          "h-3 w-3",
+          i < Math.floor(rating)
+            ? "fill-yellow-400 text-yellow-400"
+            : "text-gray-300",
+        )}
+      />
+    ));
   };
-
-  const getProgressPercentage = (remaining: number, total: number) => {
-    if (total === 999) return 100; // Unlimited
-    return ((total - remaining) / total) * 100;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const urgency = getRenewalUrgency();
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
