@@ -20,6 +20,9 @@ import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
 import Settings from "./pages/Settings";
 import SecuritySettings from "./pages/SecuritySettings";
+import History from "./pages/History";
+import Voucher from "./pages/Voucher";
+import AdminNotifications from "./pages/AdminNotifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
