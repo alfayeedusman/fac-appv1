@@ -1416,17 +1416,23 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <Label htmlFor="packageDuration" className="font-bold">
-                  Duration
+                  Subscription Duration
                 </Label>
-                <Input
-                  id="packageDuration"
+                <Select
                   value={newPackage.duration}
-                  onChange={(e) =>
-                    setNewPackage({ ...newPackage, duration: e.target.value })
+                  onValueChange={(value) =>
+                    setNewPackage({ ...newPackage, duration: value })
                   }
-                  placeholder="e.g., 45 mins"
-                  className="mt-1"
-                />
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="Yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
