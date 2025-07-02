@@ -403,6 +403,51 @@ export default function Profile() {
                   )}
                 </div>
               </div>
+
+              {/* Vehicle Type Selector */}
+              <div className="mt-6">
+                <Label className="font-bold text-foreground mb-4 block">
+                  Vehicle Type
+                </Label>
+                {isEditing ? (
+                  <VehicleSelector
+                    value={{
+                      vehicleType: editedProfile.vehicleType,
+                      motorcycleType: editedProfile.motorcycleType,
+                    }}
+                    onChange={(value) =>
+                      setEditedProfile({
+                        ...editedProfile,
+                        vehicleType: value.vehicleType,
+                        motorcycleType: value.motorcycleType,
+                      })
+                    }
+                  />
+                ) : (
+                  <div className="glass rounded-xl p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-fac-orange-500 p-2 rounded-lg">
+                        <Car className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {profile.vehicleType.charAt(0).toUpperCase() +
+                            profile.vehicleType.slice(1)}
+                        </div>
+                        {profile.motorcycleType && (
+                          <div className="text-sm text-muted-foreground">
+                            {profile.motorcycleType === "small"
+                              ? "Small Motor (≤150cc)"
+                              : profile.motorcycleType === "medium"
+                                ? "Medium Motor (151-400cc)"
+                                : "Big Bike (≥401cc)"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {isEditing && (
