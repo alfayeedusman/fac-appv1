@@ -470,6 +470,7 @@ You'll receive a confirmation shortly.`);
               disabled={
                 isSubmitting ||
                 !bookingData.service ||
+                !bookingData.vehicleType ||
                 !bookingData.date ||
                 !bookingData.time ||
                 !bookingData.branch
