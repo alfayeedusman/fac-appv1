@@ -294,9 +294,18 @@ export default function Booking() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-fac-blue-900">Booking</h1>
-            <p className="text-fac-blue-700">Schedule your car wash service</p>
+          <div className="flex items-center space-x-4">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-10 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-fac-blue-900">Booking</h1>
+              <p className="text-fac-blue-700">
+                Schedule your car wash service
+              </p>
+            </div>
           </div>
         </div>
 

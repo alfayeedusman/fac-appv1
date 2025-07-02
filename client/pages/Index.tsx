@@ -9,12 +9,16 @@ export default function Index() {
       <div className="container mx-auto px-4 pt-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-fac-blue-600 p-3 rounded-full mr-3">
-              <Car className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-fac-blue-900">FAC App</h1>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-20 w-auto object-contain"
+            />
           </div>
-          <p className="text-fac-blue-700 font-medium">Fayeed Auto Care</p>
+          <h1 className="text-3xl font-bold text-fac-blue-900">FAC App</h1>
+          <p className="text-fac-blue-700 font-medium">
+            Your Premium Car Care Partner
+          </p>
         </div>
 
         {/* Hero Section */}

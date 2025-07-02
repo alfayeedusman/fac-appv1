@@ -143,9 +143,18 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-fac-blue-900">Dashboard</h1>
-            <p className="text-fac-blue-700">Welcome back, John!</p>
+          <div className="flex items-center space-x-4">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-12 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-fac-blue-900">
+                Dashboard
+              </h1>
+              <p className="text-fac-blue-700">Welcome back, John!</p>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" className="rounded-full">
