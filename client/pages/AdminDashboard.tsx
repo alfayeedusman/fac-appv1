@@ -1113,6 +1113,9 @@ export default function AdminDashboard() {
                               variant="outline"
                               size="sm"
                               className="flex-1"
+                              onClick={() =>
+                                handleOpenPackageModal("edit", pkg)
+                              }
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Details
@@ -1138,7 +1141,10 @@ export default function AdminDashboard() {
                                 </DialogHeader>
                                 <DialogFooter>
                                   <Button variant="outline">Cancel</Button>
-                                  <Button variant="destructive">
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => handleDeletePackage(pkg.id)}
+                                  >
                                     Delete Package
                                   </Button>
                                 </DialogFooter>
