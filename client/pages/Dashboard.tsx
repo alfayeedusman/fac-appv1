@@ -33,6 +33,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { LogoutModal } from "@/components/ConfirmModal";
+import StickyHeader from "@/components/StickyHeader";
 
 interface WashLog {
   id: string;
