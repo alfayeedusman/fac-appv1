@@ -94,7 +94,7 @@ export default function AdminDashboard() {
     topPackage: "VIP Gold",
   });
 
-  const [customers] = useState<Customer[]>([
+  const [customers, setCustomers] = useState<Customer[]>([
     {
       id: "1",
       name: "John Dela Cruz",
@@ -107,6 +107,7 @@ export default function AdminDashboard() {
       totalWashes: 24,
       totalSpent: 12000,
       status: "active",
+      approvalStatus: "approved",
     },
     {
       id: "2",
@@ -120,8 +121,36 @@ export default function AdminDashboard() {
       totalWashes: 15,
       totalSpent: 7500,
       status: "active",
+      approvalStatus: "approved",
     },
-    // Add more sample customers...
+    {
+      id: "3",
+      name: "Ana Rodriguez",
+      email: "ana@email.com",
+      phone: "+63 920 123 4567",
+      carUnit: "Ford EcoSport 2021",
+      plateNumber: "DEF 9012",
+      membershipType: "Classic",
+      joinDate: "2024-03-10",
+      totalWashes: 0,
+      totalSpent: 0,
+      status: "pending",
+      approvalStatus: "pending",
+    },
+    {
+      id: "4",
+      name: "Carlos Reyes",
+      email: "carlos@email.com",
+      phone: "+63 917 987 6543",
+      carUnit: "Mitsubishi Montero 2018",
+      plateNumber: "GHI 3456",
+      membershipType: "VIP Silver",
+      joinDate: "2024-02-20",
+      totalWashes: 8,
+      totalSpent: 4000,
+      status: "banned",
+      approvalStatus: "banned",
+    },
   ]);
 
   const [packages, setPackages] = useState<ServicePackage[]>([
