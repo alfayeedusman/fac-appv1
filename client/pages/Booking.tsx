@@ -33,6 +33,8 @@ import VehicleSelector from "@/components/VehicleSelector";
 
 interface BookingData {
   service: string;
+  vehicleType: string;
+  motorcycleType?: string;
   date: string;
   time: string;
   branch: string;
