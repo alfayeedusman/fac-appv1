@@ -72,6 +72,8 @@ export default function ManageSubscription() {
   const [selectedPlan, setSelectedPlan] = useState<string>("vip-gold");
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState("regular");
 
   const currentSubscription: CurrentSubscription = {
     plan: "VIP Gold",
@@ -193,9 +195,13 @@ export default function ManageSubscription() {
   const pricing = calculatePrice(selectedPlan, selectedLockIn);
 
   const handleRenewal = () => {
-    alert(
-      `Subscription renewed!\nPlan: ${selectedPlanData?.name}\nLock-in: ${selectedLockInData?.period}\nTotal: ₱${pricing.total}`,
-    );
+    setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+    setShowPaymentModal(true);
+  };
+
+  const handleUpgrade = () => {
+    setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+    setShowPaymentModal(true);
   };
 
   const handleCancellation = () => {
