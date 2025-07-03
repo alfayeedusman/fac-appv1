@@ -284,12 +284,40 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <PremiumMembershipCard
-              userProfile={{
-                name: profile.name,
-                email: profile.email,
-                membershipType: profile.membershipType,
-                joinDate: profile.joinDate,
-              }}
+              userName={profile.name}
+              email={profile.email}
+              membershipType={
+                profile.membershipType.toLowerCase().includes("regular")
+                  ? "regular"
+                  : profile.membershipType.toLowerCase().includes("classic")
+                    ? "classic"
+                    : profile.membershipType.toLowerCase().includes("silver")
+                      ? "vip_silver"
+                      : "vip_gold"
+              }
+              memberSince={new Date(profile.joinDate).toLocaleDateString(
+                "en-US",
+                {
+                  month: "short",
+                  year: "numeric",
+                },
+              )}
+              expiryDate={
+                userSubscription?.currentCycleEnd
+                  ? new Date(
+                      userSubscription.currentCycleEnd,
+                    ).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "N/A"
+              }
+              membershipNumber={`FAC${userEmail
+                .replace(/[^0-9]/g, "")
+                .slice(0, 6)
+                .padStart(6, "0")}`}
+              remainingWashes={userSubscription?.remainingWashes?.classic || 0}
+              totalWashes={userSubscription?.totalWashes?.classic || 0}
             />
           </CardContent>
         </Card>
