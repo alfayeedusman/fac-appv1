@@ -148,55 +148,55 @@ export default function Dashboard() {
     return ((total - remaining) / total) * 100;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  const handleQRScan = () => {
+    setShowQRScanner(true);
   };
 
-  const urgency = getRenewalUrgency();
+  const handleScanComplete = (result: string) => {
+    // Process QR scan result
+    const scanData: QRScanResult = {
+      type: "branch",
+      branchId: "tumaga-001",
+      branchName: "Tumaga Hub",
+      timestamp: new Date().toISOString(),
+    };
+
+    setScanResult(scanData);
+    setShowQRScanner(false);
+    setShowScanSuccess(true);
+  };
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
   };
 
-  const handleQRScan = () => {
-    setShowQRScanner(true);
+  // Status and color system
+  const isRegularMember = membershipData.package === "Regular Member";
+  const isSubscribed = membershipData.daysLeft > 0;
+  const isVipGold = membershipData.package === "VIP Gold Ultimate";
+
+  // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
+  const getStatusColor = () => {
+    if (isRegularMember || !isSubscribed) return "red";
+    if (isVipGold) return "orange";
+    return "green";
   };
 
-  const handleScanSuccess = (result: QRScanResult) => {
-    setScanResult(result);
-    setShowScanSuccess(true);
-
-    // Update membership data based on scan
-    if (result.type === "branch") {
-      // Simulate service usage - decrement wash count
-      // This would normally update via API
-      console.log(`Checked in at ${result.branchName} (${result.branchId})`);
-    }
-  };
-
-  const handleStartService = () => {
-    // Start the actual washing service
-    alert(`🚿 Service started at ${scanResult?.branchName}!
-
-Your wash has begun. You'll receive a notification when it's complete.
-Estimated time: 30-45 minutes.`);
-
-    // This would normally trigger actual service start via API
-    setScanResult(null);
-  };
+  const statusColor = getStatusColor();
+  const statusText = isRegularMember
+    ? "Not Subscribed"
+    : isSubscribed
+      ? "Active"
+      : "Inactive";
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/3 to-purple-500/3 blur-3xl animate-breathe"></div>
+        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/3 to-purple-500/3 blur-3xl animate-breathe"></div>
         <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/3 to-fac-orange-500/3 blur-2xl animate-float"></div>
         <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-xl animate-float animate-delay-300"></div>
       </div>
@@ -241,380 +241,343 @@ Estimated time: 30-45 minutes.`);
           </div>
         </div>
 
-        {/* Get subscription status and colors */}
-        {(() => {
-          const isRegularMember = membershipData.package === "Regular Member";
-          const isSubscribed = membershipData.daysLeft > 0;
-          const isVipGold = membershipData.package === "VIP Gold Ultimate";
+        {/* Regular Member Upgrade Reminder */}
+        {isRegularMember && (
+          <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 mb-6 animate-fade-in-up animate-delay-100">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-red-500 p-3 rounded-xl animate-pulse">
+                    <AlertCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-red-800">
+                      Regular Member
+                    </p>
+                    <p className="text-sm text-red-600">
+                      Upgrade to unlock premium services!
+                    </p>
+                  </div>
+                </div>
+                <Link to="/manage-subscription">
+                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse">
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade Now
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-white/50 rounded-lg p-4">
+                <h4 className="font-bold text-red-800 mb-2">
+                  🌟 Unlock Premium Benefits:
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm text-red-700">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                    Monthly car washes
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> VIP
+                    services
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                    Priority booking
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                    Exclusive discounts
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-          // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
-          const getStatusColor = () => {
-            if (isRegularMember || !isSubscribed) return "red";
-            if (isVipGold) return "orange";
-            return "green";
-          };
-
-          const statusColor = getStatusColor();
-          const statusText = isRegularMember ? "Not Subscribed" : isSubscribed ? "Active" : "Inactive";
-
-          return (
-            <>
-              {/* Regular Member Upgrade Reminder */}
-              {isRegularMember && (
-                <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 mb-6 animate-fade-in-up animate-delay-100">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="bg-red-500 p-3 rounded-xl animate-pulse">
-                          <AlertCircle className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold text-red-800">Regular Member</p>
-                          <p className="text-sm text-red-600">
-                            Upgrade to unlock premium services!
-                          </p>
-                        </div>
-                      </div>
-                      <Link to="/manage-subscription">
-                        <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse">
-                          <Crown className="h-4 w-4 mr-2" />
-                          Upgrade Now
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-white/50 rounded-lg p-4">
-                      <h4 className="font-bold text-red-800 mb-2">🌟 Unlock Premium Benefits:</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm text-red-700">
-                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Monthly car washes</div>
-                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> VIP services</div>
-                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Priority booking</div>
-                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Exclusive discounts</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Membership Status Card */}
-              <Card className={`border shadow-md mb-6 animate-fade-in-up animate-delay-200 ${
-                statusColor === "red" ? "bg-red-50 border-red-200" :
-                statusColor === "orange" ? "bg-orange-50 border-orange-200" :
-                "bg-green-50 border-green-200"
-              }`}>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-3 rounded-xl ${
-                        statusColor === "red" ? "bg-red-500" :
-                        statusColor === "orange" ? "bg-orange-500" :
-                        "bg-green-500"
-                      }`}>
-                        {statusColor === "red" ? (
-                          <User className="h-6 w-6 text-white" />
-                        ) : statusColor === "orange" ? (
-                          <Crown className="h-6 w-6 text-white" />
-                        ) : (
-                          <CheckCircle className="h-6 w-6 text-white" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-xl font-bold text-foreground">
-                          {membershipData.package}
-                        </p>
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${
-                            statusColor === "red" ? "bg-red-500" :
-                            statusColor === "orange" ? "bg-orange-500" :
-                            "bg-green-500"
-                          }`}></div>
-                          <p className={`text-sm font-semibold ${
-                            statusColor === "red" ? "text-red-600" :
-                            statusColor === "orange" ? "text-orange-600" :
-                            "text-green-600"
-                          }`}>
-                            {statusText}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                <div className="bg-fac-orange-50 dark:bg-fac-orange-950 rounded-xl px-3 py-2 border border-fac-orange-200 dark:border-fac-orange-800">
+        {/* Membership Status Card */}
+        <Card
+          className={`border shadow-md mb-6 animate-fade-in-up animate-delay-200 ${
+            statusColor === "red"
+              ? "bg-red-50 border-red-200"
+              : statusColor === "orange"
+                ? "bg-orange-50 border-orange-200"
+                : "bg-green-50 border-green-200"
+          }`}
+        >
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`p-3 rounded-xl ${
+                    statusColor === "red"
+                      ? "bg-red-500"
+                      : statusColor === "orange"
+                        ? "bg-orange-500"
+                        : "bg-green-500"
+                  }`}
+                >
+                  {statusColor === "red" ? (
+                    <User className="h-6 w-6 text-white" />
+                  ) : statusColor === "orange" ? (
+                    <Crown className="h-6 w-6 text-white" />
+                  ) : (
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">
+                    {membershipData.package}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        statusColor === "red"
+                          ? "bg-red-500"
+                          : statusColor === "orange"
+                            ? "bg-orange-500"
+                            : "bg-green-500"
+                      }`}
+                    ></div>
+                    <p
+                      className={`text-sm font-semibold ${
+                        statusColor === "red"
+                          ? "text-red-600"
+                          : statusColor === "orange"
+                            ? "text-orange-600"
+                            : "text-green-600"
+                      }`}
+                    >
+                      {statusText}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {isSubscribed && (
+                <div
+                  className={`rounded-xl px-3 py-2 border ${
+                    statusColor === "orange"
+                      ? "bg-orange-50 border-orange-200"
+                      : "bg-green-50 border-green-200"
+                  }`}
+                >
                   <p className="text-xs font-medium text-muted-foreground uppercase">
                     EXPIRES IN
                   </p>
-                  <p className="text-2xl font-bold text-fac-orange-500">
+                  <p
+                    className={`text-2xl font-bold ${
+                      statusColor === "orange"
+                        ? "text-orange-500"
+                        : "text-green-500"
+                    }`}
+                  >
                     {membershipData.daysLeft}
                   </p>
                   <p className="text-xs text-muted-foreground">days</p>
                 </div>
-              </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-muted-foreground text-sm">
-                      Cycle Resets
-                    </span>
-                    <RefreshCw className="h-4 w-4 text-fac-orange-500" />
-                  </div>
-                  <p className="font-semibold text-foreground">
-                    {membershipData.daysLeftInCycle} days
-                  </p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-muted-foreground text-sm">
-                      Auto-Renewal
-                    </span>
-                    {membershipData.autoRenewal ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                    )}
-                  </div>
-                  <p className="font-semibold text-foreground">
-                    {membershipData.autoRenewal ? "Active" : "Disabled"}
-                  </p>
-                </div>
-              </div>
-              <Link to="/manage-subscription">
-                <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-semibold rounded-lg py-2">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage Subscription
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions with Modern Design */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Link to="/booking" className="animate-fade-in-up animate-delay-200">
-            <Card className="bg-card border shadow-md hover:shadow-lg transition-all duration-300 group">
-              <CardContent className="p-6 text-center">
-                <div className="bg-fac-orange-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-300">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-                <p className="font-semibold text-foreground mb-1">Book Wash</p>
-                <p className="text-xs text-muted-foreground">
-                  Schedule service
+            {!isSubscribed ? (
+              <div className="text-center py-4">
+                <p className="text-red-600 font-semibold mb-4">
+                  No active subscription
                 </p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to="/profile" className="animate-fade-in-up animate-delay-300">
-            <Card className="bg-card border shadow-md hover:shadow-lg transition-all duration-300 group">
-              <CardContent className="p-6 text-center">
-                <div className="bg-blue-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-300">
-                  <QrCode className="h-6 w-6 text-white" />
-                </div>
-                <p className="font-semibold text-foreground mb-1">Smart QR</p>
-                <p className="text-xs text-muted-foreground">Instant access</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* Tabbed Content */}
-        <Card className="bg-card border shadow-md mb-6 animate-fade-in-up animate-delay-400">
-          {/* Tab Headers */}
-          <div className="flex border-b">
-            <button
-              onClick={() => setActiveTab("benefits")}
-              className={cn(
-                "flex-1 px-4 py-3 text-sm font-medium transition-colors",
-                activeTab === "benefits"
-                  ? "border-b-2 border-fac-orange-500 text-fac-orange-500"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <Sparkles className="h-4 w-4" />
-                <span>Benefits</span>
+                <Link to="/manage-subscription">
+                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold w-full">
+                    <Crown className="h-4 w-4 mr-2" />
+                    Activate Subscription
+                  </Button>
+                </Link>
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("activity")}
-              className={cn(
-                "flex-1 px-4 py-3 text-sm font-medium transition-colors",
-                activeTab === "activity"
-                  ? "border-b-2 border-fac-orange-500 text-fac-orange-500"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <Clock className="h-4 w-4" />
-                <span>Recent Activity</span>
-              </div>
-            </button>
-          </div>
-
-          <CardContent className="p-4">
-            {activeTab === "benefits" && (
+            ) : (
               <div className="space-y-4">
-                {/* Classic Unlimited */}
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-green-500 p-2 rounded-lg">
-                        <Droplets className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="font-semibold text-foreground">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-muted-foreground text-sm">
                         Classic
                       </span>
+                      <Car className="h-4 w-4 text-blue-500" />
                     </div>
-                    <Badge className="bg-green-500 text-white text-xs">
-                      UNLIMITED
-                    </Badge>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full w-full"></div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    ∞ Unlimited washes this month
-                  </p>
-                </div>
-
-                {/* VIP ProMax */}
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-purple-500 p-2 rounded-lg">
-                        <Crown className="h-4 w-4 text-white" />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">
+                          {membershipData.remainingWashes.classic === 999
+                            ? "∞"
+                            : membershipData.remainingWashes.classic}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          /
+                          {membershipData.totalWashes.classic === 999
+                            ? "∞"
+                            : membershipData.totalWashes.classic}
+                        </span>
                       </div>
-                      <span className="font-semibold text-foreground">
+                      <Progress
+                        value={getProgressPercentage(
+                          membershipData.remainingWashes.classic,
+                          membershipData.totalWashes.classic,
+                        )}
+                        className="h-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-muted-foreground text-sm">
                         VIP ProMax
                       </span>
+                      <Crown className="h-4 w-4 text-purple-500" />
                     </div>
-                    <Badge className="bg-purple-500 text-white text-xs">
-                      {membershipData.remainingWashes.vipProMax} LEFT
-                    </Badge>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${getProgressPercentage(
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">
+                          {membershipData.remainingWashes.vipProMax}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          /{membershipData.totalWashes.vipProMax}
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressPercentage(
                           membershipData.remainingWashes.vipProMax,
                           membershipData.totalWashes.vipProMax,
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {membershipData.remainingWashes.vipProMax} of{" "}
-                    {membershipData.totalWashes.vipProMax} premium washes
-                  </p>
-                </div>
-
-                {/* Premium Detail */}
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-fac-orange-500 p-2 rounded-lg">
-                        <Star className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        Premium Detail
-                      </span>
-                    </div>
-                    <Badge className="bg-fac-orange-500 text-white text-xs">
-                      {membershipData.remainingWashes.premium} LEFT
-                    </Badge>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-fac-orange-500 h-2 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${getProgressPercentage(
-                          membershipData.remainingWashes.premium,
-                          membershipData.totalWashes.premium,
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {membershipData.remainingWashes.premium} luxury detail
-                    remaining
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "activity" && (
-              <div className="space-y-3">
-                {washLogs.slice(0, 3).map((log, index) => (
-                  <div
-                    key={log.id}
-                    className="bg-muted/30 rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="bg-fac-orange-500 p-2 rounded-lg">
-                          <Car className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground text-sm">
-                            {log.service}
-                          </p>
-                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                            <span>{formatDate(log.date)}</span>
-                            <span>•</span>
-                            <span>{log.branch}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Badge className="bg-green-500 text-white text-xs">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        COMPLETED
-                      </Badge>
+                        )}
+                        className="h-2"
+                      />
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <Link to="/booking">
+                    <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white flex-1 mr-2">
+                      <Car className="h-4 w-4 mr-2" />
+                      Book Now
+                    </Button>
+                  </Link>
+                  <Link to="/manage-subscription">
+                    <Button
+                      variant="outline"
+                      className="border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 flex-1 ml-2"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 gap-4 mb-20">
-          <Card className="bg-card border shadow-md hover:shadow-lg transition-shadow animate-fade-in-up animate-delay-600">
-            <CardContent className="p-6 text-center">
-              <div className="bg-fac-orange-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="h-6 w-6 text-white" />
+        {/* Rest of the dashboard content */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <Card className="glass border-border shadow-xl animate-fade-in-up animate-delay-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground">
+                <Zap className="h-5 w-5 mr-2 text-fac-orange-500" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="h-20 flex-col space-y-2 hover-lift"
+                  onClick={handleQRScan}
+                >
+                  <QrCode className="h-6 w-6 text-fac-orange-500" />
+                  <span className="text-sm font-medium">Scan QR</span>
+                </Button>
+                <Link to="/booking">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col space-y-2 w-full hover-lift"
+                  >
+                    <Calendar className="h-6 w-6 text-blue-500" />
+                    <span className="text-sm font-medium">Book Service</span>
+                  </Button>
+                </Link>
+                <Link to="/voucher">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col space-y-2 w-full hover-lift"
+                  >
+                    <Gift className="h-6 w-6 text-purple-500" />
+                    <span className="text-sm font-medium">Vouchers</span>
+                  </Button>
+                </Link>
+                <Link to="/history">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col space-y-2 w-full hover-lift"
+                  >
+                    <History className="h-6 w-6 text-green-500" />
+                    <span className="text-sm font-medium">History</span>
+                  </Button>
+                </Link>
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
-                {washLogs.length}
-              </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                TOTAL WASHES
-              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border shadow-md hover:shadow-lg transition-shadow animate-fade-in-up animate-delay-700">
-            <CardContent className="p-6 text-center">
-              <div className="bg-blue-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <Calendar className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
-                {
-                  washLogs.filter(
-                    (log) =>
-                      new Date(log.date).getMonth() === new Date().getMonth(),
-                  ).length
-                }
-              </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                THIS MONTH
-              </p>
-            </CardContent>
-          </Card>
+          {/* Recent Activity */}
+          {washLogs.length > 0 && (
+            <Card className="glass border-border shadow-xl animate-fade-in-up animate-delay-400">
+              <CardHeader>
+                <CardTitle className="flex items-center text-foreground">
+                  <TrendingUp className="h-5 w-5 mr-2 text-green-500" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {washLogs.slice(0, 3).map((log) => (
+                    <div
+                      key={log.id}
+                      className="flex items-center justify-between p-3 glass rounded-xl hover-lift"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            log.status === "completed"
+                              ? "bg-green-500"
+                              : log.status === "scheduled"
+                                ? "bg-blue-500"
+                                : "bg-red-500"
+                          }`}
+                        ></div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {log.service}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {log.branch}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-foreground">
+                          {log.date}
+                        </p>
+                        <Badge
+                          variant={
+                            log.status === "completed" ? "default" : "secondary"
+                          }
+                        >
+                          {log.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
@@ -623,14 +586,13 @@ Estimated time: 30-45 minutes.`);
       <QRScanner
         isOpen={showQRScanner}
         onClose={() => setShowQRScanner(false)}
-        onScanSuccess={handleScanSuccess}
+        onScanComplete={handleScanComplete}
       />
 
       <QRScanSuccessModal
         isOpen={showScanSuccess}
         onClose={() => setShowScanSuccess(false)}
         scanResult={scanResult}
-        onStartService={handleStartService}
       />
 
       <LogoutModal
