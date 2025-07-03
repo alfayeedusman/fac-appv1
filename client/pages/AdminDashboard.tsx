@@ -345,6 +345,82 @@ export default function AdminDashboard() {
     }
   };
 
+  // Package management handlers
+  const handleAddPackage = () => {
+    setPackageModalMode("add");
+    setCurrentPackage(null);
+    setNewPackage({
+      name: "",
+      basePrice: 0,
+      duration: "Monthly",
+      features: [],
+      active: true,
+    });
+    setEditingFeatures("");
+    setIsPackageModalOpen(true);
+  };
+
+  const handleEditPackage = (pkg: ServicePackage) => {
+    setPackageModalMode("edit");
+    setCurrentPackage(pkg);
+    setNewPackage({
+      name: pkg.name,
+      basePrice: pkg.basePrice,
+      duration: pkg.duration,
+      features: pkg.features,
+      active: pkg.active,
+    });
+    setEditingFeatures(pkg.features.join("\n"));
+    setIsPackageModalOpen(true);
+  };
+
+  const handleDeletePackage = (pkg: ServicePackage) => {
+    if (confirm(`Are you sure you want to delete ${pkg.name}?`)) {
+      setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
+      alert("Package deleted successfully!");
+    }
+  };
+
+  const handleSavePackage = () => {
+    if (!newPackage.name || newPackage.basePrice <= 0) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const features = editingFeatures
+      .split("\n")
+      .map((f) => f.trim())
+      .filter((f) => f.length > 0);
+
+    if (packageModalMode === "add") {
+      const pkg: ServicePackage = {
+        id: Date.now().toString(),
+        name: newPackage.name,
+        basePrice: newPackage.basePrice,
+        duration: newPackage.duration,
+        features,
+        active: newPackage.active,
+      };
+      setPackages((prev) => [...prev, pkg]);
+      alert("Package created successfully!");
+    } else if (currentPackage) {
+      const updatedPackage: ServicePackage = {
+        ...currentPackage,
+        name: newPackage.name,
+        basePrice: newPackage.basePrice,
+        duration: newPackage.duration,
+        features,
+        active: newPackage.active,
+      };
+      setPackages((prev) =>
+        prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
+      );
+      alert("Package updated successfully!");
+    }
+
+    setIsPackageModalOpen(false);
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
       style: "currency",
@@ -918,7 +994,10 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     {(userRole === "superadmin" || userRole === "admin") && (
-                      <Button className="btn-futuristic font-bold py-3 px-6 rounded-xl">
+                      <Button
+                        onClick={handleAddPackage}
+                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 px-6 rounded-xl"
+                      >
                         <Plus className="h-5 w-5 mr-2" />
                         Create Package
                       </Button>
@@ -964,7 +1043,8 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="glass hover-lift font-bold"
+                              onClick={() => handleEditPackage(pkg)}
+                              className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 font-bold"
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
@@ -1004,7 +1084,8 @@ export default function AdminDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1 glass hover-lift"
+                              onClick={() => handleEditPackage(pkg)}
+                              className="flex-1 border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50"
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
@@ -1012,7 +1093,8 @@ export default function AdminDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
+                              onClick={() => handleDeletePackage(pkg)}
+                              className="text-red-600 border-red-500 hover:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
