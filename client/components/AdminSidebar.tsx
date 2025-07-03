@@ -285,6 +285,12 @@ export default function AdminSidebar({
                       navigate("/admin-gamification");
                     } else if (item.id === "subscription-approval") {
                       navigate("/admin-subscription-approval");
+                    } else if (item.id === "pos") {
+                      navigate("/pos");
+                    } else if (item.id === "inventory") {
+                      navigate("/inventory-management");
+                    } else if (item.id === "user-management") {
+                      navigate("/admin-user-management");
                     } else {
                       onTabChange(item.id);
                     }
