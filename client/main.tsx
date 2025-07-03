@@ -31,6 +31,7 @@ import AdminCMS from "./pages/AdminCMS";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
+import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
@@ -204,6 +205,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminSubscriptionApproval />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment-history"
+              element={
+                <ProtectedRoute>
+                  <PaymentHistory />
                 </ProtectedRoute>
               }
             />
