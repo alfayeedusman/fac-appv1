@@ -99,6 +99,8 @@ export default function StickyHeader({
         return "Payment History";
       case "/pos":
         return "Point of Sale";
+      case "/pos-kiosk":
+        return "POS Kiosk Mode";
       case "/inventory-management":
         return "Inventory Management";
       case "/admin-user-management":
