@@ -201,84 +201,64 @@ export default function AdminSidebar({
           </div>
 
           {/* Navigation */}
-          <div className="flex-1 p-4 space-y-2 overflow-y-auto relative z-10">
-            {filteredItems.map((item, index) => {
+          <div className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {filteredItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               const showNotification =
                 item.id === "notifications" && notificationCount > 0;
 
               return (
-                <div
+                <Button
                   key={item.id}
-                  className={`animate-fade-in-up`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "w-full justify-start relative transition-colors rounded-lg p-3",
+                    isActive
+                      ? "bg-fac-orange-500 text-white"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    isCollapsed ? "px-2" : "px-3",
+                  )}
+                  onClick={() => {
+                    onTabChange(item.id);
+                    setIsMobileOpen(false);
+                  }}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <div
                     className={cn(
-                      "w-full justify-start relative transition-all duration-300 rounded-2xl p-4 group hover-lift",
-                      isActive
-                        ? "glass bg-gradient-to-r from-fac-orange-500/20 to-purple-600/20 border border-fac-orange-500/30 text-foreground shadow-lg"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                      isCollapsed ? "px-3" : "px-4",
+                      "flex items-center w-full",
+                      isCollapsed ? "justify-center" : "space-x-3",
                     )}
-                    onClick={() => {
-                      onTabChange(item.id);
-                      setIsMobileOpen(false);
-                    }}
-                    title={isCollapsed ? item.label : undefined}
                   >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-fac-orange-500 to-purple-600 rounded-r-full animate-pulse-glow"></div>
-                    )}
-
-                    <div
-                      className={cn(
-                        "flex items-center w-full",
-                        isCollapsed ? "justify-center" : "space-x-4",
-                      )}
-                    >
-                      <div
+                    <div className="relative">
+                      <Icon
                         className={cn(
-                          "relative p-2 rounded-xl transition-all duration-300",
-                          isActive
-                            ? `bg-gradient-to-r ${item.gradient} animate-pulse-glow`
-                            : "bg-muted/50 group-hover:bg-muted",
+                          "h-5 w-5",
+                          isActive ? "text-white" : "text-muted-foreground",
                         )}
-                      >
-                        <Icon
-                          className={cn(
-                            "h-5 w-5 transition-transform duration-300",
-                            isActive
-                              ? "text-white scale-110"
-                              : "text-muted-foreground group-hover:text-foreground group-hover:scale-105",
-                          )}
-                        />
-                      </div>
-
-                      {!isCollapsed && (
-                        <div className="flex-1 text-left">
-                          <div className="font-bold text-sm">{item.label}</div>
-                          <div className="text-xs opacity-75 mt-0.5">
-                            {item.description}
-                          </div>
-                        </div>
-                      )}
-
+                      />
                       {showNotification && (
-                        <Badge className="bg-red-500 text-white text-xs h-6 w-6 rounded-full p-0 flex items-center justify-center animate-pulse-glow ml-auto">
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-4 w-4 rounded-full p-0 flex items-center justify-center">
                           {notificationCount > 9 ? "9+" : notificationCount}
                         </Badge>
                       )}
                     </div>
 
-                    {/* Hover effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-fac-orange-500/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
-                  </Button>
-                </div>
+                    {!isCollapsed && (
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-sm">{item.label}</div>
+                      </div>
+                    )}
+
+                    {showNotification && !isCollapsed && (
+                      <Badge className="bg-red-500 text-white text-xs">
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                      </Badge>
+                    )}
+                  </div>
+                </Button>
               );
             })}
           </div>
