@@ -279,46 +279,30 @@ export default function AdminSidebar({
             </div>
 
             {/* Logout Button */}
-            <div className="animate-fade-in-up animate-delay-800">
+            <div className="border-t border-border pt-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
                 className={cn(
-                  "w-full glass border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 rounded-2xl p-4 hover-lift transition-all duration-300 group",
-                  isCollapsed ? "px-3" : "px-4",
+                  "w-full border-red-200 text-red-600 hover:bg-red-50",
+                  isCollapsed ? "px-2" : "px-3",
                 )}
                 title={isCollapsed ? "Logout" : undefined}
               >
                 <div
                   className={cn(
                     "flex items-center",
-                    isCollapsed ? "justify-center" : "space-x-4",
+                    isCollapsed ? "justify-center" : "space-x-2",
                   )}
                 >
-                  <div className="p-2 rounded-xl bg-red-100 dark:bg-red-900/30 group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors">
-                    <LogOut className="h-4 w-4" />
-                  </div>
+                  <LogOut className="h-4 w-4" />
                   {!isCollapsed && (
-                    <span className="font-bold text-sm">Logout</span>
+                    <span className="font-medium text-sm">Logout</span>
                   )}
                 </div>
               </Button>
             </div>
-
-            {/* Version Info */}
-            {!isCollapsed && (
-              <div className="text-center animate-fade-in-up animate-delay-900">
-                <div className="glass rounded-xl p-3">
-                  <p className="text-xs text-muted-foreground font-medium">
-                    FAC Admin v2025.1
-                  </p>
-                  <p className="text-xs text-muted-foreground/70">
-                    Powered by AI
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
