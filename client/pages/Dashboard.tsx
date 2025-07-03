@@ -37,6 +37,7 @@ import StickyHeader from "@/components/StickyHeader";
 import QRScanner from "@/components/QRScanner";
 import QRScanSuccessModal from "@/components/QRScanSuccessModal";
 import AdBanner from "@/components/AdBanner";
+import CreditCardProfile from "@/components/CreditCardProfile";
 import { getVisibleAdsForUser, Ad } from "@/utils/adsUtils";
 
 interface WashLog {
@@ -335,6 +336,20 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        {/* Credit Card Style Profile */}
+        <div className="mb-6">
+          <CreditCardProfile
+            userProfile={{
+              name: currentUser?.fullName || userEmail.split("@")[0],
+              email: userEmail,
+              membershipType: membershipData.package,
+              joinDate: currentUser?.registeredAt || new Date().toISOString(),
+              plateNumber: currentUser?.carPlateNumber,
+            }}
+            membershipData={membershipData}
+          />
+        </div>
 
         {/* Membership Status Card */}
         <Card
