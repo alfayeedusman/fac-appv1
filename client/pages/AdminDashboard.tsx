@@ -516,6 +516,17 @@ export default function AdminDashboard() {
                               variant="ghost"
                               size="sm"
                               className="text-xs h-7"
+                              onClick={() => {
+                                const updatedNotifications = notifications.map(
+                                  (n) => ({ ...n, read: true }),
+                                );
+                                setNotifications(updatedNotifications);
+                                // Save to localStorage or your data source
+                                localStorage.setItem(
+                                  "admin_notifications",
+                                  JSON.stringify(updatedNotifications),
+                                );
+                              }}
                             >
                               Mark all read
                             </Button>
@@ -560,6 +571,21 @@ export default function AdminDashboard() {
                                   ? "bg-muted opacity-75"
                                   : "bg-card"
                               }`}
+                              onClick={() => {
+                                if (!notification.read) {
+                                  const updatedNotifications =
+                                    notifications.map((n) =>
+                                      n.id === notification.id
+                                        ? { ...n, read: true }
+                                        : n,
+                                    );
+                                  setNotifications(updatedNotifications);
+                                  localStorage.setItem(
+                                    "admin_notifications",
+                                    JSON.stringify(updatedNotifications),
+                                  );
+                                }
+                              }}
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
