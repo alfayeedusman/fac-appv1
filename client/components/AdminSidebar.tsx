@@ -111,6 +111,13 @@ const sidebarItems = [
     description: "Broadcast Messages",
     gradient: "from-purple-500 to-indigo-500",
   },
+  {
+    id: "gamification",
+    label: "Gamification",
+    icon: TrendingUp,
+    description: "Customer Levels & Rewards",
+    gradient: "from-yellow-500 to-orange-500",
+  },
 ];
 
 export default function AdminSidebar({
@@ -241,6 +248,8 @@ export default function AdminSidebar({
                       navigate("/admin-cms");
                     } else if (item.id === "push-notifications") {
                       navigate("/admin-push-notifications");
+                    } else if (item.id === "gamification") {
+                      navigate("/admin-gamification");
                     } else {
                       onTabChange(item.id);
                     }
