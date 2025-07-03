@@ -1,0 +1,141 @@
+/* Fayeed Auto Care - Orange-Centric Color Palette */
+
+:root {
+  /* Primary Orange Brand Colors */
+  --fac-orange-50: #fff7ed;
+  --fac-orange-100: #ffedd5;
+  --fac-orange-200: #fed7aa;
+  --fac-orange-300: #fdba74;
+  --fac-orange-400: #fb923c;
+  --fac-orange-500: #f97316; /* Primary Brand Color */
+  --fac-orange-600: #ea580c;
+  --fac-orange-700: #c2410c;
+  --fac-orange-800: #9a3412;
+  --fac-orange-900: #7c2d12;
+
+  /* Supporting Colors */
+  --fac-gray-50: #f9fafb;
+  --fac-gray-100: #f3f4f6;
+  --fac-gray-200: #e5e7eb;
+  --fac-gray-300: #d1d5db;
+  --fac-gray-400: #9ca3af;
+  --fac-gray-500: #6b7280;
+  --fac-gray-600: #4b5563;
+  --fac-gray-700: #374151;
+  --fac-gray-800: #1f2937;
+  --fac-gray-900: #111827;
+
+  /* Status Colors */
+  --fac-success: #10b981;
+  --fac-success-light: #d1fae5;
+  --fac-warning: #f59e0b;
+  --fac-warning-light: #fef3c7;
+  --fac-error: #ef4444;
+  --fac-error-light: #fee2e2;
+  --fac-info: #3b82f6;
+  --fac-info-light: #dbeafe;
+
+  /* Gradients */
+  --fac-gradient-primary: linear-gradient(
+    135deg,
+    var(--fac-orange-500) 0%,
+    var(--fac-orange-600) 100%
+  );
+  --fac-gradient-warm: linear-gradient(
+    135deg,
+    var(--fac-orange-400) 0%,
+    var(--fac-orange-500) 50%,
+    var(--fac-orange-600) 100%
+  );
+  --fac-gradient-subtle: linear-gradient(
+    135deg,
+    var(--fac-orange-50) 0%,
+    var(--fac-orange-100) 100%
+  );
+}
+
+/* Light Mode Variables */
+.light {
+  --background: var(--fac-gray-50);
+  --foreground: var(--fac-gray-900);
+  --card: #ffffff;
+  --card-foreground: var(--fac-gray-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--fac-gray-900);
+  --primary: var(--fac-orange-500);
+  --primary-foreground: #ffffff;
+  --secondary: var(--fac-gray-100);
+  --secondary-foreground: var(--fac-gray-900);
+  --muted: var(--fac-gray-100);
+  --muted-foreground: var(--fac-gray-500);
+  --accent: var(--fac-orange-100);
+  --accent-foreground: var(--fac-orange-900);
+  --destructive: var(--fac-error);
+  --destructive-foreground: #ffffff;
+  --border: var(--fac-gray-200);
+  --input: var(--fac-gray-200);
+  --ring: var(--fac-orange-500);
+}
+
+/* Dark Mode Variables */
+.dark {
+  --background: var(--fac-gray-900);
+  --foreground: var(--fac-gray-50);
+  --card: var(--fac-gray-800);
+  --card-foreground: var(--fac-gray-50);
+  --popover: var(--fac-gray-800);
+  --popover-foreground: var(--fac-gray-50);
+  --primary: var(--fac-orange-500);
+  --primary-foreground: #ffffff;
+  --secondary: var(--fac-gray-800);
+  --secondary-foreground: var(--fac-gray-50);
+  --muted: var(--fac-gray-800);
+  --muted-foreground: var(--fac-gray-400);
+  --accent: var(--fac-gray-700);
+  --accent-foreground: var(--fac-orange-100);
+  --destructive: var(--fac-error);
+  --destructive-foreground: #ffffff;
+  --border: var(--fac-gray-700);
+  --input: var(--fac-gray-700);
+  --ring: var(--fac-orange-400);
+}
+
+/* Utility Classes */
+.bg-fac-orange {
+  background-color: var(--fac-orange-500);
+}
+
+.text-fac-orange {
+  color: var(--fac-orange-500);
+}
+
+.border-fac-orange {
+  border-color: var(--fac-orange-500);
+}
+
+.gradient-fac-primary {
+  background: var(--fac-gradient-primary);
+}
+
+.gradient-fac-warm {
+  background: var(--fac-gradient-warm);
+}
+
+.gradient-fac-subtle {
+  background: var(--fac-gradient-subtle);
+}
+
+/* Focus States */
+.focus-fac-orange:focus {
+  outline: 2px solid var(--fac-orange-500);
+  outline-offset: 2px;
+}
+
+/* Hover States */
+.hover-fac-orange:hover {
+  color: var(--fac-orange-600);
+}
+
+.hover-bg-fac-orange:hover {
+  background-color: var(--fac-orange-500);
+}
