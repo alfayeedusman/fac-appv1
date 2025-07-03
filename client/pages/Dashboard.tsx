@@ -141,6 +141,21 @@ export default function Dashboard() {
 
   const [washLogs] = useState<WashLog[]>(getUserWashLogs());
 
+  useEffect(() => {
+    // Load ads for dashboard page
+    if (userEmail) {
+      const ads = getVisibleAdsForUser("dashboard", userEmail);
+      setDashboardAds(ads);
+
+      // Show popup ad if available and user just logged in
+      const shouldShowPopup = localStorage.getItem("justLoggedIn");
+      if (shouldShowPopup === "true" && ads.length > 0) {
+        setShowPopupAd(true);
+        localStorage.removeItem("justLoggedIn");
+      }
+    }
+  }, [userEmail]);
+
   const getRenewalUrgency = () => {
     if (membershipData.daysLeft <= 7) return "urgent";
     if (membershipData.daysLeft <= 14) return "warning";
