@@ -734,6 +734,13 @@ export default function ManageSubscription() {
 
       <BottomNavigation />
 
+      {/* Package Selection Modal */}
+      <PackageSelectionModal
+        isOpen={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        onSelectPackage={handlePackageSelection}
+      />
+
       {/* Payment Upload Modal */}
       <PaymentUploadModal
         isOpen={showPaymentModal}
