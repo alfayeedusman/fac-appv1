@@ -175,6 +175,11 @@ export default function Dashboard() {
     window.location.href = "/login";
   };
 
+  const handleAdDismiss = (adId: string) => {
+    setDashboardAds((prev) => prev.filter((ad) => ad.id !== adId));
+    setShowPopupAd(false);
+  };
+
   // Status and color system
   const isRegularMember = membershipData.package === "Regular Member";
   const hasActiveSubscription =
@@ -605,6 +610,16 @@ export default function Dashboard() {
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
       />
+
+      {/* Popup Ad */}
+      {showPopupAd && dashboardAds.length > 0 && (
+        <AdBanner
+          ad={dashboardAds[0]}
+          userEmail={userEmail}
+          variant="popup"
+          onDismiss={handleAdDismiss}
+        />
+      )}
     </div>
   );
 }
