@@ -1,3 +1,5 @@
+import { addAdminNotification } from "./adminNotifications";
+
 export interface PaymentReceipt {
   id: string;
   imageUrl: string;
