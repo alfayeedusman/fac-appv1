@@ -197,7 +197,6 @@ export default function NotificationSettings() {
                               onCheckedChange={() =>
                                 toggleChannel(setting.id, "push")
                               }
-                              size="sm"
                             />
                             <div className="flex items-center">
                               <Smartphone className="h-4 w-4 text-fac-orange-600 mr-1" />
