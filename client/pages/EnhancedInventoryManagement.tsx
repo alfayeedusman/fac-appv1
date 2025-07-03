@@ -1029,6 +1029,32 @@ export default function EnhancedInventoryManagement() {
                             {service.category}
                           </Badge>
                         </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => showServicePricing(service)}
+                            className="text-orange-500 hover:text-orange-600 p-1"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditService(service)}
+                            className="text-blue-500 hover:text-blue-600 p-1"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteService(service.id)}
+                            className="text-red-500 hover:text-red-600 p-1"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {service.description}
