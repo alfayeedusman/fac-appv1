@@ -67,6 +67,8 @@ import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
 import { formatDistanceToNow } from "date-fns";
+import AdminAdManagement from "@/components/AdminAdManagement";
+import { createAd, getAds } from "@/utils/adsUtils";
 
 interface Customer {
   id: string;

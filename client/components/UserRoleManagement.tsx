@@ -1,0 +1,791 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  UserPlus,
+  Edit,
+  Trash2,
+  Shield,
+  Users,
+  Crown,
+  Star,
+  Settings,
+  Lock,
+  Unlock,
+  UserCheck,
+  UserX,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  role: "user" | "admin" | "superadmin";
+  permissions: string[];
+  status: "active" | "inactive" | "suspended";
+  createdAt: string;
+  lastLogin?: string;
+}
+
+interface Permission {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+const DEFAULT_PERMISSIONS: Permission[] = [
+  // User Management
+  {
+    id: "users.view",
+    name: "View Users",
+    description: "Can view user list",
+    category: "User Management",
+  },
+  {
+    id: "users.create",
+    name: "Create Users",
+    description: "Can add new users",
+    category: "User Management",
+  },
+  {
+    id: "users.edit",
+    name: "Edit Users",
+    description: "Can modify user details",
+    category: "User Management",
+  },
+  {
+    id: "users.delete",
+    name: "Delete Users",
+    description: "Can remove users",
+    category: "User Management",
+  },
+
+  // Ads Management
+  {
+    id: "ads.view",
+    name: "View Ads",
+    description: "Can view advertisements",
+    category: "Ads Management",
+  },
+  {
+    id: "ads.create",
+    name: "Create Ads",
+    description: "Can create new ads",
+    category: "Ads Management",
+  },
+  {
+    id: "ads.edit",
+    name: "Edit Ads",
+    description: "Can modify existing ads",
+    category: "Ads Management",
+  },
+  {
+    id: "ads.delete",
+    name: "Delete Ads",
+    description: "Can remove ads",
+    category: "Ads Management",
+  },
+
+  // Analytics
+  {
+    id: "analytics.view",
+    name: "View Analytics",
+    description: "Can access analytics dashboard",
+    category: "Analytics",
+  },
+  {
+    id: "analytics.export",
+    name: "Export Data",
+    description: "Can export analytics data",
+    category: "Analytics",
+  },
+
+  // Customer Management
+  {
+    id: "customers.view",
+    name: "View Customers",
+    description: "Can view customer list",
+    category: "Customer Management",
+  },
+  {
+    id: "customers.edit",
+    name: "Edit Customers",
+    description: "Can modify customer details",
+    category: "Customer Management",
+  },
+  {
+    id: "customers.approve",
+    name: "Approve Customers",
+    description: "Can approve customer registrations",
+    category: "Customer Management",
+  },
+
+  // Package Management
+  {
+    id: "packages.view",
+    name: "View Packages",
+    description: "Can view service packages",
+    category: "Package Management",
+  },
+  {
+    id: "packages.edit",
+    name: "Edit Packages",
+    description: "Can modify packages",
+    category: "Package Management",
+  },
+
+  // System Settings
+  {
+    id: "settings.system",
+    name: "System Settings",
+    description: "Can modify system settings",
+    category: "System Settings",
+  },
+  {
+    id: "settings.security",
+    name: "Security Settings",
+    description: "Can manage security settings",
+    category: "System Settings",
+  },
+];
+
+const ROLE_PRESETS = {
+  user: [],
+  admin: [
+    "users.view",
+    "users.create",
+    "users.edit",
+    "ads.view",
+    "ads.create",
+    "ads.edit",
+    "analytics.view",
+    "customers.view",
+    "customers.edit",
+    "customers.approve",
+    "packages.view",
+    "packages.edit",
+  ],
+  superadmin: DEFAULT_PERMISSIONS.map((p) => p.id),
+};
+
+export default function UserRoleManagement() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    role: "user" as User["role"],
+    permissions: [] as string[],
+    status: "active" as User["status"],
+  });
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = () => {
+    const registeredUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+
+    // Convert to our User interface format
+    const formattedUsers: User[] = registeredUsers.map((user: any) => ({
+      id: user.id || user.email,
+      fullName: user.fullName || user.name || "Unknown",
+      email: user.email,
+      role: user.role || "user",
+      permissions: user.permissions || ROLE_PRESETS[user.role || "user"],
+      status: user.status || "active",
+      createdAt:
+        user.createdAt || user.registeredAt || new Date().toISOString(),
+      lastLogin: user.lastLogin,
+    }));
+
+    setUsers(formattedUsers);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      fullName: "",
+      email: "",
+      password: "",
+      role: "user",
+      permissions: [],
+      status: "active",
+    });
+    setEditingUser(null);
+  };
+
+  const handleRoleChange = (role: User["role"]) => {
+    setFormData({
+      ...formData,
+      role,
+      permissions: ROLE_PRESETS[role],
+    });
+  };
+
+  const handlePermissionToggle = (permissionId: string) => {
+    const newPermissions = formData.permissions.includes(permissionId)
+      ? formData.permissions.filter((p) => p !== permissionId)
+      : [...formData.permissions, permissionId];
+
+    setFormData({ ...formData, permissions: newPermissions });
+  };
+
+  const handleCreateUser = () => {
+    if (!formData.fullName || !formData.email || !formData.password) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const existingUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+
+    const userExists = existingUsers.find(
+      (user: any) => user.email === formData.email,
+    );
+    if (userExists) {
+      alert("User with this email already exists");
+      return;
+    }
+
+    const newUser = {
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      fullName: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+      permissions: formData.permissions,
+      status: formData.status,
+      createdAt: new Date().toISOString(),
+      // Additional required fields for compatibility
+      address: "Admin Created Account",
+      contactNumber: "+63 999 000 0000",
+      carUnit: "N/A",
+      carPlateNumber: "N/A",
+      carType: "N/A",
+      selectedPackage: "classic",
+    };
+
+    existingUsers.push(newUser);
+    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+
+    // Create basic subscription data for new user
+    const subscriptionData = {
+      package: "Regular Member",
+      daysLeft: 0,
+      currentCycleStart: new Date().toISOString().split("T")[0],
+      currentCycleEnd: new Date().toISOString().split("T")[0],
+      daysLeftInCycle: 0,
+      autoRenewal: false,
+      remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
+      totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
+    };
+
+    localStorage.setItem(
+      `subscription_${formData.email}`,
+      JSON.stringify(subscriptionData),
+    );
+    localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
+
+    loadUsers();
+    setIsCreateModalOpen(false);
+    resetForm();
+    alert("User created successfully!");
+  };
+
+  const handleEditUser = () => {
+    if (!editingUser) return;
+
+    const existingUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+
+    const userIndex = existingUsers.findIndex(
+      (user: any) => user.email === editingUser.email,
+    );
+    if (userIndex === -1) return;
+
+    existingUsers[userIndex] = {
+      ...existingUsers[userIndex],
+      fullName: formData.fullName,
+      role: formData.role,
+      permissions: formData.permissions,
+      status: formData.status,
+    };
+
+    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+    loadUsers();
+    setIsEditModalOpen(false);
+    resetForm();
+    alert("User updated successfully!");
+  };
+
+  const handleDeleteUser = (user: User) => {
+    if (user.role === "superadmin") {
+      alert("Cannot delete superadmin users");
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete ${user.fullName}?`)) {
+      const existingUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
+
+      const filteredUsers = existingUsers.filter(
+        (u: any) => u.email !== user.email,
+      );
+      localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+
+      // Clean up user data
+      localStorage.removeItem(`subscription_${user.email}`);
+      localStorage.removeItem(`washLogs_${user.email}`);
+
+      loadUsers();
+      alert("User deleted successfully!");
+    }
+  };
+
+  const handleEditClick = (user: User) => {
+    setEditingUser(user);
+    setFormData({
+      fullName: user.fullName,
+      email: user.email,
+      password: "",
+      role: user.role,
+      permissions: user.permissions,
+      status: user.status,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "superadmin":
+        return <Crown className="h-4 w-4" />;
+      case "admin":
+        return <Shield className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "superadmin":
+        return "bg-gradient-to-r from-yellow-500 to-orange-600";
+      case "admin":
+        return "bg-gradient-to-r from-purple-500 to-blue-600";
+      default:
+        return "bg-gradient-to-r from-green-500 to-teal-600";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "text-green-600 bg-green-100 dark:bg-green-900";
+      case "inactive":
+        return "text-gray-600 bg-gray-100 dark:bg-gray-900";
+      case "suspended":
+        return "text-red-600 bg-red-100 dark:bg-red-900";
+      default:
+        return "text-gray-600 bg-gray-100 dark:bg-gray-900";
+    }
+  };
+
+  const groupedPermissions = DEFAULT_PERMISSIONS.reduce(
+    (groups, permission) => {
+      const category = permission.category;
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      groups[category].push(permission);
+      return groups;
+    },
+    {} as Record<string, Permission[]>,
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground flex items-center">
+            <Shield className="h-6 w-6 mr-3 text-fac-orange-500" />
+            User & Role Management
+          </h2>
+          <p className="text-muted-foreground">
+            Manage user accounts and permissions
+          </p>
+        </div>
+
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-fac-orange-500 hover:bg-fac-orange-600">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New User</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="Enter email address"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      placeholder="Enter password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={handleRoleChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="superadmin">Super Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Permissions</Label>
+                <div className="mt-2 space-y-4 max-h-60 overflow-y-auto border rounded-lg p-4">
+                  {Object.entries(groupedPermissions).map(
+                    ([category, permissions]) => (
+                      <div key={category}>
+                        <h4 className="font-semibold text-sm text-muted-foreground mb-2">
+                          {category}
+                        </h4>
+                        <div className="space-y-2 pl-4">
+                          {permissions.map((permission) => (
+                            <div
+                              key={permission.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={permission.id}
+                                checked={formData.permissions.includes(
+                                  permission.id,
+                                )}
+                                onCheckedChange={() =>
+                                  handlePermissionToggle(permission.id)
+                                }
+                              />
+                              <Label
+                                htmlFor={permission.id}
+                                className="text-sm"
+                              >
+                                {permission.name}
+                                <span className="text-xs text-muted-foreground block">
+                                  {permission.description}
+                                </span>
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateUser}
+                className="bg-fac-orange-500 hover:bg-fac-orange-600"
+              >
+                Create User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        {users.map((user) => (
+          <Card key={user.id} className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div
+                      className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center text-white",
+                        getRoleColor(user.role),
+                      )}
+                    >
+                      {getRoleIcon(user.role)}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{user.fullName}</h3>
+                    <p className="text-muted-foreground">{user.email}</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Badge className={cn("text-xs", getRoleColor(user.role))}>
+                        {user.role.toUpperCase()}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn("text-xs", getStatusColor(user.status))}
+                      >
+                        {user.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditClick(user)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  {user.role !== "superadmin" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Permissions:</strong> {user.permissions.length}{" "}
+                  assigned
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Created:</strong>{" "}
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Edit User Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit User: {editingUser?.fullName}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editFullName">Full Name</Label>
+                <Input
+                  id="editFullName"
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="editEmail">Email (Read Only)</Label>
+                <Input
+                  id="editEmail"
+                  value={formData.email}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editRole">Role</Label>
+                <Select value={formData.role} onValueChange={handleRoleChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="superadmin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="editStatus">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      status: value as User["status"],
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Permissions</Label>
+              <div className="mt-2 space-y-4 max-h-60 overflow-y-auto border rounded-lg p-4">
+                {Object.entries(groupedPermissions).map(
+                  ([category, permissions]) => (
+                    <div key={category}>
+                      <h4 className="font-semibold text-sm text-muted-foreground mb-2">
+                        {category}
+                      </h4>
+                      <div className="space-y-2 pl-4">
+                        {permissions.map((permission) => (
+                          <div
+                            key={permission.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={`edit-${permission.id}`}
+                              checked={formData.permissions.includes(
+                                permission.id,
+                              )}
+                              onCheckedChange={() =>
+                                handlePermissionToggle(permission.id)
+                              }
+                            />
+                            <Label
+                              htmlFor={`edit-${permission.id}`}
+                              className="text-sm"
+                            >
+                              {permission.name}
+                              <span className="text-xs text-muted-foreground block">
+                                {permission.description}
+                              </span>
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditUser}
+              className="bg-fac-orange-500 hover:bg-fac-orange-600"
+            >
+              Update User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
