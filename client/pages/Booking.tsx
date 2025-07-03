@@ -182,15 +182,11 @@ export default function Booking() {
 
     // Note: Gamification progress will be updated when booking is completed
 
-    alert(`🚀 Booking confirmed!
-Booking ID: ${newBooking.id}
-Service: ${newBooking.service}
-Vehicle: ${newBooking.vehicleType}${newBooking.motorcycleType ? ` (${newBooking.motorcycleType})` : ""}
-Date: ${newBooking.date}
-Time: ${newBooking.time}
-Branch: ${newBooking.branch}
-
-You can track your booking in the "My Bookings" section.`);
+    notificationManager.success(
+      "Booking Confirmed! 🚀",
+      `Your booking has been confirmed successfully!\n\nBooking ID: ${newBooking.id}\nService: ${newBooking.service}\nVehicle: ${newBooking.vehicleType}${newBooking.motorcycleType ? ` (${newBooking.motorcycleType})` : ""}\nDate: ${newBooking.date}\nTime: ${newBooking.time}\nBranch: ${newBooking.branch}\n\nYou can track your booking in the "My Bookings" section.`,
+      { autoClose: 6000 },
+    );
     setIsSubmitting(false);
 
     // Reset form
@@ -221,8 +217,10 @@ You can track your booking in the "My Bookings" section.`);
         ...bookingData,
         branch: result.branchName,
       });
-      alert(
-        `✅ Branch selected: ${result.branchName}\nPlease complete your booking details.`,
+      notificationManager.info(
+        "Branch Selected ✅",
+        `Branch selected: ${result.branchName}\nPlease complete your booking details.`,
+        { autoClose: 3000 },
       );
     }
   };
