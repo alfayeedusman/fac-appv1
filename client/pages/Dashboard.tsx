@@ -539,6 +539,15 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+        {/* Level Progress */}
+        <div className="mb-6 animate-fade-in-up animate-delay-200">
+          <LevelProgress
+            userId={userEmail}
+            compact={true}
+            showDetails={false}
+          />
+        </div>
+
         {/* Clean Tabs */}
         <div className="mb-6">
           <div className="bg-muted rounded-lg p-1">
