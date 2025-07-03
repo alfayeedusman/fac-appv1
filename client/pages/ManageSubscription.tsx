@@ -523,18 +523,32 @@ export default function ManageSubscription() {
                       )}
                   </div>
 
-                  <div className="pt-4 border-t space-y-3">
-                    <div className="bg-fac-blue-100 p-3 rounded-lg">
-                      <div className="flex items-center text-sm text-fac-blue-700 mb-1">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        <span className="font-medium">
+                  <div className="pt-6 mt-6 border-t border-gray-200 space-y-6">
+                    <div className="bg-fac-blue-100 p-4 rounded-xl border border-fac-blue-200">
+                      <div className="flex items-center text-sm text-fac-blue-700 mb-2">
+                        <RefreshCw className="h-5 w-5 mr-3" />
+                        <span className="font-semibold text-base">
                           Monthly Reset System
                         </span>
                       </div>
-                      <p className="text-xs text-fac-blue-600">
+                      <p className="text-sm text-fac-blue-600 leading-relaxed">
                         All package benefits reset to full amount at the start
                         of each billing cycle. Unused washes from previous
                         months do not carry over.
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                      <div className="flex items-center text-sm text-green-700 mb-2">
+                        <Shield className="h-5 w-5 mr-3" />
+                        <span className="font-semibold text-base">
+                          Auto-Renewal Active
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-600 leading-relaxed">
+                        Your subscription will automatically renew on the expiry
+                        date. You can manage this setting anytime in your
+                        account preferences.
                       </p>
                     </div>
                     <Button
