@@ -53,6 +53,7 @@ import {
   CarWashService,
 } from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
+import { getPrintingService, ReceiptData } from "@/utils/printingService";
 
 export default function POS() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -246,6 +247,48 @@ export default function POS() {
         }${customerInfo.uniqueId ? `\nCustomer ID: ${customerInfo.uniqueId}` : ""}`,
         { autoClose: 6000 },
       );
+
+      // Auto-print receipt
+      try {
+        const receiptData: ReceiptData = {
+          transactionNumber: transaction.transactionNumber,
+          cashierName: cashierName,
+          customerName: customerInfo.name || undefined,
+          customerPhone: customerInfo.uniqueId || undefined,
+          timestamp: transaction.timestamp,
+          items: cartItems.map((item) => ({
+            name: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+          })),
+          subtotal: total - total * 0.12,
+          discountAmount: 0,
+          taxAmount: total * 0.12,
+          totalAmount: total,
+          paymentMethod: paymentInfo.method,
+          amountPaid: paymentInfo.method === "cash" ? amountPaid : undefined,
+          changeGiven:
+            paymentInfo.method === "cash" ? amountPaid - total : undefined,
+          referenceNumber: paymentInfo.referenceNumber || undefined,
+        };
+
+        const printingService = getPrintingService();
+        await printingService.printReceipt(receiptData);
+
+        notificationManager.success(
+          "Receipt Printed",
+          "Receipt has been sent to printer",
+          { autoClose: 3000 },
+        );
+      } catch (printError) {
+        console.error("Print failed:", printError);
+        notificationManager.error(
+          "Print Failed",
+          "Receipt could not be printed. Transaction was still completed successfully.",
+          { autoClose: 5000 },
+        );
+      }
 
       // Reset form
       clearCart();
