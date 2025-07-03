@@ -1365,6 +1365,286 @@ export default function EnhancedInventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Category Modal */}
+      <Dialog
+        open={showEditCategoryModal}
+        onOpenChange={setShowEditCategoryModal}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+            <DialogDescription>
+              Update category details and variants
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editCategoryName">Category Name</Label>
+              <Input
+                id="editCategoryName"
+                placeholder="Car Care Products"
+                value={newCategory.name}
+                onChange={(e) =>
+                  setNewCategory({ ...newCategory, name: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="editCategoryDescription">Description</Label>
+              <Textarea
+                id="editCategoryDescription"
+                placeholder="Description of the category"
+                value={newCategory.description}
+                onChange={(e) =>
+                  setNewCategory({
+                    ...newCategory,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editCategoryIcon">Icon (Emoji)</Label>
+                <Input
+                  id="editCategoryIcon"
+                  placeholder="📦"
+                  value={newCategory.icon}
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, icon: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCategoryColor">Color</Label>
+                <Input
+                  id="editCategoryColor"
+                  type="color"
+                  value={newCategory.color}
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, color: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Variants (Price Multipliers)</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addVariantToNewCategory}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Variant
+                </Button>
+              </div>
+
+              {newCategory.variants.map((variant, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-3 gap-2 p-3 border rounded"
+                >
+                  <Input
+                    placeholder="Variant name"
+                    value={variant.name}
+                    onChange={(e) =>
+                      updateCategoryVariant(index, "name", e.target.value)
+                    }
+                  />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="1.0"
+                    value={variant.priceMultiplier}
+                    onChange={(e) =>
+                      updateCategoryVariant(
+                        index,
+                        "priceMultiplier",
+                        parseFloat(e.target.value) || 1.0,
+                      )
+                    }
+                  />
+                  <Input
+                    placeholder="Description"
+                    value={variant.description}
+                    onChange={(e) =>
+                      updateCategoryVariant(
+                        index,
+                        "description",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditCategoryModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateCategory}>Update Category</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Service Modal (Add/Edit) */}
+      <Dialog open={showServiceModal} onOpenChange={setShowServiceModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {serviceModalMode === "add" ? "Add New Service" : "Edit Service"}
+            </DialogTitle>
+            <DialogDescription>
+              {serviceModalMode === "add"
+                ? "Create a new car wash service with dynamic pricing"
+                : "Update service details and pricing"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="serviceName">Service Name</Label>
+              <Input
+                id="serviceName"
+                placeholder="Classic Wash"
+                value={newService.name}
+                onChange={(e) =>
+                  setNewService({ ...newService, name: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="serviceDescription">Description</Label>
+              <Textarea
+                id="serviceDescription"
+                placeholder="Basic exterior cleaning with quality optimization"
+                value={newService.description}
+                onChange={(e) =>
+                  setNewService({ ...newService, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="serviceBasePrice">Base Price (₱)</Label>
+                <Input
+                  id="serviceBasePrice"
+                  type="number"
+                  value={newService.basePrice}
+                  onChange={(e) =>
+                    setNewService({
+                      ...newService,
+                      basePrice: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="serviceDuration">Duration</Label>
+                <Input
+                  id="serviceDuration"
+                  placeholder="30 mins"
+                  value={newService.duration}
+                  onChange={(e) =>
+                    setNewService({ ...newService, duration: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="serviceCategory">Category</Label>
+              <Select
+                value={newService.category}
+                onValueChange={(value: any) =>
+                  setNewService({ ...newService, category: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="luxury">Luxury</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Features</Label>
+              <div className="space-y-2">
+                {newService.features.map((feature, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="Professional wash system"
+                      value={feature}
+                      onChange={(e) =>
+                        updateServiceFeature(index, e.target.value)
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeServiceFeature(index)}
+                      disabled={newService.features.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={addServiceFeature}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Feature
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="serviceActive"
+                checked={newService.isActive}
+                onChange={(e) =>
+                  setNewService({ ...newService, isActive: e.target.checked })
+                }
+              />
+              <Label htmlFor="serviceActive">Service is active</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowServiceModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={
+                serviceModalMode === "add"
+                  ? handleAddService
+                  : handleUpdateService
+              }
+            >
+              {serviceModalMode === "add" ? "Add Service" : "Update Service"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
