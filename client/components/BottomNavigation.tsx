@@ -130,12 +130,27 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
                       : "text-gray-400 hover:text-fac-orange-500 hover:bg-gray-50 dark:hover:bg-gray-700",
                   )}
                 >
-                  <Icon
-                    className={cn(
-                      "h-5 w-5 transition-transform duration-200",
-                      active && "scale-110",
+                  <div className="relative">
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 transition-transform duration-200",
+                        active && "scale-110",
+                      )}
+                    />
+                    {/* Status indicator for Plans */}
+                    {item.id === "plans" && (
+                      <div
+                        className={cn(
+                          "absolute -top-1 -right-1 w-3 h-3 rounded-full",
+                          isRegularMember || !isSubscribed
+                            ? "bg-red-500"
+                            : isVipGold
+                              ? "bg-orange-500"
+                              : "bg-green-500",
+                        )}
+                      ></div>
                     )}
-                  />
+                  </div>
                   <span
                     className={cn(
                       "text-xs transition-all duration-200",
