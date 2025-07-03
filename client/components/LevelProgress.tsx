@@ -20,6 +20,8 @@ import {
   getLevelProgress,
   updateUserProgress,
   getGamificationLevels,
+  getCurrentLevel,
+  getNextLevel,
 } from "@/utils/gamificationData";
 
 interface LevelProgressProps {
