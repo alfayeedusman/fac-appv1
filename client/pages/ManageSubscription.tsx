@@ -75,6 +75,7 @@ export default function ManageSubscription() {
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPackageModal, setShowPackageModal] = useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
 
   // Get real user data
