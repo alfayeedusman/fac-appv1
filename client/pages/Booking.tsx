@@ -32,6 +32,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
+import UpgradeNotificationBanner from "@/components/UpgradeNotificationBanner";
 import ConfirmModal from "@/components/ConfirmModal";
 import QRScanner from "@/components/QRScanner";
 
