@@ -65,8 +65,8 @@ export default function PremiumMembershipCard({
       default:
         return {
           name: "Regular Member",
-          color: "from-gray-500 to-gray-700",
-          icon: Star,
+          color: "from-red-500 to-red-700",
+          icon: User,
           textColor: "text-white",
           pattern: "regular",
         };
