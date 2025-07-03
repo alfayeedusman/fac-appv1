@@ -207,15 +207,13 @@ export default function Login() {
 
       {/* Futuristic Login Form */}
       <div className="flex-1 px-6 py-8 max-w-md mx-auto w-full relative z-10">
-        <Card className="glass border-border shadow-2xl hover-lift animate-fade-in-scale animate-delay-300">
-          <CardHeader className="pb-8">
+        <Card className="shadow-lg">
+          <CardHeader className="pb-6">
             <CardTitle className="text-center">
-              <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
-                <Lock className="h-8 w-8 text-white" />
+              <div className="bg-fac-orange-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-black text-foreground">
-                Log In
-              </span>
+              <span className="text-xl font-bold text-foreground">Sign In</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
