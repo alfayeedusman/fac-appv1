@@ -433,17 +433,10 @@ export default function AdminDashboard() {
   if (!userRole) return null;
 
   return (
-    <div className="min-h-screen bg-background flex theme-transition relative overflow-hidden">
+    <div className="min-h-screen bg-background flex">
       <StickyHeader showBack={false} title="Admin Dashboard" />
 
-      {/* Futuristic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-fac-orange-500/2 to-purple-500/2 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-gradient-to-r from-blue-500/2 to-fac-orange-500/2 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-purple-500/3 to-pink-500/3 blur-xl animate-float animate-delay-300"></div>
-      </div>
-
-      {/* Modern Sidebar */}
+      {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -452,66 +445,48 @@ export default function AdminDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64 min-h-screen relative z-10">
-        <div className="p-4 lg:p-8">
-          {/* Modern Header */}
-          <div className="mb-8 ml-12 lg:ml-0 animate-fade-in-up">
-            <div className="flex items-center justify-between">
+      <div className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-3 sm:p-4 lg:p-6">
+          {/* Header */}
+          <div className="mb-6 ml-12 lg:ml-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-black text-foreground tracking-tight">
-                  {activeTab === "overview" && (
-                    <>
-                      Admin{" "}
-                      <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                        Command
-                      </span>
-                    </>
-                  )}
-                  {activeTab === "customers" && "Customer Hub"}
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+                  {activeTab === "overview" && "Admin Dashboard"}
+                  {activeTab === "customers" && "Customer Management"}
                   {activeTab === "roles" && "User & Role Management"}
-                  {activeTab === "ads" && "Advertisement Studio"}
-                  {activeTab === "packages" && "Package Studio"}
-                  {activeTab === "branches" && "Branch Network"}
-                  {activeTab === "analytics" && "Analytics Center"}
+                  {activeTab === "ads" && "Advertisement Management"}
+                  {activeTab === "packages" && "Package Management"}
+                  {activeTab === "branches" && "Branch Management"}
+                  {activeTab === "analytics" && "Analytics"}
                   {activeTab === "sales" && "Revenue Dashboard"}
-                  {activeTab === "notifications" && "Notification Center"}
+                  {activeTab === "notifications" && "Notifications"}
                 </h1>
-                <p className="text-muted-foreground font-medium mt-2 text-lg">
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
-                    "Monitor your business performance in real-time"}
+                    "Monitor your business performance"}
                   {activeTab === "customers" &&
                     "Manage customer accounts and approvals"}
-                  {activeTab === "roles" &&
-                    "Manage user roles, permissions, and admin accounts"}
-                  {activeTab === "ads" &&
-                    "Create and manage promotional advertisements"}
-                  {activeTab === "packages" &&
-                    "Configure service packages and pricing"}
-                  {activeTab === "branches" &&
-                    "Oversee all branch locations and operations"}
-                  {activeTab === "analytics" &&
-                    "Detailed insights and performance reports"}
-                  {activeTab === "sales" &&
-                    "Track revenue and sales performance"}
-                  {activeTab === "notifications" &&
-                    "System alerts and customer notifications"}
+                  {activeTab === "roles" && "Manage user roles and permissions"}
+                  {activeTab === "ads" && "Create and manage advertisements"}
+                  {activeTab === "packages" && "Configure service packages"}
+                  {activeTab === "branches" && "Manage branch locations"}
+                  {activeTab === "analytics" && "View performance insights"}
+                  {activeTab === "sales" && "Track revenue and sales"}
+                  {activeTab === "notifications" && "System alerts"}
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                {/* Modern Notification Dropdown */}
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                {/* Notification Dropdown */}
                 <DropdownMenu
                   open={isNotificationDropdownOpen}
                   onOpenChange={setIsNotificationDropdownOpen}
                 >
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="relative glass rounded-full hover-lift"
-                    >
-                      <Bell className="h-5 w-5" />
+                    <Button variant="outline" size="sm" className="relative">
+                      <Bell className="h-4 w-4" />
                       {unreadNotificationCount > 0 && (
-                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-6 w-6 rounded-full p-0 flex items-center justify-center animate-pulse-glow">
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-5 w-5 rounded-full p-0 flex items-center justify-center">
                           {unreadNotificationCount > 9
                             ? "9+"
                             : unreadNotificationCount}
@@ -519,21 +494,18 @@ export default function AdminDashboard() {
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-96 p-0 glass border-border shadow-2xl"
-                  >
+                  <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
                     <div className="p-6 border-b border-border">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-black text-foreground text-lg">
+                        <h3 className="font-bold text-foreground">
                           Notifications
                         </h3>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
                           {unreadNotificationCount > 0 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-sm h-8 hover-lift"
+                              className="text-xs h-7"
                             >
                               Mark all read
                             </Button>
@@ -545,7 +517,7 @@ export default function AdminDashboard() {
                               setActiveTab("notifications");
                               setIsNotificationDropdownOpen(false);
                             }}
-                            className="text-sm h-8 hover-lift"
+                            className="text-xs h-7"
                           >
                             View all
                           </Button>
@@ -621,13 +593,10 @@ export default function AdminDashboard() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <ThemeToggle variant="outline" className="glass rounded-full" />
-                <Button
-                  variant="outline"
-                  className="glass rounded-full hover-lift"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
+                <ThemeToggle />
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
             </div>
