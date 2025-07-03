@@ -339,7 +339,7 @@ Estimated time: 30-45 minutes.`);
                         </div>
                       </div>
                     </div>
-              <div className="text-right">
+                    <div className="text-right">
                 <div className="bg-fac-orange-50 dark:bg-fac-orange-950 rounded-xl px-3 py-2 border border-fac-orange-200 dark:border-fac-orange-800">
                   <p className="text-xs font-medium text-muted-foreground uppercase">
                     EXPIRES IN
