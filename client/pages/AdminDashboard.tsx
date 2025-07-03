@@ -435,6 +435,83 @@ export default function AdminDashboard() {
     }).format(amount);
   };
 
+  const handleApproveCustomer = (notificationId: string) => {
+    // Find the notification and extract customer info
+    const notification = notifications.find((n) => n.id === notificationId);
+    if (!notification) return;
+
+    // Update customer status to approved
+    const updatedCustomers = customers.map((customer) => {
+      // Extract customer ID from notification message or use a different approach
+      if (notification.message.includes(customer.name)) {
+        return {
+          ...customer,
+          approvalStatus: "approved" as const,
+          status: "active" as const,
+        };
+      }
+      return customer;
+    });
+    setCustomers(updatedCustomers);
+
+    // Mark notification as processed and read
+    const updatedNotifications = notifications.map((n) =>
+      n.id === notificationId
+        ? {
+            ...n,
+            read: true,
+            title: n.title.replace("New", "Approved"),
+            message: n.message.replace("approval", "approved"),
+          }
+        : n,
+    );
+    setNotifications(updatedNotifications);
+    localStorage.setItem(
+      "admin_notifications",
+      JSON.stringify(updatedNotifications),
+    );
+
+    alert(`Customer approved successfully!`);
+  };
+
+  const handleRejectCustomer = (notificationId: string) => {
+    // Find the notification and extract customer info
+    const notification = notifications.find((n) => n.id === notificationId);
+    if (!notification) return;
+
+    // Update customer status to rejected
+    const updatedCustomers = customers.map((customer) => {
+      if (notification.message.includes(customer.name)) {
+        return {
+          ...customer,
+          approvalStatus: "rejected" as const,
+          status: "inactive" as const,
+        };
+      }
+      return customer;
+    });
+    setCustomers(updatedCustomers);
+
+    // Mark notification as processed and read
+    const updatedNotifications = notifications.map((n) =>
+      n.id === notificationId
+        ? {
+            ...n,
+            read: true,
+            title: n.title.replace("New", "Rejected"),
+            message: n.message.replace("approval", "rejected"),
+          }
+        : n,
+    );
+    setNotifications(updatedNotifications);
+    localStorage.setItem(
+      "admin_notifications",
+      JSON.stringify(updatedNotifications),
+    );
+
+    alert(`Customer registration rejected.`);
+  };
+
   const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   if (!userRole) return null;
@@ -611,14 +688,49 @@ export default function AdminDashboard() {
                                   <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                                     {notification.message}
                                   </p>
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatDistanceToNow(
-                                      notification.timestamp,
-                                      {
-                                        addSuffix: true,
-                                      },
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs text-muted-foreground">
+                                      {formatDistanceToNow(
+                                        notification.timestamp,
+                                        {
+                                          addSuffix: true,
+                                        },
+                                      )}
+                                    </span>
+                                    {(notification.type === "new_customer" ||
+                                      notification.type ===
+                                        "approval_request") && (
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleApproveCustomer(
+                                              notification.id,
+                                            );
+                                          }}
+                                        >
+                                          <UserCheck className="h-3 w-3 mr-1" />
+                                          Approve
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          className="text-xs px-2 py-1 h-6"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRejectCustomer(
+                                              notification.id,
+                                            );
+                                          }}
+                                        >
+                                          <UserX className="h-3 w-3 mr-1" />
+                                          Reject
+                                        </Button>
+                                      </div>
                                     )}
-                                  </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
