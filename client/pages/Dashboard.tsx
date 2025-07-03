@@ -514,6 +514,15 @@ export default function Dashboard() {
                       Book Now
                     </Button>
                   </Link>
+                  <Link to="/my-bookings" className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="w-full border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 py-3 rounded-xl"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      My Bookings
+                    </Button>
+                  </Link>
                   <Link to="/manage-subscription" className="flex-1">
                     <Button
                       variant="outline"
