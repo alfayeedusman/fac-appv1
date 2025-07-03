@@ -597,10 +597,14 @@ export default function Profile() {
                     className="bg-gradient-to-r from-fac-orange-500 to-purple-600 h-3 rounded-full transition-all duration-500"
                     style={{
                       width: `${
-                        (membershipData.currentPoints /
-                          (membershipData.currentPoints +
-                            membershipData.pointsToNext)) *
-                        100
+                        membershipData.currentPoints +
+                          membershipData.pointsToNext >
+                        0
+                          ? (membershipData.currentPoints /
+                              (membershipData.currentPoints +
+                                membershipData.pointsToNext)) *
+                            100
+                          : 0
                       }%`,
                     }}
                   ></div>
