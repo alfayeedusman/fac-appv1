@@ -1336,6 +1336,115 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Package Modal */}
+      <Dialog open={isPackageModalOpen} onOpenChange={setIsPackageModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {packageModalMode === "add"
+                ? "Create New Package"
+                : "Edit Package"}
+            </DialogTitle>
+            <DialogDescription>
+              {packageModalMode === "add"
+                ? "Create a new service package with custom features and pricing."
+                : "Update the selected package details."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="packageName">Package Name *</Label>
+              <Input
+                id="packageName"
+                value={newPackage.name}
+                onChange={(e) =>
+                  setNewPackage({ ...newPackage, name: e.target.value })
+                }
+                placeholder="e.g., Premium Wash Package"
+                className="mt-2"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="packagePrice">Base Price (₱) *</Label>
+                <Input
+                  id="packagePrice"
+                  type="number"
+                  value={newPackage.basePrice}
+                  onChange={(e) =>
+                    setNewPackage({
+                      ...newPackage,
+                      basePrice: Number(e.target.value),
+                    })
+                  }
+                  placeholder="0"
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="packageDuration">Billing Cycle</Label>
+                <Select
+                  value={newPackage.duration}
+                  onValueChange={(value) =>
+                    setNewPackage({ ...newPackage, duration: value })
+                  }
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Daily">Daily</SelectItem>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="Yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="packageFeatures">Features (one per line)</Label>
+              <Textarea
+                id="packageFeatures"
+                value={editingFeatures}
+                onChange={(e) => setEditingFeatures(e.target.value)}
+                placeholder="Professional exterior wash&#10;Interior cleaning&#10;Tire protection&#10;..."
+                rows={5}
+                className="mt-2"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="packageActive"
+                checked={newPackage.active}
+                onChange={(e) =>
+                  setNewPackage({ ...newPackage, active: e.target.checked })
+                }
+                className="w-4 h-4"
+              />
+              <Label htmlFor="packageActive">Active Package</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsPackageModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSavePackage}
+              className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
+            >
+              {packageModalMode === "add" ? "Create Package" : "Update Package"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
