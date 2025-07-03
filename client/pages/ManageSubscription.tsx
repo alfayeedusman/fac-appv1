@@ -43,7 +43,10 @@ import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
 import PackageSelectionModal from "@/components/PackageSelectionModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
-import { getUserSubscriptionStatus } from "@/utils/subscriptionApprovalData";
+import {
+  getUserSubscriptionStatus,
+  getSubscriptionRequests,
+} from "@/utils/subscriptionApprovalData";
 
 interface SubscriptionPlan {
   id: string;
