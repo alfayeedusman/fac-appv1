@@ -75,6 +75,8 @@ export default function StickyHeader({
     switch (location.pathname) {
       case "/booking":
         return "Book Service";
+      case "/my-bookings":
+        return "My Bookings";
       case "/manage-subscription":
         return "Plans";
       case "/voucher":
