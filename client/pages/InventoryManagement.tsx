@@ -57,6 +57,7 @@ import {
   Supplier,
 } from "@/utils/inventoryData";
 import { notificationManager } from "@/components/NotificationModal";
+import CarWashServiceManager from "@/components/CarWashServiceManager";
 
 export default function InventoryManagement() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -280,8 +281,9 @@ export default function InventoryManagement() {
 
       <div className="p-6">
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="services">Car Wash Services</TabsTrigger>
             <TabsTrigger value="movements">Stock Movements</TabsTrigger>
             <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -455,6 +457,11 @@ export default function InventoryManagement() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Car Wash Services Tab */}
+          <TabsContent value="services" className="space-y-6">
+            <CarWashServiceManager />
           </TabsContent>
 
           {/* Stock Movements Tab */}
