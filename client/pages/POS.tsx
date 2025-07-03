@@ -244,7 +244,7 @@ export default function POS() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <StickyHeader
         showBack={true}
         title="Point of Sale"
