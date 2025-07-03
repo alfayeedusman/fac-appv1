@@ -578,70 +578,222 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 sm:px-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button
-                  variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
-                  onClick={() => alert("Priority Booking benefit details")}
-                >
-                  <div className="bg-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
-                    <Calendar className="h-6 w-6 text-white" />
-                  </div>
-                  <h4 className="font-bold text-foreground mb-2 text-left">
-                    Priority Booking
-                  </h4>
-                  <p className="text-sm text-muted-foreground text-left">
-                    Skip the line with exclusive access
-                  </p>
-                </Button>
+              {/* Wash Cycle Progress Bars */}
+              <div className="space-y-6 mb-8">
+                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center">
+                  <Droplets className="h-5 w-5 mr-2 text-fac-orange-500" />
+                  Monthly Wash Cycles
+                </h3>
 
-                <Button
-                  variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
-                  onClick={() => alert("Member Discounts benefit details")}
-                >
-                  <div className="bg-green-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-600 transition-colors">
-                    <Gift className="h-6 w-6 text-white" />
+                {/* Classic Wash Progress */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-500 p-2 rounded-lg">
+                        <Car className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground">
+                          Classic Wash
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Basic premium service
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-foreground">
+                        {membershipData.remainingWashes.classic === 999
+                          ? "∞"
+                          : `${membershipData.remainingWashes.classic}/${membershipData.totalWashes.classic}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {membershipData.remainingWashes.classic === 999
+                          ? "Unlimited"
+                          : "remaining"}
+                      </p>
+                    </div>
                   </div>
-                  <h4 className="font-bold text-foreground mb-2 text-left">
-                    Member Discounts
-                  </h4>
-                  <p className="text-sm text-muted-foreground text-left">
-                    Save up to 25% on services
-                  </p>
-                </Button>
+                  <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        membershipData.remainingWashes.classic === 999
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 w-full animate-pulse"
+                          : "bg-blue-500"
+                      }`}
+                      style={{
+                        width:
+                          membershipData.remainingWashes.classic === 999
+                            ? "100%"
+                            : `${getProgressPercentage(
+                                membershipData.remainingWashes.classic,
+                                membershipData.totalWashes.classic,
+                              )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  {membershipData.remainingWashes.classic === 999 && (
+                    <div className="flex items-center justify-center space-x-2 text-blue-600">
+                      <Star className="h-4 w-4" />
+                      <span className="text-sm font-bold">
+                        MAX LEVEL - UNLIMITED
+                      </span>
+                      <Star className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
 
-                <Button
-                  variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
-                  onClick={() => alert("Paint Protection benefit details")}
-                >
-                  <div className="bg-purple-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-600 transition-colors">
-                    <Shield className="h-6 w-6 text-white" />
+                {/* VIP ProMax Progress */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-purple-500 p-2 rounded-lg">
+                        <Crown className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground">
+                          VIP ProMax
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Premium luxury service
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-foreground">
+                        {membershipData.remainingWashes.vipProMax === 999
+                          ? "∞"
+                          : `${membershipData.remainingWashes.vipProMax}/${membershipData.totalWashes.vipProMax}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {membershipData.remainingWashes.vipProMax === 999
+                          ? "Unlimited"
+                          : "remaining"}
+                      </p>
+                    </div>
                   </div>
-                  <h4 className="font-bold text-foreground mb-2 text-left">
-                    Paint Protection
-                  </h4>
-                  <p className="text-sm text-muted-foreground text-left">
-                    Advanced coating included
-                  </p>
-                </Button>
+                  <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        membershipData.remainingWashes.vipProMax === 999
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 w-full animate-pulse"
+                          : "bg-purple-500"
+                      }`}
+                      style={{
+                        width:
+                          membershipData.remainingWashes.vipProMax === 999
+                            ? "100%"
+                            : `${getProgressPercentage(
+                                membershipData.remainingWashes.vipProMax,
+                                membershipData.totalWashes.vipProMax,
+                              )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  {membershipData.remainingWashes.vipProMax === 999 && (
+                    <div className="flex items-center justify-center space-x-2 text-purple-600">
+                      <Crown className="h-4 w-4" />
+                      <span className="text-sm font-bold">
+                        MAX LEVEL - UNLIMITED
+                      </span>
+                      <Crown className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
 
-                <Button
-                  variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
-                  onClick={() => alert("VIP Lounge benefit details")}
-                >
-                  <div className="bg-fac-orange-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-fac-orange-600 transition-colors">
-                    <Crown className="h-6 w-6 text-white" />
+                {/* Premium Wash Progress */}
+                {membershipData.totalWashes.premium > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-fac-orange-500 p-2 rounded-lg">
+                          <Sparkles className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-foreground">
+                            Premium Elite
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Ultimate luxury experience
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">
+                          {membershipData.remainingWashes.premium === 999
+                            ? "∞"
+                            : `${membershipData.remainingWashes.premium}/${membershipData.totalWashes.premium}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {membershipData.remainingWashes.premium === 999
+                            ? "Unlimited"
+                            : "remaining"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          membershipData.remainingWashes.premium === 999
+                            ? "bg-gradient-to-r from-fac-orange-500 to-yellow-500 w-full animate-pulse"
+                            : "bg-fac-orange-500"
+                        }`}
+                        style={{
+                          width:
+                            membershipData.remainingWashes.premium === 999
+                              ? "100%"
+                              : `${getProgressPercentage(
+                                  membershipData.remainingWashes.premium,
+                                  membershipData.totalWashes.premium,
+                                )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    {membershipData.remainingWashes.premium === 999 && (
+                      <div className="flex items-center justify-center space-x-2 text-fac-orange-600">
+                        <Sparkles className="h-4 w-4" />
+                        <span className="text-sm font-bold">
+                          MAX LEVEL - UNLIMITED
+                        </span>
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-bold text-foreground mb-2 text-left">
-                    VIP Lounge
-                  </h4>
-                  <p className="text-sm text-muted-foreground text-left">
-                    Exclusive member area
-                  </p>
-                </Button>
+                )}
+              </div>
+
+              {/* Additional Benefits */}
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center">
+                  <Gift className="h-5 w-5 mr-2 text-fac-orange-500" />
+                  Member Perks
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-3 bg-muted rounded-lg p-3">
+                    <Calendar className="h-5 w-5 text-blue-500" />
+                    <span className="text-sm font-medium text-foreground">
+                      Priority Booking
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3 bg-muted rounded-lg p-3">
+                    <Shield className="h-5 w-5 text-green-500" />
+                    <span className="text-sm font-medium text-foreground">
+                      Paint Protection
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3 bg-muted rounded-lg p-3">
+                    <Crown className="h-5 w-5 text-purple-500" />
+                    <span className="text-sm font-medium text-foreground">
+                      VIP Lounge Access
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3 bg-muted rounded-lg p-3">
+                    <Star className="h-5 w-5 text-fac-orange-500" />
+                    <span className="text-sm font-medium text-foreground">
+                      Member Discounts
+                    </span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
