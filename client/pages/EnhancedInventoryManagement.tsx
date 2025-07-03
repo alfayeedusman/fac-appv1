@@ -115,9 +115,19 @@ export default function EnhancedInventoryManagement() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
   const [showServicePricingModal, setShowServicePricingModal] = useState(false);
   const [selectedService, setSelectedService] = useState<CarWashService | null>(
     null,
+  );
+  const [editingCategory, setEditingCategory] =
+    useState<ProductCategory | null>(null);
+  const [editingService, setEditingService] = useState<CarWashService | null>(
+    null,
+  );
+  const [serviceModalMode, setServiceModalMode] = useState<"add" | "edit">(
+    "add",
   );
 
   const [newProduct, setNewProduct] = useState({
@@ -145,6 +155,16 @@ export default function EnhancedInventoryManagement() {
     icon: "📦",
     color: "#3B82F6",
     variants: [] as CategoryVariant[],
+  });
+
+  const [newService, setNewService] = useState({
+    name: "",
+    description: "",
+    basePrice: 200,
+    duration: "30 mins",
+    features: [""],
+    category: "basic" as CarWashService["category"],
+    isActive: true,
   });
 
   // Default categories with variants
