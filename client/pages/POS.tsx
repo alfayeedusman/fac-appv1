@@ -282,6 +282,13 @@ export default function POS() {
                   className="pl-10"
                 />
               </div>
+              <Button
+                onClick={() => setShowServiceSelector(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                <Car className="h-4 w-4 mr-2" />
+                Car Wash Services
+              </Button>
               <Button variant="outline" size="icon">
                 <Scan className="h-4 w-4" />
               </Button>
