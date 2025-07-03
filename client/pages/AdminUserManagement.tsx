@@ -183,14 +183,27 @@ export default function AdminUserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <StickyHeader
-        showBack={true}
-        title="User Management"
-        backTo="/admin-dashboard"
+    <div className="min-h-screen bg-background flex">
+      <StickyHeader showBack={false} title="User Management" />
+
+      <AdminSidebar
+        activeTab="user-management"
+        onTabChange={(tab) => {
+          if (tab === "overview") navigate("/admin-dashboard");
+          else if (tab === "cms") navigate("/admin-cms");
+          else if (tab === "push-notifications") navigate("/admin-push-notifications");
+          else if (tab === "gamification") navigate("/admin-gamification");
+          else if (tab === "subscription-approval") navigate("/admin-subscription-approval");
+          else if (tab === "pos") navigate("/pos");
+          else if (tab === "inventory") navigate("/inventory-management");
+          else if (tab === "receipt-designer") navigate("/admin-receipt-designer");
+        }}
+        userRole={localStorage.getItem("userRole") || "admin"}
+        notificationCount={0}
       />
 
-      <div className="p-6 space-y-6">
+      <div className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-6 mt-16 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
