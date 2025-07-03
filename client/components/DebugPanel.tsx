@@ -194,6 +194,24 @@ export default function DebugPanel({ className = "" }: DebugPanelProps) {
               <Trash2 className="h-4 w-4 mr-2" />
               Reset Entire App
             </Button>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Clear ALL sample data and start fresh? This will remove all subscription requests, bookings, and payment history.",
+                  )
+                ) {
+                  clearAllSampleData();
+                }
+              }}
+              className="w-full justify-start bg-red-600 hover:bg-red-700"
+            >
+              <Database className="h-4 w-4 mr-2" />
+              Clear All Sample Data
+            </Button>
           </div>
 
           {/* Quick Navigation */}
