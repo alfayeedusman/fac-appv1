@@ -518,54 +518,109 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Simple Membership Benefits */}
+        {/* Membership Benefits */}
         <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-foreground text-xl font-bold">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Crown className="h-6 w-6 text-white" />
               </div>
               Membership Benefits
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="bg-muted rounded-lg p-6 mb-4">
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
+          <CardContent className="px-4 sm:px-6">
+            <div className="space-y-6">
+              {/* Membership Level Display */}
+              <div className="text-center py-4">
+                <div className="bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 mx-auto max-w-sm border border-fac-orange-500/20">
+                  <h3 className="text-2xl font-bold text-white mb-3">
                     {profile.membershipType}
                   </h3>
-                  <Badge className="bg-fac-orange-500 text-white font-bold text-sm px-4 py-2">
-                    Premium Tier
+                  <Badge className="bg-fac-orange-500 text-black font-bold text-sm px-4 py-2 tracking-wide">
+                    PREMIUM TIER
                   </Badge>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  <span className="text-foreground font-medium">
-                    Unlimited washes
-                  </span>
+              {/* Benefits Grid - Responsive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2 sm:px-0">
+                <div className="flex items-center space-x-4 bg-muted rounded-xl p-4 hover:bg-muted/80 transition-colors">
+                  <div className="bg-green-500 rounded-full p-2 flex-shrink-0">
+                    <CheckCircle className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-semibold text-sm">
+                      Unlimited Washes
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Monthly access to all services
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  <span className="text-foreground font-medium">
-                    VIP concierge service
-                  </span>
+
+                <div className="flex items-center space-x-4 bg-muted rounded-xl p-4 hover:bg-muted/80 transition-colors">
+                  <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
+                    <CheckCircle className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-semibold text-sm">
+                      VIP Concierge
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Personal service assistance
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  <span className="text-foreground font-medium">
-                    Premium lounge access
-                  </span>
+
+                <div className="flex items-center space-x-4 bg-muted rounded-xl p-4 hover:bg-muted/80 transition-colors">
+                  <div className="bg-purple-500 rounded-full p-2 flex-shrink-0">
+                    <CheckCircle className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-semibold text-sm">
+                      Premium Lounge
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Exclusive waiting area access
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  <span className="text-foreground font-medium">
-                    Priority booking
-                  </span>
+
+                <div className="flex items-center space-x-4 bg-muted rounded-xl p-4 hover:bg-muted/80 transition-colors">
+                  <div className="bg-fac-orange-500 rounded-full p-2 flex-shrink-0">
+                    <CheckCircle className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-semibold text-sm">
+                      Priority Booking
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Skip the line privileges
+                    </p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Additional Perks */}
+              <div className="bg-gradient-to-r from-fac-orange-500/10 to-yellow-500/10 rounded-xl p-4 border border-fac-orange-500/20">
+                <h4 className="font-bold text-foreground mb-3 flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-fac-orange-500" />
+                  Exclusive Member Perks
+                </h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 bg-fac-orange-500 rounded-full"></div>
+                    <span>Free vehicle inspections monthly</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 bg-fac-orange-500 rounded-full"></div>
+                    <span>Complimentary air fresheners</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 bg-fac-orange-500 rounded-full"></div>
+                    <span>Exclusive event invitations</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </CardContent>

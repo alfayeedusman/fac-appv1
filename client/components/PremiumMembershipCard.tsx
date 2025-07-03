@@ -42,7 +42,8 @@ export default function PremiumMembershipCard({
       case "classic":
         return {
           name: "Classic Pro",
-          color: "from-blue-500 to-blue-700",
+          color: "from-slate-800 to-slate-900",
+          accentColor: "bg-blue-500",
           icon: Star,
           textColor: "text-white",
           pattern: "classic",
@@ -50,7 +51,8 @@ export default function PremiumMembershipCard({
       case "vip_silver":
         return {
           name: "VIP Silver Elite",
-          color: "from-gray-400 to-gray-600",
+          color: "from-black to-slate-900",
+          accentColor: "bg-gray-400",
           icon: Diamond,
           textColor: "text-white",
           pattern: "silver",
@@ -58,15 +60,17 @@ export default function PremiumMembershipCard({
       case "vip_gold":
         return {
           name: "VIP Gold Ultimate",
-          color: "from-yellow-400 to-yellow-600",
+          color: "from-black to-gray-900",
+          accentColor: "bg-fac-orange-500",
           icon: Crown,
-          textColor: "text-black",
+          textColor: "text-white",
           pattern: "gold",
         };
       default:
         return {
           name: "Regular Member",
-          color: "from-red-500 to-red-700",
+          color: "from-slate-700 to-slate-800",
+          accentColor: "bg-red-500",
           icon: User,
           textColor: "text-white",
           pattern: "regular",
@@ -154,20 +158,42 @@ export default function PremiumMembershipCard({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front of Card */}
-        <Card className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl">
+        <Card className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
           <div
             className={`w-full h-full bg-gradient-to-br ${config.color} relative overflow-hidden`}
           >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-4 right-4">
-                <Sparkles className="h-16 w-16 text-white transform rotate-12" />
+            {/* Luxury Background Pattern */}
+            <div className="absolute inset-0">
+              {/* Orange accent lines */}
+              <div
+                className={`absolute top-0 left-0 w-full h-1 ${config.accentColor}`}
+              ></div>
+              <div
+                className={`absolute bottom-0 right-0 w-1 h-full ${config.accentColor}`}
+              ></div>
+
+              {/* Geometric patterns */}
+              <div className="absolute top-4 right-4 opacity-10">
+                <Sparkles className="h-16 w-16 text-fac-orange-500 transform rotate-12" />
               </div>
-              <div className="absolute bottom-4 left-4">
-                <IconComponent className="h-12 w-12 text-white transform -rotate-12" />
+              <div className="absolute bottom-4 left-4 opacity-15">
+                <IconComponent className="h-12 w-12 text-fac-orange-500 transform -rotate-12" />
               </div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-32 h-32 border-2 border-white rounded-full opacity-30"></div>
+
+              {/* Dot pattern */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 1px 1px, rgba(249, 115, 22, 0.15) 1px, transparent 0)",
+                  backgroundSize: "20px 20px",
+                }}
+              ></div>
+
+              {/* Circuit-like pattern */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5">
+                <div className="w-40 h-40 border border-fac-orange-500 rounded-full"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-fac-orange-500 rounded-full"></div>
               </div>
             </div>
 
@@ -176,29 +202,23 @@ export default function PremiumMembershipCard({
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="flex items-center mb-2">
+                  <div className="flex items-center mb-3">
                     <img
                       src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                       alt="FAC Logo"
-                      className="h-8 w-auto mr-2 brightness-0 invert"
+                      className="h-8 w-auto mr-3 brightness-0 invert"
                     />
-                    <span className={`text-sm font-bold ${config.textColor}`}>
+                    <span className="text-sm font-bold text-white tracking-wider">
                       FAYEED AUTO CARE
                     </span>
                   </div>
-                  <Badge
-                    className={`${
-                      membershipType === "vip_gold"
-                        ? "bg-yellow-200 text-yellow-800"
-                        : membershipType === "vip_silver"
-                          ? "bg-gray-200 text-gray-800"
-                          : "bg-white/20 text-white"
-                    } font-bold`}
-                  >
-                    {config.name}
+                  <Badge className="bg-fac-orange-500 text-black font-bold px-3 py-1 text-xs tracking-wide">
+                    {config.name.toUpperCase()}
                   </Badge>
                 </div>
-                <IconComponent className={`h-8 w-8 ${config.textColor}`} />
+                <div className={`p-2 rounded-lg ${config.accentColor}`}>
+                  <IconComponent className="h-6 w-6 text-white" />
+                </div>
               </div>
 
               {/* Member Info */}
@@ -240,43 +260,47 @@ export default function PremiumMembershipCard({
 
         {/* Back of Card */}
         <Card
-          className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl"
+          className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl border border-gray-800"
           style={{ transform: "rotateY(180deg)" }}
         >
           <div
             className={`w-full h-full bg-gradient-to-br ${config.color} relative overflow-hidden`}
+            style={{ transform: "scaleX(-1)" }} // Reverse the entire back content
           >
             {/* Magnetic Strip Effect */}
-            <div className="absolute top-8 left-0 right-0 h-12 bg-black/30"></div>
+            <div className="absolute top-8 left-0 right-0 h-12 bg-black/50 border-t border-b border-fac-orange-500/30"></div>
 
-            <div className="relative z-10 p-6 h-full flex flex-col justify-between">
+            <div
+              className="relative z-10 p-6 h-full flex flex-col justify-between"
+              style={{ transform: "scaleX(-1)" }}
+            >
               {/* QR Code Section */}
               <div className="text-center mt-16">
-                <div className="bg-white rounded-xl p-4 inline-block shadow-lg">
+                <div className="bg-white rounded-xl p-4 inline-block shadow-lg border-2 border-fac-orange-500/20">
                   <QrCode className="h-16 w-16 text-gray-800" />
                 </div>
-                <p className={`text-sm ${config.textColor} mt-2 opacity-90`}>
-                  Scan for quick check-in
+                <p className="text-sm text-white mt-3 font-medium tracking-wide">
+                  SCAN FOR QUICK CHECK-IN
                 </p>
               </div>
 
               {/* Membership Status */}
               {totalWashes > 0 && (
-                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-fac-orange-500/30">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className={`text-xs ${config.textColor} opacity-80`}>
-                        Remaining Washes
+                      <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
+                        REMAINING WASHES
                       </p>
-                      <p className={`text-2xl font-black ${config.textColor}`}>
+                      <p className="text-2xl font-black text-white">
                         {remainingWashes}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-xs ${config.textColor} opacity-80`}>
-                        Valid Until
+                      <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
+                        VALID UNTIL
                       </p>
-                      <p className={`text-sm font-bold ${config.textColor}`}>
+                      <p className="text-sm font-bold text-white">
                         {expiryDate}
                       </p>
                     </div>
@@ -285,12 +309,12 @@ export default function PremiumMembershipCard({
               )}
 
               {/* Terms */}
-              <div className="text-center">
-                <p className={`text-xs ${config.textColor} opacity-70`}>
-                  Non-transferable • Terms apply
+              <div className="text-center space-y-1">
+                <p className="text-xs text-gray-400 font-medium">
+                  NON-TRANSFERABLE • TERMS APPLY
                 </p>
-                <p className={`text-xs ${config.textColor} opacity-70`}>
-                  Visit fayeedautocare.com
+                <p className="text-xs text-fac-orange-400 font-bold">
+                  FAYEEDAUTOCARE.COM
                 </p>
               </div>
             </div>
