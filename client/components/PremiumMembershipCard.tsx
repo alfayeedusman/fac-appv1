@@ -298,15 +298,11 @@ export default function PremiumMembershipCard({
         >
           <div
             className={`w-full h-full bg-gradient-to-br ${config.color} relative overflow-hidden`}
-            style={{ transform: "scaleX(-1)" }} // Reverse the entire back content
           >
             {/* Magnetic Strip Effect */}
             <div className="absolute top-8 left-0 right-0 h-12 bg-black/50 border-t border-b border-fac-orange-500/30"></div>
 
-            <div
-              className="relative z-10 p-6 h-full flex flex-col justify-between"
-              style={{ transform: "scaleX(-1)" }}
-            >
+            <div className="relative z-10 p-6 h-full flex flex-col justify-between">
               {/* Enhanced QR Code Section */}
               <div className="text-center mt-12">
                 <div className="bg-white rounded-xl p-5 inline-block shadow-2xl border-2 border-fac-orange-500/30">
