@@ -314,6 +314,16 @@ export default function Login() {
                 <Fingerprint className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                 {isLoading ? "Authenticating..." : "Biometric Login"}
               </Button>
+
+              {/* Forgot Password Link */}
+              <div className="text-center">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-fac-orange-500 hover:text-fac-orange-600"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
             </form>
           </CardContent>
         </Card>
