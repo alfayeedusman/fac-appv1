@@ -140,7 +140,11 @@ export default function AdminCMS() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <StickyHeader showBack={true} title="CMS Management" />
+      <StickyHeader
+        showBack={true}
+        title="CMS Management"
+        backTo="/admin-dashboard"
+      />
 
       <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
         {/* Header */}
