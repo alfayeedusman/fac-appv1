@@ -38,6 +38,7 @@ import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
