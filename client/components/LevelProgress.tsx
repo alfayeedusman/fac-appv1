@@ -148,10 +148,7 @@ export default function LevelProgress({
           <LevelBadge level={current} size="lg" showName={false} animated />
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h3
-                className="text-xl font-bold"
-                style={{ color: current.color }}
-              >
+              <h3 className="text-xl font-bold text-fac-orange-500">
                 {current.name}
               </h3>
               <div className="text-right">
@@ -181,7 +178,7 @@ export default function LevelProgress({
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {userProgress.nextLevelBookings} more car washes to reach{" "}
-                  <span style={{ color: next.color }} className="font-semibold">
+                  <span className="font-semibold text-fac-orange-500">
                     {next.name}
                   </span>
                 </p>
