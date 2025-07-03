@@ -108,6 +108,7 @@ export default function Login() {
 
       // Set splash screen flag and navigate
       localStorage.setItem("showSplashScreen", "true");
+      localStorage.setItem("justLoggedIn", "true");
 
       setTimeout(() => {
         if (
