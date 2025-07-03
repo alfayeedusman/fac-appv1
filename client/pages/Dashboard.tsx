@@ -34,6 +34,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { LogoutModal } from "@/components/ConfirmModal";
 import StickyHeader from "@/components/StickyHeader";
+import LevelProgress from "@/components/LevelProgress";
 import QRScanner from "@/components/QRScanner";
 import QRScanSuccessModal from "@/components/QRScanSuccessModal";
 import AdBanner from "@/components/AdBanner";
