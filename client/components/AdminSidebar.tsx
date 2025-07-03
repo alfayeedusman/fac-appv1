@@ -92,6 +92,14 @@ export default function AdminSidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  // Filter sidebar items based on user role
+  const filteredItems = sidebarItems.filter((item) => {
+    if (item.superAdminOnly && userRole !== "superadmin") {
+      return false;
+    }
+    return true;
+  });
+
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
