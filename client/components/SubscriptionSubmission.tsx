@@ -27,6 +27,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
+import { notificationManager } from "./NotificationModal";
 
 interface SubscriptionSubmissionProps {
   isOpen: boolean;
@@ -133,7 +134,10 @@ export default function SubscriptionSubmission({
 
   const handleSubmit = async () => {
     if (!selectedPackage || !paymentMethod || !receiptFile) {
-      alert("Please fill in all required fields and upload a receipt.");
+      notificationManager.warning(
+        "Missing Information",
+        "Please fill in all required fields and upload a receipt.",
+      );
       return;
     }
 
@@ -170,9 +174,11 @@ export default function SubscriptionSubmission({
         customerStatus: "active",
       });
 
-      // Show success message
-      alert(
-        `🎉 Subscription request submitted successfully!\n\nRequest ID: ${request.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
+      // Show success notification
+      notificationManager.success(
+        "Request Submitted! 🎉",
+        `Your subscription request has been submitted successfully!\n\nRequest ID: ${request.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
+        { autoClose: 6000 },
       );
 
       // Reset form and close
@@ -180,7 +186,10 @@ export default function SubscriptionSubmission({
       onClose();
     } catch (error) {
       console.error("Error submitting request:", error);
-      alert("Failed to submit subscription request. Please try again.");
+      notificationManager.error(
+        "Submission Failed",
+        "Failed to submit subscription request. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
