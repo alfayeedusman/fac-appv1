@@ -1110,6 +1110,10 @@ export default function ManageSubscription() {
         currentPlan={currentPlan}
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
+        onStatusUpdate={() => {
+          // Refresh subscription status immediately when payment is submitted
+          refreshSubscriptionStatus();
+        }}
       />
 
       {/* Subscription Submission Modal */}
