@@ -598,6 +598,15 @@ export default function ManageSubscription() {
       </div>
 
       <BottomNavigation />
+
+      {/* Payment Upload Modal */}
+      <PaymentUploadModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        currentPlan={currentPlan}
+        selectedPlan={selectedPlan}
+        planPrice={pricing.total}
+      />
     </div>
   );
 }
