@@ -27,8 +27,12 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 
 const queryClient = new QueryClient();
+
+// Initialize admin accounts on app startup
+initializeAdminAccounts();
 
 const App = () => (
   <ThemeProvider>
