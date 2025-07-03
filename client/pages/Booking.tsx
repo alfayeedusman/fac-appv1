@@ -144,6 +144,14 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Set the selected service when confirming booking
+    const selectedServiceData = services.find((s) => s.id === selectedService);
+    if (selectedServiceData) {
+      setBookingData((prev) => ({
+        ...prev,
+        service: selectedServiceData.name,
+      }));
+    }
     setShowBookingModal(true);
   };
 
@@ -261,7 +269,6 @@ You'll receive a confirmation shortly.`);
                     } ${service.popular ? "ring-2 ring-fac-orange-500/30" : ""}`}
                     onClick={() => {
                       setSelectedService(service.id);
-                      handleInputChange("service", service.name);
                     }}
                   >
                     {service.popular && (
@@ -499,7 +506,7 @@ You'll receive a confirmation shortly.`);
               className="btn-futuristic w-full py-6 text-xl rounded-2xl font-black relative overflow-hidden group"
               disabled={
                 isSubmitting ||
-                !bookingData.service ||
+                !selectedService ||
                 !bookingData.vehicleType ||
                 !bookingData.date ||
                 !bookingData.time ||
@@ -553,7 +560,7 @@ You'll receive a confirmation shortly.`);
         title="Confirm Your Booking"
         description={`Please confirm your booking details:
 
-Service: ${bookingData.service}
+Service: ${services.find((s) => s.id === selectedService)?.name || selectedService}
 Vehicle: ${bookingData.vehicleType}${bookingData.motorcycleType ? ` (${bookingData.motorcycleType})` : ""}
 Date: ${bookingData.date}
 Time: ${bookingData.time}
