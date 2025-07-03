@@ -105,11 +105,10 @@ export default function ManageSubscription() {
     lockInPeriod: "Monthly (Flexible)",
     autoRenewal: userSubscription?.autoRenewal || false,
     status:
-      userSubscription?.package === "Regular Member"
-        ? "inactive"
-        : userSubscription?.daysLeft > 0
-          ? "active"
-          : "inactive",
+      userSubscription?.package !== "Regular Member" &&
+      userSubscription?.daysLeft > 0
+        ? "active"
+        : "inactive",
   };
 
   const subscriptionPlans: SubscriptionPlan[] = [
