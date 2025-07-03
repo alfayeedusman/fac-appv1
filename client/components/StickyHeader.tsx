@@ -48,13 +48,24 @@ export default function StickyHeader({
   }
 
   const handleLogout = () => {
+    // Get current user email before clearing
+    const userEmail = localStorage.getItem("userEmail");
+
     // Clear all authentication data
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userRole");
     localStorage.removeItem("hasSeenWelcome");
+    localStorage.removeItem("showSplashScreen");
 
-    // Show logout notification
+    // For additional security, we could clear user-specific data on logout
+    // but we'll keep it so users don't lose their subscription data
+    // when they log back in. In production, this data would be on the server.
+
+    // Clear any temporary cached data
+    localStorage.removeItem("signUpData");
+
+    // Show logout notification and redirect
     window.location.href = "/login";
   };
 
