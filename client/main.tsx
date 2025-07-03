@@ -36,6 +36,7 @@ import PaymentHistory from "./pages/PaymentHistory";
 import POS from "./pages/POS";
 import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
+import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -242,7 +243,7 @@ const App = () => (
               path="/inventory-management"
               element={
                 <ProtectedRoute requiredRole="inventory_manager">
-                  <InventoryManagement />
+                  <EnhancedInventoryManagement />
                 </ProtectedRoute>
               }
             />
