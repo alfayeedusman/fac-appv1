@@ -214,7 +214,12 @@ Estimated time: 30-45 minutes.`);
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Hey, <span className="text-fac-orange-500">John</span>!
+                Hey,{" "}
+                <span className="text-fac-orange-500">
+                  {currentUser?.fullName?.split(" ")[0] ||
+                    userEmail.split("@")[0]}
+                </span>
+                !
               </h1>
               <p className="text-sm text-muted-foreground">
                 Ready for your next wash? ✨
