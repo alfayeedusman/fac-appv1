@@ -127,6 +127,27 @@ const sidebarItems = [
     description: "Payment Verification",
     gradient: "from-blue-500 to-purple-500",
   },
+  {
+    id: "pos",
+    label: "Point of Sale",
+    icon: CreditCard,
+    description: "Sales Terminal",
+    gradient: "from-green-500 to-emerald-500",
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: Package,
+    description: "Stock Management",
+    gradient: "from-blue-500 to-cyan-500",
+  },
+  {
+    id: "user-management",
+    label: "User Management",
+    icon: Users,
+    description: "Staff & Roles",
+    gradient: "from-purple-500 to-violet-600",
+  },
 ];
 
 export default function AdminSidebar({
