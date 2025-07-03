@@ -173,22 +173,23 @@ export default function Dashboard() {
 
   // Status and color system
   const isRegularMember = membershipData.package === "Regular Member";
-  const isSubscribed = membershipData.daysLeft > 0;
+  const hasActiveSubscription =
+    membershipData.package !== "Regular Member" && membershipData.daysLeft > 0;
   const isVipGold = membershipData.package === "VIP Gold Ultimate";
 
   // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
   const getStatusColor = () => {
-    if (isRegularMember || !isSubscribed) return "red";
-    if (isVipGold) return "orange";
+    if (isRegularMember || !hasActiveSubscription) return "red";
+    if (isVipGold && hasActiveSubscription) return "orange";
     return "green";
   };
 
   const statusColor = getStatusColor();
   const statusText = isRegularMember
     ? "Not Subscribed"
-    : isSubscribed
+    : hasActiveSubscription
       ? "Active"
-      : "Inactive";
+      : "Expired";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 pb-20">
