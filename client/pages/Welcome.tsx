@@ -15,16 +15,25 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function Welcome() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [userEmail, setUserEmail] = useState("");
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
     if (email) {
       setUserEmail(email);
+    }
+
+    // Check if splash screen should be shown
+    const shouldShowSplash = localStorage.getItem("showSplashScreen");
+    if (shouldShowSplash === "true") {
+      setShowSplash(true);
+      localStorage.removeItem("showSplashScreen");
     }
 
     // Auto-advance steps
@@ -34,6 +43,23 @@ export default function Welcome() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  if (showSplash) {
+    const userName = userEmail.split("@")[0];
+    const isFirstTime = !localStorage.getItem("hasSeenWelcome");
+
+    return (
+      <SplashScreen
+        onComplete={handleSplashComplete}
+        userName={userName}
+        isFirstTime={isFirstTime}
+      />
+    );
+  }
 
   const handleGetStarted = () => {
     localStorage.setItem("hasSeenWelcome", "true");
