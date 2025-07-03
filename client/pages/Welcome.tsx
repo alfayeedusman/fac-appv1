@@ -74,6 +74,10 @@ export default function Welcome() {
 
   const handleGetStarted = () => {
     localStorage.setItem("hasSeenWelcome", "true");
+    // Mark user as having completed welcome flow
+    if (userEmail) {
+      localStorage.setItem(`welcomed_${userEmail}`, "true");
+    }
     navigate("/dashboard");
   };
 
