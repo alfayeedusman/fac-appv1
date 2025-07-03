@@ -217,6 +217,69 @@ export default function SignUp() {
       existingUsers.push(newUser);
       localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
 
+      // Create user-specific subscription data based on selected package
+      const getPackageData = (packageType: string) => {
+        const now = new Date();
+        const cycleEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        switch (packageType) {
+          case "classic":
+            return {
+              package: "Classic Pro",
+              daysLeft: 30,
+              currentCycleStart: now.toISOString().split("T")[0],
+              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
+              daysLeftInCycle: 30,
+              autoRenewal: false,
+              remainingWashes: { classic: 4, vipProMax: 0, premium: 0 },
+              totalWashes: { classic: 4, vipProMax: 0, premium: 0 },
+            };
+          case "vip-silver":
+            return {
+              package: "VIP Silver Elite",
+              daysLeft: 30,
+              currentCycleStart: now.toISOString().split("T")[0],
+              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
+              daysLeftInCycle: 30,
+              autoRenewal: false,
+              remainingWashes: { classic: 8, vipProMax: 2, premium: 0 },
+              totalWashes: { classic: 8, vipProMax: 2, premium: 0 },
+            };
+          case "vip-gold":
+            return {
+              package: "VIP Gold Ultimate",
+              daysLeft: 30,
+              currentCycleStart: now.toISOString().split("T")[0],
+              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
+              daysLeftInCycle: 30,
+              autoRenewal: false,
+              remainingWashes: { classic: 999, vipProMax: 5, premium: 1 },
+              totalWashes: { classic: 999, vipProMax: 5, premium: 1 },
+            };
+          default:
+            return {
+              package: "Regular Member",
+              daysLeft: 0,
+              currentCycleStart: now.toISOString().split("T")[0],
+              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
+              daysLeftInCycle: 30,
+              autoRenewal: false,
+              remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
+              totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
+            };
+        }
+      };
+
+      // Save user subscription data
+      const userSubscription = getPackageData(formData.packageToAvail);
+      localStorage.setItem(
+        `subscription_${formData.email}`,
+        JSON.stringify(userSubscription),
+      );
+
+      // Initialize empty wash logs for the user
+      localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
+
       toast({
         title: "Registration Successful! 🎉",
         description: "Your account has been created successfully!",
