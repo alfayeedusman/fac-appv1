@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
 import PackageSelectionModal from "@/components/PackageSelectionModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
+import { getUserSubscriptionStatus } from "@/utils/subscriptionApprovalData";
 
 interface SubscriptionPlan {
   id: string;
@@ -80,12 +81,23 @@ export default function ManageSubscription() {
   const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
     useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
+  const [subscriptionRequestStatus, setSubscriptionRequestStatus] = useState<{
+    hasRequest: boolean;
+    status: string | null;
+    request: any | null;
+  }>({ hasRequest: false, status: null, request: null });
 
   // Get real user data
   const userEmail = localStorage.getItem("userEmail") || "";
   const userSubscription = JSON.parse(
     localStorage.getItem(`subscription_${userEmail}`) || "null",
   );
+
+  // Load subscription request status
+  useEffect(() => {
+    const status = getUserSubscriptionStatus(userEmail);
+    setSubscriptionRequestStatus(status);
+  }, [userEmail]);
 
   const currentSubscription: CurrentSubscription = {
     plan: userSubscription?.package || "Regular Member",
