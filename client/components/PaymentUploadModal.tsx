@@ -29,6 +29,7 @@ interface PaymentUploadModalProps {
   currentPlan: string;
   selectedPlan: string;
   planPrice: number;
+  onStatusUpdate?: () => void;
 }
 
 export default function PaymentUploadModal({
@@ -37,6 +38,7 @@ export default function PaymentUploadModal({
   currentPlan,
   selectedPlan,
   planPrice,
+  onStatusUpdate,
 }: PaymentUploadModalProps) {
   const [formData, setFormData] = useState({
     planType: selectedPlan,
@@ -122,9 +124,14 @@ export default function PaymentUploadModal({
     // Show success notification
     notificationManager.success(
       "Payment Submitted Successfully! 🎉",
-      `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review.`,
+      `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review. Please wait for admin approval.`,
       { autoClose: 5000 },
     );
+
+    // Trigger status refresh in parent component
+    if (onStatusUpdate) {
+      onStatusUpdate();
+    }
 
     onClose();
 
