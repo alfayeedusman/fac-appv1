@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
+import BookingManagement from "./pages/BookingManagement";
 import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
 import NotificationHistory from "./pages/NotificationHistory";
@@ -89,6 +90,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Booking />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <BookingManagement />
                 </ProtectedRoute>
               }
             />

@@ -162,15 +162,42 @@ export default function Booking() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    alert(`🚀 Booking confirmed!
-Service: ${bookingData.service}
-Vehicle: ${bookingData.vehicleType}${bookingData.motorcycleType ? ` (${bookingData.motorcycleType})` : ""}
-Date: ${bookingData.date}
-Time: ${bookingData.time}
-Branch: ${bookingData.branch}
+    // Save booking to local storage
+    const { addBooking } = await import("@/utils/bookingData");
+    const selectedServiceData = services.find((s) => s.id === selectedService);
 
-You'll receive a confirmation shortly.`);
+    const newBooking = addBooking({
+      service: selectedServiceData?.name || selectedService,
+      vehicleType: bookingData.vehicleType,
+      motorcycleType: bookingData.motorcycleType,
+      date: bookingData.date,
+      time: bookingData.time,
+      branch: bookingData.branch,
+      notes: bookingData.notes,
+      price: selectedServiceData?.price || "₱0",
+    });
+
+    alert(`🚀 Booking confirmed!
+Booking ID: ${newBooking.id}
+Service: ${newBooking.service}
+Vehicle: ${newBooking.vehicleType}${newBooking.motorcycleType ? ` (${newBooking.motorcycleType})` : ""}
+Date: ${newBooking.date}
+Time: ${newBooking.time}
+Branch: ${newBooking.branch}
+
+You can track your booking in the "My Bookings" section.`);
     setIsSubmitting(false);
+
+    // Reset form
+    setBookingData({
+      service: "",
+      vehicleType: "sedan",
+      date: "",
+      time: "",
+      branch: "",
+      notes: "",
+    });
+    setSelectedService("");
   };
 
   const getMinDate = () => {
