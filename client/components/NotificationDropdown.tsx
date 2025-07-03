@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,13 @@ import {
   Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  getUserNotifications,
+  markNotificationAsRead,
+  markNotificationAsClicked,
+  initializePushNotifications,
+  PushNotification,
+} from "@/utils/pushNotifications";
 
 interface Notification {
   id: string;
