@@ -225,7 +225,7 @@ export default function POS() {
           paymentInfo.method === "cash"
             ? `Amount Paid: ₱${amountPaid.toFixed(2)}\nChange: ₱${(amountPaid - total).toFixed(2)}`
             : `Payment Method: ${paymentInfo.method.toUpperCase()}`
-        }`,
+        }${customerInfo.uniqueId ? `\nCustomer ID: ${customerInfo.uniqueId}` : ""}`,
         { autoClose: 6000 },
       );
 
