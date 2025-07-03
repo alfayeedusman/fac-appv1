@@ -36,6 +36,7 @@ import { LogoutModal } from "@/components/ConfirmModal";
 import StickyHeader from "@/components/StickyHeader";
 import LevelProgress from "@/components/LevelProgress";
 import QRScanner from "@/components/QRScanner";
+import AdminFeaturesShowcase from "@/components/AdminFeaturesShowcase";
 import QRScanSuccessModal from "@/components/QRScanSuccessModal";
 import AdBanner from "@/components/AdBanner";
 import CreditCardProfile from "@/components/CreditCardProfile";
@@ -553,6 +554,14 @@ export default function Dashboard() {
         </Card>
 
         {/* Level Progress */}
+        {/* Admin Features Showcase - Only for admin users */}
+        {(localStorage.getItem("userRole") === "admin" ||
+          localStorage.getItem("userRole") === "superadmin") && (
+          <div className="mb-8 animate-fade-in-up animate-delay-150">
+            <AdminFeaturesShowcase />
+          </div>
+        )}
+
         <div className="mb-6 animate-fade-in-up animate-delay-200">
           <LevelProgress
             userId={userEmail}
