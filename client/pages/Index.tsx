@@ -236,6 +236,60 @@ export default function Index() {
         </div>
       </div>
 
+      {/* Vision and Mission Section */}
+      <div className="px-6 py-16 bg-muted/20 theme-transition relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/5 to-transparent"></div>
+        <div className="relative z-10 max-w-md mx-auto">
+          <h2 className="text-3xl font-black text-foreground text-center mb-12 animate-fade-in-up">
+            Our{" "}
+            <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+              Vision & Mission
+            </span>
+          </h2>
+
+          <div className="space-y-8">
+            <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-100">
+              <CardContent className="p-8">
+                <div className="text-center">
+                  <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <Crown className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="font-black text-foreground text-xl mb-4">
+                    Vision
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                    Our vision is to become the #1 trusted brand in car wash and
+                    auto detailing by giving every car the care it deserves. We
+                    offer premium quality service that's affordable, so car
+                    owners can enjoy the best without spending too much.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-200">
+              <CardContent className="p-8">
+                <div className="text-center">
+                  <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <Star className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="font-black text-foreground text-xl mb-4">
+                    Mission
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                    Fayeed Auto Care is committed to providing excellent auto
+                    detailing and protection services with a focus on quality,
+                    affordability and customer satisfaction. We treat each car
+                    as our own and take care of the details to enhance and
+                    protect the appearance and longevity of your vehicle.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
       {/* Locations Section with Modern Cards */}
       <div className="px-6 py-16 bg-muted/30 theme-transition relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/10 to-transparent"></div>
