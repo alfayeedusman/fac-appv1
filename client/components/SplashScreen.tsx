@@ -129,44 +129,6 @@ export default function SplashScreen({
           </p>
         </div>
       </div>
-
-      {/* Custom Animations */}
-      <style jsx>{`
-        @keyframes scale-in {
-          0% {
-            transform: scale(0.5);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes fade-in-up {
-          0% {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          100% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .animate-scale-in {
-          animation: scale-in 0.8s ease-out;
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out;
-        }
-
-        .animate-pulse-glow {
-          animation: pulse 2s infinite;
-          filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.3));
-        }
-      `}</style>
     </div>
   );
 }
