@@ -566,4 +566,3 @@ export default function AdminCMS() {
     </div>
   );
 }
-}
