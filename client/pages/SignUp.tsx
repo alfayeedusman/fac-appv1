@@ -636,14 +636,21 @@ export default function SignUp() {
                       >
                         Contact Number *
                       </Label>
-                      <Input
-                        id="contactNumber"
-                        type="tel"
-                        placeholder="+63 912 345 6789"
-                        value={formData.contactNumber}
-                        onChange={(e) =>
-                          handleInputChange("contactNumber", e.target.value)
-                        }
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                          +63
+                        </div>
+                        <Input
+                          id="contactNumber"
+                          type="tel"
+                          placeholder="912 345 6789"
+                          value={formData.contactNumber.replace("+63", "").replace(/^\s+/, "")}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d\s]/g, "");
+                            handleInputChange("contactNumber", `+63${value ? " " + value : ""}`);
+                          }}
+                          className="pl-12"
+                        />
                         required
                         className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.contactNumber
