@@ -80,59 +80,72 @@ export default function AdminCMS() {
   }, []);
 
   const loadCMSContent = () => {
-    const savedContent = localStorage.getItem("cmsContent");
-    setCmsContent(savedContent ? JSON.parse(savedContent) : defaultCMSContent);
+    const content = getCMSContent();
+    setCmsContent(content);
   };
 
   const loadMemberPerks = () => {
-    setMemberPerks(getMemberPerks());
+    const perks = getMemberPerks();
+    setMemberPerks(perks);
   };
 
-  const handleUpdateContent = (id: string, content: string) => {
-    updateCMSContent(id, content, userEmail);
+  const handleUpdateContent = (contentId: string, newContent: string) => {
+    updateCMSContent(contentId, newContent);
     loadCMSContent();
     setEditingContent("");
     toast({
-      title: "Content Updated",
-      description: "Content has been successfully updated.",
-    });
-  };
-
-  const handleUpdatePerks = () => {
-    updateMemberPerks(memberPerks, userEmail);
-    setEditingPerks(false);
-    toast({
-      title: "Member Perks Updated",
-      description: "Member perks have been successfully updated.",
+      title: "Content Updated! 🎉",
+      description: "The content has been successfully updated.",
     });
   };
 
   const handleAddPerk = () => {
-    if (newPerk.title && newPerk.description && newPerk.icon && newPerk.color) {
-      const perk: MemberPerk = {
-        id: `perk_${Date.now()}`,
-        title: newPerk.title,
-        description: newPerk.description,
-        icon: newPerk.icon,
-        color: newPerk.color,
-        enabled: true,
-        order: memberPerks.length + 1,
-      };
-      setMemberPerks([...memberPerks, perk]);
-      setNewPerk({});
+    if (!newPerk.title || !newPerk.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const perk: MemberPerk = {
+      id: `perk_${Date.now()}`,
+      title: newPerk.title!,
+      description: newPerk.description!,
+      icon: newPerk.icon || "Gift",
+      color: newPerk.color || "#3B82F6",
+      enabled: true,
+    };
+
+    const updatedPerks = [...memberPerks, perk];
+    updateMemberPerks(updatedPerks);
+    setMemberPerks(updatedPerks);
+    setNewPerk({});
+    setEditingPerks(false);
+
+    toast({
+      title: "Perk Added! ✨",
+      description: "New member perk has been added successfully.",
+    });
   };
 
   const handleDeletePerk = (id: string) => {
-    setMemberPerks(memberPerks.filter((perk) => perk.id !== id));
+    const updatedPerks = memberPerks.filter((perk) => perk.id !== id);
+    updateMemberPerks(updatedPerks);
+    setMemberPerks(updatedPerks);
+    toast({
+      title: "Perk Deleted",
+      description: "The member perk has been removed.",
+    });
   };
 
   const handleTogglePerk = (id: string) => {
-    setMemberPerks(
-      memberPerks.map((perk) =>
-        perk.id === id ? { ...perk, enabled: !perk.enabled } : perk,
-      ),
+    const updatedPerks = memberPerks.map((perk) =>
+      perk.id === id ? { ...perk, enabled: !perk.enabled } : perk,
     );
+    updateMemberPerks(updatedPerks);
+    setMemberPerks(updatedPerks);
   };
 
   const renderIcon = (iconName: string) => {
@@ -142,7 +155,11 @@ export default function AdminCMS() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={true} title="CMS Management" backTo="/admin-dashboard" />
+      <StickyHeader
+        showBack={true}
+        title="CMS Management"
+        backTo="/admin-dashboard"
+      />
 
       {/* Admin Sidebar */}
       <AdminSidebar
@@ -150,11 +167,14 @@ export default function AdminCMS() {
         onTabChange={(tab) => {
           if (tab === "overview") navigate("/admin-dashboard");
           else if (tab === "inventory") navigate("/inventory-management");
-          else if (tab === "push-notifications") navigate("/admin-push-notifications");
+          else if (tab === "push-notifications")
+            navigate("/admin-push-notifications");
           else if (tab === "gamification") navigate("/admin-gamification");
-          else if (tab === "subscription-approval") navigate("/admin-subscription-approval");
+          else if (tab === "subscription-approval")
+            navigate("/admin-subscription-approval");
           else if (tab === "pos") navigate("/pos");
-          else if (tab === "user-management") navigate("/admin-user-management");
+          else if (tab === "user-management")
+            navigate("/admin-user-management");
         }}
         userRole={localStorage.getItem("userRole") || "admin"}
         notificationCount={0}
@@ -162,309 +182,162 @@ export default function AdminCMS() {
 
       <div className="flex-1 lg:ml-64 min-h-screen">
         <div className="p-6 mt-16">
+          <Tabs defaultValue="content" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="content">Page Content</TabsTrigger>
+              <TabsTrigger value="perks">Member Perks</TabsTrigger>
+            </TabsList>
 
-      <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link to="/admin-dashboard" className="mr-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <div className="bg-fac-orange-500 p-3 rounded-xl">
-              <Settings className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                CMS Management
-              </h1>
-              <p className="text-muted-foreground">
-                Manage all app content and member perks
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger
-              value="content"
-              className="flex items-center space-x-2"
-            >
-              <FileText className="h-4 w-4" />
-              <span>Content Management</span>
-            </TabsTrigger>
-            <TabsTrigger value="perks" className="flex items-center space-x-2">
-              <Star className="h-4 w-4" />
-              <span>Member Perks</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Content Management Tab */}
-          <TabsContent value="content" className="space-y-6">
-            <div className="grid gap-6">
-              {["splash", "home", "landing"].map((page) => {
-                const pageContent = cmsContent.filter(
-                  (item) => item.page === page,
-                );
-                return (
-                  <Card key={page} className="border shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-xl font-bold text-foreground">
-                        <div className="bg-fac-orange-500 p-2 rounded-lg mr-3">
-                          <FileText className="h-5 w-5 text-white" />
-                        </div>
-                        {page.charAt(0).toUpperCase() + page.slice(1)} Page
-                        Content
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {pageContent.map((item) => (
-                          <div key={item.id} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <h4 className="font-semibold text-foreground">
-                                  {item.title}
-                                </h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {item.section && `Section: ${item.section}`}
-                                </p>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setEditingContent(
-                                    editingContent === item.id ? "" : item.id,
-                                  )
-                                }
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                {editingContent === item.id ? "Cancel" : "Edit"}
-                              </Button>
-                            </div>
-
-                            {editingContent === item.id ? (
-                              <div className="space-y-3">
-                                <Textarea
-                                  value={
-                                    typeof item.content === "string"
-                                      ? item.content
-                                      : item.content.join("\n")
-                                  }
-                                  onChange={(e) => {
-                                    const updatedContent = cmsContent.map(
-                                      (c) =>
-                                        c.id === item.id
-                                          ? { ...c, content: e.target.value }
-                                          : c,
-                                    );
-                                    setCmsContent(updatedContent);
-                                  }}
-                                  className="min-h-[100px]"
-                                />
-                                <Button
-                                  onClick={() =>
-                                    handleUpdateContent(
-                                      item.id,
-                                      typeof item.content === "string"
-                                        ? item.content
-                                        : item.content.join("\n"),
-                                    )
-                                  }
-                                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
-                                >
-                                  <Save className="h-4 w-4 mr-2" />
-                                  Save Changes
-                                </Button>
-                              </div>
-                            ) : (
-                              <div className="bg-muted rounded-lg p-3">
-                                <p className="text-sm text-foreground whitespace-pre-wrap">
-                                  {typeof item.content === "string"
-                                    ? item.content
-                                    : item.content.join("\n")}
-                                </p>
-                              </div>
-                            )}
-
-                            {item.updatedBy && (
-                              <div className="mt-2 text-xs text-muted-foreground">
-                                Last updated by {item.updatedBy} on{" "}
-                                {new Date(
-                                  item.updatedAt || "",
-                                ).toLocaleDateString()}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          {/* Member Perks Tab */}
-          <TabsContent value="perks" className="space-y-6">
-            <Card className="border shadow-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center text-xl font-bold text-foreground">
-                    <div className="bg-fac-orange-500 p-2 rounded-lg mr-3">
-                      <Star className="h-5 w-5 text-white" />
-                    </div>
-                    Member Perks Management
+            {/* Page Content Tab */}
+            <TabsContent value="content" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="h-6 w-6 mr-2 text-fac-orange-500" />
+                    Website Content Management
                   </CardTitle>
-                  <Button
-                    onClick={() => setEditingPerks(!editingPerks)}
-                    variant={editingPerks ? "outline" : "default"}
-                    className={
-                      editingPerks
-                        ? ""
-                        : "bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
-                    }
-                  >
-                    {editingPerks ? "Cancel" : "Edit Perks"}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Current Perks */}
-                  <div className="grid gap-4">
-                    {memberPerks.map((perk, index) => (
-                      <div key={perk.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className={`bg-${perk.color} p-2 rounded-lg`}>
-                              {renderIcon(perk.icon)}
-                            </div>
-                            <div>
-                              {editingPerks ? (
-                                <div className="space-y-2">
-                                  <Input
-                                    value={perk.title}
-                                    onChange={(e) => {
-                                      const updated = memberPerks.map((p) =>
-                                        p.id === perk.id
-                                          ? { ...p, title: e.target.value }
-                                          : p,
-                                      );
-                                      setMemberPerks(updated);
-                                    }}
-                                    className="font-semibold"
-                                  />
-                                  <Input
-                                    value={perk.description}
-                                    onChange={(e) => {
-                                      const updated = memberPerks.map((p) =>
-                                        p.id === perk.id
-                                          ? {
-                                              ...p,
-                                              description: e.target.value,
-                                            }
-                                          : p,
-                                      );
-                                      setMemberPerks(updated);
-                                    }}
-                                    className="text-sm"
-                                  />
-                                </div>
-                              ) : (
-                                <div>
-                                  <h4 className="font-semibold text-foreground">
-                                    {perk.title}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {perk.description}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {cmsContent.map((item) => (
+                      <div key={item.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h4 className="font-semibold text-foreground">
+                              {item.title}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {item.section && `Section: ${item.section}`}
+                            </p>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge
-                              variant={perk.enabled ? "default" : "secondary"}
-                            >
-                              {perk.enabled ? "Enabled" : "Disabled"}
-                            </Badge>
-                            {editingPerks && (
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleTogglePerk(perk.id)}
-                                >
-                                  {perk.enabled ? "Disable" : "Enable"}
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Delete Perk
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to delete "
-                                        {perk.title}"? This action cannot be
-                                        undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          handleDeletePerk(perk.id)
-                                        }
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            )}
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setEditingContent(
+                                editingContent === item.id ? "" : item.id,
+                              )
+                            }
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            {editingContent === item.id ? "Cancel" : "Edit"}
+                          </Button>
                         </div>
+
+                        {editingContent === item.id ? (
+                          <div className="space-y-3">
+                            <Textarea
+                              value={
+                                typeof item.content === "string"
+                                  ? item.content
+                                  : item.content.join("\n")
+                              }
+                              onChange={(e) => {
+                                const updatedContent = cmsContent.map((c) =>
+                                  c.id === item.id
+                                    ? { ...c, content: e.target.value }
+                                    : c,
+                                );
+                                setCmsContent(updatedContent);
+                              }}
+                              className="min-h-[100px]"
+                            />
+                            <Button
+                              onClick={() =>
+                                handleUpdateContent(
+                                  item.id,
+                                  typeof item.content === "string"
+                                    ? item.content
+                                    : item.content.join("\n"),
+                                )
+                              }
+                              className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
+                            >
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="bg-muted p-3 rounded">
+                            <p className="text-sm text-foreground">
+                              {typeof item.content === "string"
+                                ? item.content
+                                : item.content.join(" ")}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-                  {/* Add New Perk */}
+            {/* Member Perks Tab */}
+            <TabsContent value="perks" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span className="flex items-center">
+                      <Crown className="h-6 w-6 mr-2 text-fac-orange-500" />
+                      Member Perks & Benefits
+                    </span>
+                    <Button
+                      onClick={() => setEditingPerks(!editingPerks)}
+                      className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {editingPerks ? "Cancel" : "Add Perk"}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Add New Perk Form */}
                   {editingPerks && (
-                    <div className="border rounded-lg p-4 bg-muted/50">
-                      <h4 className="font-semibold text-foreground mb-4 flex items-center">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add New Perk
+                    <div className="mb-6 p-4 border rounded-lg bg-muted/50">
+                      <h4 className="font-semibold mb-4">
+                        Add New Member Perk
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="newPerkTitle">Title</Label>
+                          <Label htmlFor="perkTitle">Perk Title</Label>
                           <Input
-                            id="newPerkTitle"
+                            id="perkTitle"
+                            placeholder="VIP Priority Access"
                             value={newPerk.title || ""}
                             onChange={(e) =>
                               setNewPerk({ ...newPerk, title: e.target.value })
                             }
-                            placeholder="Enter perk title"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="newPerkDescription">
-                            Description
-                          </Label>
-                          <Input
-                            id="newPerkDescription"
+                          <Label htmlFor="perkIcon">Icon</Label>
+                          <Select
+                            value={newPerk.icon || "Gift"}
+                            onValueChange={(value) =>
+                              setNewPerk({ ...newPerk, icon: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.keys(iconMap).map((iconName) => (
+                                <SelectItem key={iconName} value={iconName}>
+                                  <div className="flex items-center">
+                                    {renderIcon(iconName)}
+                                    <span className="ml-2">{iconName}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="perkDescription">Description</Label>
+                          <Textarea
+                            id="perkDescription"
+                            placeholder="Describe the benefit..."
                             value={newPerk.description || ""}
                             onChange={(e) =>
                               setNewPerk({
@@ -472,96 +345,112 @@ export default function AdminCMS() {
                                 description: e.target.value,
                               })
                             }
-                            placeholder="Enter perk description"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="newPerkIcon">Icon</Label>
-                          <Select
-                            onValueChange={(value) =>
-                              setNewPerk({ ...newPerk, icon: value })
+                          <Label htmlFor="perkColor">Color</Label>
+                          <Input
+                            id="perkColor"
+                            type="color"
+                            value={newPerk.color || "#3B82F6"}
+                            onChange={(e) =>
+                              setNewPerk({ ...newPerk, color: e.target.value })
                             }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select icon" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Object.keys(iconMap).map((iconName) => (
-                                <SelectItem key={iconName} value={iconName}>
-                                  <div className="flex items-center space-x-2">
-                                    {renderIcon(iconName)}
-                                    <span>{iconName}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          />
                         </div>
-                        <div>
-                          <Label htmlFor="newPerkColor">Color</Label>
-                          <Select
-                            onValueChange={(value) =>
-                              setNewPerk({ ...newPerk, color: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select color" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="blue-500">Blue</SelectItem>
-                              <SelectItem value="green-500">Green</SelectItem>
-                              <SelectItem value="purple-500">Purple</SelectItem>
-                              <SelectItem value="fac-orange-500">
-                                Orange
-                              </SelectItem>
-                              <SelectItem value="red-500">Red</SelectItem>
-                              <SelectItem value="yellow-500">Yellow</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div className="flex items-end">
+                          <Button onClick={handleAddPerk} className="w-full">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Perk
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        onClick={handleAddPerk}
-                        className="mt-4 bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
-                        disabled={
-                          !newPerk.title ||
-                          !newPerk.description ||
-                          !newPerk.icon ||
-                          !newPerk.color
-                        }
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Perk
-                      </Button>
                     </div>
                   )}
 
-                  {/* Save Changes */}
-                  {editingPerks && (
-                    <div className="flex justify-end space-x-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setEditingPerks(false);
-                          loadMemberPerks();
-                        }}
-                      >
-                        Cancel Changes
-                      </Button>
-                      <Button
-                        onClick={handleUpdatePerks}
-                        className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Save All Changes
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  {/* Existing Perks */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {memberPerks.map((perk) => (
+                      <Card key={perk.id} className="relative">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className="p-2 rounded-lg"
+                                style={{ backgroundColor: perk.color }}
+                              >
+                                {renderIcon(perk.icon)}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-foreground">
+                                  {perk.title}
+                                </h4>
+                                <Badge
+                                  variant={
+                                    perk.enabled ? "default" : "secondary"
+                                  }
+                                >
+                                  {perk.enabled ? "Active" : "Disabled"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleTogglePerk(perk.id)}
+                              >
+                                {perk.enabled ? "Disable" : "Enable"}
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Delete Perk
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "
+                                      {perk.title}"? This action cannot be
+                                      undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeletePerk(perk.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {perk.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
