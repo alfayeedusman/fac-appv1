@@ -296,6 +296,21 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* Gamification Progress */}
+        <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground text-2xl">
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 rounded-xl mr-4">
+                <Trophy className="h-6 w-6 text-white" />
+              </div>
+              Your Journey
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LevelProgress userId={userEmail} showDetails={true} />
+          </CardContent>
+        </Card>
+
         {/* Profile Details */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
