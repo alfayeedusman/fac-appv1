@@ -47,6 +47,21 @@ const sidebarItems = [
     gradient: "from-blue-500 to-cyan-500",
   },
   {
+    id: "roles",
+    label: "User & Roles",
+    icon: Shield,
+    description: "Role Management",
+    gradient: "from-purple-500 to-violet-600",
+    superAdminOnly: true,
+  },
+  {
+    id: "ads",
+    label: "Ad Studio",
+    icon: Sparkles,
+    description: "Advertisement Management",
+    gradient: "from-pink-500 to-rose-600",
+  },
+  {
     id: "packages",
     label: "Package Studio",
     icon: Package,
@@ -196,7 +211,7 @@ export default function AdminSidebar({
 
           {/* Navigation */}
           <div className="flex-1 p-4 space-y-2 overflow-y-auto relative z-10">
-            {sidebarItems.map((item, index) => {
+            {filteredItems.map((item, index) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               const showNotification =
