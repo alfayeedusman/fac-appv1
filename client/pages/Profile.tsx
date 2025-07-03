@@ -44,16 +44,35 @@ interface UserProfile {
 }
 
 export default function Profile() {
-  const [profile, setProfile] = useState<UserProfile>({
-    name: "John Dela Cruz",
-    email: "john@email.com",
-    phone: "+63 912 345 6789",
-    carUnit: "Toyota Vios 2020",
-    plateNumber: "ABC 1234",
-    vehicleType: "Sedan",
-    membershipType: "VIP Gold Ultimate",
-    joinDate: "2024-01-15",
-  });
+  // Get real user data from localStorage
+  const userEmail = localStorage.getItem("userEmail") || "";
+  const registeredUsers = JSON.parse(
+    localStorage.getItem("registeredUsers") || "[]",
+  );
+  const currentUser = registeredUsers.find(
+    (user: any) => user.email === userEmail,
+  );
+  const signUpData = JSON.parse(localStorage.getItem("signUpData") || "{}");
+  const userSubscription = JSON.parse(
+    localStorage.getItem(`subscription_${userEmail}`) || "null",
+  );
+
+  const getUserProfile = (): UserProfile => {
+    return {
+      name: currentUser?.fullName || signUpData.fullName || "User",
+      email: currentUser?.email || userEmail,
+      phone: signUpData.contactNumber || "+63 XXX XXX XXXX",
+      carUnit: signUpData.carUnit || "Not specified",
+      plateNumber: signUpData.carPlateNumber || "XXX XXXX",
+      vehicleType: signUpData.carType || "sedan",
+      membershipType: userSubscription?.package || "Regular Member",
+      joinDate:
+        currentUser?.registeredAt?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
+    };
+  };
+
+  const [profile, setProfile] = useState<UserProfile>(getUserProfile());
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
 
