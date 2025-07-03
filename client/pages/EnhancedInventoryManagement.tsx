@@ -428,6 +428,220 @@ export default function EnhancedInventoryManagement() {
     setShowServicePricingModal(true);
   };
 
+  // Category CRUD Functions
+  const handleAddCategory = () => {
+    if (!newCategory.name || !newCategory.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const category: ProductCategory = {
+      id: `category_${Date.now()}`,
+      name: newCategory.name,
+      description: newCategory.description,
+      icon: newCategory.icon,
+      color: newCategory.color,
+      variants: newCategory.variants,
+      isActive: true,
+    };
+
+    setCategories([...categories, category]);
+    setNewCategory({
+      name: "",
+      description: "",
+      icon: "📦",
+      color: "#3B82F6",
+      variants: [],
+    });
+    setShowAddCategoryModal(false);
+    alert("Category created successfully!");
+  };
+
+  const handleEditCategory = (category: ProductCategory) => {
+    setEditingCategory(category);
+    setNewCategory({
+      name: category.name,
+      description: category.description,
+      icon: category.icon,
+      color: category.color,
+      variants: [...(category.variants || [])],
+    });
+    setShowEditCategoryModal(true);
+  };
+
+  const handleUpdateCategory = () => {
+    if (!editingCategory || !newCategory.name || !newCategory.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const updatedCategory: ProductCategory = {
+      ...editingCategory,
+      name: newCategory.name,
+      description: newCategory.description,
+      icon: newCategory.icon,
+      color: newCategory.color,
+      variants: newCategory.variants,
+    };
+
+    setCategories(
+      categories.map((c) =>
+        c.id === editingCategory.id ? updatedCategory : c,
+      ),
+    );
+    setNewCategory({
+      name: "",
+      description: "",
+      icon: "📦",
+      color: "#3B82F6",
+      variants: [],
+    });
+    setEditingCategory(null);
+    setShowEditCategoryModal(false);
+    alert("Category updated successfully!");
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    if (confirm("Are you sure you want to delete this category?")) {
+      setCategories(categories.filter((c) => c.id !== categoryId));
+      alert("Category deleted successfully!");
+    }
+  };
+
+  // Service CRUD Functions
+  const handleAddService = () => {
+    if (!newService.name || !newService.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const filteredFeatures = newService.features.filter((f) => f.trim() !== "");
+    if (filteredFeatures.length === 0) {
+      alert("Please add at least one feature");
+      return;
+    }
+
+    try {
+      const service = addCarWashService({
+        ...newService,
+        features: filteredFeatures,
+      });
+
+      setCarWashServices([...carWashServices, service]);
+      setNewService({
+        name: "",
+        description: "",
+        basePrice: 200,
+        duration: "30 mins",
+        features: [""],
+        category: "basic",
+        isActive: true,
+      });
+      setShowServiceModal(false);
+      alert("Service added successfully!");
+    } catch (error) {
+      alert("Failed to add service");
+    }
+  };
+
+  const handleEditService = (service: CarWashService) => {
+    setEditingService(service);
+    setNewService({
+      name: service.name,
+      description: service.description,
+      basePrice: service.basePrice,
+      duration: service.duration,
+      features: [...service.features],
+      category: service.category,
+      isActive: service.isActive,
+    });
+    setServiceModalMode("edit");
+    setShowServiceModal(true);
+  };
+
+  const handleUpdateService = () => {
+    if (!editingService || !newService.name || !newService.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const filteredFeatures = newService.features.filter((f) => f.trim() !== "");
+    if (filteredFeatures.length === 0) {
+      alert("Please add at least one feature");
+      return;
+    }
+
+    try {
+      updateCarWashService(editingService.id, {
+        ...newService,
+        features: filteredFeatures,
+      });
+
+      setCarWashServices(
+        carWashServices.map((s) =>
+          s.id === editingService.id
+            ? { ...s, ...newService, features: filteredFeatures }
+            : s,
+        ),
+      );
+
+      setNewService({
+        name: "",
+        description: "",
+        basePrice: 200,
+        duration: "30 mins",
+        features: [""],
+        category: "basic",
+        isActive: true,
+      });
+      setEditingService(null);
+      setServiceModalMode("add");
+      setShowServiceModal(false);
+      alert("Service updated successfully!");
+    } catch (error) {
+      alert("Failed to update service");
+    }
+  };
+
+  const handleDeleteService = (serviceId: string) => {
+    if (confirm("Are you sure you want to delete this service?")) {
+      try {
+        deleteCarWashService(serviceId);
+        setCarWashServices(carWashServices.filter((s) => s.id !== serviceId));
+        alert("Service deleted successfully!");
+      } catch (error) {
+        alert("Failed to delete service");
+      }
+    }
+  };
+
+  // Helper functions for service features
+  const addServiceFeature = () => {
+    setNewService({
+      ...newService,
+      features: [...newService.features, ""],
+    });
+  };
+
+  const updateServiceFeature = (index: number, value: string) => {
+    const updatedFeatures = [...newService.features];
+    updatedFeatures[index] = value;
+    setNewService({
+      ...newService,
+      features: updatedFeatures,
+    });
+  };
+
+  const removeServiceFeature = (index: number) => {
+    if (newService.features.length > 1) {
+      const updatedFeatures = newService.features.filter((_, i) => i !== index);
+      setNewService({
+        ...newService,
+        features: updatedFeatures,
+      });
+    }
+  };
+
   const getVariantDisplay = (categoryId: string, variantId?: string) => {
     const category = categories.find((c) => c.id === categoryId);
     if (!category || !variantId) return "";
