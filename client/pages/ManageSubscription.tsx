@@ -373,6 +373,88 @@ export default function ManageSubscription() {
                   </div>
                 </div>
 
+                {/* Payment Status Section */}
+                {subscriptionRequestStatus.hasRequest && (
+                  <div className="mt-6 p-4 border-orange-200 bg-orange-50 dark:bg-orange-950/30 rounded-xl border">
+                    <h4 className="font-semibold text-orange-800 dark:text-orange-200 mb-3 flex items-center">
+                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      Payment Request Status
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Request ID:
+                        </span>
+                        <p className="font-mono text-orange-900 dark:text-orange-100">
+                          {subscriptionRequestStatus.request?.id}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Package:
+                        </span>
+                        <p className="font-semibold text-orange-900 dark:text-orange-100">
+                          {subscriptionRequestStatus.request?.packageType}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Amount:
+                        </span>
+                        <p className="font-semibold text-orange-900 dark:text-orange-100">
+                          {
+                            subscriptionRequestStatus.request?.paymentDetails
+                              ?.amount
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Status:
+                        </span>
+                        <Badge
+                          className={`ml-2 ${
+                            subscriptionRequestStatus.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : subscriptionRequestStatus.status === "approved"
+                                ? "bg-green-100 text-green-800"
+                                : subscriptionRequestStatus.status ===
+                                    "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {subscriptionRequestStatus.status?.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {subscriptionRequestStatus.request?.reviewNotes && (
+                      <div className="mt-3 p-3 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                        <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                          Admin Notes:
+                        </span>
+                        <p className="text-orange-900 dark:text-orange-100 mt-1 text-sm">
+                          {subscriptionRequestStatus.request.reviewNotes}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-4 text-center">
+                      <Link to="/payment-history">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          View Payment History
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   {(() => {
                     const isRegularMember =
