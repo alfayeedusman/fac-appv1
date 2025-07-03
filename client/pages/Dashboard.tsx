@@ -354,7 +354,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              {isSubscribed && (
+              {hasActiveSubscription && (
                 <div
                   className={`rounded-xl px-3 py-2 border ${
                     statusColor === "orange"
