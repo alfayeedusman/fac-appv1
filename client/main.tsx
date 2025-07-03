@@ -24,6 +24,7 @@ import SecuritySettings from "./pages/SecuritySettings";
 import History from "./pages/History";
 import Voucher from "./pages/Voucher";
 import AdminNotifications from "./pages/AdminNotifications";
+import AdminAds from "./pages/AdminAds";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -142,6 +143,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNotifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-ads"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminAds />
                 </ProtectedRoute>
               }
             />
