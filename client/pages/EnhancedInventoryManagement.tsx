@@ -722,9 +722,12 @@ export default function EnhancedInventoryManagement() {
             <TabsContent value="services" className="space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Car Wash Services</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Car Wash Services
+                  </h2>
                   <p className="text-gray-600">
-                    Dynamic pricing based on vehicle type - Perfect for POS integration
+                    Dynamic pricing based on vehicle type - Perfect for POS
+                    integration
                   </p>
                 </div>
                 <Button
@@ -736,9 +739,9 @@ export default function EnhancedInventoryManagement() {
                       duration: "30 mins",
                       features: [""],
                       category: "basic",
-                      isActive: true
+                      isActive: true,
                     });
-                    setServiceModalMode('add');
+                    setServiceModalMode("add");
                     setShowServiceModal(true);
                   }}
                   className="bg-orange-500 hover:bg-orange-600 text-white"
@@ -757,7 +760,9 @@ export default function EnhancedInventoryManagement() {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-gray-900 text-lg">{service.name}</CardTitle>
+                          <CardTitle className="text-gray-900 text-lg">
+                            {service.name}
+                          </CardTitle>
                           <Badge
                             className={
                               service.category === "basic"
@@ -768,8 +773,9 @@ export default function EnhancedInventoryManagement() {
                             }
                           >
                             {service.category}
-                        </Badge>
-                      </CardTitle>
+                          </Badge>
+                        </div>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {service.description}
                       </p>
