@@ -23,6 +23,7 @@ import {
   Sparkles,
   Crown,
   Zap,
+  CreditCard,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -117,6 +118,13 @@ const sidebarItems = [
     icon: TrendingUp,
     description: "Customer Levels & Rewards",
     gradient: "from-yellow-500 to-orange-500",
+  },
+  {
+    id: "subscription-approval",
+    label: "Subscription Approval",
+    icon: CreditCard,
+    description: "Payment Verification",
+    gradient: "from-blue-500 to-purple-500",
   },
 ];
 
@@ -250,6 +258,8 @@ export default function AdminSidebar({
                       navigate("/admin-push-notifications");
                     } else if (item.id === "gamification") {
                       navigate("/admin-gamification");
+                    } else if (item.id === "subscription-approval") {
+                      navigate("/admin-subscription-approval");
                     } else {
                       onTabChange(item.id);
                     }
