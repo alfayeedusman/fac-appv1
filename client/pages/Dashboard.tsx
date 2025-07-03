@@ -241,23 +241,104 @@ Estimated time: 30-45 minutes.`);
           </div>
         </div>
 
-        {/* Premium Membership Status Card */}
-        <Card className="bg-card border shadow-md mb-6 animate-fade-in-up animate-delay-100">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-fac-orange-500 p-3 rounded-xl">
-                  <Crown className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-foreground">
-                    {membershipData.package}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Premium Member
-                  </p>
-                </div>
-              </div>
+        {/* Get subscription status and colors */}
+        {(() => {
+          const isRegularMember = membershipData.package === "Regular Member";
+          const isSubscribed = membershipData.daysLeft > 0;
+          const isVipGold = membershipData.package === "VIP Gold Ultimate";
+
+          // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
+          const getStatusColor = () => {
+            if (isRegularMember || !isSubscribed) return "red";
+            if (isVipGold) return "orange";
+            return "green";
+          };
+
+          const statusColor = getStatusColor();
+          const statusText = isRegularMember ? "Not Subscribed" : isSubscribed ? "Active" : "Inactive";
+
+          return (
+            <>
+              {/* Regular Member Upgrade Reminder */}
+              {isRegularMember && (
+                <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 mb-6 animate-fade-in-up animate-delay-100">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-red-500 p-3 rounded-xl animate-pulse">
+                          <AlertCircle className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-red-800">Regular Member</p>
+                          <p className="text-sm text-red-600">
+                            Upgrade to unlock premium services!
+                          </p>
+                        </div>
+                      </div>
+                      <Link to="/manage-subscription">
+                        <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse">
+                          <Crown className="h-4 w-4 mr-2" />
+                          Upgrade Now
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 rounded-lg p-4">
+                      <h4 className="font-bold text-red-800 mb-2">🌟 Unlock Premium Benefits:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-red-700">
+                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Monthly car washes</div>
+                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> VIP services</div>
+                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Priority booking</div>
+                        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Exclusive discounts</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Membership Status Card */}
+              <Card className={`border shadow-md mb-6 animate-fade-in-up animate-delay-200 ${
+                statusColor === "red" ? "bg-red-50 border-red-200" :
+                statusColor === "orange" ? "bg-orange-50 border-orange-200" :
+                "bg-green-50 border-green-200"
+              }`}>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-3 rounded-xl ${
+                        statusColor === "red" ? "bg-red-500" :
+                        statusColor === "orange" ? "bg-orange-500" :
+                        "bg-green-500"
+                      }`}>
+                        {statusColor === "red" ? (
+                          <User className="h-6 w-6 text-white" />
+                        ) : statusColor === "orange" ? (
+                          <Crown className="h-6 w-6 text-white" />
+                        ) : (
+                          <CheckCircle className="h-6 w-6 text-white" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-foreground">
+                          {membershipData.package}
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            statusColor === "red" ? "bg-red-500" :
+                            statusColor === "orange" ? "bg-orange-500" :
+                            "bg-green-500"
+                          }`}></div>
+                          <p className={`text-sm font-semibold ${
+                            statusColor === "red" ? "text-red-600" :
+                            statusColor === "orange" ? "text-orange-600" :
+                            "text-green-600"
+                          }`}>
+                            {statusText}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
               <div className="text-right">
                 <div className="bg-fac-orange-50 dark:bg-fac-orange-950 rounded-xl px-3 py-2 border border-fac-orange-200 dark:border-fac-orange-800">
                   <p className="text-xs font-medium text-muted-foreground uppercase">
