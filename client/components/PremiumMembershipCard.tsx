@@ -11,6 +11,7 @@ import {
   Share,
   Diamond,
   Sparkles,
+  User,
 } from "lucide-react";
 
 interface PremiumMembershipCardProps {
