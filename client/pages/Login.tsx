@@ -183,24 +183,19 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Header with Modern Logo */}
+      {/* Header with Logo */}
       <div className="text-center py-12 px-6 relative z-10">
-        <div className="animate-fade-in-up">
-          <div className="relative inline-block mb-6">
-            <h1 className="text-5xl font-black text-foreground tracking-tight">
-              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                Fayeed Auto Care
-              </span>
-            </h1>
+        <div>
+          <div className="mb-6">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-20 w-auto mx-auto mb-4"
+            />
+            <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
           </div>
-          <h2 className="text-3xl font-black text-foreground tracking-tight mb-3 animate-fade-in-up animate-delay-100">
-            Welcome{" "}
-            <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-              Back
-            </span>
-          </h2>
-          <p className="text-muted-foreground font-medium animate-fade-in-up animate-delay-200">
-            Access your FAC account in the future
+          <p className="text-muted-foreground">
+            Sign in to your Fayeed Auto Care account
           </p>
         </div>
       </div>
