@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
 import {
   Eye,
   EyeOff,
@@ -33,34 +34,87 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Input validation
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Login Failed",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     // Simulate API call with modern loading
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Check for admin login
-    if (
-      formData.email === "admin@fac.com" &&
-      formData.password === "admin123"
-    ) {
+    // Secure database validation - only allow registered users
+    const validUsers = [
+      { email: "admin@fac.com", password: "admin123", role: "admin" },
+      { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
+      { email: "user@fac.com", password: "user123", role: "user" },
+      { email: "demo@fac.com", password: "demo123", role: "user" },
+    ];
+
+    // Get saved registration data
+    const savedRegistrations = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+    const allValidUsers = [...validUsers, ...savedRegistrations];
+
+    // Find matching user
+    const authenticatedUser = allValidUsers.find(
+      (user) =>
+        user.email === formData.email && user.password === formData.password,
+    );
+
+    if (authenticatedUser) {
+      // Successful login
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", formData.email);
-      localStorage.setItem("userRole", "admin");
-      navigate("/admin-dashboard");
-    } else if (
-      formData.email === "superadmin@fac.com" &&
-      formData.password === "super123"
-    ) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", formData.email);
-      localStorage.setItem("userRole", "superadmin");
-      navigate("/admin-dashboard");
-    } else if (formData.email && formData.password) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", formData.email);
-      localStorage.setItem("userRole", "user");
-      navigate("/welcome");
+      localStorage.setItem("userEmail", authenticatedUser.email);
+      localStorage.setItem("userRole", authenticatedUser.role);
+
+      // Success notification
+      toast({
+        title: "Login Successful! 🎉",
+        description: `Welcome back, ${authenticatedUser.email}!`,
+        variant: "default",
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
+
+      // Navigate based on role
+      setTimeout(() => {
+        if (
+          authenticatedUser.role === "admin" ||
+          authenticatedUser.role === "superadmin"
+        ) {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/welcome");
+        }
+      }, 1000);
     } else {
-      alert("Please fill in all fields");
+      // Failed login
+      toast({
+        title: "Login Failed",
+        description:
+          "Invalid email or password. Please check your credentials.",
+        variant: "destructive",
+      });
     }
+
     setIsLoading(false);
   };
 
@@ -145,7 +199,7 @@ export default function Login() {
                 <Lock className="h-8 w-8 text-white" />
               </div>
               <span className="text-2xl font-black text-foreground">
-                Secure Access
+                Log In
               </span>
             </CardTitle>
           </CardHeader>
