@@ -39,7 +39,11 @@ import QRScanSuccessModal from "@/components/QRScanSuccessModal";
 import AdBanner from "@/components/AdBanner";
 import CreditCardProfile from "@/components/CreditCardProfile";
 import { getVisibleAdsForUser, Ad } from "@/utils/adsUtils";
-import { getCMSContent, getMemberPerks, initializeCMSData } from "@/utils/cmsData";
+import {
+  getCMSContent,
+  getMemberPerks,
+  initializeCMSData,
+} from "@/utils/cmsData";
 
 interface WashLog {
   id: string;
@@ -249,7 +253,8 @@ export default function Dashboard() {
                 !
               </h1>
               <p className="text-sm text-muted-foreground">
-                {getCMSContent('home_greeting_text')?.content || 'Ready for your next wash?'}
+                {getCMSContent("home_greeting_text")?.content ||
+                  "Ready for your next wash?"}
               </p>
             </div>
           </div>
@@ -524,8 +529,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-
-
         {/* Clean Tabs */}
         <div className="mb-6">
           <div className="bg-muted rounded-lg p-1">
@@ -585,19 +588,24 @@ export default function Dashboard() {
                         <Car className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-foreground">Classic Wash</h4>
-                        <p className="text-sm text-muted-foreground">Basic premium service</p>
+                        <h4 className="font-bold text-foreground">
+                          Classic Wash
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Basic premium service
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-foreground">
                         {membershipData.remainingWashes.classic === 999
                           ? "∞"
-                          : `${membershipData.remainingWashes.classic}/${membershipData.totalWashes.classic}`
-                        }
+                          : `${membershipData.remainingWashes.classic}/${membershipData.totalWashes.classic}`}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {membershipData.remainingWashes.classic === 999 ? "Unlimited" : "remaining"}
+                        {membershipData.remainingWashes.classic === 999
+                          ? "Unlimited"
+                          : "remaining"}
                       </p>
                     </div>
                   </div>
@@ -609,19 +617,22 @@ export default function Dashboard() {
                           : "bg-blue-500"
                       }`}
                       style={{
-                        width: membershipData.remainingWashes.classic === 999
-                          ? "100%"
-                          : `${getProgressPercentage(
-                              membershipData.remainingWashes.classic,
-                              membershipData.totalWashes.classic,
-                            )}%`
+                        width:
+                          membershipData.remainingWashes.classic === 999
+                            ? "100%"
+                            : `${getProgressPercentage(
+                                membershipData.remainingWashes.classic,
+                                membershipData.totalWashes.classic,
+                              )}%`,
                       }}
                     ></div>
                   </div>
                   {membershipData.remainingWashes.classic === 999 && (
                     <div className="flex items-center justify-center space-x-2 text-blue-600">
                       <Star className="h-4 w-4" />
-                      <span className="text-sm font-bold">MAX LEVEL - UNLIMITED</span>
+                      <span className="text-sm font-bold">
+                        MAX LEVEL - UNLIMITED
+                      </span>
                       <Star className="h-4 w-4" />
                     </div>
                   )}
@@ -635,19 +646,24 @@ export default function Dashboard() {
                         <Crown className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-foreground">VIP ProMax</h4>
-                        <p className="text-sm text-muted-foreground">Premium luxury service</p>
+                        <h4 className="font-bold text-foreground">
+                          VIP ProMax
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Premium luxury service
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-foreground">
                         {membershipData.remainingWashes.vipProMax === 999
                           ? "∞"
-                          : `${membershipData.remainingWashes.vipProMax}/${membershipData.totalWashes.vipProMax}`
-                        }
+                          : `${membershipData.remainingWashes.vipProMax}/${membershipData.totalWashes.vipProMax}`}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {membershipData.remainingWashes.vipProMax === 999 ? "Unlimited" : "remaining"}
+                        {membershipData.remainingWashes.vipProMax === 999
+                          ? "Unlimited"
+                          : "remaining"}
                       </p>
                     </div>
                   </div>
@@ -659,19 +675,22 @@ export default function Dashboard() {
                           : "bg-purple-500"
                       }`}
                       style={{
-                        width: membershipData.remainingWashes.vipProMax === 999
-                          ? "100%"
-                          : `${getProgressPercentage(
-                              membershipData.remainingWashes.vipProMax,
-                              membershipData.totalWashes.vipProMax,
-                            )}%`
+                        width:
+                          membershipData.remainingWashes.vipProMax === 999
+                            ? "100%"
+                            : `${getProgressPercentage(
+                                membershipData.remainingWashes.vipProMax,
+                                membershipData.totalWashes.vipProMax,
+                              )}%`,
                       }}
                     ></div>
                   </div>
                   {membershipData.remainingWashes.vipProMax === 999 && (
                     <div className="flex items-center justify-center space-x-2 text-purple-600">
                       <Crown className="h-4 w-4" />
-                      <span className="text-sm font-bold">MAX LEVEL - UNLIMITED</span>
+                      <span className="text-sm font-bold">
+                        MAX LEVEL - UNLIMITED
+                      </span>
                       <Crown className="h-4 w-4" />
                     </div>
                   )}
@@ -686,19 +705,24 @@ export default function Dashboard() {
                           <Sparkles className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-foreground">Premium Elite</h4>
-                          <p className="text-sm text-muted-foreground">Ultimate luxury experience</p>
+                          <h4 className="font-bold text-foreground">
+                            Premium Elite
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Ultimate luxury experience
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-foreground">
                           {membershipData.remainingWashes.premium === 999
                             ? "∞"
-                            : `${membershipData.remainingWashes.premium}/${membershipData.totalWashes.premium}`
-                          }
+                            : `${membershipData.remainingWashes.premium}/${membershipData.totalWashes.premium}`}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {membershipData.remainingWashes.premium === 999 ? "Unlimited" : "remaining"}
+                          {membershipData.remainingWashes.premium === 999
+                            ? "Unlimited"
+                            : "remaining"}
                         </p>
                       </div>
                     </div>
@@ -710,19 +734,22 @@ export default function Dashboard() {
                             : "bg-fac-orange-500"
                         }`}
                         style={{
-                          width: membershipData.remainingWashes.premium === 999
-                            ? "100%"
-                            : `${getProgressPercentage(
-                                membershipData.remainingWashes.premium,
-                                membershipData.totalWashes.premium,
-                              )}%`
+                          width:
+                            membershipData.remainingWashes.premium === 999
+                              ? "100%"
+                              : `${getProgressPercentage(
+                                  membershipData.remainingWashes.premium,
+                                  membershipData.totalWashes.premium,
+                                )}%`,
                         }}
                       ></div>
                     </div>
                     {membershipData.remainingWashes.premium === 999 && (
                       <div className="flex items-center justify-center space-x-2 text-fac-orange-600">
                         <Sparkles className="h-4 w-4" />
-                        <span className="text-sm font-bold">MAX LEVEL - UNLIMITED</span>
+                        <span className="text-sm font-bold">
+                          MAX LEVEL - UNLIMITED
+                        </span>
                         <Sparkles className="h-4 w-4" />
                       </div>
                     )}
@@ -737,23 +764,34 @@ export default function Dashboard() {
                   Member Perks
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {getMemberPerks().filter(perk => perk.enabled).map(perk => {
-                    const IconComponent = {
-                      Calendar,
-                      Shield,
-                      Crown,
-                      Star,
-                      Gift,
-                      Sparkles,
-                    }[perk.icon as keyof typeof {Calendar, Shield, Crown, Star, Gift, Sparkles}] || Star;
+                  {getMemberPerks()
+                    .filter((perk) => perk.enabled)
+                    .map((perk) => {
+                      const iconMap = {
+                        Calendar,
+                        Shield,
+                        Crown,
+                        Star,
+                        Gift,
+                        Sparkles,
+                      };
+                      const IconComponent =
+                        iconMap[perk.icon as keyof typeof iconMap] || Star;
 
-                    return (
-                      <div key={perk.id} className="flex items-center space-x-3 bg-muted rounded-lg p-3 hover:bg-muted/80 transition-colors">
-                        <IconComponent className={`h-5 w-5 text-${perk.color}`} />
-                        <span className="text-sm font-medium text-foreground">{perk.title}</span>
-                      </div>
-                    );
-                  })}
+                      return (
+                        <div
+                          key={perk.id}
+                          className="flex items-center space-x-3 bg-muted rounded-lg p-3 hover:bg-muted/80 transition-colors"
+                        >
+                          <IconComponent
+                            className={`h-5 w-5 text-${perk.color}`}
+                          />
+                          <span className="text-sm font-medium text-foreground">
+                            {perk.title}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </CardContent>
