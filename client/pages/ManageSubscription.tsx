@@ -531,7 +531,7 @@ export default function ManageSubscription() {
                     </div>
                     <Button
                       className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
-                      onClick={handleRenewal}
+                      onClick={handleUpgrade}
                     >
                       <RefreshCw className="h-5 w-5 mr-2" />
                       Confirm Renewal - ₱{pricing.total.toLocaleString()}
