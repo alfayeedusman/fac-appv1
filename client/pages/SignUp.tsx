@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
 import {
   ArrowLeft,
   Car,
@@ -192,6 +193,45 @@ export default function SignUp() {
 
     // Store form data for demo purposes
     localStorage.setItem("signUpData", JSON.stringify(formData));
+
+    // Save user credentials for authentication
+    const newUser = {
+      email: formData.email,
+      password: formData.password,
+      role: "user",
+      fullName: formData.fullName,
+      registeredAt: new Date().toISOString(),
+    };
+
+    // Get existing registered users or create new array
+    const existingUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+
+    // Check if user already exists
+    const userExists = existingUsers.find(
+      (user: any) => user.email === formData.email,
+    );
+
+    if (!userExists) {
+      existingUsers.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+
+      toast({
+        title: "Registration Successful! 🎉",
+        description: "Your account has been created successfully!",
+        variant: "default",
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
+    } else {
+      toast({
+        title: "Registration Failed",
+        description: "An account with this email already exists.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     setIsSubmitting(false);
     setShowSuccessModal(true);
