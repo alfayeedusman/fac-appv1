@@ -104,6 +104,13 @@ const sidebarItems = [
     description: "Content Management",
     gradient: "from-fac-orange-500 to-yellow-500",
   },
+  {
+    id: "push-notifications",
+    label: "Push Notifications",
+    icon: Bell,
+    description: "Broadcast Messages",
+    gradient: "from-purple-500 to-indigo-500",
+  },
 ];
 
 export default function AdminSidebar({
@@ -232,6 +239,8 @@ export default function AdminSidebar({
                   onClick={() => {
                     if (item.id === "cms") {
                       navigate("/admin-cms");
+                    } else if (item.id === "push-notifications") {
+                      navigate("/admin-push-notifications");
                     } else {
                       onTabChange(item.id);
                     }

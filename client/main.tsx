@@ -27,6 +27,7 @@ import Voucher from "./pages/Voucher";
 import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
 import AdminCMS from "./pages/AdminCMS";
+import AdminPushNotifications from "./pages/AdminPushNotifications";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
@@ -168,6 +169,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminCMS />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-push-notifications"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPushNotifications />
                 </ProtectedRoute>
               }
             />
