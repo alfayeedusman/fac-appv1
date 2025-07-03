@@ -605,99 +605,95 @@ export default function AdminDashboard() {
           {/* Content based on active tab */}
           {activeTab === "overview" && (
             <div className="space-y-8">
-              {/* Modern Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animate-delay-100">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card
-                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("customers")}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <CardContent className="p-8 relative z-10">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-muted-foreground text-sm font-medium mb-2">
+                        <p className="text-muted-foreground text-sm mb-2">
                           Total Customers
                         </p>
-                        <p className="text-4xl font-black text-foreground">
+                        <p className="text-3xl font-bold text-foreground">
                           {stats.totalCustomers.toLocaleString()}
                         </p>
                       </div>
-                      <div className="gradient-primary p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
-                        <Users className="h-8 w-8 text-white" />
+                      <div className="bg-fac-orange-500 p-3 rounded-lg">
+                        <Users className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("sales")}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <CardContent className="p-8 relative z-10">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-muted-foreground text-sm font-medium mb-2">
+                        <p className="text-muted-foreground text-sm mb-2">
                           Total Revenue
                         </p>
-                        <p className="text-4xl font-black text-foreground">
+                        <p className="text-3xl font-bold text-foreground">
                           {formatCurrency(stats.totalRevenue)}
                         </p>
                       </div>
-                      <div className="gradient-secondary p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
-                        <DollarSign className="h-8 w-8 text-white" />
+                      <div className="bg-green-500 p-3 rounded-lg">
+                        <DollarSign className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("analytics")}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <CardContent className="p-8 relative z-10">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-muted-foreground text-sm font-medium mb-2">
+                        <p className="text-muted-foreground text-sm mb-2">
                           Total Washes
                         </p>
-                        <p className="text-4xl font-black text-foreground">
+                        <p className="text-3xl font-bold text-foreground">
                           {stats.totalWashes.toLocaleString()}
                         </p>
                       </div>
-                      <div className="gradient-futuristic p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
-                        <Car className="h-8 w-8 text-white" />
+                      <div className="bg-blue-500 p-3 rounded-lg">
+                        <Car className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card
-                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("packages")}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <CardContent className="p-8 relative z-10">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-muted-foreground text-sm font-medium mb-2">
+                        <p className="text-muted-foreground text-sm mb-2">
                           Active Subscriptions
                         </p>
-                        <p className="text-4xl font-black text-foreground">
+                        <p className="text-3xl font-bold text-foreground">
                           {stats.activeSubscriptions}
                         </p>
                       </div>
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-2xl animate-pulse-glow group-hover:scale-110 transition-transform">
-                        <Crown className="h-8 w-8 text-white" />
+                      <div className="bg-purple-500 p-3 rounded-lg">
+                        <Crown className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Quick Actions with Modern Design */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animate-delay-200">
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {userRole === "superadmin" && (
                   <Card
                     className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
