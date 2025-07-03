@@ -31,13 +31,22 @@ export default function StickyHeader({
   const publicRoutes = ["/", "/login", "/signup"];
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
+  // Don't show StickyHeader on POS Kiosk (it has its own fullscreen header)
+  const kioskRoutes = ["/pos-kiosk"];
+  const isKioskRoute = kioskRoutes.includes(location.pathname);
+
   // useEffect must be called before any conditional returns (Rules of Hooks)
   useEffect(() => {
+    // Don't show header on kiosk mode
+    if (isKioskRoute) {
+      setIsVisible(false);
+      return;
+    }
+
     // Always show header on management pages
     const managementPages = [
       "/inventory-management",
       "/pos",
-      "/pos-kiosk",
       "/admin-user-management",
     ];
     if (managementPages.includes(location.pathname)) {
@@ -52,10 +61,10 @@ export default function StickyHeader({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [location.pathname]);
+  }, [location.pathname, isKioskRoute]);
 
-  // Don't render StickyHeader on public routes or if not authenticated
-  if (isPublicRoute && !isAuthenticated) {
+  // Don't render StickyHeader on public routes, kiosk routes, or if not authenticated
+  if ((isPublicRoute && !isAuthenticated) || isKioskRoute) {
     return null;
   }
 
