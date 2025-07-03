@@ -260,6 +260,19 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2 self-start sm:self-auto">
+            {/* Admin Access Button - Show for admin/superadmin users */}
+            {(localStorage.getItem("userRole") === "admin" ||
+              localStorage.getItem("userRole") === "superadmin") && (
+              <Link to="/admin-dashboard">
+                <Button
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold"
+                  size="sm"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Admin Panel
+                </Button>
+              </Link>
+            )}
             <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
             <NotificationDropdown />
             <Button
