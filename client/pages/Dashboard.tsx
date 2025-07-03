@@ -577,66 +577,68 @@ export default function Dashboard() {
                 Membership Benefits
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="px-4 sm:px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button
                   variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
                   onClick={() => alert("Priority Booking benefit details")}
                 >
                   <div className="bg-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
                     <Calendar className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">
+                  <h4 className="font-bold text-foreground mb-2 text-left">
                     Priority Booking
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-left">
                     Skip the line with exclusive access
                   </p>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
                   onClick={() => alert("Member Discounts benefit details")}
                 >
                   <div className="bg-green-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-600 transition-colors">
                     <Gift className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">
+                  <h4 className="font-bold text-foreground mb-2 text-left">
                     Member Discounts
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-left">
                     Save up to 25% on services
                   </p>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
                   onClick={() => alert("Paint Protection benefit details")}
                 >
                   <div className="bg-purple-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-600 transition-colors">
                     <Shield className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">
+                  <h4 className="font-bold text-foreground mb-2 text-left">
                     Paint Protection
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-left">
                     Advanced coating included
                   </p>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group w-full"
                   onClick={() => alert("VIP Lounge benefit details")}
                 >
                   <div className="bg-fac-orange-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-fac-orange-600 transition-colors">
                     <Crown className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">VIP Lounge</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-bold text-foreground mb-2 text-left">
+                    VIP Lounge
+                  </h4>
+                  <p className="text-sm text-muted-foreground text-left">
                     Exclusive member area
                   </p>
                 </Button>
