@@ -164,7 +164,13 @@ export default function Booking() {
 
     // Save booking to local storage
     const { addBooking } = await import("@/utils/bookingData");
+    const { updateUserProgress, checkLevelUp } = await import(
+      "@/utils/gamificationData"
+    );
     const selectedServiceData = services.find((s) => s.id === selectedService);
+
+    const userEmail = localStorage.getItem("userEmail") || "";
+    const previousProgress = updateUserProgress(userEmail);
 
     const newBooking = addBooking({
       service: selectedServiceData?.name || selectedService,
@@ -176,6 +182,24 @@ export default function Booking() {
       notes: bookingData.notes,
       price: selectedServiceData?.price || "₱0",
     });
+
+    // Check for level up after booking
+    const newLevelUp = checkLevelUp(
+      previousProgress.completedBookings,
+      previousProgress.completedBookings + 1,
+    );
+
+    if (newLevelUp) {
+      // Show level up notification
+      setTimeout(() => {
+        alert(
+          `🎉 Congratulations! You've reached ${newLevelUp.name} level! ${newLevelUp.icon}\n\nNew rewards unlocked:\n${newLevelUp.rewards
+            .slice(0, 3)
+            .map((r) => `• ${r}`)
+            .join("\n")}`,
+        );
+      }, 2000);
+    }
 
     alert(`🚀 Booking confirmed!
 Booking ID: ${newBooking.id}
