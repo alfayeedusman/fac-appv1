@@ -93,10 +93,34 @@ export default function ManageSubscription() {
     localStorage.getItem(`subscription_${userEmail}`) || "null",
   );
 
-  // Load subscription request status
-  useEffect(() => {
+  // Function to refresh subscription status
+  const refreshSubscriptionStatus = () => {
     const status = getUserSubscriptionStatus(userEmail);
     setSubscriptionRequestStatus(status);
+  };
+
+  // Load subscription request status
+  useEffect(() => {
+    refreshSubscriptionStatus();
+  }, [userEmail]);
+
+  // Add focus event listener to refresh when page becomes visible
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshSubscriptionStatus();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        refreshSubscriptionStatus();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, [userEmail]);
 
   const currentSubscription: CurrentSubscription = {
