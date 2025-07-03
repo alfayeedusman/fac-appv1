@@ -113,13 +113,7 @@ export default function LevelProgress({
           </div>
           {next && (
             <div className="space-y-1">
-              <Progress
-                value={progress}
-                className="h-2"
-                style={{
-                  background: `linear-gradient(to right, ${current.color}20, ${next.color}20)`,
-                }}
-              />
+              <Progress value={progress} className="h-2 bg-muted" />
               <p className="text-xs text-muted-foreground">
                 {userProgress.nextLevelBookings} more to {next.name}
               </p>
@@ -183,20 +177,7 @@ export default function LevelProgress({
                   </span>
                 </div>
                 <div className="relative">
-                  <Progress
-                    value={progress}
-                    className="h-3"
-                    style={{
-                      background: `linear-gradient(to right, ${current.color}20, ${next.color}20)`,
-                    }}
-                  />
-                  <div
-                    className="absolute top-0 left-0 h-3 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${progress}%`,
-                      background: `linear-gradient(to right, ${current.color}, ${next.color})`,
-                    }}
-                  ></div>
+                  <Progress value={progress} className="h-3 bg-muted" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {userProgress.nextLevelBookings} more car washes to reach{" "}
