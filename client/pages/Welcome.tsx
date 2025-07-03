@@ -192,28 +192,28 @@ export default function Welcome() {
                 <Car className="h-8 w-8 text-fac-orange-500" />
               </div>
               <h4 className="font-bold text-foreground mb-2">
-                Smart Automation
+                Multi-Vehicle Service
               </h4>
               <p className="text-sm text-muted-foreground">
-                AI optimizes every wash cycle
+                Cars, motorcycles, SUVs - we service them all
               </p>
             </div>
             <div className="text-center group">
               <div className="glass w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform hover-lift">
                 <Crown className="h-8 w-8 text-purple-500" />
               </div>
-              <h4 className="font-bold text-foreground mb-2">VIP Experience</h4>
+              <h4 className="font-bold text-foreground mb-2">VIP Packages</h4>
               <p className="text-sm text-muted-foreground">
-                Premium service guaranteed
+                Premium subscriptions with exclusive benefits
               </p>
             </div>
             <div className="text-center group">
               <div className="glass w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform hover-lift">
                 <Star className="h-8 w-8 text-yellow-500" />
               </div>
-              <h4 className="font-bold text-foreground mb-2">Excellence</h4>
+              <h4 className="font-bold text-foreground mb-2">Expert Care</h4>
               <p className="text-sm text-muted-foreground">
-                5-star quality every time
+                Professional detailing and protection services
               </p>
             </div>
           </div>
