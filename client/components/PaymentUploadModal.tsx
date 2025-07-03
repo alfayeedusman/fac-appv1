@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Upload, CreditCard, CheckCircle, Loader } from "lucide-react";
+import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
+import { notificationManager } from "./NotificationModal";
 
 interface PaymentUploadModalProps {
   isOpen: boolean;
