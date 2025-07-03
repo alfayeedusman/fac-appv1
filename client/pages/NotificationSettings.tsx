@@ -216,7 +216,6 @@ export default function NotificationSettings() {
                               onCheckedChange={() =>
                                 toggleChannel(setting.id, "email")
                               }
-                              size="sm"
                             />
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 text-blue-600 mr-1" />
