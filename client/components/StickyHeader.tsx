@@ -95,6 +95,8 @@ export default function StickyHeader({
         return "Gamification Settings";
       case "/admin-subscription-approval":
         return "Subscription Approvals";
+      case "/payment-history":
+        return "Payment History";
       default:
         return "Fayeed Auto Care";
     }
