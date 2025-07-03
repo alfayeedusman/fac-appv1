@@ -37,6 +37,25 @@ export default function PremiumMembershipCard({
 }: PremiumMembershipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // Generate unique FAC ID
+  const generateFACId = () => {
+    const timestamp = Date.now().toString(36);
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const emailHash = email
+      .split("")
+      .reduce((a, b) => {
+        a = (a << 5) - a + b.charCodeAt(0);
+        return a & a;
+      }, 0)
+      .toString(36)
+      .substring(2, 6);
+    return `FAC${timestamp}${randomStr}${emailHash}`
+      .toUpperCase()
+      .substring(0, 12);
+  };
+
+  const uniqueFACId = generateFACId();
+
   const getMembershipConfig = () => {
     switch (membershipType) {
       case "classic":
@@ -158,43 +177,49 @@ export default function PremiumMembershipCard({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front of Card */}
-        <Card className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+        <Card className="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl border border-gray-800/50">
           <div
             className={`w-full h-full bg-gradient-to-br ${config.color} relative overflow-hidden`}
           >
-            {/* Luxury Background Pattern */}
+            {/* 2025 Modern Luxury Background Pattern */}
             <div className="absolute inset-0">
-              {/* Orange accent lines */}
+              {/* Holographic accent lines */}
               <div
-                className={`absolute top-0 left-0 w-full h-1 ${config.accentColor}`}
+                className={`absolute top-0 left-0 w-full h-0.5 ${config.accentColor} shadow-lg`}
               ></div>
               <div
-                className={`absolute bottom-0 right-0 w-1 h-full ${config.accentColor}`}
+                className={`absolute bottom-0 right-0 w-0.5 h-full ${config.accentColor} shadow-lg`}
               ></div>
 
-              {/* Geometric patterns */}
-              <div className="absolute top-4 right-4 opacity-10">
-                <Sparkles className="h-16 w-16 text-fac-orange-500 transform rotate-12" />
-              </div>
-              <div className="absolute bottom-4 left-4 opacity-15">
-                <IconComponent className="h-12 w-12 text-fac-orange-500 transform -rotate-12" />
-              </div>
-
-              {/* Dot pattern */}
+              {/* Modern geometric grid */}
               <div
-                className="absolute inset-0"
+                className="absolute inset-0 opacity-5"
                 style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 1px 1px, rgba(249, 115, 22, 0.15) 1px, transparent 0)",
-                  backgroundSize: "20px 20px",
+                  backgroundImage: `
+                  linear-gradient(rgba(249, 115, 22, 0.1) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(249, 115, 22, 0.1) 1px, transparent 1px)
+                `,
+                  backgroundSize: "40px 40px",
                 }}
               ></div>
 
-              {/* Circuit-like pattern */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5">
-                <div className="w-40 h-40 border border-fac-orange-500 rounded-full"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-fac-orange-500 rounded-full"></div>
+              {/* Floating elements - 2025 style */}
+              <div className="absolute top-6 right-6 opacity-8">
+                <div className="w-20 h-20 border border-fac-orange-500/30 rounded-full animate-pulse"></div>
+                <div className="absolute top-2 left-2 w-16 h-16 border border-fac-orange-500/20 rounded-full"></div>
               </div>
+
+              {/* Bottom luxury pattern */}
+              <div className="absolute bottom-6 left-6 opacity-10">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-8 bg-fac-orange-500 rounded-full"></div>
+                  <div className="w-2 h-6 bg-fac-orange-500/70 rounded-full"></div>
+                  <div className="w-2 h-4 bg-fac-orange-500/50 rounded-full"></div>
+                </div>
+              </div>
+
+              {/* Luxury shine effect */}
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/[0.02] to-transparent transform -skew-x-12 animate-pulse"></div>
             </div>
 
             {/* Card Content */}
@@ -206,52 +231,60 @@ export default function PremiumMembershipCard({
                     <img
                       src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                       alt="FAC Logo"
-                      className="h-8 w-auto mr-3 brightness-0 invert"
+                      className="h-8 w-auto mr-3 filter contrast-125 brightness-110"
                     />
-                    <span className="text-sm font-bold text-white tracking-wider">
-                      FAYEED AUTO CARE
-                    </span>
+                    <div>
+                      <span className="text-sm font-bold text-white tracking-wider block">
+                        FAYEED AUTO CARE
+                      </span>
+                      <span className="text-xs text-fac-orange-400 font-medium tracking-wide">
+                        Premium Services
+                      </span>
+                    </div>
                   </div>
-                  <Badge className="bg-fac-orange-500 text-black font-bold px-3 py-1 text-xs tracking-wide">
+                  <Badge className="bg-fac-orange-500 text-black font-bold px-3 py-1 text-xs tracking-wide shadow-lg">
                     {config.name.toUpperCase()}
                   </Badge>
                 </div>
-                <div className={`p-2 rounded-lg ${config.accentColor}`}>
-                  <IconComponent className="h-6 w-6 text-white" />
+                <div className="flex flex-col items-end space-y-2">
+                  <div
+                    className={`p-2 rounded-lg ${config.accentColor} shadow-lg`}
+                  >
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  {/* QR Code on front */}
+                  <div className="bg-white/95 p-1.5 rounded-md shadow-lg">
+                    <QrCode className="h-8 w-8 text-gray-800" />
+                  </div>
                 </div>
               </div>
 
               {/* Member Info */}
-              <div className="space-y-1">
-                <p
-                  className={`text-lg font-black ${config.textColor} tracking-wide`}
-                >
+              <div className="space-y-2">
+                <p className="text-lg font-black text-white tracking-wide">
                   {userName.toUpperCase()}
                 </p>
-                <p className={`text-sm ${config.textColor} opacity-90`}>
-                  {email}
-                </p>
+                <p className="text-sm text-gray-300 opacity-90">{email}</p>
+                <div className="bg-black/30 backdrop-blur-sm rounded-lg px-3 py-1 inline-block">
+                  <p className="text-xs text-fac-orange-400 font-mono font-bold tracking-wider">
+                    ID: {uniqueFACId}
+                  </p>
+                </div>
               </div>
 
               {/* Footer */}
               <div className="flex justify-between items-end">
                 <div>
-                  <p className={`text-xs ${config.textColor} opacity-80`}>
-                    Member Since
+                  <p className="text-xs text-fac-orange-400 font-semibold tracking-wide">
+                    MEMBER SINCE
                   </p>
-                  <p className={`text-sm font-bold ${config.textColor}`}>
-                    {memberSince}
-                  </p>
+                  <p className="text-sm font-bold text-white">{memberSince}</p>
                 </div>
                 <div className="text-right">
-                  <p className={`text-xs ${config.textColor} opacity-80`}>
-                    Member #
+                  <p className="text-xs text-fac-orange-400 font-semibold tracking-wide">
+                    EXPIRES
                   </p>
-                  <p
-                    className={`text-sm font-bold ${config.textColor} font-mono`}
-                  >
-                    {membershipNumber}
-                  </p>
+                  <p className="text-sm font-bold text-white">{expiryDate}</p>
                 </div>
               </div>
             </div>
@@ -274,47 +307,56 @@ export default function PremiumMembershipCard({
               className="relative z-10 p-6 h-full flex flex-col justify-between"
               style={{ transform: "scaleX(-1)" }}
             >
-              {/* QR Code Section */}
-              <div className="text-center mt-16">
-                <div className="bg-white rounded-xl p-4 inline-block shadow-lg border-2 border-fac-orange-500/20">
-                  <QrCode className="h-16 w-16 text-gray-800" />
+              {/* Enhanced QR Code Section */}
+              <div className="text-center mt-12">
+                <div className="bg-gradient-to-br from-white to-gray-100 rounded-xl p-5 inline-block shadow-2xl border-2 border-fac-orange-500/30">
+                  <QrCode className="h-20 w-20 text-gray-800" />
+                  <div className="mt-2 text-xs text-gray-700 font-bold">
+                    {uniqueFACId}
+                  </div>
                 </div>
-                <p className="text-sm text-white mt-3 font-medium tracking-wide">
-                  SCAN FOR QUICK CHECK-IN
+                <p className="text-sm text-white mt-4 font-bold tracking-wider">
+                  SCAN FOR INSTANT ACCESS
+                </p>
+                <p className="text-xs text-fac-orange-400 mt-1">
+                  Quick Check-in • Member Services
                 </p>
               </div>
 
-              {/* Membership Status */}
+              {/* Enhanced Membership Status */}
               {totalWashes > 0 && (
-                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-fac-orange-500/30">
+                <div className="bg-gradient-to-r from-black/50 to-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-fac-orange-500/40 shadow-lg">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
                         REMAINING WASHES
                       </p>
-                      <p className="text-2xl font-black text-white">
-                        {remainingWashes}
+                      <p className="text-3xl font-black text-white">
+                        {remainingWashes === 999 ? "∞" : remainingWashes}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
-                        VALID UNTIL
+                        MEMBERSHIP
                       </p>
-                      <p className="text-sm font-bold text-white">
-                        {expiryDate}
-                      </p>
+                      <p className="text-sm font-bold text-white">ACTIVE</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Terms */}
-              <div className="text-center space-y-1">
-                <p className="text-xs text-gray-400 font-medium">
-                  NON-TRANSFERABLE • TERMS APPLY
-                </p>
-                <p className="text-xs text-fac-orange-400 font-bold">
-                  FAYEEDAUTOCARE.COM
+              {/* Enhanced Terms */}
+              <div className="text-center space-y-2">
+                <div className="bg-black/30 rounded-lg p-2">
+                  <p className="text-xs text-gray-300 font-medium">
+                    NON-TRANSFERABLE • TERMS APPLY
+                  </p>
+                  <p className="text-xs text-fac-orange-400 font-bold mt-1">
+                    FAYEEDAUTOCARE.COM
+                  </p>
+                </div>
+                <p className="text-xs text-gray-500">
+                  24/7 Premium Support Available
                 </p>
               </div>
             </div>
