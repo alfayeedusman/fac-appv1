@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Save,
@@ -41,6 +41,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
+import AdminSidebar from "@/components/AdminSidebar";
 import {
   CMSContent,
   MemberPerk,
