@@ -74,15 +74,54 @@ export const approveSubscriptionRequest = (
   adminEmail: string,
   notes?: string,
 ): void => {
-  updateSubscriptionRequest(requestId, {
-    status: "approved",
-    reviewedBy: adminEmail,
-    reviewedDate: new Date().toISOString(),
-    reviewNotes: notes || "Payment verified and subscription activated",
-  });
+  const requests = getSubscriptionRequests();
+  const request = requests.find((r) => r.id === requestId);
 
-  // Send notification to customer
-  addApprovalNotification(requestId, "approved");
+  if (request) {
+    updateSubscriptionRequest(requestId, {
+      status: "approved",
+      reviewedBy: adminEmail,
+      reviewedDate: new Date().toISOString(),
+      reviewNotes: notes || "Payment verified and subscription activated",
+    });
+
+    // Update user's subscription in localStorage
+    const subscriptionData = {
+      package: request.packageType,
+      price: parseFloat(request.paymentDetails.amount.replace(/[₱,]/g, "")),
+      paymentMethod: request.paymentMethod,
+      activatedDate: new Date().toISOString(),
+      currentCycleEnd: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(), // 30 days from now
+      daysLeft: 30,
+      totalWashes: {
+        classic: request.packageType.includes("Classic")
+          ? 5
+          : request.packageType.includes("VIP")
+            ? 10
+            : 999,
+        premium: request.packageType.includes("Premium") ? 2 : 0,
+      },
+      remainingWashes: {
+        classic: request.packageType.includes("Classic")
+          ? 5
+          : request.packageType.includes("VIP")
+            ? 10
+            : 999,
+        premium: request.packageType.includes("Premium") ? 2 : 0,
+      },
+      status: "active",
+    };
+
+    localStorage.setItem(
+      `subscription_${request.userEmail}`,
+      JSON.stringify(subscriptionData),
+    );
+
+    // Send notification to customer
+    addApprovalNotification(requestId, "approved");
+  }
 };
 
 export const rejectSubscriptionRequest = (
