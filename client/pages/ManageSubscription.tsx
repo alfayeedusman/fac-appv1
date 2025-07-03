@@ -1097,7 +1097,13 @@ export default function ManageSubscription() {
       {/* Subscription Submission Modal */}
       <SubscriptionSubmission
         isOpen={showSubscriptionSubmission}
-        onClose={() => setShowSubscriptionSubmission(false)}
+        onClose={() => {
+          setShowSubscriptionSubmission(false);
+          // Refresh subscription status after submission
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
         userEmail={userEmail}
         userName={userEmail.split("@")[0]}
       />
