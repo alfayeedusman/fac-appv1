@@ -644,20 +644,27 @@ export default function SignUp() {
                           id="contactNumber"
                           type="tel"
                           placeholder="912 345 6789"
-                          value={formData.contactNumber.replace("+63", "").replace(/^\s+/, "")}
+                          value={formData.contactNumber
+                            .replace("+63", "")
+                            .replace(/^\s+/, "")}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d\s]/g, "");
-                            handleInputChange("contactNumber", `+63${value ? " " + value : ""}`);
+                            const value = e.target.value.replace(
+                              /[^\d\s]/g,
+                              "",
+                            );
+                            handleInputChange(
+                              "contactNumber",
+                              `+63${value ? " " + value : ""}`,
+                            );
                           }}
-                          className="pl-12"
+                          required
+                          className={`pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                            errors.contactNumber
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              : ""
+                          }`}
                         />
-                        required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
-                          errors.contactNumber
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                            : ""
-                        }`}
-                      />
+                      </div>
                       {errors.contactNumber && (
                         <p className="text-red-500 text-sm mt-1">
                           {errors.contactNumber}
