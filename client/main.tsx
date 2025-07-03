@@ -221,6 +221,30 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/pos"
+              element={
+                <ProtectedRoute requiredRole="cashier">
+                  <POS />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inventory-management"
+              element={
+                <ProtectedRoute requiredRole="inventory_manager">
+                  <InventoryManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-user-management"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUserManagement />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
