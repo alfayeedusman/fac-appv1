@@ -83,20 +83,34 @@ export default function Dashboard() {
   const [showScanSuccess, setShowScanSuccess] = useState(false);
   const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
 
-  const [membershipData] = useState<MembershipData>({
-    package: "VIP Gold Ultimate",
-    daysLeft: 28,
-    currentCycleStart: "2024-01-01",
-    currentCycleEnd: "2024-01-31",
-    daysLeftInCycle: 15,
-    autoRenewal: true,
-    remainingWashes: {
-      classic: 999,
-      vipProMax: 3,
-      premium: 1,
-    },
-    totalWashes: {
-      classic: 999,
+  // Get real user data from localStorage
+  const userEmail = localStorage.getItem("userEmail") || "";
+  const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+  const currentUser = registeredUsers.find((user: any) => user.email === userEmail);
+
+  // Get user's subscription data or set defaults for new users
+  const getUserMembershipData = (): MembershipData => {
+    const userSubscription = JSON.parse(localStorage.getItem(`subscription_${userEmail}`) || "null");
+
+    if (userSubscription) {
+      return userSubscription;
+    }
+
+    // Default for new regular members
+    return {
+      package: "Regular Member",
+      daysLeft: 0,
+      currentCycleStart: new Date().toISOString().split('T')[0],
+      currentCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      daysLeftInCycle: 30,
+      autoRenewal: false,
+      remainingWashes: {
+        classic: 0,
+        vipProMax: 0,
+        premium: 0,
+      },
+      totalWashes: {
+        classic: 0,
       vipProMax: 5,
       premium: 1,
     },
