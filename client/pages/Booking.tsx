@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -48,6 +48,7 @@ interface BookingData {
 }
 
 export default function Booking() {
+  const navigate = useNavigate();
   const [bookingData, setBookingData] = useState<BookingData>({
     service: "",
     vehicleType: "sedan",
@@ -145,6 +146,53 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Strong validation before showing confirmation modal
+    if (!selectedService) {
+      notificationManager.error(
+        "Service Required",
+        "Please select a service before booking.",
+        { autoClose: 3000 },
+      );
+      return;
+    }
+
+    if (!bookingData.vehicleType) {
+      notificationManager.error(
+        "Vehicle Type Required",
+        "Please select your vehicle type.",
+        { autoClose: 3000 },
+      );
+      return;
+    }
+
+    if (!bookingData.date) {
+      notificationManager.error(
+        "Date Required",
+        "Please select your preferred date.",
+        { autoClose: 3000 },
+      );
+      return;
+    }
+
+    if (!bookingData.time) {
+      notificationManager.error(
+        "Time Required",
+        "Please select your preferred time.",
+        { autoClose: 3000 },
+      );
+      return;
+    }
+
+    if (!bookingData.branch) {
+      notificationManager.error(
+        "Branch Required",
+        "Please select your preferred branch.",
+        { autoClose: 3000 },
+      );
+      return;
+    }
+
     // Set the selected service when confirming booking
     const selectedServiceData = services.find((s) => s.id === selectedService);
     if (selectedServiceData) {
@@ -185,8 +233,8 @@ export default function Booking() {
 
     notificationManager.success(
       "Booking Confirmed! 🚀",
-      `Your booking has been confirmed successfully!\n\nBooking ID: ${newBooking.id}\nService: ${newBooking.service}\nVehicle: ${newBooking.vehicleType}${newBooking.motorcycleType ? ` (${newBooking.motorcycleType})` : ""}\nDate: ${newBooking.date}\nTime: ${newBooking.time}\nBranch: ${newBooking.branch}\n\nYou can track your booking in the "My Bookings" section.`,
-      { autoClose: 6000 },
+      `Your booking has been confirmed successfully!\n\nBooking ID: ${newBooking.id}\nService: ${newBooking.service}\nVehicle: ${newBooking.vehicleType}${newBooking.motorcycleType ? ` (${newBooking.motorcycleType})` : ""}\nDate: ${newBooking.date}\nTime: ${newBooking.time}\nBranch: ${newBooking.branch}\n\nRedirecting to booking history...`,
+      { autoClose: 3000 },
     );
     setIsSubmitting(false);
 
@@ -200,6 +248,11 @@ export default function Booking() {
       notes: "",
     });
     setSelectedService("");
+
+    // Auto-navigate to booking history after 3 seconds
+    setTimeout(() => {
+      navigate("/my-bookings");
+    }, 3000);
   };
 
   const getMinDate = () => {
