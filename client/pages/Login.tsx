@@ -215,14 +215,14 @@ export default function Login() {
                   Email Address
                 </Label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="your.email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background/50 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
+                    className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
                     required
                   />
                 </div>
@@ -238,7 +238,7 @@ export default function Login() {
                   Password
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors" />
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -247,7 +247,7 @@ export default function Login() {
                     onChange={(e) =>
                       handleInputChange("password", e.target.value)
                     }
-                    className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-background/50 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
+                    className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
                     required
                   />
                   <Button
