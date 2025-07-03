@@ -486,27 +486,73 @@ export default function ManageSubscription() {
                         </div>
 
                         {isRegularMember ? (
-                          // Regular member - show package selection
-                          <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
-                            <div className="flex items-center mb-4">
-                              <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
-                              <div>
-                                <h4 className="font-bold text-red-800">
-                                  Regular Member
-                                </h4>
-                                <p className="text-sm text-red-600">
-                                  Choose a package to unlock premium services
-                                </p>
+                          // Regular member - show package selection or pending status
+                          subscriptionRequestStatus.hasRequest &&
+                          subscriptionRequestStatus.status === "pending" ? (
+                            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <Clock className="h-6 w-6 text-yellow-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-yellow-800">
+                                    Payment Under Review
+                                  </h4>
+                                  <p className="text-sm text-yellow-600">
+                                    Your payment request is being processed
+                                  </p>
+                                </div>
                               </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3"
+                                disabled
+                              >
+                                <Clock className="h-4 w-4 mr-2" />
+                                Waiting for Approval
+                              </Button>
                             </div>
-                            <Button
-                              className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
-                              onClick={handleUpgrade}
-                            >
-                              <Crown className="h-4 w-4 mr-2" />
-                              Choose Package
-                            </Button>
-                          </div>
+                          ) : subscriptionRequestStatus.hasRequest &&
+                            subscriptionRequestStatus.status === "rejected" ? (
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <XCircle className="h-6 w-6 text-red-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-red-800">
+                                    Payment Request Rejected
+                                  </h4>
+                                  <p className="text-sm text-red-600">
+                                    You can submit a new payment request
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
+                                onClick={handleUpgrade}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Try Again
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-red-800">
+                                    Regular Member
+                                  </h4>
+                                  <p className="text-sm text-red-600">
+                                    Choose a package to unlock premium services
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
+                                onClick={handleUpgrade}
+                              >
+                                <Crown className="h-4 w-4 mr-2" />
+                                Choose Package
+                              </Button>
+                            </div>
+                          )
                         ) : isExpired ? (
                           // Expired subscription - show reactivation
                           <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200 mb-4">
