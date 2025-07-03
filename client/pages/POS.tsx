@@ -312,31 +312,35 @@ export default function POS() {
         backTo="/admin-dashboard"
       />
 
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
         {/* Products Section */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
           {/* Search and Filters */}
-          <div className="mb-6 space-y-4">
-            <div className="flex gap-4">
+          <div className="mb-4 lg:mb-6 space-y-3 lg:space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search products by name, SKU, or barcode..."
+                  placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm lg:text-base"
                 />
               </div>
-              <Button
-                onClick={() => setShowServiceSelector(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                <Car className="h-4 w-4 mr-2" />
-                Car Wash Services
-              </Button>
-              <Button variant="outline" size="icon">
-                <Scan className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowServiceSelector(true)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm px-2 sm:px-4 lg:px-6"
+                  size="sm"
+                >
+                  <Car className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Car Wash</span>
+                  <span className="sm:hidden">Services</span>
+                </Button>
+                <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                  <Scan className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Category Filter */}
@@ -376,7 +380,7 @@ export default function POS() {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
             {/* Car Wash Services */}
             {selectedCategory === "all" ||
             selectedCategory === "car_wash_services"
@@ -491,7 +495,7 @@ export default function POS() {
         </div>
 
         {/* Cart Section */}
-        <div className="w-96 border-l border-gray-200 bg-gray-50 p-6 flex flex-col">
+        <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 p-3 sm:p-4 lg:p-6 flex flex-col max-h-96 lg:max-h-none overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold flex items-center">
               <ShoppingCart className="h-5 w-5 mr-2" />
@@ -519,13 +523,13 @@ export default function POS() {
                     key={item.productId}
                     className="bg-white border-gray-200 shadow-sm"
                   >
-                    <CardContent className="p-3">
+                    <CardContent className="p-2 sm:p-3">
                       <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm line-clamp-2">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-gray-900">
                             {item.productName}
                           </h4>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground truncate">
                             {item.sku}
                           </p>
                         </div>
@@ -533,16 +537,17 @@ export default function POS() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFromCart(item.productId)}
+                          className="p-1 h-6 w-6 ml-1"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-100 h-6 w-6 p-0"
                             onClick={() =>
                               updateCartItemQuantity(
                                 item.productId,
@@ -552,13 +557,13 @@ export default function POS() {
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="w-8 text-center text-sm font-bold text-gray-900">
+                          <span className="w-6 text-center text-xs sm:text-sm font-bold text-gray-900">
                             {item.quantity}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-100 h-6 w-6 p-0"
                             onClick={() =>
                               updateCartItemQuantity(
                                 item.productId,
@@ -569,11 +574,11 @@ export default function POS() {
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">
-                            ₱{item.unitPrice.toFixed(2)} each
+                        <div className="text-right min-w-0">
+                          <p className="text-xs text-muted-foreground truncate">
+                            ₱{item.unitPrice.toFixed(2)}
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-xs sm:text-sm">
                             ₱{item.subtotal.toFixed(2)}
                           </p>
                         </div>
