@@ -63,6 +63,7 @@ const iconMap = {
 };
 
 export default function AdminCMS() {
+  const navigate = useNavigate();
   const [cmsContent, setCmsContent] = useState<CMSContent[]>([]);
   const [memberPerks, setMemberPerks] = useState<MemberPerk[]>([]);
   const [editingContent, setEditingContent] = useState<string>("");
@@ -564,4 +565,5 @@ export default function AdminCMS() {
       </div>
     </div>
   );
+}
 }
