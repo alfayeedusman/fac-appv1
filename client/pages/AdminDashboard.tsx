@@ -597,6 +597,14 @@ export default function AdminDashboard() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                <Button
+                  onClick={() => navigate("/pos-kiosk")}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
+                  size="sm"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">POS Kiosk</span>
+                </Button>
                 <ThemeToggle />
                 <Button variant="outline" size="sm">
                   <RefreshCw className="h-4 w-4 mr-1" />
