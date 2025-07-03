@@ -26,6 +26,7 @@ import History from "./pages/History";
 import Voucher from "./pages/Voucher";
 import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
+import AdminCMS from "./pages/AdminCMS";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
@@ -159,6 +160,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminAds />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-cms"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminCMS />
                 </ProtectedRoute>
               }
             />
