@@ -658,7 +658,7 @@ export default function SignUp() {
                             );
                           }}
                           required
-                          className={`pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-16 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.contactNumber
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
