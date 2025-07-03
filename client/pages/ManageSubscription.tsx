@@ -1100,7 +1100,13 @@ export default function ManageSubscription() {
       {/* Payment Upload Modal */}
       <PaymentUploadModal
         isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
+        onClose={() => {
+          setShowPaymentModal(false);
+          // Refresh subscription status after payment upload
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
         currentPlan={currentPlan}
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
