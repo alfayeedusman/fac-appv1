@@ -43,13 +43,19 @@ export default function StickyHeader({
       return;
     }
 
-    // Always show header on management pages
-    const managementPages = [
+    // Always show header on management and admin pages
+    const alwaysVisiblePages = [
       "/inventory-management",
       "/pos",
       "/admin-user-management",
+      "/admin-cms",
+      "/admin-push-notifications",
+      "/admin-subscription-approval",
+      "/admin-gamification",
+      "/admin-ads",
+      "/admin-notifications",
     ];
-    if (managementPages.includes(location.pathname)) {
+    if (alwaysVisiblePages.includes(location.pathname)) {
       setIsVisible(true);
       return;
     }
