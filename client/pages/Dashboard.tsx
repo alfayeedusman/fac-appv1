@@ -250,12 +250,8 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ThemeToggle />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <NotificationDropdown />
-            </Button>
+            <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
+            <NotificationDropdown />
             <Button
               variant="ghost"
               size="icon"
