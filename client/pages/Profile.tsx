@@ -29,6 +29,7 @@ import VehicleSelector from "@/components/VehicleSelector";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
+import LevelProgress from "@/components/LevelProgress";
 import UserQRCode from "@/components/UserQRCode";
 import { resetAppState } from "@/utils/resetApp";
 import DebugPanel from "@/components/DebugPanel";
