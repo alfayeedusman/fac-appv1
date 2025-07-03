@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, CreditCard, QrCode, Gift, User } from "lucide-react";
+import { Calendar, CreditCard, QrCode, Gift, User, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavigationProps {
