@@ -30,6 +30,7 @@ import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import UserQRCode from "@/components/UserQRCode";
+import { resetAppState } from "@/utils/resetApp";
 
 interface UserProfile {
   name: string;
@@ -120,9 +121,25 @@ export default function Profile() {
         <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/8 to-pink-500/8 blur-xl animate-float animate-delay-300"></div>
       </div>
 
-      {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 z-20">
-        <div className="glass rounded-full p-1 animate-fade-in-scale">
+      {/* Theme Toggle and Reset */}
+      <div className="absolute top-6 right-6 z-20 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            if (
+              confirm(
+                "Are you sure you want to reset the app? This will clear all data and log you out.",
+              )
+            ) {
+              resetAppState();
+            }
+          }}
+          className="text-xs"
+        >
+          Reset App
+        </Button>
+        <div className="rounded-full p-1">
           <ThemeToggle />
         </div>
       </div>
