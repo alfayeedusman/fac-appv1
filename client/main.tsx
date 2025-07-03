@@ -34,6 +34,7 @@ import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import PaymentHistory from "./pages/PaymentHistory";
 import POS from "./pages/POS";
+import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import NotFound from "./pages/NotFound";
@@ -226,6 +227,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="cashier">
                   <POS />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pos-kiosk"
+              element={
+                <ProtectedRoute requiredRole="cashier">
+                  <POSKiosk />
                 </ProtectedRoute>
               }
             />
