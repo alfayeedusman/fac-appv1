@@ -66,6 +66,9 @@ import {
 } from "@/utils/inventoryData";
 import {
   getCarWashServices,
+  addCarWashService,
+  updateCarWashService,
+  deleteCarWashService,
   vehicleTypes,
   motorcycleSubtypes,
   calculateServicePrice,
