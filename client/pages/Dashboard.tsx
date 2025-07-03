@@ -584,24 +584,36 @@ export default function Dashboard() {
                   <div className="gradient-secondary w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <Calendar className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">Priority Booking</h4>
-                  <p className="text-sm text-muted-foreground">Skip the line with exclusive access</p>
+                  <h4 className="font-bold text-foreground mb-2">
+                    Priority Booking
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Skip the line with exclusive access
+                  </p>
                 </div>
 
                 <div className="glass rounded-xl p-4 hover-lift group">
                   <div className="gradient-futuristic w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <Gift className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">Member Discounts</h4>
-                  <p className="text-sm text-muted-foreground">Save up to 25% on services</p>
+                  <h4 className="font-bold text-foreground mb-2">
+                    Member Discounts
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Save up to 25% on services
+                  </p>
                 </div>
 
                 <div className="glass rounded-xl p-4 hover-lift group">
                   <div className="bg-gradient-to-r from-green-500 to-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <Shield className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-bold text-foreground mb-2">Paint Protection</h4>
-                  <p className="text-sm text-muted-foreground">Advanced coating included</p>
+                  <h4 className="font-bold text-foreground mb-2">
+                    Paint Protection
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Advanced coating included
+                  </p>
                 </div>
 
                 <div className="glass rounded-xl p-4 hover-lift group">
@@ -609,7 +621,9 @@ export default function Dashboard() {
                     <Crown className="h-6 w-6 text-white" />
                   </div>
                   <h4 className="font-bold text-foreground mb-2">VIP Lounge</h4>
-                  <p className="text-sm text-muted-foreground">Exclusive member area</p>
+                  <p className="text-sm text-muted-foreground">
+                    Exclusive member area
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -659,12 +673,16 @@ export default function Dashboard() {
                         <div className="text-right">
                           <Badge
                             variant={
-                              log.status === "completed" ? "default" : "secondary"
+                              log.status === "completed"
+                                ? "default"
+                                : "secondary"
                             }
                             className={cn(
                               "font-bold",
-                              log.status === "completed" && "bg-green-500 text-white",
-                              log.status === "scheduled" && "bg-blue-500 text-white",
+                              log.status === "completed" &&
+                                "bg-green-500 text-white",
+                              log.status === "scheduled" &&
+                                "bg-blue-500 text-white",
                             )}
                           >
                             {log.status}
@@ -678,7 +696,10 @@ export default function Dashboard() {
                   ))}
                   <div className="text-center pt-4">
                     <Link to="/history">
-                      <Button variant="outline" className="glass hover-lift font-bold">
+                      <Button
+                        variant="outline"
+                        className="glass hover-lift font-bold"
+                      >
                         <History className="h-4 w-4 mr-2" />
                         View All History
                       </Button>
@@ -690,8 +711,12 @@ export default function Dashboard() {
                   <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
                     <Car className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">No Recent Activity</h3>
-                  <p className="text-muted-foreground mb-6">Book your first wash to get started!</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2">
+                    No Recent Activity
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    Book your first wash to get started!
+                  </p>
                   <Link to="/booking">
                     <Button className="gradient-primary text-white font-bold hover-lift">
                       <Calendar className="h-4 w-4 mr-2" />
@@ -703,7 +728,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
-        </div>
       </div>
 
       <BottomNavigation onQRScan={handleQRScan} />
