@@ -85,6 +85,16 @@ export default function StickyHeader({
         return "Profile";
       case "/history":
         return "History";
+      case "/admin-dashboard":
+        return "Admin Dashboard";
+      case "/admin-cms":
+        return "Content Management";
+      case "/admin-push-notifications":
+        return "Push Notifications";
+      case "/admin-gamification":
+        return "Gamification Settings";
+      case "/admin-subscription-approval":
+        return "Subscription Approvals";
       default:
         return "Fayeed Auto Care";
     }
