@@ -46,10 +46,36 @@ export default function LevelProgress({
   }, [userId]);
 
   const loadUserProgress = () => {
-    const progress = updateUserProgress(userId); // This will recalculate based on current bookings
-    const levelInfo = getLevelProgress(progress.completedBookings);
-    setUserProgress(progress);
-    setLevelProgress(levelInfo);
+    try {
+      const progress = updateUserProgress(userId); // This will recalculate based on current bookings
+      const levelInfo = getLevelProgress(progress.completedBookings);
+      setUserProgress(progress);
+      setLevelProgress(levelInfo);
+    } catch (error) {
+      console.error("Error loading user progress:", error);
+      // Set default values on error
+      const defaultProgress: UserProgress = {
+        userId,
+        currentLevel: "newbie",
+        totalBookings: 0,
+        completedBookings: 0,
+        nextLevelBookings: 3,
+        earnedRewards: [],
+        badges: ["newbie"],
+        rank: 4,
+        joinDate: new Date().toISOString(),
+      };
+      setUserProgress(defaultProgress);
+
+      const levels = getGamificationLevels();
+      const currentLevel = getCurrentLevel(0, levels);
+      const nextLevel = getNextLevel(currentLevel.id, levels);
+      setLevelProgress({
+        current: currentLevel,
+        next: nextLevel,
+        progress: 0,
+      });
+    }
   };
 
   if (!userProgress || !levelProgress) {
