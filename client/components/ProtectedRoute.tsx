@@ -43,19 +43,14 @@ export default function ProtectedRoute({
       return;
     }
 
-    // Verify user exists in registered users or default users
+    // Verify user exists in registered users only (production security)
     const registeredUsers = JSON.parse(
       localStorage.getItem("registeredUsers") || "[]",
     );
-    const defaultUsers = [
-      { email: "admin@fac.com", role: "admin" },
-      { email: "superadmin@fac.com", role: "superadmin" },
-      { email: "user@fac.com", role: "user" },
-      { email: "demo@fac.com", role: "user" },
-    ];
 
-    const allUsers = [...defaultUsers, ...registeredUsers];
-    const userExists = allUsers.find((user) => user.email === userEmail);
+    const userExists = registeredUsers.find(
+      (user: any) => user.email === userEmail,
+    );
 
     if (!userExists) {
       toast({
