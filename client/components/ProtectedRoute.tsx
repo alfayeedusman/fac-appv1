@@ -4,7 +4,12 @@ import { toast } from "@/hooks/use-toast";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "user" | "admin" | "superadmin";
+  requiredRole?:
+    | "user"
+    | "admin"
+    | "superadmin"
+    | "cashier"
+    | "inventory_manager";
   redirectTo?: string;
 }
 
