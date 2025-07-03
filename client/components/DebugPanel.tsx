@@ -12,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { resetAppState, resetUserSession } from "@/utils/resetApp";
+import { clearAllSampleData } from "@/utils/clearSampleData";
 
 interface DebugPanelProps {
   className?: string;
