@@ -228,38 +228,43 @@ export default function Dashboard() {
       </div>
 
       <div className="px-6 py-8 max-w-md mx-auto relative z-10">
-        {/* Modern Header */}
+        {/* Futuristic Header with Glow Effects */}
         <div className="flex items-center justify-between mb-8 animate-fade-in-up">
           <div className="flex items-center space-x-3">
             <div className="relative">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                 alt="Fayeed Auto Care Logo"
-                className="h-12 w-auto object-contain"
+                className="h-12 w-auto object-contain animate-pulse-glow"
               />
+              <div className="absolute -inset-4 bg-gradient-to-r from-fac-orange-500/20 to-purple-500/20 rounded-full blur-xl animate-breathe"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-2xl font-black text-foreground tracking-tight">
                 Hey,{" "}
-                <span className="text-fac-orange-500">
+                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent animate-pulse-glow">
                   {currentUser?.fullName?.split(" ")[0] ||
                     userEmail.split("@")[0]}
                 </span>
                 !
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground font-medium">
                 Ready for your next wash? ✨
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <ThemeToggle />
-            <NotificationDropdown />
+          <div className="flex items-center space-x-3">
+            <div className="glass rounded-full p-1 animate-fade-in-scale">
+              <ThemeToggle />
+            </div>
+            <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-100">
+              <NotificationDropdown />
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowLogoutModal(true)}
-              className="rounded-full hover:bg-muted hover:text-red-500 transition-colors"
+              className="rounded-full glass hover-lift transition-all duration-300 hover:text-red-500"
               title="Logout"
             >
               <RefreshCw className="h-5 w-5" />
@@ -267,52 +272,54 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Regular Member Upgrade Reminder */}
+        {/* Futuristic Regular Member Upgrade Reminder */}
         {isRegularMember && (
-          <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 mb-6 animate-fade-in-up animate-delay-100">
-            <CardHeader className="pb-4">
+          <Card className="glass border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50/80 to-orange-50/80 dark:from-red-950/50 dark:to-orange-950/50 mb-6 animate-fade-in-up animate-delay-100 relative overflow-hidden hover-lift">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10"></div>
+            <CardHeader className="pb-4 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-red-500 p-3 rounded-xl animate-pulse">
+                  <div className="bg-gradient-to-r from-red-500 to-orange-500 p-3 rounded-xl animate-pulse-glow">
                     <AlertCircle className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-red-800">
+                    <p className="text-lg font-black text-red-800 dark:text-red-200">
                       Regular Member
                     </p>
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-red-600 dark:text-red-300 font-medium">
                       Upgrade to unlock premium services!
                     </p>
                   </div>
                 </div>
                 <Link to="/manage-subscription">
-                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse">
+                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse-glow hover-lift">
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade Now
                   </Button>
                 </Link>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="bg-white/50 rounded-lg p-4">
-                <h4 className="font-bold text-red-800 mb-2">
+            <CardContent className="relative z-10">
+              <div className="glass rounded-lg p-4">
+                <h4 className="font-black text-red-800 dark:text-red-200 mb-3 flex items-center">
+                  <Sparkles className="h-5 w-5 mr-2 text-fac-orange-500" />
                   🌟 Unlock Premium Benefits:
                 </h4>
-                <div className="grid grid-cols-2 gap-2 text-sm text-red-700">
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center text-red-700 dark:text-red-300">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
                     Monthly car washes
                   </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> VIP
-                    services
+                  <div className="flex items-center text-red-700 dark:text-red-300">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
+                    VIP services
                   </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                  <div className="flex items-center text-red-700 dark:text-red-300">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
                     Priority booking
                   </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-1 text-green-500" />{" "}
+                  <div className="flex items-center text-red-700 dark:text-red-300">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
                     Exclusive discounts
                   </div>
                 </div>
@@ -337,40 +344,27 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Credit Card Style Profile */}
-        <div className="mb-6">
-          <CreditCardProfile
-            userProfile={{
-              name: currentUser?.fullName || userEmail.split("@")[0],
-              email: userEmail,
-              membershipType: membershipData.package,
-              joinDate: currentUser?.registeredAt || new Date().toISOString(),
-              plateNumber: currentUser?.carPlateNumber,
-            }}
-            membershipData={membershipData}
-          />
-        </div>
-
-        {/* Membership Status Card */}
+        {/* Futuristic Membership Status Card */}
         <Card
-          className={`border shadow-md mb-6 animate-fade-in-up animate-delay-200 ${
+          className={`glass border-border shadow-2xl mb-6 animate-fade-in-up animate-delay-200 relative overflow-hidden hover-lift ${
             statusColor === "red"
-              ? "bg-red-50 border-red-200"
+              ? "bg-gradient-to-br from-red-50/80 to-pink-50/80 dark:from-red-950/50 dark:to-pink-950/50"
               : statusColor === "orange"
-                ? "bg-orange-50 border-orange-200"
-                : "bg-green-50 border-green-200"
+                ? "bg-gradient-to-br from-orange-50/80 to-yellow-50/80 dark:from-orange-950/50 dark:to-yellow-950/50"
+                : "bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/50 dark:to-emerald-950/50"
           }`}
         >
-          <CardHeader className="pb-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
+          <CardHeader className="pb-4 relative z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div
-                  className={`p-3 rounded-xl ${
+                  className={`p-3 rounded-xl animate-pulse-glow ${
                     statusColor === "red"
-                      ? "bg-red-500"
+                      ? "bg-gradient-to-r from-red-500 to-pink-500"
                       : statusColor === "orange"
-                        ? "bg-orange-500"
-                        : "bg-green-500"
+                        ? "bg-gradient-to-r from-orange-500 to-yellow-500"
+                        : "bg-gradient-to-r from-green-500 to-emerald-500"
                   }`}
                 >
                   {statusColor === "red" ? (
