@@ -16,17 +16,24 @@ import {
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
 import SplashScreen from "@/components/SplashScreen";
+import AdBanner from "@/components/AdBanner";
+import { getVisibleAdsForUser, Ad } from "@/utils/adsUtils";
 
 export default function Welcome() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const [showSplash, setShowSplash] = useState(false);
+  const [welcomeAds, setWelcomeAds] = useState<Ad[]>([]);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
     if (email) {
       setUserEmail(email);
+      // Load ads for welcome page
+      const ads = getVisibleAdsForUser("welcome", email);
+      setWelcomeAds(ads);
     }
 
     // Check if splash screen should be shown
@@ -46,6 +53,10 @@ export default function Welcome() {
 
   const handleSplashComplete = () => {
     setShowSplash(false);
+  };
+
+  const handleAdDismiss = (adId: string) => {
+    setWelcomeAds((prev) => prev.filter((ad) => ad.id !== adId));
   };
 
   if (showSplash) {
@@ -245,6 +256,34 @@ export default function Welcome() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Ads Section */}
+          {welcomeAds.length > 0 && (
+            <div className="w-full max-w-2xl mb-8 animate-fade-in-up animate-delay-700">
+              <AdBanner
+                ad={welcomeAds[currentAdIndex]}
+                userEmail={userEmail}
+                variant="inline"
+                onDismiss={handleAdDismiss}
+                className="mb-4"
+              />
+              {welcomeAds.length > 1 && (
+                <div className="flex justify-center gap-2">
+                  {welcomeAds.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        index === currentAdIndex
+                          ? "bg-fac-orange-500 w-4"
+                          : "bg-muted-foreground/30"
+                      }`}
+                      onClick={() => setCurrentAdIndex(index)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="space-y-6 max-w-sm w-full animate-fade-in-up animate-delay-700">
