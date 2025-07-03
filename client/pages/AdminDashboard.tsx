@@ -60,7 +60,6 @@ import {
   Activity,
   CheckCircle,
   Printer,
-  X,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
