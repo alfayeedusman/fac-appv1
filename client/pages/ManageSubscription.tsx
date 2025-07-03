@@ -1081,8 +1081,20 @@ export default function ManageSubscription() {
       {/* Package Selection Modal */}
       <PackageSelectionModal
         isOpen={showPackageModal}
-        onClose={() => setShowPackageModal(false)}
-        onSelectPackage={handlePackageSelection}
+        onClose={() => {
+          setShowPackageModal(false);
+          // Refresh subscription status after package selection
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
+        onSelectPackage={(packageType) => {
+          handlePackageSelection(packageType);
+          // Refresh subscription status after package selection
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
       />
 
       {/* Payment Upload Modal */}
