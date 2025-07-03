@@ -38,6 +38,8 @@ import {
   Eye,
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
+import AdminSidebar from "@/components/AdminSidebar";
+import { useNavigate } from "react-router-dom";
 import {
   getUserAccounts,
   createUserAccount,
@@ -49,6 +51,7 @@ import {
 import { notificationManager } from "@/components/NotificationModal";
 
 export default function AdminUserManagement() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserAccount[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -514,6 +517,8 @@ export default function AdminUserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </div>
+      </div>
     </div>
   );
 }
