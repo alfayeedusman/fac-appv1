@@ -153,14 +153,13 @@ export default function LevelBadge({
         <div className="text-center">
           <p
             className={cn(
-              "font-bold",
+              "font-bold text-fac-orange-500",
               size === "sm"
                 ? "text-xs"
                 : size === "md"
                   ? "text-sm"
                   : "text-base",
             )}
-            style={{ color: level.color }}
           >
             {level.name}
           </p>
