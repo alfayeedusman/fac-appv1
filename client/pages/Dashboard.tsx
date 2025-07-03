@@ -217,7 +217,7 @@ export default function Dashboard() {
       : "Expired";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
       {/* Futuristic Background Elements */}
