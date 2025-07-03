@@ -86,8 +86,8 @@ export default function Index() {
             <div className="glass w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 hover-lift">
               <Droplets className="h-8 w-8 text-fac-orange-500 group-hover:scale-110 transition-transform" />
             </div>
-            <p className="text-sm font-bold text-foreground">AI-Powered</p>
-            <p className="text-xs text-muted-foreground">Wash Tech</p>
+            <p className="text-sm font-bold text-foreground">Affordable</p>
+            <p className="text-xs text-muted-foreground">Car Wash</p>
           </div>
           <div className="text-center group">
             <div className="glass w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 hover-lift">
@@ -140,7 +140,7 @@ export default function Index() {
               className="group w-full border-2 border-border hover:border-fac-orange-500 text-foreground hover:bg-fac-orange-500 hover:text-white font-black py-6 text-lg rounded-2xl transition-all duration-300 transform hover-lift glass"
             >
               <span className="flex items-center justify-center">
-                ACCESS ACCOUNT
+                LOG IN
                 <Zap className="h-5 w-5 ml-3 group-hover:scale-125 transition-transform duration-300" />
               </span>
             </Button>
@@ -148,14 +148,13 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Modern Features Section */}
+      {/* Our Services Section */}
       <div className="px-6 py-16 relative z-10">
         <h2 className="text-3xl font-black text-foreground text-center mb-12 animate-fade-in-up">
-          Why Choose{" "}
+          Our{" "}
           <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-            FAC 2025
+            Services
           </span>
-          ?
         </h2>
 
         <div className="space-y-6 max-w-md mx-auto">
@@ -163,14 +162,15 @@ export default function Index() {
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
                 <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
-                  <Star className="h-8 w-8 text-white group-hover:rotate-12 transition-transform duration-300" />
+                  <Car className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div>
                   <h3 className="font-black text-foreground text-lg mb-2">
-                    AI-Driven Excellence
+                    Car and Motor Wash
                   </h3>
                   <p className="text-sm text-muted-foreground font-medium">
-                    Smart algorithms optimize every wash for your vehicle
+                    Premium cleaning products and techniques for a pristine,
+                    spotless finish
                   </p>
                 </div>
               </div>
@@ -181,14 +181,15 @@ export default function Index() {
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
                 <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
-                  <Shield className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
+                  <Star className="h-8 w-8 text-white group-hover:rotate-12 transition-transform duration-300" />
                 </div>
                 <div>
                   <h3 className="font-black text-foreground text-lg mb-2">
-                    Eco-Smart Technology
+                    Auto Detailing
                   </h3>
                   <p className="text-sm text-muted-foreground font-medium">
-                    Advanced water recycling and green chemistry
+                    Meticulous cleaning, polishing, and protection for interior
+                    and exterior
                   </p>
                 </div>
               </div>
@@ -199,14 +200,34 @@ export default function Index() {
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
                 <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
-                  <Sparkles className="h-8 w-8 text-white group-hover:rotate-45 transition-transform duration-300" />
+                  <Droplets className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div>
                   <h3 className="font-black text-foreground text-lg mb-2">
-                    Seamless Experience
+                    Headlight Restoration
                   </h3>
                   <p className="text-sm text-muted-foreground font-medium">
-                    QR codes, mobile app, and contactless service
+                    Restore clarity and brightness to improve visibility and
+                    safety
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-400 group">
+            <CardContent className="p-8">
+              <div className="flex items-center space-x-6">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow bg-gradient-to-r from-yellow-500 to-orange-500">
+                  <Shield className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
+                </div>
+                <div>
+                  <h3 className="font-black text-foreground text-lg mb-2">
+                    Graphene Coating
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Advanced technology for durable, high-gloss protection from
+                    elements
                   </p>
                 </div>
               </div>
