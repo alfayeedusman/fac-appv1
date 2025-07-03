@@ -648,6 +648,224 @@ export default function POS() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Car Wash Service Selector Modal */}
+      <Dialog open={showServiceSelector} onOpenChange={setShowServiceSelector}>
+        <DialogContent className="sm:max-w-4xl bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 text-xl">
+              Select Car Wash Service
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Choose a service and vehicle type for accurate pricing
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Vehicle Type Selection */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-900">Select Vehicle Type</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {vehicleTypes.map((vehicleType) => (
+                  <Button
+                    key={vehicleType.id}
+                    variant={
+                      selectedVehicle.type === vehicleType.id
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() =>
+                      setSelectedVehicle({
+                        ...selectedVehicle,
+                        type: vehicleType.id,
+                        motorcycleSubtype:
+                          vehicleType.category === "motorcycle" ? "small" : "",
+                      })
+                    }
+                    className={`h-12 ${
+                      selectedVehicle.type === vehicleType.id
+                        ? "bg-orange-500 hover:bg-orange-600 text-white"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {vehicleType.category === "motorcycle" ? (
+                      <Bike className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Car className="h-4 w-4 mr-2" />
+                    )}
+                    {vehicleType.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Motorcycle Subtype Selection */}
+            {selectedVehicle.type === "motorcycle" && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">
+                  Select Motorcycle Type
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {motorcycleSubtypes.map((subtype) => (
+                    <Button
+                      key={subtype.id}
+                      variant={
+                        selectedVehicle.motorcycleSubtype === subtype.id
+                          ? "default"
+                          : "outline"
+                      }
+                      onClick={() =>
+                        setSelectedVehicle({
+                          ...selectedVehicle,
+                          motorcycleSubtype: subtype.id,
+                        })
+                      }
+                      className={`h-12 justify-start ${
+                        selectedVehicle.motorcycleSubtype === subtype.id
+                          ? "bg-orange-500 hover:bg-orange-600 text-white"
+                          : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Bike className="h-4 w-4 mr-2" />
+                      {subtype.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Service Selection */}
+            {selectedVehicle.type && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">
+                  Select Car Wash Service
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {carWashServices.map((service) => {
+                    const finalPrice = calculateServicePrice(
+                      service.basePrice,
+                      selectedVehicle.type,
+                      selectedVehicle.motorcycleSubtype || undefined,
+                    );
+
+                    return (
+                      <Card
+                        key={service.id}
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 bg-white border-gray-200 hover:border-orange-300"
+                        onClick={() => {
+                          // Add service to cart
+                          const serviceItem: POSItem = {
+                            productId: service.id,
+                            productName: `${service.name} - ${
+                              vehicleTypes.find(
+                                (vt) => vt.id === selectedVehicle.type,
+                              )?.name
+                            }${
+                              selectedVehicle.motorcycleSubtype
+                                ? ` (${
+                                    motorcycleSubtypes.find(
+                                      (ms) =>
+                                        ms.id ===
+                                        selectedVehicle.motorcycleSubtype,
+                                    )?.name
+                                  })`
+                                : ""
+                            }`,
+                            sku: service.id,
+                            unitPrice: finalPrice,
+                            quantity: 1,
+                            subtotal: finalPrice,
+                          };
+
+                          setCartItems([...cartItems, serviceItem]);
+                          setShowServiceSelector(false);
+                          setSelectedVehicle({
+                            type: "",
+                            motorcycleSubtype: "",
+                          });
+
+                          notificationManager.success(
+                            "Service Added",
+                            `${service.name} added to cart`,
+                          );
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-gray-900">
+                                {service.name}
+                              </h3>
+                              <Badge
+                                className={
+                                  service.category === "basic"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : service.category === "premium"
+                                      ? "bg-orange-100 text-orange-700"
+                                      : "bg-purple-100 text-purple-700"
+                                }
+                              >
+                                {service.category}
+                              </Badge>
+                            </div>
+                            <p className="text-gray-600 text-sm">
+                              {service.description}
+                            </p>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-500">
+                                Duration: {service.duration}
+                              </span>
+                              <span className="font-bold text-orange-600 text-xl">
+                                ₱{finalPrice}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs text-gray-500">Features:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {service.features
+                                  .slice(0, 3)
+                                  .map((feature, i) => (
+                                    <Badge
+                                      key={i}
+                                      variant="outline"
+                                      className="text-xs border-gray-300"
+                                    >
+                                      {feature}
+                                    </Badge>
+                                  ))}
+                                {service.features.length > 3 && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs border-gray-300"
+                                  >
+                                    +{service.features.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowServiceSelector(false);
+                setSelectedVehicle({ type: "", motorcycleSubtype: "" });
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
