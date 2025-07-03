@@ -75,14 +75,38 @@ export default function ManageSubscription() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
 
+  // Get real user data
+  const userEmail = localStorage.getItem("userEmail") || "";
+  const userSubscription = JSON.parse(
+    localStorage.getItem(`subscription_${userEmail}`) || "null",
+  );
+
   const currentSubscription: CurrentSubscription = {
-    plan: "VIP Gold",
-    price: 3000,
-    startDate: "2024-01-01",
-    endDate: "2024-02-01",
+    plan: userSubscription?.package || "Regular Member",
+    price:
+      userSubscription?.package === "Classic Pro"
+        ? 500
+        : userSubscription?.package === "VIP Silver Elite"
+          ? 1500
+          : userSubscription?.package === "VIP Gold Ultimate"
+            ? 3000
+            : 0,
+    startDate:
+      userSubscription?.currentCycleStart ||
+      new Date().toISOString().split("T")[0],
+    endDate:
+      userSubscription?.currentCycleEnd ||
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
     lockInPeriod: "Monthly (Flexible)",
-    autoRenewal: true,
-    status: "active",
+    autoRenewal: userSubscription?.autoRenewal || false,
+    status:
+      userSubscription?.package === "Regular Member"
+        ? "inactive"
+        : userSubscription?.daysLeft > 0
+          ? "active"
+          : "inactive",
   };
 
   const subscriptionPlans: SubscriptionPlan[] = [
