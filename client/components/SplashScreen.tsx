@@ -40,7 +40,8 @@ export default function SplashScreen({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (currentStep < steps.length - 1) {
+      if (currentStep < 2) {
+        // steps.length - 1 = 2
         setCurrentStep(currentStep + 1);
       } else {
         setIsVisible(false);
@@ -49,7 +50,7 @@ export default function SplashScreen({
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [currentStep, steps.length, onComplete]);
+  }, [currentStep, onComplete]);
 
   if (!isVisible) return null;
 
