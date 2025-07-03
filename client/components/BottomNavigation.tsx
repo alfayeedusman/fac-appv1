@@ -17,12 +17,14 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
   const isRegularMember =
     userSubscription?.package === "Regular Member" || !userSubscription;
   const isVipGold = userSubscription?.package === "VIP Gold Ultimate";
-  const isSubscribed = userSubscription?.daysLeft > 0;
+  const hasActiveSubscription =
+    userSubscription?.package !== "Regular Member" &&
+    userSubscription?.daysLeft > 0;
 
   // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
   const getStatusColor = () => {
-    if (isRegularMember || !isSubscribed) return "text-red-500";
-    if (isVipGold) return "text-orange-500";
+    if (isRegularMember || !hasActiveSubscription) return "text-red-500";
+    if (isVipGold && hasActiveSubscription) return "text-orange-500";
     return "text-green-500";
   };
 
