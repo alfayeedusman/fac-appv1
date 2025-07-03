@@ -300,21 +300,19 @@ export default function POS() {
             {filteredProducts.map((product) => (
               <Card
                 key={product.id}
-                className="cursor-pointer hover:shadow-md transition-shadow"
+                className="cursor-pointer hover:shadow-lg transition-all duration-200 bg-white border-gray-200 hover:border-orange-300 hover:shadow-orange-100"
                 onClick={() => addToCart(product)}
               >
                 <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
-                    <Package className="h-8 w-8 text-muted-foreground" />
+                  <div className="aspect-square bg-gray-50 rounded-lg mb-3 flex items-center justify-center border border-gray-100">
+                    <Package className="h-8 w-8 text-orange-500" />
                   </div>
-                  <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                  <h3 className="font-semibold text-sm mb-1 line-clamp-2 text-gray-900">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {product.sku}
-                  </p>
+                  <p className="text-xs text-gray-500 mb-2">{product.sku}</p>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-fac-orange-600">
+                    <span className="font-bold text-orange-600 text-lg">
                       ₱{product.unitPrice.toFixed(2)}
                     </span>
                     <Badge
@@ -323,14 +321,18 @@ export default function POS() {
                           ? "destructive"
                           : "secondary"
                       }
-                      className="text-xs"
+                      className={`text-xs ${
+                        product.currentStock <= product.minStockLevel
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
                     >
                       {product.currentStock} in stock
                     </Badge>
                   </div>
                   <Button
                     size="sm"
-                    className="w-full"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
                     disabled={product.currentStock === 0}
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -350,7 +352,7 @@ export default function POS() {
         </div>
 
         {/* Cart Section */}
-        <div className="w-96 border-l bg-muted/20 p-6 flex flex-col">
+        <div className="w-96 border-l border-gray-200 bg-gray-50 p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold flex items-center">
               <ShoppingCart className="h-5 w-5 mr-2" />
@@ -374,7 +376,10 @@ export default function POS() {
             ) : (
               <div className="space-y-3">
                 {cartItems.map((item) => (
-                  <Card key={item.productId}>
+                  <Card
+                    key={item.productId}
+                    className="bg-white border-gray-200 shadow-sm"
+                  >
                     <CardContent className="p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
@@ -398,6 +403,7 @@ export default function POS() {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
                             onClick={() =>
                               updateCartItemQuantity(
                                 item.productId,
@@ -407,12 +413,13 @@ export default function POS() {
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="w-8 text-center text-sm">
+                          <span className="w-8 text-center text-sm font-bold text-gray-900">
                             {item.quantity}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
                             onClick={() =>
                               updateCartItemQuantity(
                                 item.productId,
@@ -461,10 +468,10 @@ export default function POS() {
                 </div>
               </div>
               <Button
-                className="w-full"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 text-lg"
                 onClick={() => setShowPaymentModal(true)}
               >
-                <CreditCard className="h-4 w-4 mr-2" />
+                <CreditCard className="h-5 w-5 mr-2" />
                 Process Payment
               </Button>
             </div>
