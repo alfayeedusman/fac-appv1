@@ -226,17 +226,17 @@ export default function Dashboard() {
         <div className="absolute bottom-1/3 right-1/6 w-80 h-80 rounded-full bg-blue-500/[0.02] blur-2xl"></div>
       </div>
 
-      <div className="px-6 py-8 max-w-md mx-auto relative z-10">
+      <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto relative z-10">
         {/* Clean Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div className="flex items-center space-x-3">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
               alt="Fayeed Auto Care Logo"
-              className="h-12 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain"
             />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                 Hey,{" "}
                 <span className="text-fac-orange-500">
                   {currentUser?.fullName?.split(" ")[0] ||
@@ -249,7 +249,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 self-start sm:self-auto">
             <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
             <NotificationDropdown />
             <Button
@@ -348,7 +348,7 @@ export default function Dashboard() {
             }`}
           ></div>
           <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
                 <div
                   className={`p-3 rounded-xl ${
@@ -368,7 +368,7 @@ export default function Dashboard() {
                   )}
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-foreground">
+                  <p className="text-lg sm:text-xl font-bold text-foreground">
                     {membershipData.package}
                   </p>
                   <div className="flex items-center space-x-2">
@@ -397,7 +397,7 @@ export default function Dashboard() {
               </div>
               {hasActiveSubscription && (
                 <div
-                  className={`rounded-lg px-3 py-2 border ${
+                  className={`rounded-lg px-3 py-2 border self-start sm:self-auto ${
                     statusColor === "orange"
                       ? "bg-orange-50 border-orange-200"
                       : "bg-green-50 border-green-200"
@@ -407,7 +407,7 @@ export default function Dashboard() {
                     EXPIRES IN
                   </p>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`text-xl sm:text-2xl font-bold ${
                       statusColor === "orange"
                         ? "text-orange-600"
                         : "text-green-600"
@@ -435,19 +435,19 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="glass rounded-xl p-4 hover-lift transition-all duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-muted rounded-xl p-4 hover:bg-muted/80 transition-all duration-300">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-muted-foreground text-sm font-medium">
                         Classic
                       </span>
-                      <div className="gradient-secondary p-2 rounded-lg animate-pulse-glow">
+                      <div className="bg-blue-500 p-2 rounded-lg">
                         <Car className="h-4 w-4 text-white" />
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-black text-foreground">
+                        <span className="text-lg font-bold text-foreground">
                           {membershipData.remainingWashes.classic === 999
                             ? "∞"
                             : membershipData.remainingWashes.classic}
@@ -464,23 +464,23 @@ export default function Dashboard() {
                           membershipData.remainingWashes.classic,
                           membershipData.totalWashes.classic,
                         )}
-                        className="h-3 rounded-full bg-gradient-to-r from-blue-200 to-blue-300"
+                        className="h-3 rounded-full"
                       />
                     </div>
                   </div>
 
-                  <div className="glass rounded-xl p-4 hover-lift transition-all duration-300">
+                  <div className="bg-muted rounded-xl p-4 hover:bg-muted/80 transition-all duration-300">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-muted-foreground text-sm font-medium">
                         VIP ProMax
                       </span>
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg animate-pulse-glow">
+                      <div className="bg-purple-500 p-2 rounded-lg">
                         <Crown className="h-4 w-4 text-white" />
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-black text-foreground">
+                        <span className="text-lg font-bold text-foreground">
                           {membershipData.remainingWashes.vipProMax}
                         </span>
                         <span className="text-xs text-muted-foreground font-medium">
@@ -492,15 +492,15 @@ export default function Dashboard() {
                           membershipData.remainingWashes.vipProMax,
                           membershipData.totalWashes.vipProMax,
                         )}
-                        className="h-3 rounded-full bg-gradient-to-r from-purple-200 to-pink-300"
+                        className="h-3 rounded-full"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Link to="/booking" className="flex-1">
-                    <Button className="w-full gradient-primary text-white font-bold py-3 rounded-xl hover-lift animate-pulse-glow">
+                    <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-xl">
                       <Car className="h-4 w-4 mr-2" />
                       Book Now
                     </Button>
@@ -508,7 +508,7 @@ export default function Dashboard() {
                   <Link to="/manage-subscription" className="flex-1">
                     <Button
                       variant="outline"
-                      className="w-full glass border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 font-bold py-3 rounded-xl hover-lift"
+                      className="w-full border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 font-bold py-3 rounded-xl"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Manage
