@@ -136,7 +136,7 @@ export default function LevelProgress({
           </div>
           <Badge
             variant="outline"
-            className={`border-[${current.color}] text-[${current.color}]`}
+            className="border-fac-orange-500 text-fac-orange-500"
           >
             Rank #{userProgress.rank}
           </Badge>
