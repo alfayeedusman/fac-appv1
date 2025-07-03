@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,8 +9,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Star, Sparkles } from "lucide-react";
+import {
+  CheckCircle,
+  Crown,
+  Star,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 interface Package {
   id: string;
@@ -33,6 +41,7 @@ export default function PackageSelectionModal({
   onSelectPackage,
 }: PackageSelectionModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<string>("");
+  const [currentPackageIndex, setCurrentPackageIndex] = useState<number>(1); // Start with middle package (VIP Silver)
 
   // Admin-set packages
   const packages: Package[] = [
@@ -82,6 +91,27 @@ export default function PackageSelectionModal({
     },
   ];
 
+  const handleSwipeLeft = () => {
+    setCurrentPackageIndex((prev) => Math.min(prev + 1, packages.length - 1));
+  };
+
+  const handleSwipeRight = () => {
+    setCurrentPackageIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const { swipeHandlers, swipeState } = useSwipeGesture({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    minSwipeDistance: 50,
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentPackageIndex(1);
+      setSelectedPackage("");
+    }
+  }, [isOpen]);
+
   const handleSelectPackage = () => {
     if (selectedPackage) {
       onSelectPackage(selectedPackage);
@@ -102,7 +132,8 @@ export default function PackageSelectionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
+        {/* Desktop Grid View */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 py-6">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
