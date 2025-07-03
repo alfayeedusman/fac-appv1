@@ -78,7 +78,14 @@ export default function Welcome() {
     if (userEmail) {
       localStorage.setItem(`welcomed_${userEmail}`, "true");
     }
-    navigate("/dashboard");
+
+    // Route based on user role
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "admin" || userRole === "superadmin") {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   const features = [
