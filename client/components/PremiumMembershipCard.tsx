@@ -309,9 +309,9 @@ export default function PremiumMembershipCard({
             >
               {/* Enhanced QR Code Section */}
               <div className="text-center mt-12">
-                <div className="bg-gradient-to-br from-white to-gray-100 rounded-xl p-5 inline-block shadow-2xl border-2 border-fac-orange-500/30">
-                  <QrCode className="h-20 w-20 text-gray-800" />
-                  <div className="mt-2 text-xs text-gray-700 font-bold">
+                <div className="bg-white rounded-xl p-5 inline-block shadow-2xl border-2 border-fac-orange-500/30">
+                  <QrCode className="h-20 w-20 text-gray-800 mx-auto" />
+                  <div className="mt-2 text-xs text-gray-700 font-bold text-center">
                     {uniqueFACId}
                   </div>
                 </div>
@@ -325,10 +325,10 @@ export default function PremiumMembershipCard({
 
               {/* Enhanced Membership Status */}
               {totalWashes > 0 && (
-                <div className="bg-gradient-to-r from-black/50 to-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-fac-orange-500/40 shadow-lg">
+                <div className="bg-black/60 backdrop-blur-sm rounded-xl p-4 border border-fac-orange-500/50 shadow-lg">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
+                      <p className="text-xs text-fac-orange-300 font-bold tracking-wider">
                         REMAINING WASHES
                       </p>
                       <p className="text-3xl font-black text-white">
@@ -336,7 +336,7 @@ export default function PremiumMembershipCard({
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-fac-orange-400 font-bold tracking-wider">
+                      <p className="text-xs text-fac-orange-300 font-bold tracking-wider">
                         MEMBERSHIP
                       </p>
                       <p className="text-sm font-bold text-white">ACTIVE</p>
@@ -347,15 +347,15 @@ export default function PremiumMembershipCard({
 
               {/* Enhanced Terms */}
               <div className="text-center space-y-2">
-                <div className="bg-black/30 rounded-lg p-2">
-                  <p className="text-xs text-gray-300 font-medium">
+                <div className="bg-black/40 rounded-lg p-3 border border-fac-orange-500/20">
+                  <p className="text-xs text-gray-200 font-medium">
                     NON-TRANSFERABLE • TERMS APPLY
                   </p>
-                  <p className="text-xs text-fac-orange-400 font-bold mt-1">
+                  <p className="text-xs text-fac-orange-300 font-bold mt-1">
                     FAYEEDAUTOCARE.COM
                   </p>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-300 font-medium">
                   24/7 Premium Support Available
                 </p>
               </div>
