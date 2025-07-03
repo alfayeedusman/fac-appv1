@@ -43,11 +43,24 @@ import {
   createPOSTransaction,
   getPOSCategories,
 } from "@/utils/posData";
+import {
+  getCarWashServices,
+  vehicleTypes,
+  motorcycleSubtypes,
+  calculateServicePrice,
+  CarWashService,
+} from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
 
 export default function POS() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
+  const [showServiceSelector, setShowServiceSelector] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState({
+    type: "",
+    motorcycleSubtype: "",
+  });
   const [cartItems, setCartItems] = useState<POSItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -70,6 +83,9 @@ export default function POS() {
     const allProducts = getProducts().filter((p) => p.status === "active");
     setProducts(allProducts);
     setFilteredProducts(allProducts);
+
+    const services = getCarWashServices().filter((s) => s.isActive);
+    setCarWashServices(services);
   }, []);
 
   useEffect(() => {
