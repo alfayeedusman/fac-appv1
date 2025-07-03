@@ -528,110 +528,181 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Rest of the dashboard content */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card className="glass border-border shadow-xl animate-fade-in-up animate-delay-300">
-            <CardHeader>
-              <CardTitle className="flex items-center text-foreground">
-                <Zap className="h-5 w-5 mr-2 text-fac-orange-500" />
-                Quick Actions
+        {/* Futuristic Tabs */}
+        <div className="mb-6 animate-fade-in-up animate-delay-500">
+          <div className="glass rounded-2xl p-2">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setActiveTab("benefits")}
+                className={cn(
+                  "flex items-center justify-center py-4 px-6 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden group",
+                  activeTab === "benefits"
+                    ? "gradient-primary text-white shadow-xl animate-pulse-glow"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                )}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                <span className="tracking-tight">Benefits</span>
+                {activeTab === "benefits" && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("activity")}
+                className={cn(
+                  "flex items-center justify-center py-4 px-6 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden group",
+                  activeTab === "activity"
+                    ? "gradient-primary text-white shadow-xl animate-pulse-glow"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                )}
+              >
+                <History className="h-4 w-4 mr-2" />
+                <span className="tracking-tight">Recent Activity</span>
+                {activeTab === "activity" && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "benefits" && (
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-600 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center text-xl font-black text-foreground">
+                <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <Star className="h-6 w-6 text-white" />
+                </div>
+                Membership Benefits
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-20 flex-col space-y-2 hover-lift"
-                  onClick={handleQRScan}
-                >
-                  <QrCode className="h-6 w-6 text-fac-orange-500" />
-                  <span className="text-sm font-medium">Scan QR</span>
-                </Button>
-                <Link to="/booking">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2 w-full hover-lift"
-                  >
-                    <Calendar className="h-6 w-6 text-blue-500" />
-                    <span className="text-sm font-medium">Book Service</span>
-                  </Button>
-                </Link>
-                <Link to="/voucher">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2 w-full hover-lift"
-                  >
-                    <Gift className="h-6 w-6 text-purple-500" />
-                    <span className="text-sm font-medium">Vouchers</span>
-                  </Button>
-                </Link>
-                <Link to="/history">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2 w-full hover-lift"
-                  >
-                    <History className="h-6 w-6 text-green-500" />
-                    <span className="text-sm font-medium">History</span>
-                  </Button>
-                </Link>
+                <div className="glass rounded-xl p-4 hover-lift group">
+                  <div className="gradient-secondary w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Calendar className="h-6 w-6 text-white" />
+                  </div>
+                  <h4 className="font-bold text-foreground mb-2">Priority Booking</h4>
+                  <p className="text-sm text-muted-foreground">Skip the line with exclusive access</p>
+                </div>
+
+                <div className="glass rounded-xl p-4 hover-lift group">
+                  <div className="gradient-futuristic w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Gift className="h-6 w-6 text-white" />
+                  </div>
+                  <h4 className="font-bold text-foreground mb-2">Member Discounts</h4>
+                  <p className="text-sm text-muted-foreground">Save up to 25% on services</p>
+                </div>
+
+                <div className="glass rounded-xl p-4 hover-lift group">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Shield className="h-6 w-6 text-white" />
+                  </div>
+                  <h4 className="font-bold text-foreground mb-2">Paint Protection</h4>
+                  <p className="text-sm text-muted-foreground">Advanced coating included</p>
+                </div>
+
+                <div className="glass rounded-xl p-4 hover-lift group">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Crown className="h-6 w-6 text-white" />
+                  </div>
+                  <h4 className="font-bold text-foreground mb-2">VIP Lounge</h4>
+                  <p className="text-sm text-muted-foreground">Exclusive member area</p>
+                </div>
               </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* Recent Activity */}
-          {washLogs.length > 0 && (
-            <Card className="glass border-border shadow-xl animate-fade-in-up animate-delay-400">
-              <CardHeader>
-                <CardTitle className="flex items-center text-foreground">
-                  <TrendingUp className="h-5 w-5 mr-2 text-green-500" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {washLogs.slice(0, 3).map((log) => (
+        {activeTab === "activity" && (
+          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-600 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center text-xl font-black text-foreground">
+                <div className="gradient-secondary p-3 rounded-xl mr-4 animate-pulse-glow">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              {washLogs.length > 0 ? (
+                <div className="space-y-4">
+                  {washLogs.slice(0, 3).map((log, index) => (
                     <div
                       key={log.id}
-                      className="flex items-center justify-between p-3 glass rounded-xl hover-lift"
+                      className="glass rounded-xl p-4 hover-lift group animate-fade-in-up"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            log.status === "completed"
-                              ? "bg-green-500"
-                              : log.status === "scheduled"
-                                ? "bg-blue-500"
-                                : "bg-red-500"
-                          }`}
-                        ></div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {log.service}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {log.branch}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div
+                            className={`w-4 h-4 rounded-full animate-pulse ${
+                              log.status === "completed"
+                                ? "bg-green-500"
+                                : log.status === "scheduled"
+                                  ? "bg-blue-500"
+                                  : "bg-red-500"
+                            }`}
+                          ></div>
+                          <div>
+                            <p className="font-bold text-foreground tracking-tight">
+                              {log.service}
+                            </p>
+                            <p className="text-sm text-muted-foreground font-medium">
+                              {log.branch} • {log.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge
+                            variant={
+                              log.status === "completed" ? "default" : "secondary"
+                            }
+                            className={cn(
+                              "font-bold",
+                              log.status === "completed" && "bg-green-500 text-white",
+                              log.status === "scheduled" && "bg-blue-500 text-white",
+                            )}
+                          >
+                            {log.status}
+                          </Badge>
+                          <p className="text-sm font-bold text-foreground mt-1">
+                            ₱{log.amount}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-foreground">
-                          {log.date}
-                        </p>
-                        <Badge
-                          variant={
-                            log.status === "completed" ? "default" : "secondary"
-                          }
-                        >
-                          {log.status}
-                        </Badge>
-                      </div>
                     </div>
                   ))}
+                  <div className="text-center pt-4">
+                    <Link to="/history">
+                      <Button variant="outline" className="glass hover-lift font-bold">
+                        <History className="h-4 w-4 mr-2" />
+                        View All History
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <div className="text-center py-12">
+                  <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
+                    <Car className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">No Recent Activity</h3>
+                  <p className="text-muted-foreground mb-6">Book your first wash to get started!</p>
+                  <Link to="/booking">
+                    <Button className="gradient-primary text-white font-bold hover-lift">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Book Your First Wash
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
         </div>
       </div>
 
