@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,26 +79,9 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
 
-  const membershipData = {
-    level: profile.membershipType || "Regular Member",
-    tier:
-      profile.membershipType === "VIP Gold Ultimate" ? "Premium" : "Standard",
-    perks: [
-      "Unlimited washes",
-      "VIP concierge service",
-      "Premium lounge access",
-      "Priority booking",
-      "Exclusive member events",
-    ],
-    nextReward: "Platinum Status",
-    pointsToNext: 250,
-    currentPoints: 1750,
-  };
-
   const handleSave = () => {
     setProfile(editedProfile);
     setIsEditing(false);
-    // Here you would typically save to backend
     alert("Profile updated successfully! 🚀");
   };
 
@@ -112,7 +95,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <StickyHeader showBack={true} title="Profile" />
 
       {/* Theme Toggle and Reset */}
@@ -140,28 +123,19 @@ export default function Profile() {
 
       <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center mb-8 animate-fade-in-up">
+        <div className="flex items-center mb-8">
           <Link to="/dashboard" className="mr-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full glass hover-lift"
-            >
+            <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div className="flex items-center space-x-4">
-            <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+            <div className="bg-fac-orange-500 p-3 rounded-xl">
               <User className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-foreground">
-                My{" "}
-                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                  Profile
-                </span>
-              </h1>
-              <p className="text-muted-foreground font-medium">
+              <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+              <p className="text-muted-foreground">
                 Manage your account and preferences
               </p>
             </div>
@@ -170,13 +144,12 @@ export default function Profile() {
 
         {/* Profile Overview Card */}
         <Card className="border shadow-sm mb-8">
-          {" "}
-          <CardHeader className="relative z-10">
+          <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 {/* Profile Picture */}
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fac-orange-500 to-purple-600 flex items-center justify-center animate-pulse-glow">
+                  <div className="w-20 h-20 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
                     {profile.profilePicture ? (
                       <img
                         src={profile.profilePicture}
@@ -197,14 +170,12 @@ export default function Profile() {
 
                 {/* Profile Info */}
                 <div>
-                  <h2 className="text-2xl font-black text-foreground">
+                  <h2 className="text-2xl font-bold text-foreground">
                     {profile.name}
                   </h2>
-                  <p className="text-muted-foreground font-medium">
-                    {profile.email}
-                  </p>
+                  <p className="text-muted-foreground">{profile.email}</p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 text-white font-bold animate-pulse-glow">
+                    <Badge className="bg-fac-orange-500 text-white font-bold">
                       <Crown className="h-3 w-3 mr-1" />
                       {profile.membershipType}
                     </Badge>
@@ -218,7 +189,7 @@ export default function Profile() {
 
               <Button
                 onClick={() => setIsEditing(!isEditing)}
-                className="glass hover-lift w-10 h-10 p-0"
+                className="w-10 h-10 p-0"
                 variant="outline"
                 size="icon"
               >
@@ -278,8 +249,8 @@ export default function Profile() {
         <Card className="border shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
-              <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
-                <CreditCard className="h-6 w-6 text-white" />
+              <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
+                <Star className="h-6 w-6 text-white" />
               </div>
               Digital Membership Card
             </CardTitle>
@@ -328,7 +299,7 @@ export default function Profile() {
         <Card className="border shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
-              <div className="gradient-futuristic p-3 rounded-xl mr-4 animate-pulse-glow">
+              <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Settings className="h-6 w-6 text-white" />
               </div>
               Account Information
@@ -350,10 +321,10 @@ export default function Profile() {
                         name: e.target.value,
                       })
                     }
-                    className="mt-2 glass border-border rounded-xl"
+                    className="mt-2 rounded-xl"
                   />
                 ) : (
-                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                  <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                     {profile.name}
                   </div>
                 )}
@@ -374,10 +345,10 @@ export default function Profile() {
                         email: e.target.value,
                       })
                     }
-                    className="mt-2 glass border-border rounded-xl"
+                    className="mt-2 rounded-xl"
                   />
                 ) : (
-                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                  <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                     {profile.email}
                   </div>
                 )}
@@ -397,10 +368,10 @@ export default function Profile() {
                         phone: e.target.value,
                       })
                     }
-                    className="mt-2 glass border-border rounded-xl"
+                    className="mt-2 rounded-xl"
                   />
                 ) : (
-                  <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                  <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                     {profile.phone}
                   </div>
                 )}
@@ -410,7 +381,7 @@ export default function Profile() {
                 <Label htmlFor="joinDate" className="font-bold text-foreground">
                   Member Since
                 </Label>
-                <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                   {new Date(profile.joinDate).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
@@ -444,10 +415,10 @@ export default function Profile() {
                           carUnit: e.target.value,
                         })
                       }
-                      className="mt-2 glass border-border rounded-xl"
+                      className="mt-2 rounded-xl"
                     />
                   ) : (
-                    <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                    <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                       {profile.carUnit}
                     </div>
                   )}
@@ -470,10 +441,10 @@ export default function Profile() {
                           plateNumber: e.target.value,
                         })
                       }
-                      className="mt-2 glass border-border rounded-xl"
+                      className="mt-2 rounded-xl"
                     />
                   ) : (
-                    <div className="mt-2 p-3 glass rounded-xl text-foreground font-medium">
+                    <div className="mt-2 p-3 bg-muted rounded-xl text-foreground font-medium">
                       {profile.plateNumber}
                     </div>
                   )}
@@ -500,7 +471,7 @@ export default function Profile() {
                     }
                   />
                 ) : (
-                  <div className="glass rounded-xl p-4">
+                  <div className="bg-muted rounded-xl p-4">
                     <div className="flex items-center space-x-3">
                       <div className="bg-fac-orange-500 p-2 rounded-lg">
                         <Car className="h-4 w-4 text-white" />
@@ -530,7 +501,7 @@ export default function Profile() {
               <div className="flex space-x-4 pt-6">
                 <Button
                   onClick={handleSave}
-                  className="btn-futuristic flex-1 py-3 rounded-xl font-bold"
+                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white flex-1 py-3 rounded-xl font-bold"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
@@ -538,7 +509,7 @@ export default function Profile() {
                 <Button
                   onClick={handleCancel}
                   variant="outline"
-                  className="flex-1 glass py-3 rounded-xl font-bold"
+                  className="flex-1 py-3 rounded-xl font-bold"
                 >
                   Cancel
                 </Button>
@@ -547,7 +518,7 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Membership Benefits */}
+        {/* Simple Membership Benefits */}
         <Card className="border shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
@@ -558,63 +529,43 @@ export default function Profile() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {/* Membership Level */}
+            <div className="space-y-4">
               <div className="text-center">
                 <div className="bg-muted rounded-lg p-6 mb-4">
                   <h3 className="text-2xl font-bold text-foreground mb-2">
-                    {membershipData.level}
+                    {profile.membershipType}
                   </h3>
                   <Badge className="bg-fac-orange-500 text-white font-bold text-sm px-4 py-2">
-                    {membershipData.tier} Tier
+                    Premium Tier
                   </Badge>
                 </div>
               </div>
 
-              {/* Benefits List */}
               <div className="grid grid-cols-1 gap-3">
-                {membershipData.perks.map((perk, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 bg-muted rounded-lg p-4"
-                  >
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-foreground font-medium">{perk}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Loyalty Progress */}
-              <div className="bg-muted rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-bold text-foreground">
-                    Progress to {membershipData.nextReward}
-                  </h4>
-                  <span className="text-sm text-muted-foreground">
-                    {membershipData.pointsToNext} points needed
+                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="text-foreground font-medium">
+                    Unlimited washes
                   </span>
                 </div>
-                <div className="w-full bg-background rounded-full h-3">
-                  <div
-                    className="bg-fac-orange-500 h-3 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${
-                        membershipData.currentPoints +
-                          membershipData.pointsToNext >
-                        0
-                          ? (membershipData.currentPoints /
-                              (membershipData.currentPoints +
-                                membershipData.pointsToNext)) *
-                            100
-                          : 0
-                      }%`,
-                    }}
-                  ></div>
+                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="text-foreground font-medium">
+                    VIP concierge service
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Current Points:{" "}
-                  {membershipData.currentPoints.toLocaleString()}
-                </p>
+                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="text-foreground font-medium">
+                    Premium lounge access
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3 bg-muted rounded-lg p-4">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="text-foreground font-medium">
+                    Priority booking
+                  </span>
+                </div>
               </div>
             </div>
           </CardContent>
