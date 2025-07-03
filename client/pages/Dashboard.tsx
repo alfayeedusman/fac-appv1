@@ -380,7 +380,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {!isSubscribed ? (
+            {!hasActiveSubscription ? (
               <div className="text-center py-4">
                 <p className="text-red-600 font-semibold mb-4">
                   No active subscription
