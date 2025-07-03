@@ -31,6 +31,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import UserQRCode from "@/components/UserQRCode";
 import { resetAppState } from "@/utils/resetApp";
+import DebugPanel from "@/components/DebugPanel";
 
 interface UserProfile {
   name: string;
@@ -113,13 +114,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={true} title="Profile" />
-
-      {/* Futuristic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/8 to-pink-500/8 blur-xl animate-float animate-delay-300"></div>
-      </div>
 
       {/* Theme Toggle and Reset */}
       <div className="absolute top-6 right-6 z-20 flex gap-2">
@@ -628,6 +622,7 @@ export default function Profile() {
       </div>
 
       <BottomNavigation />
+      <DebugPanel />
     </div>
   );
 }
