@@ -551,7 +551,7 @@ export default function Profile() {
         <Card className="border shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
-              <div className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 p-3 rounded-xl mr-4 animate-pulse-glow">
+              <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Crown className="h-6 w-6 text-white" />
               </div>
               Membership Benefits
@@ -561,11 +561,11 @@ export default function Profile() {
             <div className="space-y-6">
               {/* Membership Level */}
               <div className="text-center">
-                <div className="glass rounded-2xl p-6 mb-4">
-                  <h3 className="text-2xl font-black text-foreground mb-2">
+                <div className="bg-muted rounded-lg p-6 mb-4">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
                     {membershipData.level}
                   </h3>
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 text-white font-bold text-sm px-4 py-2">
+                  <Badge className="bg-fac-orange-500 text-white font-bold text-sm px-4 py-2">
                     {membershipData.tier} Tier
                   </Badge>
                 </div>
@@ -576,7 +576,7 @@ export default function Profile() {
                 {membershipData.perks.map((perk, index) => (
                   <div
                     key={index}
-                    className="flex items-center space-x-3 glass rounded-xl p-4"
+                    className="flex items-center space-x-3 bg-muted rounded-lg p-4"
                   >
                     <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
                     <span className="text-foreground font-medium">{perk}</span>
@@ -585,7 +585,7 @@ export default function Profile() {
               </div>
 
               {/* Loyalty Progress */}
-              <div className="glass rounded-2xl p-6">
+              <div className="bg-muted rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-bold text-foreground">
                     Progress to {membershipData.nextReward}
@@ -594,9 +594,9 @@ export default function Profile() {
                     {membershipData.pointsToNext} points needed
                   </span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-3">
+                <div className="w-full bg-background rounded-full h-3">
                   <div
-                    className="bg-gradient-to-r from-fac-orange-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+                    className="bg-fac-orange-500 h-3 rounded-full transition-all duration-500"
                     style={{
                       width: `${
                         membershipData.currentPoints +
