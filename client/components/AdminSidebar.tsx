@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
+import AdminNotificationDropdown from "@/components/AdminNotificationDropdown";
 import {
   LayoutDashboard,
   Users,
@@ -188,36 +189,39 @@ export default function AdminSidebar({
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between">
               {!isCollapsed && (
-                <div className="flex items-center space-x-3">
-                  <img
-                    src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-                    alt="FAC Logo"
-                    className="h-8 w-auto object-contain"
-                  />
-                  <div>
-                    <h2 className="text-lg font-bold text-foreground">
-                      Fayeed Auto Care
-                    </h2>
-                    <Badge
-                      className={`${
-                        userRole === "superadmin"
-                          ? "bg-red-500"
-                          : "bg-fac-orange-500"
-                      } text-white text-xs px-2 py-1`}
-                    >
-                      {userRole === "superadmin" ? (
-                        <>
-                          <Shield className="h-3 w-3 mr-1" />
-                          SUPER ADMIN
-                        </>
-                      ) : (
-                        <>
-                          <Crown className="h-3 w-3 mr-1" />
-                          ADMIN
-                        </>
-                      )}
-                    </Badge>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+                      alt="FAC Logo"
+                      className="h-8 w-auto object-contain"
+                    />
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground">
+                        Fayeed Auto Care
+                      </h2>
+                      <Badge
+                        className={`${
+                          userRole === "superadmin"
+                            ? "bg-red-500"
+                            : "bg-fac-orange-500"
+                        } text-white text-xs px-2 py-1`}
+                      >
+                        {userRole === "superadmin" ? (
+                          <>
+                            <Shield className="h-3 w-3 mr-1" />
+                            SUPER ADMIN
+                          </>
+                        ) : (
+                          <>
+                            <Crown className="h-3 w-3 mr-1" />
+                            ADMIN
+                          </>
+                        )}
+                      </Badge>
+                    </div>
                   </div>
+                  <AdminNotificationDropdown />
                 </div>
               )}
               <Button
