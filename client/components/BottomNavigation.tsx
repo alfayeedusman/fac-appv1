@@ -38,6 +38,12 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
       id: "booking",
     },
     {
+      to: "/my-bookings",
+      icon: Clock,
+      label: "My Bookings",
+      id: "my-bookings",
+    },
+    {
       to: "/manage-subscription",
       icon: CreditCard,
       label: "Plans",
