@@ -34,6 +34,7 @@ import {
   Calculator,
   Receipt,
   Scan,
+  Star,
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import { getProducts, Product } from "@/utils/inventoryData";
@@ -52,8 +53,8 @@ export default function POS() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
+    uniqueId: "",
     name: "",
-    phone: "",
   });
   const [paymentInfo, setPaymentInfo] = useState({
     method: "cash" as const,
@@ -205,10 +206,10 @@ export default function POS() {
         cashierId,
         cashierName,
         cartItems,
-        customerInfo.name || customerInfo.phone
+        customerInfo.uniqueId || customerInfo.name
           ? {
               name: customerInfo.name,
-              phone: customerInfo.phone,
+              phone: customerInfo.uniqueId, // Using uniqueId in phone field for tracking
             }
           : undefined,
         {
@@ -230,7 +231,7 @@ export default function POS() {
 
       // Reset form
       clearCart();
-      setCustomerInfo({ name: "", phone: "" });
+      setCustomerInfo({ uniqueId: "", name: "" });
       setPaymentInfo({
         method: "cash",
         amountPaid: "",
@@ -493,31 +494,37 @@ export default function POS() {
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="customerName">Name</Label>
+                  <Label htmlFor="customerId">Unique Customer ID</Label>
+                  <Input
+                    id="customerId"
+                    placeholder="C001234"
+                    value={customerInfo.uniqueId}
+                    onChange={(e) =>
+                      setCustomerInfo({
+                        ...customerInfo,
+                        uniqueId: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customerName">Customer Name</Label>
                   <Input
                     id="customerName"
-                    placeholder="Customer name"
+                    placeholder="John Doe"
                     value={customerInfo.name}
                     onChange={(e) =>
                       setCustomerInfo({ ...customerInfo, name: e.target.value })
                     }
                   />
                 </div>
-                <div>
-                  <Label htmlFor="customerPhone">Phone</Label>
-                  <Input
-                    id="customerPhone"
-                    placeholder="Phone number"
-                    value={customerInfo.phone}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        phone: e.target.value,
-                      })
-                    }
-                  />
-                </div>
               </div>
+              {customerInfo.uniqueId && (
+                <div className="flex items-center text-sm text-green-600">
+                  <Star className="h-4 w-4 mr-1" />
+                  Points will be tracked for this customer
+                </div>
+              )}
             </div>
 
             {/* Payment Method */}
