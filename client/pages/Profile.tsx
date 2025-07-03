@@ -29,6 +29,7 @@ import VehicleSelector from "@/components/VehicleSelector";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
+import UserQRCode from "@/components/UserQRCode";
 
 interface UserProfile {
   name: string;
@@ -220,10 +221,10 @@ export default function Profile() {
         </Card>
 
         {/* QR Code Card */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-200">
+        <Card className="border shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
-              <div className="gradient-secondary p-3 rounded-xl mr-4 animate-pulse-glow">
+              <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <QrCode className="h-6 w-6 text-white" />
               </div>
               Smart QR Access
@@ -231,39 +232,28 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="glass rounded-2xl p-8 mb-6 mx-auto max-w-sm">
-                {/* QR Code Placeholder */}
-                <div className="w-48 h-48 mx-auto bg-gradient-to-br from-foreground to-muted-foreground rounded-2xl flex items-center justify-center mb-4 relative overflow-hidden">
-                  {/* Simulated QR code pattern */}
-                  <div className="absolute inset-4 bg-background rounded-lg">
-                    <div className="grid grid-cols-8 gap-1 p-2 h-full">
-                      {Array.from({ length: 64 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`${
-                            Math.random() > 0.5
-                              ? "bg-foreground"
-                              : "bg-transparent"
-                          } rounded-sm`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/10 to-purple-500/10 animate-shimmer"></div>
+              <div className="bg-muted rounded-2xl p-8 mb-6 mx-auto max-w-sm">
+                {/* Real QR Code Component */}
+                <div className="flex flex-col items-center">
+                  <UserQRCode
+                    data={generateQRData()}
+                    size={200}
+                    className="mb-4"
+                  />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Scan at any FAC location for instant access
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Scan at any FAC location for instant access
-                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="glass rounded-xl p-4">
+                <div className="bg-muted rounded-xl p-4">
                   <Smartphone className="h-5 w-5 text-fac-orange-500 mx-auto mb-2" />
                   <p className="font-bold text-foreground">Contactless</p>
                   <p className="text-muted-foreground">Entry & Payment</p>
                 </div>
-                <div className="glass rounded-xl p-4">
-                  <Zap className="h-5 w-5 text-purple-500 mx-auto mb-2" />
+                <div className="bg-muted rounded-xl p-4">
+                  <Zap className="h-5 w-5 text-blue-500 mx-auto mb-2" />
                   <p className="font-bold text-foreground">Instant</p>
                   <p className="text-muted-foreground">Service Start</p>
                 </div>

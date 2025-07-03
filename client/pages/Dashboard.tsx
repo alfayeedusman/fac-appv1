@@ -217,54 +217,50 @@ export default function Dashboard() {
       : "Expired";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 theme-transition relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
-      {/* Futuristic Background Elements */}
+      {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/3 to-purple-500/3 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/3 to-fac-orange-500/3 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-xl animate-float animate-delay-300"></div>
+        <div className="absolute top-1/4 left-1/6 w-96 h-96 rounded-full bg-fac-orange-500/[0.02] blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-80 h-80 rounded-full bg-blue-500/[0.02] blur-2xl"></div>
       </div>
 
       <div className="px-6 py-8 max-w-md mx-auto relative z-10">
-        {/* Futuristic Header with Glow Effects */}
-        <div className="flex items-center justify-between mb-8 animate-fade-in-up">
+        {/* Clean Header */}
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
-            <div className="relative">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-                alt="Fayeed Auto Care Logo"
-                className="h-12 w-auto object-contain animate-pulse-glow"
-              />
-              <div className="absolute -inset-4 bg-gradient-to-r from-fac-orange-500/20 to-purple-500/20 rounded-full blur-xl animate-breathe"></div>
-            </div>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-12 w-auto object-contain"
+            />
             <div>
-              <h1 className="text-2xl font-black text-foreground tracking-tight">
+              <h1 className="text-2xl font-bold text-foreground">
                 Hey,{" "}
-                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent animate-pulse-glow">
+                <span className="text-fac-orange-500">
                   {currentUser?.fullName?.split(" ")[0] ||
                     userEmail.split("@")[0]}
                 </span>
                 !
               </h1>
-              <p className="text-sm text-muted-foreground font-medium">
-                Ready for your next wash? ✨
+              <p className="text-sm text-muted-foreground">
+                Ready for your next wash?
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="glass rounded-full p-1 animate-fade-in-scale">
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon" className="rounded-full">
               <ThemeToggle />
-            </div>
-            <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-100">
+            </Button>
+            <Button variant="ghost" size="icon" className="rounded-full">
               <NotificationDropdown />
-            </div>
+            </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowLogoutModal(true)}
-              className="rounded-full glass hover-lift transition-all duration-300 hover:text-red-500"
+              className="rounded-full hover:text-red-500"
               title="Logout"
             >
               <RefreshCw className="h-5 w-5" />
@@ -344,27 +340,27 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Futuristic Membership Status Card */}
-        <Card
-          className={`glass border-border shadow-2xl mb-6 animate-fade-in-up animate-delay-200 relative overflow-hidden hover-lift ${
-            statusColor === "red"
-              ? "bg-gradient-to-br from-red-50/80 to-pink-50/80 dark:from-red-950/50 dark:to-pink-950/50"
-              : statusColor === "orange"
-                ? "bg-gradient-to-br from-orange-50/80 to-yellow-50/80 dark:from-orange-950/50 dark:to-yellow-950/50"
-                : "bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/50 dark:to-emerald-950/50"
-          }`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
-          <CardHeader className="pb-4 relative z-10">
+        {/* Membership Status Card */}
+        <Card className="border shadow-sm mb-6 relative overflow-hidden">
+          <div
+            className={`absolute top-0 left-0 w-1 h-full ${
+              statusColor === "red"
+                ? "bg-red-500"
+                : statusColor === "orange"
+                  ? "bg-orange-500"
+                  : "bg-green-500"
+            }`}
+          ></div>
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div
-                  className={`p-3 rounded-xl animate-pulse-glow ${
+                  className={`p-3 rounded-xl ${
                     statusColor === "red"
-                      ? "bg-gradient-to-r from-red-500 to-pink-500"
+                      ? "bg-red-500"
                       : statusColor === "orange"
-                        ? "bg-gradient-to-r from-orange-500 to-yellow-500"
-                        : "bg-gradient-to-r from-green-500 to-emerald-500"
+                        ? "bg-orange-500"
+                        : "bg-green-500"
                   }`}
                 >
                   {statusColor === "red" ? (
@@ -405,7 +401,7 @@ export default function Dashboard() {
               </div>
               {hasActiveSubscription && (
                 <div
-                  className={`rounded-xl px-3 py-2 border ${
+                  className={`rounded-lg px-3 py-2 border ${
                     statusColor === "orange"
                       ? "bg-orange-50 border-orange-200"
                       : "bg-green-50 border-green-200"
@@ -417,8 +413,8 @@ export default function Dashboard() {
                   <p
                     className={`text-2xl font-bold ${
                       statusColor === "orange"
-                        ? "text-orange-500"
-                        : "text-green-500"
+                        ? "text-orange-600"
+                        : "text-green-600"
                     }`}
                   >
                     {membershipData.daysLeft}
@@ -542,39 +538,33 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Futuristic Tabs */}
-        <div className="mb-6 animate-fade-in-up animate-delay-500">
-          <div className="glass rounded-2xl p-2">
-            <div className="grid grid-cols-2 gap-2">
+        {/* Clean Tabs */}
+        <div className="mb-6">
+          <div className="bg-muted rounded-lg p-1">
+            <div className="grid grid-cols-2 gap-1">
               <button
                 onClick={() => setActiveTab("benefits")}
                 className={cn(
-                  "flex items-center justify-center py-4 px-6 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden group",
+                  "flex items-center justify-center py-3 px-4 text-sm font-medium rounded-md transition-all",
                   activeTab === "benefits"
-                    ? "gradient-primary text-white shadow-xl animate-pulse-glow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                <span className="tracking-tight">Benefits</span>
-                {activeTab === "benefits" && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                )}
+                Benefits
               </button>
               <button
                 onClick={() => setActiveTab("activity")}
                 className={cn(
-                  "flex items-center justify-center py-4 px-6 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden group",
+                  "flex items-center justify-center py-3 px-4 text-sm font-medium rounded-md transition-all",
                   activeTab === "activity"
-                    ? "gradient-primary text-white shadow-xl animate-pulse-glow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <History className="h-4 w-4 mr-2" />
-                <span className="tracking-tight">Recent Activity</span>
-                {activeTab === "activity" && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                )}
+                Recent Activity
               </button>
             </div>
           </div>
@@ -582,20 +572,23 @@ export default function Dashboard() {
 
         {/* Tab Content */}
         {activeTab === "benefits" && (
-          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
-            <CardHeader className="relative z-10">
-              <CardTitle className="flex items-center text-xl font-black text-foreground">
-                <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+          <Card className="border shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center text-xl font-bold text-foreground">
+                <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                   <Star className="h-6 w-6 text-white" />
                 </div>
                 Membership Benefits
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10">
+            <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="glass rounded-xl p-4 hover-lift group">
-                  <div className="gradient-secondary w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Button
+                  variant="ghost"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  onClick={() => alert("Priority Booking benefit details")}
+                >
+                  <div className="bg-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
                     <Calendar className="h-6 w-6 text-white" />
                   </div>
                   <h4 className="font-bold text-foreground mb-2">
@@ -604,10 +597,14 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Skip the line with exclusive access
                   </p>
-                </div>
+                </Button>
 
-                <div className="glass rounded-xl p-4 hover-lift group">
-                  <div className="gradient-futuristic w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Button
+                  variant="ghost"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  onClick={() => alert("Member Discounts benefit details")}
+                >
+                  <div className="bg-green-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-600 transition-colors">
                     <Gift className="h-6 w-6 text-white" />
                   </div>
                   <h4 className="font-bold text-foreground mb-2">
@@ -616,10 +613,14 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Save up to 25% on services
                   </p>
-                </div>
+                </Button>
 
-                <div className="glass rounded-xl p-4 hover-lift group">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Button
+                  variant="ghost"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  onClick={() => alert("Paint Protection benefit details")}
+                >
+                  <div className="bg-purple-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-600 transition-colors">
                     <Shield className="h-6 w-6 text-white" />
                   </div>
                   <h4 className="font-bold text-foreground mb-2">
@@ -628,17 +629,21 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Advanced coating included
                   </p>
-                </div>
+                </Button>
 
-                <div className="glass rounded-xl p-4 hover-lift group">
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Button
+                  variant="ghost"
+                  className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent group"
+                  onClick={() => alert("VIP Lounge benefit details")}
+                >
+                  <div className="bg-fac-orange-500 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:bg-fac-orange-600 transition-colors">
                     <Crown className="h-6 w-6 text-white" />
                   </div>
                   <h4 className="font-bold text-foreground mb-2">VIP Lounge</h4>
                   <p className="text-sm text-muted-foreground">
                     Exclusive member area
                   </p>
-                </div>
+                </Button>
               </div>
             </CardContent>
           </Card>
