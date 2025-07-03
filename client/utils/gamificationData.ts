@@ -1,3 +1,14 @@
+// Import bookings utility functions
+const getBookingsData = () => {
+  try {
+    const stored = localStorage.getItem("fac_bookings");
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Error loading bookings:", error);
+    return [];
+  }
+};
+
 export interface CustomerLevel {
   id: string;
   name: string;
@@ -129,8 +140,7 @@ export const getUserProgress = (userId: string): UserProgress => {
   }
 
   // Calculate progress based on completed bookings
-  const { getBookings } = require("./bookingData");
-  const bookings = getBookings();
+  const bookings = getBookingsData();
   const userBookings = bookings.filter((b: any) => b.status === "completed");
   const completedCount = userBookings.length;
 
@@ -187,8 +197,7 @@ export const getNextLevel = (
 };
 
 export const updateUserProgress = (userId: string): UserProgress => {
-  const { getBookings } = require("./bookingData");
-  const bookings = getBookings();
+  const bookings = getBookingsData();
   const userBookings = bookings.filter((b: any) => b.status === "completed");
   const completedCount = userBookings.length;
 
