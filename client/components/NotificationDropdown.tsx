@@ -170,9 +170,11 @@ export default function NotificationDropdown() {
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-center text-sm text-muted-foreground cursor-pointer">
-          View all notifications
-        </DropdownMenuItem>
+        <Link to="/notifications">
+          <DropdownMenuItem className="text-center text-sm text-muted-foreground cursor-pointer">
+            View all notifications
+          </DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );
