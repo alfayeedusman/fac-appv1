@@ -181,7 +181,11 @@ export default function AdminUserManagement() {
 
   return (
     <div className="min-h-screen bg-background">
-      <StickyHeader showBack={true} title="User Management" />
+      <StickyHeader
+        showBack={true}
+        title="User Management"
+        backTo="/admin-dashboard"
+      />
 
       <div className="p-6 space-y-6">
         {/* Stats Cards */}

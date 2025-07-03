@@ -228,7 +228,11 @@ export default function AdminSubscriptionApproval() {
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
-      <StickyHeader showBack={true} title="Subscription Approvals" />
+      <StickyHeader
+        showBack={true}
+        title="Subscription Approvals"
+        backTo="/admin-dashboard"
+      />
 
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
