@@ -921,9 +921,29 @@ export default function EnhancedInventoryManagement() {
                         <span style={{ color: category.color }}>
                           {category.icon} {category.name}
                         </span>
-                        <Badge variant="outline">
-                          {category.variants?.length || 0} variants
-                        </Badge>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline">
+                            {category.variants?.length || 0} variants
+                          </Badge>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditCategory(category)}
+                              className="text-blue-500 hover:text-blue-600 p-1"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteCategory(category.id)}
+                              className="text-red-500 hover:text-red-600 p-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {category.description}
