@@ -78,8 +78,9 @@ export default function Profile() {
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
 
   const membershipData = {
-    level: "VIP Gold Ultimate",
-    tier: "Premium",
+    level: profile.membershipType || "Regular Member",
+    tier:
+      profile.membershipType === "VIP Gold Ultimate" ? "Premium" : "Standard",
     perks: [
       "Unlimited washes",
       "VIP concierge service",
