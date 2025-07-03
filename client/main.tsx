@@ -24,6 +24,7 @@ import History from "./pages/History";
 import Voucher from "./pages/Voucher";
 import AdminNotifications from "./pages/AdminNotifications";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -39,26 +40,101 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/credential-setup" element={<CredentialSetup />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/booking" element={<Booking />} />
+            <Route
+              path="/welcome"
+              element={
+                <ProtectedRoute>
+                  <Welcome />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking"
+              element={
+                <ProtectedRoute>
+                  <Booking />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/manage-subscription"
-              element={<ManageSubscription />}
+              element={
+                <ProtectedRoute>
+                  <ManageSubscription />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/notification-settings"
-              element={<NotificationSettings />}
+              element={
+                <ProtectedRoute>
+                  <NotificationSettings />
+                </ProtectedRoute>
+              }
             />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/security-settings" element={<SecuritySettings />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/voucher" element={<Voucher />} />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/security-settings"
+              element={
+                <ProtectedRoute>
+                  <SecuritySettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/voucher"
+              element={
+                <ProtectedRoute>
+                  <Voucher />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin-notifications"
-              element={<AdminNotifications />}
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminNotifications />
+                </ProtectedRoute>
+              }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
