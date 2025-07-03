@@ -59,6 +59,7 @@ import {
   Star,
   Activity,
   CheckCircle,
+  Printer,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -609,6 +610,14 @@ export default function AdminDashboard() {
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">POS Kiosk</span>
+                </Button>
+                <Button
+                  onClick={() => navigate("/admin-receipt-designer")}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold"
+                  size="sm"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Receipt Designer</span>
                 </Button>
                 <ThemeToggle />
                 <Button variant="outline" size="sm">
