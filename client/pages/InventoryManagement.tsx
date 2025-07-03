@@ -272,7 +272,11 @@ export default function InventoryManagement() {
 
   return (
     <div className="min-h-screen bg-background">
-      <StickyHeader showBack={true} title="Inventory Management" />
+      <StickyHeader
+        showBack={true}
+        title="Inventory Management"
+        backTo="/admin-dashboard"
+      />
 
       <div className="p-6">
         <Tabs defaultValue="products" className="space-y-6">
