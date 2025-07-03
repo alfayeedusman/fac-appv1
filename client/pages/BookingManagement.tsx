@@ -120,7 +120,7 @@ export default function BookingManagement() {
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
-      <StickyHeader showBack={true} title="My Bookings" />
+      <StickyHeader showBack={true} />
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
