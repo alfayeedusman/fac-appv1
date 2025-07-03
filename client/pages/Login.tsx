@@ -82,6 +82,17 @@ export default function Login() {
     );
 
     if (authenticatedUser) {
+      // Clear any cached user-specific data to prevent data leakage
+      const keysToCheck = Object.keys(localStorage);
+      keysToCheck.forEach((key) => {
+        if (key.startsWith("subscription_") || key.startsWith("washLogs_")) {
+          // Only keep data for the current user
+          if (!key.includes(authenticatedUser.email)) {
+            localStorage.removeItem(key);
+          }
+        }
+      });
+
       // Successful login
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userEmail", authenticatedUser.email);
