@@ -322,15 +322,6 @@ export default function PremiumMembershipCard({
       <p className="text-center text-xs text-muted-foreground mt-2">
         Tap card to flip • Long press for options
       </p>
-
-      <style jsx>{`
-        .preserve-3d {
-          transform-style: preserve-3d;
-        }
-        .backface-hidden {
-          backface-visibility: hidden;
-        }
-      `}</style>
     </div>
   );
 }
