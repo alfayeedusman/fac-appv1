@@ -36,6 +36,8 @@ import { LogoutModal } from "@/components/ConfirmModal";
 import StickyHeader from "@/components/StickyHeader";
 import QRScanner from "@/components/QRScanner";
 import QRScanSuccessModal from "@/components/QRScanSuccessModal";
+import AdBanner from "@/components/AdBanner";
+import { getVisibleAdsForUser, Ad } from "@/utils/adsUtils";
 
 interface WashLog {
   id: string;
@@ -82,6 +84,8 @@ export default function Dashboard() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showScanSuccess, setShowScanSuccess] = useState(false);
   const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
+  const [dashboardAds, setDashboardAds] = useState<Ad[]>([]);
+  const [showPopupAd, setShowPopupAd] = useState(false);
 
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
