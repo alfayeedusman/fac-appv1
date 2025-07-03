@@ -221,11 +221,23 @@ export default function ManageSubscription() {
   const pricing = calculatePrice(selectedPlan, selectedLockIn);
 
   const handleRenewal = () => {
-    setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
-    setShowPaymentModal(true);
+    // Only allow renewal for active subscribers
+    if (
+      currentSubscription.status === "active" &&
+      currentSubscription.plan !== "Regular Member"
+    ) {
+      setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+      setShowPaymentModal(true);
+    }
   };
 
   const handleUpgrade = () => {
+    // Show package selection modal for upgrades
+    setShowPackageModal(true);
+  };
+
+  const handlePackageSelection = (packageId: string) => {
+    setSelectedPlan(packageId);
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
     setShowPaymentModal(true);
   };
