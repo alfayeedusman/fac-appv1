@@ -147,41 +147,32 @@ export default function AdminSidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full glass border-r border-border/50 z-50 transition-all duration-500 ease-out backdrop-blur-2xl",
-          isCollapsed ? "w-20" : "w-72",
+          "fixed left-0 top-0 h-full border-r border-border bg-background z-50 transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
-        <div className="flex flex-col h-full relative">
-          {/* Futuristic background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95 backdrop-blur-xl"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 via-transparent to-purple-500/5"></div>
-
+        <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="relative z-10 p-6 border-b border-border/30">
+          <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between">
               {!isCollapsed && (
-                <div className="flex items-center space-x-4 animate-fade-in-up">
-                  <div className="relative">
-                    <img
-                      src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-                      alt="FAC Logo"
-                      className="h-10 w-auto object-contain animate-pulse-glow"
-                    />
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <img
+                    src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+                    alt="FAC Logo"
+                    className="h-8 w-auto object-contain"
+                  />
                   <div>
-                    <h2 className="text-xl font-black text-foreground">
-                      FAC{" "}
-                      <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                        2025
-                      </span>
+                    <h2 className="text-lg font-bold text-foreground">
+                      Fayeed Auto Care
                     </h2>
                     <Badge
                       className={`${
                         userRole === "superadmin"
-                          ? "bg-gradient-to-r from-red-500 to-pink-500"
-                          : "bg-gradient-to-r from-fac-orange-500 to-purple-600"
-                      } text-white font-bold text-xs px-3 py-1 animate-pulse-glow`}
+                          ? "bg-red-500"
+                          : "bg-fac-orange-500"
+                      } text-white text-xs px-2 py-1`}
                     >
                       {userRole === "superadmin" ? (
                         <>
