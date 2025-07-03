@@ -720,33 +720,54 @@ export default function EnhancedInventoryManagement() {
 
             {/* Car Wash Services Tab */}
             <TabsContent value="services" className="space-y-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2">Car Wash Services</h2>
-                <p className="text-muted-foreground">
-                  Dynamic pricing based on vehicle type - Perfect for POS
-                  integration
-                </p>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Car Wash Services</h2>
+                  <p className="text-gray-600">
+                    Dynamic pricing based on vehicle type - Perfect for POS integration
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    setNewService({
+                      name: "",
+                      description: "",
+                      basePrice: 200,
+                      duration: "30 mins",
+                      features: [""],
+                      category: "basic",
+                      isActive: true
+                    });
+                    setServiceModalMode('add');
+                    setShowServiceModal(true);
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Service
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {carWashServices.map((service) => (
                   <Card
                     key={service.id}
-                    className="hover:shadow-lg transition-shadow"
+                    className="bg-white border-gray-200 hover:shadow-lg transition-shadow"
                   >
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        {service.name}
-                        <Badge
-                          className={
-                            service.category === "basic"
-                              ? "bg-blue-500"
-                              : service.category === "premium"
-                                ? "bg-orange-500"
-                                : "bg-purple-500"
-                          }
-                        >
-                          {service.category}
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-gray-900 text-lg">{service.name}</CardTitle>
+                          <Badge
+                            className={
+                              service.category === "basic"
+                                ? "bg-blue-100 text-blue-700"
+                                : service.category === "premium"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-purple-100 text-purple-700"
+                            }
+                          >
+                            {service.category}
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
