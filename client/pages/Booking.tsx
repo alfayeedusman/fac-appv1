@@ -169,9 +169,6 @@ export default function Booking() {
     );
     const selectedServiceData = services.find((s) => s.id === selectedService);
 
-    const userEmail = localStorage.getItem("userEmail") || "";
-    const previousProgress = updateUserProgress(userEmail);
-
     const newBooking = addBooking({
       service: selectedServiceData?.name || selectedService,
       vehicleType: bookingData.vehicleType,
@@ -183,23 +180,7 @@ export default function Booking() {
       price: selectedServiceData?.price || "₱0",
     });
 
-    // Check for level up after booking
-    const newLevelUp = checkLevelUp(
-      previousProgress.completedBookings,
-      previousProgress.completedBookings + 1,
-    );
-
-    if (newLevelUp) {
-      // Show level up notification
-      setTimeout(() => {
-        alert(
-          `🎉 Congratulations! You've reached ${newLevelUp.name} level! ${newLevelUp.icon}\n\nNew rewards unlocked:\n${newLevelUp.rewards
-            .slice(0, 3)
-            .map((r) => `• ${r}`)
-            .join("\n")}`,
-        );
-      }, 2000);
-    }
+    // Note: Gamification progress will be updated when booking is completed
 
     alert(`🚀 Booking confirmed!
 Booking ID: ${newBooking.id}
