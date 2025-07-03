@@ -66,6 +66,7 @@ export default function Login() {
       { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
       { email: "user@fac.com", password: "user123", role: "user" },
       { email: "demo@fac.com", password: "demo123", role: "user" },
+      { email: "fayeedtest@g.com", password: "test101", role: "user" },
     ];
 
     // Get saved registration data
