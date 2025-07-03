@@ -320,10 +320,18 @@ export default function ManageSubscription() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t">
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Manage Subscription
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Renew or upgrade your current plan
+                    </p>
+                  </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button
-                      className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
+                      className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white py-3"
                       onClick={handleRenewal}
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
@@ -331,7 +339,7 @@ export default function ManageSubscription() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50"
+                      className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 py-3"
                       onClick={handleUpgrade}
                     >
                       <Crown className="h-4 w-4 mr-2" />
