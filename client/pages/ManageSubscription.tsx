@@ -322,13 +322,17 @@ export default function ManageSubscription() {
 
                 <div className="mt-6 pt-6 border-t">
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Button className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white">
+                    <Button
+                      className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
+                      onClick={handleRenewal}
+                    >
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Renew Subscription
                     </Button>
                     <Button
                       variant="outline"
                       className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50"
+                      onClick={handleUpgrade}
                     >
                       <Crown className="h-4 w-4 mr-2" />
                       Upgrade Plan
