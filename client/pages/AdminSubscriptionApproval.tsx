@@ -38,6 +38,7 @@ import {
   getSubscriptionStats,
   updateSubscriptionRequest,
 } from "@/utils/subscriptionApprovalData";
+import { notificationManager } from "@/components/NotificationModal";
 
 export default function AdminSubscriptionApproval() {
   const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
@@ -141,13 +142,18 @@ export default function AdminSubscriptionApproval() {
       approveSubscriptionRequest(requestId, adminEmail, notes);
       loadRequests();
 
-      // Show success message
-      alert(
+      // Show success notification
+      notificationManager.success(
+        "Request Approved! 🎉",
         "Subscription request approved successfully! Customer has been notified.",
+        { autoClose: 4000 },
       );
     } catch (error) {
       console.error("Error approving request:", error);
-      alert("Failed to approve request. Please try again.");
+      notificationManager.error(
+        "Approval Failed",
+        "Failed to approve request. Please try again.",
+      );
     }
   };
 
@@ -156,11 +162,18 @@ export default function AdminSubscriptionApproval() {
       rejectSubscriptionRequest(requestId, adminEmail, reason);
       loadRequests();
 
-      // Show success message
-      alert("Subscription request rejected. Customer has been notified.");
+      // Show success notification
+      notificationManager.info(
+        "Request Rejected",
+        "Subscription request rejected. Customer has been notified.",
+        { autoClose: 3000 },
+      );
     } catch (error) {
       console.error("Error rejecting request:", error);
-      alert("Failed to reject request. Please try again.");
+      notificationManager.error(
+        "Rejection Failed",
+        "Failed to reject request. Please try again.",
+      );
     }
   };
 
@@ -169,11 +182,18 @@ export default function AdminSubscriptionApproval() {
       banCustomer(userId, adminEmail, reason);
       loadRequests();
 
-      // Show success message
-      alert("Customer has been banned. All their requests have been updated.");
+      // Show success notification
+      notificationManager.warning(
+        "Customer Banned",
+        "Customer has been banned. All their requests have been updated.",
+        { autoClose: 4000 },
+      );
     } catch (error) {
       console.error("Error banning customer:", error);
-      alert("Failed to ban customer. Please try again.");
+      notificationManager.error(
+        "Ban Failed",
+        "Failed to ban customer. Please try again.",
+      );
     }
   };
 
@@ -182,11 +202,18 @@ export default function AdminSubscriptionApproval() {
       unbanCustomer(userId, adminEmail);
       loadRequests();
 
-      // Show success message
-      alert("Customer has been unbanned successfully.");
+      // Show success notification
+      notificationManager.success(
+        "Customer Unbanned",
+        "Customer has been unbanned successfully.",
+        { autoClose: 3000 },
+      );
     } catch (error) {
       console.error("Error unbanning customer:", error);
-      alert("Failed to unban customer. Please try again.");
+      notificationManager.error(
+        "Unban Failed",
+        "Failed to unban customer. Please try again.",
+      );
     }
   };
 
