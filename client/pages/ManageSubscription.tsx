@@ -389,7 +389,7 @@ export default function ManageSubscription() {
                         </div>
 
                         {isRegularMember ? (
-                          // Regular member - show upgrade only
+                          // Regular member - show package selection
                           <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
                             <div className="flex items-center mb-4">
                               <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
@@ -398,7 +398,7 @@ export default function ManageSubscription() {
                                   Regular Member
                                 </h4>
                                 <p className="text-sm text-red-600">
-                                  Upgrade to unlock premium services
+                                  Choose a package to unlock premium services
                                 </p>
                               </div>
                             </div>
@@ -407,20 +407,20 @@ export default function ManageSubscription() {
                               onClick={handleUpgrade}
                             >
                               <Crown className="h-4 w-4 mr-2" />
-                              Upgrade Account Now
+                              Choose Package
                             </Button>
                           </div>
-                        ) : !isActive ? (
-                          // Inactive account - show activation
+                        ) : isExpired ? (
+                          // Expired subscription - show reactivation
                           <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200 mb-4">
                             <div className="flex items-center mb-4">
                               <XCircle className="h-6 w-6 text-orange-500 mr-3" />
                               <div>
                                 <h4 className="font-bold text-orange-800">
-                                  Account Inactive
+                                  Subscription Expired
                                 </h4>
                                 <p className="text-sm text-orange-600">
-                                  Reactivate to continue using services
+                                  Reactivate your subscription to continue
                                 </p>
                               </div>
                             </div>
@@ -429,7 +429,7 @@ export default function ManageSubscription() {
                               onClick={handleUpgrade}
                             >
                               <Shield className="h-4 w-4 mr-2" />
-                              Activate Account Now
+                              Reactivate Now
                             </Button>
                           </div>
                         ) : (
@@ -440,7 +440,7 @@ export default function ManageSubscription() {
                               onClick={handleRenewal}
                             >
                               <RefreshCw className="h-4 w-4 mr-2" />
-                              Renew Subscription
+                              Confirm Renewal
                             </Button>
                             <Button
                               variant="outline"
