@@ -35,6 +35,8 @@ import {
   Receipt,
   Scan,
   Star,
+  Car,
+  Bike,
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import { getProducts, Product } from "@/utils/inventoryData";
