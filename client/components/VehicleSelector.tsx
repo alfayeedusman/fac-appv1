@@ -68,6 +68,7 @@ export default function VehicleSelector({
             return (
               <Button
                 key={type.id}
+                type="button"
                 variant={isSelected ? "default" : "outline"}
                 onClick={() => handleVehicleTypeChange(type.id)}
                 className={cn(
