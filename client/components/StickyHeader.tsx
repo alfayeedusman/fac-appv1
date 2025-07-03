@@ -31,11 +31,7 @@ export default function StickyHeader({
   const publicRoutes = ["/", "/login", "/signup"];
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
-  // Don't render StickyHeader on public routes or if not authenticated
-  if (isPublicRoute && !isAuthenticated) {
-    return null;
-  }
-
+  // useEffect must be called before any conditional returns (Rules of Hooks)
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -45,6 +41,11 @@ export default function StickyHeader({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Don't render StickyHeader on public routes or if not authenticated
+  if (isPublicRoute && !isAuthenticated) {
+    return null;
+  }
 
   const handleLogout = () => {
     // Clear all authentication data
