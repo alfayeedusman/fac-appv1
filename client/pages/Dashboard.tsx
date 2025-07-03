@@ -85,12 +85,18 @@ export default function Dashboard() {
 
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
-  const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-  const currentUser = registeredUsers.find((user: any) => user.email === userEmail);
+  const registeredUsers = JSON.parse(
+    localStorage.getItem("registeredUsers") || "[]",
+  );
+  const currentUser = registeredUsers.find(
+    (user: any) => user.email === userEmail,
+  );
 
   // Get user's subscription data or set defaults for new users
   const getUserMembershipData = (): MembershipData => {
-    const userSubscription = JSON.parse(localStorage.getItem(`subscription_${userEmail}`) || "null");
+    const userSubscription = JSON.parse(
+      localStorage.getItem(`subscription_${userEmail}`) || "null",
+    );
 
     if (userSubscription) {
       return userSubscription;
@@ -100,8 +106,10 @@ export default function Dashboard() {
     return {
       package: "Regular Member",
       daysLeft: 0,
-      currentCycleStart: new Date().toISOString().split('T')[0],
-      currentCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      currentCycleStart: new Date().toISOString().split("T")[0],
+      currentCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
       daysLeftInCycle: 30,
       autoRenewal: false,
       remainingWashes: {
@@ -111,10 +119,13 @@ export default function Dashboard() {
       },
       totalWashes: {
         classic: 0,
-      vipProMax: 5,
-      premium: 1,
-    },
-  });
+        vipProMax: 0,
+        premium: 0,
+      },
+    };
+  };
+
+  const [membershipData] = useState<MembershipData>(getUserMembershipData());
 
   const [washLogs] = useState<WashLog[]>([
     {
