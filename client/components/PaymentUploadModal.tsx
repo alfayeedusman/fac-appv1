@@ -119,11 +119,12 @@ export default function PaymentUploadModal({
 
     setIsSubmitting(false);
 
-    toast({
-      title: "Payment Submitted Successfully! 🎉",
-      description: "Your upgrade request has been submitted for admin approval",
-      className: "bg-green-50 border-green-200 text-green-800",
-    });
+    // Show success notification
+    notificationManager.success(
+      "Payment Submitted Successfully! 🎉",
+      `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review.`,
+      { autoClose: 5000 },
+    );
 
     onClose();
 
