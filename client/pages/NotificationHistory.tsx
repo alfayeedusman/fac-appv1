@@ -207,7 +207,7 @@ export default function NotificationHistory() {
               disabled={unreadCount === 0}
               className="glass"
             >
-              <MarkAsRead className="h-4 w-4 mr-2" />
+              <Check className="h-4 w-4 mr-2" />
               Mark All Read
             </Button>
           </div>
