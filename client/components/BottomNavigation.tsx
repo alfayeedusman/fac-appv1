@@ -144,9 +144,9 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
                       <div
                         className={cn(
                           "absolute -top-1 -right-1 w-3 h-3 rounded-full",
-                          isRegularMember || !isSubscribed
+                          isRegularMember || !hasActiveSubscription
                             ? "bg-red-500"
-                            : isVipGold
+                            : isVipGold && hasActiveSubscription
                               ? "bg-orange-500"
                               : "bg-green-500",
                         )}
