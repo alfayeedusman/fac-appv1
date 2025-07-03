@@ -127,26 +127,13 @@ export default function Dashboard() {
 
   const [membershipData] = useState<MembershipData>(getUserMembershipData());
 
-  const [washLogs] = useState<WashLog[]>([
-    {
-      id: "1",
-      service: "VIP ProMax Wash",
-      date: "2024-01-15",
-      status: "completed",
-      amount: 0,
-      branch: "Tumaga Hub",
-    },
-    {
-      id: "2",
-      service: "Classic Wash",
-      date: "2024-01-10",
-      status: "completed",
-      amount: 0,
-      branch: "Boalan Hub",
-    },
-    {
-      id: "3",
-      service: "Premium Detail",
+  // Get user-specific wash logs
+  const getUserWashLogs = (): WashLog[] => {
+    const userLogs = JSON.parse(localStorage.getItem(`washLogs_${userEmail}`) || "[]");
+    return userLogs;
+  };
+
+  const [washLogs] = useState<WashLog[]>(getUserWashLogs());
       date: "2024-01-05",
       status: "completed",
       amount: 0,
