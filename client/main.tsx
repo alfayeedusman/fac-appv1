@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
+import NotificationHistory from "./pages/NotificationHistory";
 import Settings from "./pages/Settings";
 import SecuritySettings from "./pages/SecuritySettings";
 import History from "./pages/History";
