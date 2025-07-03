@@ -653,6 +653,31 @@ export default function AdminDashboard() {
 
               {/* Quick Actions with Modern Design */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animate-delay-200">
+                {userRole === "superadmin" && (
+                  <Card
+                    className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                    onClick={() => setActiveTab("roles")}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader className="relative z-10">
+                      <CardTitle className="flex items-center text-xl text-foreground">
+                        <div className="bg-gradient-to-r from-purple-500 to-violet-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                          <Shield className="h-6 w-6 text-white" />
+                        </div>
+                        Role Manager
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <p className="text-muted-foreground text-base mb-6">
+                        Manage user roles and permissions
+                      </p>
+                      <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
+                        Manage Roles
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("packages")}
