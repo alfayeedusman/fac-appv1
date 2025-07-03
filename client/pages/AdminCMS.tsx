@@ -139,12 +139,27 @@ export default function AdminCMS() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <StickyHeader
-        showBack={true}
-        title="CMS Management"
-        backTo="/admin-dashboard"
+    <div className="min-h-screen bg-background flex">
+      <StickyHeader showBack={true} title="CMS Management" backTo="/admin-dashboard" />
+
+      {/* Admin Sidebar */}
+      <AdminSidebar
+        activeTab="cms"
+        onTabChange={(tab) => {
+          if (tab === "overview") navigate("/admin-dashboard");
+          else if (tab === "inventory") navigate("/inventory-management");
+          else if (tab === "push-notifications") navigate("/admin-push-notifications");
+          else if (tab === "gamification") navigate("/admin-gamification");
+          else if (tab === "subscription-approval") navigate("/admin-subscription-approval");
+          else if (tab === "pos") navigate("/pos");
+          else if (tab === "user-management") navigate("/admin-user-management");
+        }}
+        userRole={localStorage.getItem("userRole") || "admin"}
+        notificationCount={0}
       />
+
+      <div className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-6 mt-16">
 
       <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
         {/* Header */}
@@ -545,6 +560,7 @@ export default function AdminCMS() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );
