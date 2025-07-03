@@ -47,7 +47,13 @@ export default function StickyHeader({
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
+    // Clear all authentication data
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("hasSeenWelcome");
+
+    // Show logout notification
     window.location.href = "/login";
   };
 
