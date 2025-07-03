@@ -97,6 +97,12 @@ export default function StickyHeader({
         return "Subscription Approvals";
       case "/payment-history":
         return "Payment History";
+      case "/pos":
+        return "Point of Sale";
+      case "/inventory-management":
+        return "Inventory Management";
+      case "/admin-user-management":
+        return "User Management";
       default:
         return "Fayeed Auto Care";
     }
