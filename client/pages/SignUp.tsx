@@ -637,7 +637,7 @@ export default function SignUp() {
                         Contact Number *
                       </Label>
                       <div className="relative">
-                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground font-bold bg-muted px-2 py-1 rounded border-r border-border">
                           +63
                         </div>
                         <Input
