@@ -40,7 +40,7 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
     {
       to: "/my-bookings",
       icon: Clock,
-      label: "My Bookings",
+      label: "History",
       id: "my-bookings",
     },
     {
