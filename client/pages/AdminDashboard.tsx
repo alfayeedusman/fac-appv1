@@ -465,7 +465,8 @@ export default function AdminDashboard() {
                   {activeTab === "packages" && "Package Management"}
                   {activeTab === "branches" && "Branch Management"}
                   {activeTab === "analytics" && "Analytics"}
-                  {activeTab === "sales" && "Revenue Dashboard"}
+                  {activeTab === "sales" && "Sales Dashboard"}
+                  {activeTab === "inventory" && "Inventory Dashboard"}
                   {activeTab === "notifications" && "Notifications"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
@@ -478,7 +479,9 @@ export default function AdminDashboard() {
                   {activeTab === "packages" && "Configure service packages"}
                   {activeTab === "branches" && "Manage branch locations"}
                   {activeTab === "analytics" && "View performance insights"}
-                  {activeTab === "sales" && "Track revenue and sales"}
+                  {activeTab === "sales" && "Monitor POS sales performance"}
+                  {activeTab === "inventory" &&
+                    "Track stock levels and inventory value"}
                   {activeTab === "notifications" && "System alerts"}
                 </p>
               </div>
