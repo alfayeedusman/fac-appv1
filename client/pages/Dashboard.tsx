@@ -648,29 +648,27 @@ export default function Dashboard() {
         )}
 
         {activeTab === "activity" && (
-          <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
-            <CardHeader className="relative z-10">
-              <CardTitle className="flex items-center text-xl font-black text-foreground">
-                <div className="gradient-secondary p-3 rounded-xl mr-4 animate-pulse-glow">
+          <Card className="border shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center text-xl font-bold text-foreground">
+                <div className="bg-blue-500 p-3 rounded-xl mr-4">
                   <TrendingUp className="h-6 w-6 text-white" />
                 </div>
                 Recent Activity
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10">
+            <CardContent className="px-4 sm:px-6">
               {washLogs.length > 0 ? (
                 <div className="space-y-4">
                   {washLogs.slice(0, 3).map((log, index) => (
                     <div
                       key={log.id}
-                      className="glass rounded-xl p-4 hover-lift group animate-fade-in-up"
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className="bg-muted rounded-xl p-4 hover:bg-muted/80 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center space-x-4">
                           <div
-                            className={`w-4 h-4 rounded-full animate-pulse ${
+                            className={`w-4 h-4 rounded-full ${
                               log.status === "completed"
                                 ? "bg-green-500"
                                 : log.status === "scheduled"
@@ -679,15 +677,15 @@ export default function Dashboard() {
                             }`}
                           ></div>
                           <div>
-                            <p className="font-bold text-foreground tracking-tight">
+                            <p className="font-bold text-foreground">
                               {log.service}
                             </p>
-                            <p className="text-sm text-muted-foreground font-medium">
+                            <p className="text-sm text-muted-foreground">
                               {log.branch} • {log.date}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <Badge
                             variant={
                               log.status === "completed"
@@ -695,7 +693,7 @@ export default function Dashboard() {
                                 : "secondary"
                             }
                             className={cn(
-                              "font-bold",
+                              "font-bold mb-1",
                               log.status === "completed" &&
                                 "bg-green-500 text-white",
                               log.status === "scheduled" &&
@@ -704,7 +702,7 @@ export default function Dashboard() {
                           >
                             {log.status}
                           </Badge>
-                          <p className="text-sm font-bold text-foreground mt-1">
+                          <p className="text-sm font-bold text-foreground">
                             ₱{log.amount}
                           </p>
                         </div>
@@ -724,18 +722,18 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
+                <div className="text-center py-8 sm:py-12">
+                  <div className="bg-fac-orange-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Car className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-foreground mb-2">
                     No Recent Activity
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground mb-6 px-4">
                     Book your first wash to get started!
                   </p>
                   <Link to="/booking">
-                    <Button className="gradient-primary text-white font-bold hover-lift">
+                    <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold">
                       <Calendar className="h-4 w-4 mr-2" />
                       Book Your First Wash
                     </Button>
