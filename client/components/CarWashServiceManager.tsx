@@ -61,8 +61,19 @@ export default function CarWashServiceManager() {
   const [editingService, setEditingService] = useState<CarWashService | null>(
     null,
   );
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const [newService, setNewService] = useState({
+    name: "",
+    description: "",
+    basePrice: 200,
+    duration: "30 mins",
+    features: [""],
+    category: "basic" as CarWashService["category"],
+    isActive: true,
+  });
+
+  const [editService, setEditService] = useState({
     name: "",
     description: "",
     basePrice: 200,
@@ -125,6 +136,59 @@ export default function CarWashServiceManager() {
     }
   };
 
+  const handleEditService = (service: CarWashService) => {
+    setEditingService(service);
+    setEditService({
+      name: service.name,
+      description: service.description,
+      basePrice: service.basePrice,
+      duration: service.duration,
+      features: [...service.features],
+      category: service.category,
+      isActive: service.isActive,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateService = () => {
+    if (!editingService || !editService.name || !editService.description) {
+      notificationManager.error(
+        "Missing Information",
+        "Please fill in service name and description",
+      );
+      return;
+    }
+
+    const filteredFeatures = editService.features.filter(
+      (f) => f.trim() !== "",
+    );
+    if (filteredFeatures.length === 0) {
+      notificationManager.error(
+        "Missing Features",
+        "Please add at least one feature",
+      );
+      return;
+    }
+
+    try {
+      updateCarWashService(editingService.id, {
+        ...editService,
+        features: filteredFeatures,
+      });
+
+      notificationManager.success(
+        "Service Updated",
+        `${editService.name} has been updated successfully`,
+      );
+
+      setShowEditModal(false);
+      setEditingService(null);
+      loadServices();
+    } catch (error) {
+      notificationManager.error("Error", "Failed to update service");
+    }
+  };
+
   const handleDeleteService = (serviceId: string) => {
     try {
       deleteCarWashService(serviceId);
@@ -159,6 +223,34 @@ export default function CarWashServiceManager() {
       const updatedFeatures = newService.features.filter((_, i) => i !== index);
       setNewService({
         ...newService,
+        features: updatedFeatures,
+      });
+    }
+  };
+
+  const addEditFeature = () => {
+    setEditService({
+      ...editService,
+      features: [...editService.features, ""],
+    });
+  };
+
+  const updateEditFeature = (index: number, value: string) => {
+    const updatedFeatures = [...editService.features];
+    updatedFeatures[index] = value;
+    setEditService({
+      ...editService,
+      features: updatedFeatures,
+    });
+  };
+
+  const removeEditFeature = (index: number) => {
+    if (editService.features.length > 1) {
+      const updatedFeatures = editService.features.filter(
+        (_, i) => i !== index,
+      );
+      setEditService({
+        ...editService,
         features: updatedFeatures,
       });
     }
@@ -236,6 +328,14 @@ export default function CarWashServiceManager() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => handleEditService(service)}
+                    className="text-blue-500 hover:text-blue-600"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleDeleteService(service.id)}
                     className="text-red-500 hover:text-red-600"
                   >
@@ -272,6 +372,172 @@ export default function CarWashServiceManager() {
           </Card>
         ))}
       </div>
+
+      {/* Edit Service Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-lg bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              Edit Car Wash Service
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Update service details and pricing
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editServiceName" className="text-gray-700">
+                Service Name
+              </Label>
+              <Input
+                id="editServiceName"
+                placeholder="Classic Wash"
+                value={editService.name}
+                onChange={(e) =>
+                  setEditService({ ...editService, name: e.target.value })
+                }
+                className="border-gray-300"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="editDescription" className="text-gray-700">
+                Description
+              </Label>
+              <Textarea
+                id="editDescription"
+                placeholder="Basic exterior cleaning with quality optimization"
+                value={editService.description}
+                onChange={(e) =>
+                  setEditService({
+                    ...editService,
+                    description: e.target.value,
+                  })
+                }
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editBasePrice" className="text-gray-700">
+                  Base Price (₱)
+                </Label>
+                <Input
+                  id="editBasePrice"
+                  type="number"
+                  value={editService.basePrice}
+                  onChange={(e) =>
+                    setEditService({
+                      ...editService,
+                      basePrice: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  className="border-gray-300"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editDuration" className="text-gray-700">
+                  Duration
+                </Label>
+                <Input
+                  id="editDuration"
+                  placeholder="30 mins"
+                  value={editService.duration}
+                  onChange={(e) =>
+                    setEditService({ ...editService, duration: e.target.value })
+                  }
+                  className="border-gray-300"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="editCategory" className="text-gray-700">
+                Category
+              </Label>
+              <Select
+                value={editService.category}
+                onValueChange={(value: CarWashService["category"]) =>
+                  setEditService({ ...editService, category: value })
+                }
+              >
+                <SelectTrigger className="border-gray-300">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="luxury">Luxury</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-gray-700">Features</Label>
+              <div className="space-y-2">
+                {editService.features.map((feature, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="Professional wash system"
+                      value={feature}
+                      onChange={(e) => updateEditFeature(index, e.target.value)}
+                      className="border-gray-300"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeEditFeature(index)}
+                      disabled={editService.features.length === 1}
+                      className="border-gray-300"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addEditFeature}
+                  className="border-gray-300"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Feature
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="editIsActive"
+                checked={editService.isActive}
+                onChange={(e) =>
+                  setEditService({ ...editService, isActive: e.target.checked })
+                }
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="editIsActive" className="text-gray-700">
+                Service is active
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateService}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Update Service
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Service Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
