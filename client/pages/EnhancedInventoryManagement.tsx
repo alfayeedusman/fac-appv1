@@ -426,6 +426,11 @@ export default function EnhancedInventoryManagement() {
     setNewCategory({ ...newCategory, variants: updatedVariants });
   };
 
+  const removeVariantFromCategory = (index: number) => {
+    const updatedVariants = newCategory.variants.filter((_, i) => i !== index);
+    setNewCategory({ ...newCategory, variants: updatedVariants });
+  };
+
   const showServicePricing = (service: CarWashService) => {
     setSelectedService(service);
     setShowServicePricingModal(true);
