@@ -35,6 +35,7 @@ import StickyHeader from "@/components/StickyHeader";
 import UpgradeNotificationBanner from "@/components/UpgradeNotificationBanner";
 import ConfirmModal from "@/components/ConfirmModal";
 import QRScanner from "@/components/QRScanner";
+import { notificationManager } from "@/components/NotificationModal";
 
 interface BookingData {
   service: string;
