@@ -43,93 +43,8 @@ export interface CustomerStatus {
   suspensionEnd?: string;
 }
 
-// Sample subscription requests for demonstration
-const sampleRequests: SubscriptionRequest[] = [
-  {
-    id: "SUB001",
-    userId: "user_001",
-    userEmail: "john.doe@example.com",
-    userName: "John Doe",
-    userPhone: "+63 912 345 6789",
-    packageType: "VIP Gold Ultimate",
-    packagePrice: "₱799/month",
-    paymentMethod: "gcash",
-    paymentDetails: {
-      referenceNumber: "GC123456789",
-      accountName: "John Doe",
-      amount: "₱799.00",
-      paymentDate: "2024-12-27",
-    },
-    receipt: {
-      id: "RCP001",
-      imageUrl:
-        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400",
-      fileName: "gcash_receipt_001.jpg",
-      uploadDate: "2024-12-27T10:30:00Z",
-      fileSize: 245760,
-    },
-    status: "pending",
-    submissionDate: "2024-12-27T10:30:00Z",
-    customerStatus: "active",
-  },
-  {
-    id: "SUB002",
-    userId: "user_002",
-    userEmail: "jane.smith@example.com",
-    userName: "Jane Smith",
-    userPhone: "+63 917 123 4567",
-    packageType: "Classic Silver",
-    packagePrice: "₱299/month",
-    paymentMethod: "maya",
-    paymentDetails: {
-      referenceNumber: "MY987654321",
-      accountName: "Jane Smith",
-      amount: "₱299.00",
-      paymentDate: "2024-12-26",
-    },
-    receipt: {
-      id: "RCP002",
-      imageUrl:
-        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400",
-      fileName: "maya_payment_002.png",
-      uploadDate: "2024-12-26T14:20:00Z",
-      fileSize: 189440,
-    },
-    status: "under_review",
-    submissionDate: "2024-12-26T14:20:00Z",
-    customerStatus: "active",
-  },
-  {
-    id: "SUB003",
-    userId: "user_003",
-    userEmail: "mike.wilson@example.com",
-    userName: "Mike Wilson",
-    userPhone: "+63 905 987 6543",
-    packageType: "Premium Platinum Elite",
-    packagePrice: "₱1,299/month",
-    paymentMethod: "bank_transfer",
-    paymentDetails: {
-      referenceNumber: "BT456789123",
-      accountName: "Michael Wilson",
-      amount: "₱1,299.00",
-      paymentDate: "2024-12-25",
-    },
-    receipt: {
-      id: "RCP003",
-      imageUrl:
-        "https://images.unsplash.com/photo-1554224154-26032fbc4d72?w=400",
-      fileName: "bank_transfer_003.pdf",
-      uploadDate: "2024-12-25T09:15:00Z",
-      fileSize: 512000,
-    },
-    status: "approved",
-    submissionDate: "2024-12-25T09:15:00Z",
-    reviewedBy: "admin@fac.com",
-    reviewedDate: "2024-12-25T16:30:00Z",
-    reviewNotes: "Payment verified and approved",
-    customerStatus: "active",
-  },
-];
+// Start with empty data - no sample requests
+const sampleRequests: SubscriptionRequest[] = [];
 
 export const getSubscriptionRequests = (): SubscriptionRequest[] => {
   const stored = localStorage.getItem("fac_subscription_requests");
@@ -137,12 +52,9 @@ export const getSubscriptionRequests = (): SubscriptionRequest[] => {
     return JSON.parse(stored);
   }
 
-  // Initialize with sample data
-  localStorage.setItem(
-    "fac_subscription_requests",
-    JSON.stringify(sampleRequests),
-  );
-  return sampleRequests;
+  // Initialize with empty data - start fresh
+  localStorage.setItem("fac_subscription_requests", JSON.stringify([]));
+  return [];
 };
 
 export const updateSubscriptionRequest = (
