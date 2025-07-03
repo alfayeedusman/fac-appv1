@@ -482,6 +482,180 @@ export default function ManageSubscription() {
                   </div>
                 )}
 
+                {/* Payment & Upgrade History */}
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-foreground">
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      Payment & Upgrade History
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const allRequests = getSubscriptionRequests();
+                      const userId = `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
+                      const userRequests = allRequests
+                        .filter((req) => req.userId === userId)
+                        .sort(
+                          (a, b) =>
+                            new Date(b.submissionDate).getTime() -
+                            new Date(a.submissionDate).getTime(),
+                        );
+
+                      if (userRequests.length === 0) {
+                        return (
+                          <div className="text-center py-8">
+                            <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
+                              <CreditCard className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-foreground mb-2">
+                              No Payment History
+                            </h3>
+                            <p className="text-muted-foreground">
+                              You haven't submitted any payment requests yet.
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-4">
+                          {userRequests.map((request, index) => (
+                            <div
+                              key={request.id}
+                              className="p-4 border rounded-lg bg-background/50"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center space-x-3">
+                                  <div
+                                    className={`p-2 rounded-lg ${
+                                      request.status === "approved"
+                                        ? "bg-green-100 dark:bg-green-900/30"
+                                        : request.status === "pending"
+                                          ? "bg-yellow-100 dark:bg-yellow-900/30"
+                                          : request.status === "rejected"
+                                            ? "bg-red-100 dark:bg-red-900/30"
+                                            : "bg-blue-100 dark:bg-blue-900/30"
+                                    }`}
+                                  >
+                                    {request.status === "approved" ? (
+                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                    ) : request.status === "pending" ? (
+                                      <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                                    ) : request.status === "rejected" ? (
+                                      <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                    ) : (
+                                      <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-foreground">
+                                      {request.packageType}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {index === 0
+                                        ? "Latest Request"
+                                        : `Request #${userRequests.length - index}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold text-foreground">
+                                    {request.paymentDetails.amount}
+                                  </p>
+                                  <Badge
+                                    className={`${
+                                      request.status === "approved"
+                                        ? "bg-green-100 text-green-800"
+                                        : request.status === "pending"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : request.status === "rejected"
+                                            ? "bg-red-100 text-red-800"
+                                            : "bg-blue-100 text-blue-800"
+                                    }`}
+                                  >
+                                    {request.status.toUpperCase()}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                  <span className="font-medium text-muted-foreground">
+                                    Request ID:
+                                  </span>
+                                  <p className="font-mono text-foreground">
+                                    {request.id}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-muted-foreground">
+                                    Payment Method:
+                                  </span>
+                                  <p className="capitalize text-foreground">
+                                    {request.paymentMethod.replace("_", " ")}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-muted-foreground">
+                                    Submitted:
+                                  </span>
+                                  <p className="text-foreground">
+                                    {new Date(
+                                      request.submissionDate,
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {request.reviewNotes && (
+                                <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                  <span className="text-sm font-medium text-foreground">
+                                    Admin Notes:
+                                  </span>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {request.reviewNotes}
+                                  </p>
+                                </div>
+                              )}
+
+                              {request.reviewedBy && (
+                                <div className="mt-2 text-xs text-muted-foreground">
+                                  Reviewed by {request.reviewedBy} on{" "}
+                                  {new Date(
+                                    request.reviewedDate!,
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
+                          <div className="text-center pt-4">
+                            <Link to="/payment-history">
+                              <Button variant="outline" className="w-full">
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                View Complete Payment History
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   {(() => {
                     const isRegularMember =
