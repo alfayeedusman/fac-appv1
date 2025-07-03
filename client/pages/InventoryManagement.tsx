@@ -275,14 +275,31 @@ export default function InventoryManagement() {
   const outOfStockProducts = getOutOfStockProducts();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       <StickyHeader
         showBack={true}
         title="Inventory Management"
         backTo="/admin-dashboard"
       />
 
-      <div className="p-6">
+      {/* Admin Sidebar */}
+      <AdminSidebar
+        activeTab="inventory"
+        onTabChange={(tab) => {
+          if (tab === "overview") navigate("/admin-dashboard");
+          else if (tab === "cms") navigate("/admin-cms");
+          else if (tab === "push-notifications") navigate("/admin-push-notifications");
+          else if (tab === "gamification") navigate("/admin-gamification");
+          else if (tab === "subscription-approval") navigate("/admin-subscription-approval");
+          else if (tab === "pos") navigate("/pos");
+          else if (tab === "user-management") navigate("/admin-user-management");
+        }}
+        userRole={localStorage.getItem("userRole") || "admin"}
+        notificationCount={0}
+      />
+
+      <div className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-6 mt-16">
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="products">Products</TabsTrigger>
@@ -1018,6 +1035,7 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </div>
       </div>
     </div>
   );
