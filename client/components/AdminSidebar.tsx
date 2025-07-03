@@ -96,6 +96,13 @@ const sidebarItems = [
     description: "System Alerts",
     gradient: "from-orange-500 to-red-500",
   },
+  {
+    id: "cms",
+    label: "CMS Manager",
+    icon: Settings,
+    description: "Content Management",
+    gradient: "from-fac-orange-500 to-yellow-500",
+  },
 ];
 
 export default function AdminSidebar({
