@@ -305,6 +305,18 @@ export default function POS() {
               >
                 All Products
               </Button>
+              <Button
+                variant={
+                  selectedCategory === "car_wash_services"
+                    ? "default"
+                    : "outline"
+                }
+                onClick={() => setSelectedCategory("car_wash_services")}
+                className="whitespace-nowrap bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                <Car className="h-4 w-4 mr-1" />
+                Car Wash Services
+              </Button>
               {categories.map((category) => (
                 <Button
                   key={category.id}
@@ -322,6 +334,54 @@ export default function POS() {
 
           {/* Products Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Car Wash Services */}
+            {selectedCategory === "all" ||
+            selectedCategory === "car_wash_services"
+              ? carWashServices.map((service) => (
+                  <Card
+                    key={service.id}
+                    className="cursor-pointer hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-orange-50 to-white border-orange-200 hover:border-orange-300 hover:shadow-orange-100"
+                    onClick={() => setShowServiceSelector(true)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-square bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg mb-3 flex items-center justify-center border border-orange-200">
+                        <Car className="h-8 w-8 text-orange-500" />
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1 line-clamp-2 text-gray-900">
+                        {service.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-2">
+                        {service.category} service
+                      </p>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-orange-600 text-lg">
+                          ₱{service.basePrice}+
+                        </span>
+                        <Badge
+                          className={
+                            service.category === "basic"
+                              ? "bg-blue-100 text-blue-700"
+                              : service.category === "premium"
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-purple-100 text-purple-700"
+                          }
+                        >
+                          {service.category}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                      >
+                        <Car className="h-3 w-3 mr-1" />
+                        Select Vehicle
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              : null}
+
+            {/* Regular Products */}
             {filteredProducts.map((product) => (
               <Card
                 key={product.id}
@@ -368,12 +428,23 @@ export default function POS() {
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-12">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No products found</p>
-            </div>
-          )}
+          {filteredProducts.length === 0 &&
+            selectedCategory !== "car_wash_services" && (
+              <div className="text-center py-12">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No products found</p>
+              </div>
+            )}
+
+          {selectedCategory === "car_wash_services" &&
+            carWashServices.length === 0 && (
+              <div className="text-center py-12">
+                <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  No car wash services available
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Cart Section */}
