@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
+import PaymentUploadModal from "@/components/PaymentUploadModal";
 
 interface SubscriptionPlan {
   id: string;
