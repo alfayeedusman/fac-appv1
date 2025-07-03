@@ -107,8 +107,12 @@ export default function Login() {
       });
 
       // Set splash screen flag and navigate
-      localStorage.setItem("showSplashScreen", "true");
       localStorage.setItem("justLoggedIn", "true");
+
+      // Check if this is a returning user or first time
+      const hasCompletedWelcome = localStorage.getItem(
+        `welcomed_${authenticatedUser.email}`,
+      );
 
       setTimeout(() => {
         if (
@@ -116,7 +120,12 @@ export default function Login() {
           authenticatedUser.role === "superadmin"
         ) {
           navigate("/admin-dashboard");
+        } else if (hasCompletedWelcome) {
+          // Returning user - go straight to dashboard
+          navigate("/dashboard");
         } else {
+          // New user - show welcome flow
+          localStorage.setItem("showSplashScreen", "true");
           navigate("/welcome");
         }
       }, 1000);
