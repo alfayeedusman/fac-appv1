@@ -87,48 +87,35 @@ export default function PaymentUploadModal({
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Create payment request
-    const paymentRequest = {
-      id: Date.now().toString(),
-      userId: localStorage.getItem("userEmail"),
-      currentPlan,
-      upgradeToPlan: selectedPlan,
-      amount: parseFloat(formData.amount),
-      paymentMethod: formData.paymentMethod,
-      referenceNumber: formData.referenceNumber,
-      receiptFileName: receiptFile.name,
-      notes: formData.notes,
+    // Create subscription request using the approval system
+    const receipt = {
+      id: `RCP${Date.now()}`,
+      imageUrl: URL.createObjectURL(receiptFile),
+      fileName: receiptFile.name,
+      uploadDate: new Date().toISOString(),
+      fileSize: receiptFile.size,
+    };
+
+    const userEmail = localStorage.getItem("userEmail") || "";
+    const userName = userEmail.split("@")[0];
+
+    const request = addSubscriptionRequest({
+      userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      userEmail,
+      userName,
+      packageType: selectedPlan as any,
+      packagePrice: `₱${formData.amount}/month`,
+      paymentMethod: formData.paymentMethod as any,
+      paymentDetails: {
+        referenceNumber: formData.referenceNumber,
+        accountName: userName,
+        amount: `₱${formData.amount}.00`,
+        paymentDate: new Date().toISOString().split("T")[0],
+      },
+      receipt,
       status: "pending",
-      submittedAt: new Date().toISOString(),
-    };
-
-    // Save to localStorage (simulate database)
-    const existingRequests = JSON.parse(
-      localStorage.getItem("paymentRequests") || "[]",
-    );
-    existingRequests.push(paymentRequest);
-    localStorage.setItem("paymentRequests", JSON.stringify(existingRequests));
-
-    // Create admin notification
-    const adminNotification = {
-      id: Date.now().toString(),
-      type: "payment_request",
-      title: "New Upgrade Payment Request",
-      message: `${paymentRequest.userId} submitted payment for ${selectedPlan} upgrade`,
-      timestamp: new Date(),
-      read: false,
-      paymentRequestId: paymentRequest.id,
-      actionRequired: true,
-    };
-
-    const existingNotifications = JSON.parse(
-      localStorage.getItem("adminNotifications") || "[]",
-    );
-    existingNotifications.unshift(adminNotification);
-    localStorage.setItem(
-      "adminNotifications",
-      JSON.stringify(existingNotifications),
-    );
+      customerStatus: "active",
+    });
 
     setIsSubmitting(false);
 
