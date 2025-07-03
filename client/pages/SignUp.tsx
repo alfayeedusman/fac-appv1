@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -300,8 +300,13 @@ export default function SignUp() {
     },
   ];
 
+  // Memoize validation for current step to prevent unnecessary re-calculations
+  const isCurrentStepValid = useMemo(() => {
+    return validateStep(currentStep);
+  }, [currentStep, formData, errors]);
+
   const nextStep = () => {
-    if (validateStep(currentStep) && currentStep < 3) {
+    if (isCurrentStepValid && currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -862,7 +867,7 @@ export default function SignUp() {
                 type="button"
                 onClick={nextStep}
                 className="btn-futuristic py-3 px-8 rounded-xl font-bold"
-                disabled={!validateStep(currentStep)}
+                disabled={!isCurrentStepValid}
               >
                 Next Step
                 <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />
