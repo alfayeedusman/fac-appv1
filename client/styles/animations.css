@@ -104,6 +104,10 @@
   animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.animate-scale-in {
+  animation: scale-in 0.8s ease-out;
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
