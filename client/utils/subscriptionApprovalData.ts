@@ -263,6 +263,19 @@ export const addSubscriptionRequest = (
 
   requests.push(newRequest);
   localStorage.setItem("fac_subscription_requests", JSON.stringify(requests));
+
+  // Send admin notification
+  const {
+    addSubscriptionRequestNotification,
+  } = require("./adminNotifications");
+  addSubscriptionRequestNotification(
+    request.userName,
+    request.userEmail,
+    request.packageType,
+    request.paymentDetails.amount,
+    newRequest.id,
+  );
+
   return newRequest;
 };
 
