@@ -76,74 +76,89 @@ export default function PaymentUploadModal({
     e.preventDefault();
 
     if (!formData.paymentMethod || !receiptFile || !formData.referenceNumber) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill all required fields and upload receipt",
-        variant: "destructive",
-      });
+      notificationManager.error(
+        "Missing Information",
+        "Please fill all required fields and upload receipt",
+      );
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Simulate API call with proper error handling
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate potential API failures
+          if (Math.random() > 0.95) {
+            reject(new Error("Network error"));
+          } else {
+            resolve(true);
+          }
+        }, 2000);
+      });
 
-    // Create subscription request using the approval system
-    const receipt = {
-      id: `RCP${Date.now()}`,
-      imageUrl: URL.createObjectURL(receiptFile),
-      fileName: receiptFile.name,
-      uploadDate: new Date().toISOString(),
-      fileSize: receiptFile.size,
-    };
+      // Create subscription request using the approval system
+      const receipt = {
+        id: `RCP${Date.now()}`,
+        imageUrl: URL.createObjectURL(receiptFile),
+        fileName: receiptFile.name,
+        uploadDate: new Date().toISOString(),
+        fileSize: receiptFile.size,
+      };
 
-    const userEmail = localStorage.getItem("userEmail") || "";
-    const userName = userEmail.split("@")[0];
+      const userEmail = localStorage.getItem("userEmail") || "";
+      const userName = userEmail.split("@")[0];
 
-    const request = addSubscriptionRequest({
-      userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
-      userEmail,
-      userName,
-      packageType: selectedPlan as any,
-      packagePrice: `₱${formData.amount}/month`,
-      paymentMethod: formData.paymentMethod as any,
-      paymentDetails: {
-        referenceNumber: formData.referenceNumber,
-        accountName: userName,
-        amount: `₱${formData.amount}.00`,
-        paymentDate: new Date().toISOString().split("T")[0],
-      },
-      receipt,
-      status: "pending",
-      customerStatus: "active",
-    });
+      const request = addSubscriptionRequest({
+        userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        userEmail,
+        userName,
+        packageType: selectedPlan as any,
+        packagePrice: `₱${formData.amount}/month`,
+        paymentMethod: formData.paymentMethod as any,
+        paymentDetails: {
+          referenceNumber: formData.referenceNumber,
+          accountName: userName,
+          amount: `₱${formData.amount}.00`,
+          paymentDate: new Date().toISOString().split("T")[0],
+        },
+        receipt,
+        status: "pending",
+        customerStatus: "active",
+      });
 
-    setIsSubmitting(false);
+      // Show success notification
+      notificationManager.success(
+        "Payment Submitted Successfully! 🎉",
+        `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review. Please wait for admin approval.`,
+        { autoClose: 5000 },
+      );
 
-    // Show success notification
-    notificationManager.success(
-      "Payment Submitted Successfully! 🎉",
-      `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review. Please wait for admin approval.`,
-      { autoClose: 5000 },
-    );
+      // Trigger status refresh in parent component
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
 
-    // Trigger status refresh in parent component
-    if (onStatusUpdate) {
-      onStatusUpdate();
+      onClose();
+
+      // Reset form
+      setFormData({
+        planType: selectedPlan,
+        paymentMethod: "",
+        amount: planPrice.toString(),
+        referenceNumber: "",
+        notes: "",
+      });
+      setReceiptFile(null);
+    } catch (error) {
+      notificationManager.error(
+        "Submission Failed",
+        "There was an error processing your payment submission. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    onClose();
-
-    // Reset form
-    setFormData({
-      planType: selectedPlan,
-      paymentMethod: "",
-      amount: planPrice.toString(),
-      referenceNumber: "",
-      notes: "",
-    });
-    setReceiptFile(null);
   };
 
   return (
