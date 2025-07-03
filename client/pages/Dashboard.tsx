@@ -305,6 +305,22 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Dashboard Ads */}
+        {dashboardAds.length > 0 && (
+          <div className="mb-6">
+            {dashboardAds.map((ad) => (
+              <AdBanner
+                key={ad.id}
+                ad={ad}
+                userEmail={userEmail}
+                variant="banner"
+                onDismiss={handleAdDismiss}
+                className="mb-4"
+              />
+            ))}
+          </div>
+        )}
+
         {/* Membership Status Card */}
         <Card
           className={`border shadow-md mb-6 animate-fade-in-up animate-delay-200 ${
