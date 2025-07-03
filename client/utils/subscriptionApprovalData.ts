@@ -303,3 +303,37 @@ export const getSubscriptionStats = () => {
     banned: requests.filter((r) => r.customerStatus === "banned").length,
   };
 };
+
+export const getUserSubscriptionRequest = (
+  userEmail: string,
+): SubscriptionRequest | null => {
+  const requests = getSubscriptionRequests();
+  const userId = `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+  // Find the most recent request for this user
+  const userRequests = requests
+    .filter((req) => req.userId === userId)
+    .sort(
+      (a, b) =>
+        new Date(b.submissionDate).getTime() -
+        new Date(a.submissionDate).getTime(),
+    );
+
+  return userRequests.length > 0 ? userRequests[0] : null;
+};
+
+export const getUserSubscriptionStatus = (
+  userEmail: string,
+): {
+  hasRequest: boolean;
+  status: SubscriptionRequest["status"] | null;
+  request: SubscriptionRequest | null;
+} => {
+  const request = getUserSubscriptionRequest(userEmail);
+
+  return {
+    hasRequest: !!request,
+    status: request?.status || null,
+    request,
+  };
+};
