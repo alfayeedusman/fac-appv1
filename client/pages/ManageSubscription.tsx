@@ -321,31 +321,99 @@ export default function ManageSubscription() {
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-gray-200">
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Manage Subscription
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Renew or upgrade your current plan
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button
-                      className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600 text-white py-3"
-                      onClick={handleRenewal}
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Renew Subscription
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 py-3"
-                      onClick={handleUpgrade}
-                    >
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade Plan
-                    </Button>
-                  </div>
+                  {(() => {
+                    const isRegularMember =
+                      currentSubscription.plan === "Regular Member";
+                    const isActive =
+                      currentSubscription.plan !== "Regular Member" &&
+                      currentSubscription.status === "active";
+
+                    return (
+                      <>
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {isRegularMember
+                              ? "Activate Subscription"
+                              : isActive
+                                ? "Manage Subscription"
+                                : "Activate Account"}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {isRegularMember
+                              ? "Choose a plan to get started"
+                              : isActive
+                                ? "Renew or upgrade your current plan"
+                                : "Reactivate your account"}
+                          </p>
+                        </div>
+
+                        {isRegularMember ? (
+                          // Regular member - show upgrade only
+                          <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
+                            <div className="flex items-center mb-4">
+                              <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+                              <div>
+                                <h4 className="font-bold text-red-800">
+                                  Regular Member
+                                </h4>
+                                <p className="text-sm text-red-600">
+                                  Upgrade to unlock premium services
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
+                              onClick={handleUpgrade}
+                            >
+                              <Crown className="h-4 w-4 mr-2" />
+                              Upgrade Account Now
+                            </Button>
+                          </div>
+                        ) : !isActive ? (
+                          // Inactive account - show activation
+                          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200 mb-4">
+                            <div className="flex items-center mb-4">
+                              <XCircle className="h-6 w-6 text-orange-500 mr-3" />
+                              <div>
+                                <h4 className="font-bold text-orange-800">
+                                  Account Inactive
+                                </h4>
+                                <p className="text-sm text-orange-600">
+                                  Reactivate to continue using services
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold py-3"
+                              onClick={handleUpgrade}
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Activate Account Now
+                            </Button>
+                          </div>
+                        ) : (
+                          // Active subscription - show renew and upgrade
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                              className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3"
+                              onClick={handleRenewal}
+                            >
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Renew Subscription
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 py-3"
+                              onClick={handleUpgrade}
+                            >
+                              <Crown className="h-4 w-4 mr-2" />
+                              Upgrade Plan
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </CardContent>
             </Card>
