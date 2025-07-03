@@ -111,6 +111,7 @@ export default function AdminSidebar({
   userRole,
   notificationCount,
 }: AdminSidebarProps) {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -228,7 +229,11 @@ export default function AdminSidebar({
                     isCollapsed ? "px-2" : "px-3",
                   )}
                   onClick={() => {
-                    onTabChange(item.id);
+                    if (item.id === "cms") {
+                      navigate("/admin-cms");
+                    } else {
+                      onTabChange(item.id);
+                    }
                     setIsMobileOpen(false);
                   }}
                   title={isCollapsed ? item.label : undefined}
