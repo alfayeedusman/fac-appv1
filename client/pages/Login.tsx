@@ -95,7 +95,9 @@ export default function Login() {
         className: "bg-green-50 border-green-200 text-green-800",
       });
 
-      // Navigate based on role
+      // Set splash screen flag and navigate
+      localStorage.setItem("showSplashScreen", "true");
+
       setTimeout(() => {
         if (
           authenticatedUser.role === "admin" ||
