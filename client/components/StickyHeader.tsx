@@ -33,6 +33,18 @@ export default function StickyHeader({
 
   // useEffect must be called before any conditional returns (Rules of Hooks)
   useEffect(() => {
+    // Always show header on management pages
+    const managementPages = [
+      "/inventory-management",
+      "/pos",
+      "/pos-kiosk",
+      "/admin-user-management",
+    ];
+    if (managementPages.includes(location.pathname)) {
+      setIsVisible(true);
+      return;
+    }
+
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       setIsVisible(scrollPosition > 100);
@@ -40,7 +52,7 @@ export default function StickyHeader({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [location.pathname]);
 
   // Don't render StickyHeader on public routes or if not authenticated
   if (isPublicRoute && !isAuthenticated) {
