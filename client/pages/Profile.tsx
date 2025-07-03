@@ -23,6 +23,7 @@ import {
   Zap,
   CheckCircle,
   Settings,
+  Trophy,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
