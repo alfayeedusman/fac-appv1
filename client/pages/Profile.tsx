@@ -169,8 +169,8 @@ export default function Profile() {
         </div>
 
         {/* Profile Overview Card */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-100 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5"></div>
+        <Card className="border shadow-sm mb-8">
+          {" "}
           <CardHeader className="relative z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
@@ -275,7 +275,7 @@ export default function Profile() {
         </Card>
 
         {/* Digital Membership Card */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-250">
+        <Card className="border shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
               <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
@@ -325,7 +325,7 @@ export default function Profile() {
         </Card>
 
         {/* Profile Details */}
-        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-300">
+        <Card className="border shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
               <div className="gradient-futuristic p-3 rounded-xl mr-4 animate-pulse-glow">
@@ -548,7 +548,7 @@ export default function Profile() {
         </Card>
 
         {/* Membership Benefits */}
-        <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
+        <Card className="border shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground text-2xl">
               <div className="bg-gradient-to-r from-yellow-500 to-fac-orange-500 p-3 rounded-xl mr-4 animate-pulse-glow">
