@@ -277,6 +277,8 @@ export default function AdminDashboard() {
     carUnit: "",
     plateNumber: "",
     membershipType: "Classic",
+    vehicleType: "car",
+    motorcycleType: "",
   });
 
   const [newPackage, setNewPackage] = useState({
@@ -340,6 +342,8 @@ export default function AdminDashboard() {
         carUnit: "",
         plateNumber: "",
         membershipType: "Classic",
+        vehicleType: "car",
+        motorcycleType: "",
       });
       alert("Customer added successfully!");
     }
@@ -1167,9 +1171,9 @@ export default function AdminDashboard() {
         open={isAddCustomerModalOpen}
         onOpenChange={setIsAddCustomerModalOpen}
       >
-        <DialogContent className="max-w-lg glass border-border">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-foreground">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Add New Customer
             </DialogTitle>
             <DialogDescription>
@@ -1177,12 +1181,10 @@ export default function AdminDashboard() {
               access services.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 max-h-96 overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="customerName" className="font-bold">
-                  Full Name *
-                </Label>
+                <Label htmlFor="customerName">Full Name *</Label>
                 <Input
                   id="customerName"
                   value={newCustomer.name}
@@ -1190,13 +1192,11 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, name: e.target.value })
                   }
                   placeholder="e.g., John Dela Cruz"
-                  className="mt-2 glass border-border rounded-xl"
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="customerEmail" className="font-bold">
-                  Email *
-                </Label>
+                <Label htmlFor="customerEmail">Email *</Label>
                 <Input
                   id="customerEmail"
                   type="email"
@@ -1205,16 +1205,14 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, email: e.target.value })
                   }
                   placeholder="e.g., john@email.com"
-                  className="mt-2 glass border-border rounded-xl"
+                  className="mt-1"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="customerPhone" className="font-bold">
-                  Phone Number *
-                </Label>
+                <Label htmlFor="customerPhone">Phone Number *</Label>
                 <Input
                   id="customerPhone"
                   value={newCustomer.phone}
@@ -1222,23 +1220,21 @@ export default function AdminDashboard() {
                     setNewCustomer({ ...newCustomer, phone: e.target.value })
                   }
                   placeholder="e.g., +63 912 345 6789"
-                  className="mt-2 glass border-border rounded-xl"
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="customerMembership" className="font-bold">
-                  Membership Type
-                </Label>
+                <Label htmlFor="customerMembership">Membership Type</Label>
                 <Select
                   value={newCustomer.membershipType}
                   onValueChange={(value) =>
                     setNewCustomer({ ...newCustomer, membershipType: value })
                   }
                 >
-                  <SelectTrigger className="mt-2 glass border-border rounded-xl">
+                  <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="glass border-border">
+                  <SelectContent>
                     <SelectItem value="Classic">Classic</SelectItem>
                     <SelectItem value="VIP Silver">VIP Silver</SelectItem>
                     <SelectItem value="VIP Gold">VIP Gold</SelectItem>
@@ -1247,10 +1243,58 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="customerCar" className="font-bold">
-                  Car Unit
+                <Label htmlFor="vehicleType">Vehicle Type</Label>
+                <Select
+                  value={newCustomer.vehicleType}
+                  onValueChange={(value) =>
+                    setNewCustomer({
+                      ...newCustomer,
+                      vehicleType: value,
+                      motorcycleType:
+                        value === "car" ? "" : newCustomer.motorcycleType,
+                    })
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="car">Car</SelectItem>
+                    <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {newCustomer.vehicleType === "motorcycle" && (
+                <div>
+                  <Label htmlFor="motorcycleType">Motorcycle Type</Label>
+                  <Select
+                    value={newCustomer.motorcycleType}
+                    onValueChange={(value) =>
+                      setNewCustomer({ ...newCustomer, motorcycleType: value })
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">Normal Bike</SelectItem>
+                      <SelectItem value="medium">Medium Bike</SelectItem>
+                      <SelectItem value="bigbike">Big Bike</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customerCar">
+                  {newCustomer.vehicleType === "motorcycle"
+                    ? "Motorcycle Model"
+                    : "Car Unit"}
                 </Label>
                 <Input
                   id="customerCar"
@@ -1258,14 +1302,16 @@ export default function AdminDashboard() {
                   onChange={(e) =>
                     setNewCustomer({ ...newCustomer, carUnit: e.target.value })
                   }
-                  placeholder="e.g., Toyota Vios 2020"
-                  className="mt-2 glass border-border rounded-xl"
+                  placeholder={
+                    newCustomer.vehicleType === "motorcycle"
+                      ? "e.g., Honda Click 150"
+                      : "e.g., Toyota Vios 2020"
+                  }
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="customerPlate" className="font-bold">
-                  Plate Number
-                </Label>
+                <Label htmlFor="customerPlate">Plate Number</Label>
                 <Input
                   id="customerPlate"
                   value={newCustomer.plateNumber}
@@ -1276,7 +1322,7 @@ export default function AdminDashboard() {
                     })
                   }
                   placeholder="e.g., ABC 1234"
-                  className="mt-2 glass border-border rounded-xl"
+                  className="mt-1"
                 />
               </div>
             </div>
