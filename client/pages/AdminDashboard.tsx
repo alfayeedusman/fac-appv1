@@ -60,6 +60,7 @@ import {
   Activity,
   CheckCircle,
   Printer,
+  X,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -95,6 +96,11 @@ interface ServicePackage {
   name: string;
   basePrice: number;
   duration: string;
+  durationType?: "preset" | "hours" | "custom";
+  hours?: number;
+  startDate?: string;
+  endDate?: string;
+  banner?: string;
   features: string[];
   active: boolean;
 }
@@ -288,6 +294,11 @@ export default function AdminDashboard() {
     name: "",
     basePrice: 0,
     duration: "Monthly",
+    durationType: "preset" as "preset" | "hours" | "custom",
+    hours: undefined as number | undefined,
+    startDate: undefined as string | undefined,
+    endDate: undefined as string | undefined,
+    banner: undefined as string | undefined,
     features: [] as string[],
     active: true,
   });
@@ -1541,6 +1552,50 @@ export default function AdminDashboard() {
               />
             </div>
 
+            <div>
+              <Label htmlFor="packageBanner">Package Banner/Photo</Label>
+              <div className="mt-2 space-y-2">
+                <Input
+                  id="packageBanner"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setNewPackage({
+                          ...newPackage,
+                          banner: event.target?.result as string,
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="mt-2"
+                />
+                {newPackage.banner && (
+                  <div className="relative">
+                    <img
+                      src={newPackage.banner}
+                      alt="Package banner"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() =>
+                        setNewPackage({ ...newPackage, banner: undefined })
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="packagePrice">Base Price (₱) *</Label>
@@ -1559,24 +1614,105 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <Label htmlFor="packageDuration">Billing Cycle</Label>
+                <Label htmlFor="packageDuration">Duration Type</Label>
                 <Select
-                  value={newPackage.duration}
+                  value={newPackage.durationType || "preset"}
                   onValueChange={(value) =>
-                    setNewPackage({ ...newPackage, duration: value })
+                    setNewPackage({
+                      ...newPackage,
+                      durationType: value as "preset" | "hours" | "custom",
+                    })
                   }
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Daily">Daily</SelectItem>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Yearly">Yearly</SelectItem>
+                    <SelectItem value="preset">Preset Duration</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
+                    <SelectItem value="custom">Custom Date Range</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {(!newPackage.durationType ||
+                newPackage.durationType === "preset") && (
+                <div>
+                  <Label htmlFor="packageDurationValue">Billing Cycle</Label>
+                  <Select
+                    value={newPackage.duration}
+                    onValueChange={(value) =>
+                      setNewPackage({ ...newPackage, duration: value })
+                    }
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Daily">Daily</SelectItem>
+                      <SelectItem value="Weekly">Weekly</SelectItem>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                      <SelectItem value="Yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {newPackage.durationType === "hours" && (
+                <div>
+                  <Label htmlFor="packageHours">Duration (Hours)</Label>
+                  <Input
+                    id="packageHours"
+                    type="number"
+                    min="1"
+                    max="8760"
+                    value={newPackage.hours || ""}
+                    onChange={(e) =>
+                      setNewPackage({
+                        ...newPackage,
+                        hours: parseInt(e.target.value) || 1,
+                      })
+                    }
+                    placeholder="e.g., 24 for 24 hours"
+                    className="mt-2"
+                  />
+                </div>
+              )}
+
+              {newPackage.durationType === "custom" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="packageStartDate">Start Date</Label>
+                    <Input
+                      id="packageStartDate"
+                      type="datetime-local"
+                      value={newPackage.startDate || ""}
+                      onChange={(e) =>
+                        setNewPackage({
+                          ...newPackage,
+                          startDate: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="packageEndDate">End Date</Label>
+                    <Input
+                      id="packageEndDate"
+                      type="datetime-local"
+                      value={newPackage.endDate || ""}
+                      onChange={(e) =>
+                        setNewPackage({
+                          ...newPackage,
+                          endDate: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
