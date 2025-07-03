@@ -24,6 +24,7 @@ import {
   CheckCircle,
   Settings,
   Trophy,
+  CreditCard,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
@@ -640,6 +641,18 @@ export default function Profile() {
                 </ul>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment History Button */}
+        <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-500">
+          <CardContent className="p-6">
+            <Link to="/payment-history" className="block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-4 rounded-xl">
+                <CreditCard className="h-5 w-5 mr-2" />
+                View Payment History
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
