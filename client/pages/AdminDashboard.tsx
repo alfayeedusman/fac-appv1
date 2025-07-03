@@ -392,6 +392,8 @@ export default function AdminDashboard() {
                     </>
                   )}
                   {activeTab === "customers" && "Customer Hub"}
+                  {activeTab === "roles" && "User & Role Management"}
+                  {activeTab === "ads" && "Advertisement Studio"}
                   {activeTab === "packages" && "Package Studio"}
                   {activeTab === "branches" && "Branch Network"}
                   {activeTab === "analytics" && "Analytics Center"}
@@ -403,6 +405,10 @@ export default function AdminDashboard() {
                     "Monitor your business performance in real-time"}
                   {activeTab === "customers" &&
                     "Manage customer accounts and approvals"}
+                  {activeTab === "roles" &&
+                    "Manage user roles, permissions, and admin accounts"}
+                  {activeTab === "ads" &&
+                    "Create and manage promotional advertisements"}
                   {activeTab === "packages" &&
                     "Configure service packages and pricing"}
                   {activeTab === "branches" &&
@@ -646,7 +652,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Quick Actions with Modern Design */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up animate-delay-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animate-delay-200">
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
                   onClick={() => setActiveTab("packages")}
@@ -689,6 +695,29 @@ export default function AdminDashboard() {
                     </p>
                     <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
                       View Analytics
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  onClick={() => setActiveTab("ads")}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center text-xl text-foreground">
+                      <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                      Ad Studio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-base mb-6">
+                      Create and manage promotional advertisements
+                    </p>
+                    <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
+                      Manage Ads
                     </Button>
                   </CardContent>
                 </Card>
@@ -1031,6 +1060,20 @@ export default function AdminDashboard() {
               <AnalyticsCharts
                 timeFilter={timeFilter}
                 onTimeFilterChange={setTimeFilter}
+              />
+            </div>
+          )}
+
+          {activeTab === "roles" && userRole === "superadmin" && (
+            <div className="animate-fade-in-scale">
+              <UserRoleManagement />
+            </div>
+          )}
+
+          {activeTab === "ads" && (
+            <div className="animate-fade-in-scale">
+              <AdminAdManagement
+                adminEmail={localStorage.getItem("userEmail") || ""}
               />
             </div>
           )}

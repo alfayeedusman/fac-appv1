@@ -28,11 +28,13 @@ import AdminAds from "./pages/AdminAds";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
+import { initializeSampleAds } from "./utils/initializeSampleAds";
 
 const queryClient = new QueryClient();
 
-// Initialize admin accounts on app startup
+// Initialize admin accounts and sample ads on app startup
 initializeAdminAccounts();
+initializeSampleAds();
 
 const App = () => (
   <ThemeProvider>
