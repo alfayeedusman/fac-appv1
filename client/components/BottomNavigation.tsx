@@ -44,12 +44,6 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
       id: "my-bookings",
     },
     {
-      to: "/manage-subscription",
-      icon: CreditCard,
-      label: "Plans",
-      id: "plans",
-    },
-    {
       action: "qr-scan",
       icon: QrCode,
       label: "Scan",
@@ -145,19 +139,6 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
                         active && "scale-110",
                       )}
                     />
-                    {/* Status indicator for Plans */}
-                    {item.id === "plans" && (
-                      <div
-                        className={cn(
-                          "absolute -top-1 -right-1 w-3 h-3 rounded-full",
-                          isRegularMember || !hasActiveSubscription
-                            ? "bg-red-500"
-                            : isVipGold && hasActiveSubscription
-                              ? "bg-orange-500"
-                              : "bg-green-500",
-                        )}
-                      ></div>
-                    )}
                   </div>
                   <span
                     className={cn(
