@@ -76,7 +76,7 @@ export default function StickyHeader({
       case "/booking":
         return "Book Service";
       case "/my-bookings":
-        return "My Bookings";
+        return "Booking History";
       case "/manage-subscription":
         return "Plans";
       case "/voucher":
