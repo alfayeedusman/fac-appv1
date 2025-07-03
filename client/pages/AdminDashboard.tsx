@@ -68,7 +68,9 @@ import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
 import { formatDistanceToNow } from "date-fns";
 import AdminAdManagement from "@/components/AdminAdManagement";
+import UserRoleManagement from "@/components/UserRoleManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
+import { initializeSampleAds } from "@/utils/initializeSampleAds";
 
 interface Customer {
   id: string;
@@ -291,6 +293,8 @@ export default function AdminDashboard() {
     const role = localStorage.getItem("userRole");
     if (role === "admin" || role === "superadmin") {
       setUserRole(role);
+      // Initialize sample ads for demonstration
+      initializeSampleAds();
     } else {
       navigate("/login");
     }
