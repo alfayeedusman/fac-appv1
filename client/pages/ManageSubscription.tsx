@@ -42,6 +42,7 @@ import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
 import PackageSelectionModal from "@/components/PackageSelectionModal";
+import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 
 interface SubscriptionPlan {
   id: string;
@@ -662,7 +663,7 @@ export default function ManageSubscription() {
                     </div>
                     <Button
                       className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
-                      onClick={handleUpgrade}
+                      onClick={() => setShowSubscriptionSubmission(true)}
                     >
                       <RefreshCw className="h-5 w-5 mr-2" />
                       Confirm Renewal - ₱{pricing.total.toLocaleString()}
@@ -748,6 +749,14 @@ export default function ManageSubscription() {
         currentPlan={currentPlan}
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
+      />
+
+      {/* Subscription Submission Modal */}
+      <SubscriptionSubmission
+        isOpen={showSubscriptionSubmission}
+        onClose={() => setShowSubscriptionSubmission(false)}
+        userEmail={userEmail}
+        userName={userEmail.split("@")[0]}
       />
     </div>
   );
