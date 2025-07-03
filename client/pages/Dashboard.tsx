@@ -443,22 +443,24 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-muted-foreground text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="glass rounded-xl p-4 hover-lift transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-muted-foreground text-sm font-medium">
                         Classic
                       </span>
-                      <Car className="h-4 w-4 text-blue-500" />
+                      <div className="gradient-secondary p-2 rounded-lg animate-pulse-glow">
+                        <Car className="h-4 w-4 text-white" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">
+                        <span className="text-lg font-black text-foreground">
                           {membershipData.remainingWashes.classic === 999
                             ? "∞"
                             : membershipData.remainingWashes.classic}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground font-medium">
                           /
                           {membershipData.totalWashes.classic === 999
                             ? "∞"
@@ -470,24 +472,26 @@ export default function Dashboard() {
                           membershipData.remainingWashes.classic,
                           membershipData.totalWashes.classic,
                         )}
-                        className="h-2"
+                        className="h-3 rounded-full bg-gradient-to-r from-blue-200 to-blue-300"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-muted-foreground text-sm">
+                  <div className="glass rounded-xl p-4 hover-lift transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-muted-foreground text-sm font-medium">
                         VIP ProMax
                       </span>
-                      <Crown className="h-4 w-4 text-purple-500" />
+                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg animate-pulse-glow">
+                        <Crown className="h-4 w-4 text-white" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">
+                        <span className="text-lg font-black text-foreground">
                           {membershipData.remainingWashes.vipProMax}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground font-medium">
                           /{membershipData.totalWashes.vipProMax}
                         </span>
                       </div>
@@ -496,23 +500,23 @@ export default function Dashboard() {
                           membershipData.remainingWashes.vipProMax,
                           membershipData.totalWashes.vipProMax,
                         )}
-                        className="h-2"
+                        className="h-3 rounded-full bg-gradient-to-r from-purple-200 to-pink-300"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <Link to="/booking">
-                    <Button className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white flex-1 mr-2">
+                <div className="flex space-x-3">
+                  <Link to="/booking" className="flex-1">
+                    <Button className="w-full gradient-primary text-white font-bold py-3 rounded-xl hover-lift animate-pulse-glow">
                       <Car className="h-4 w-4 mr-2" />
                       Book Now
                     </Button>
                   </Link>
-                  <Link to="/manage-subscription">
+                  <Link to="/manage-subscription" className="flex-1">
                     <Button
                       variant="outline"
-                      className="border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 flex-1 ml-2"
+                      className="w-full glass border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 font-bold py-3 rounded-xl hover-lift"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Manage
