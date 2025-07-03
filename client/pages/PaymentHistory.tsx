@@ -94,50 +94,8 @@ export default function PaymentHistory() {
       }),
     );
 
-    // Add sample historical transactions for demo
-    const sampleTransactions: TransactionHistory[] = [
-      {
-        id: "TXN001",
-        type: "subscription",
-        title: "VIP Gold Ultimate Subscription",
-        description: "Monthly subscription payment",
-        amount: "₱799.00",
-        status: "completed",
-        date: "2024-12-15T10:30:00Z",
-        packageType: "VIP Gold Ultimate",
-        paymentMethod: "gcash",
-        referenceNumber: "GC123456789",
-      },
-      {
-        id: "TXN002",
-        type: "upgrade",
-        title: "Account Upgrade",
-        description: "Upgraded from Classic to VIP Gold",
-        amount: "₱500.00",
-        status: "completed",
-        date: "2024-12-10T14:20:00Z",
-        packageType: "VIP Gold Ultimate",
-        paymentMethod: "maya",
-        referenceNumber: "MY987654321",
-      },
-      {
-        id: "TXN003",
-        type: "renewal",
-        title: "Subscription Renewal",
-        description: "Auto-renewal for Classic Silver package",
-        amount: "₱299.00",
-        status: "pending",
-        date: "2024-12-20T09:15:00Z",
-        packageType: "Classic Silver",
-        paymentMethod: "bank_transfer",
-        referenceNumber: "BT456789123",
-      },
-    ];
-
-    const allTransactions = [
-      ...subscriptionTransactions,
-      ...sampleTransactions,
-    ];
+    // Only show real user subscription transactions - no sample data
+    const allTransactions = subscriptionTransactions;
     setTransactions(allTransactions);
   };
 
