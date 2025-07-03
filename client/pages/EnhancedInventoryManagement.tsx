@@ -360,47 +360,6 @@ export default function EnhancedInventoryManagement() {
     setFilteredProducts(filtered);
   };
 
-  const handleAddCategory = () => {
-    if (!newCategory.name) {
-      notificationManager.error(
-        "Missing Information",
-        "Please enter category name",
-      );
-      return;
-    }
-
-    const category: ProductCategory = {
-      id: newCategory.name.toLowerCase().replace(/\s+/g, "_"),
-      name: newCategory.name,
-      description: newCategory.description,
-      icon: newCategory.icon,
-      color: newCategory.color,
-      variants: newCategory.variants,
-      isActive: true,
-    };
-
-    const updatedCategories = [...categories, category];
-    setCategories(updatedCategories);
-    localStorage.setItem(
-      "fac_product_categories",
-      JSON.stringify(updatedCategories),
-    );
-
-    notificationManager.success(
-      "Category Added",
-      `${newCategory.name} category created`,
-    );
-
-    setNewCategory({
-      name: "",
-      description: "",
-      icon: "📦",
-      color: "#3B82F6",
-      variants: [],
-    });
-    setShowAddCategoryModal(false);
-  };
-
   const addVariantToNewCategory = () => {
     setNewCategory({
       ...newCategory,
