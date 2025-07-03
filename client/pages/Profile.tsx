@@ -272,6 +272,48 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* Digital Membership Card */}
+        <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-250">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground text-2xl">
+              <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                <CreditCard className="h-6 w-6 text-white" />
+              </div>
+              Digital Membership Card
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PremiumMembershipCard
+              userName={profile.name}
+              email={profile.email}
+              membershipType={
+                profile.membershipType.toLowerCase().replace(/\s+/g, "_") as
+                  | "regular"
+                  | "classic"
+                  | "vip_silver"
+                  | "vip_gold"
+              }
+              memberSince={new Date(profile.joinDate).toLocaleDateString(
+                "en-US",
+                { month: "short", year: "numeric" },
+              )}
+              expiryDate={
+                userSubscription?.currentCycleEnd
+                  ? new Date(
+                      userSubscription.currentCycleEnd,
+                    ).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "N/A"
+              }
+              membershipNumber={`FAC${userEmail.replace(/[^0-9]/g, "").padStart(6, "0")}`}
+              remainingWashes={userSubscription?.remainingWashes?.classic || 0}
+              totalWashes={userSubscription?.totalWashes?.classic || 0}
+            />
+          </CardContent>
+        </Card>
+
         {/* Profile Details */}
         <Card className="glass border-border shadow-2xl mb-8 animate-fade-in-up animate-delay-300">
           <CardHeader>
