@@ -1096,7 +1096,11 @@ export default function AdminDashboard() {
             />
           )}
 
-          {activeTab === "sales" && (
+          {activeTab === "sales" && <SalesDashboard />}
+
+          {activeTab === "inventory" && <InventoryDashboard />}
+
+          {activeTab === "old_sales" && (
             <div className="space-y-8 animate-fade-in-scale">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="glass border-border shadow-xl hover-lift">
