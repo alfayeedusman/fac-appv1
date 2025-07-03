@@ -68,21 +68,24 @@ export default function Welcome() {
 
   const features = [
     {
-      icon: <Sparkles className="h-8 w-8" />,
-      title: "AI-Powered Washing",
-      description: "Smart algorithms optimize every wash for your vehicle",
+      icon: <Car className="h-8 w-8" />,
+      title: "Professional Car Wash",
+      description:
+        "Expert hand washing and premium cleaning services for all vehicle types",
       gradient: "from-fac-orange-500 to-yellow-500",
     },
     {
       icon: <Shield className="h-8 w-8" />,
-      title: "Premium Protection",
-      description: "Advanced nano-coating and paint protection technology",
+      title: "Paint Protection",
+      description:
+        "Graphene coating and advanced protection treatments available",
       gradient: "from-blue-500 to-purple-500",
     },
     {
       icon: <Smartphone className="h-8 w-8" />,
-      title: "Smart Booking",
-      description: "QR codes, mobile app, and contactless service experience",
+      title: "Digital Experience",
+      description:
+        "Mobile app booking, QR check-in, and real-time service updates",
       gradient: "from-green-500 to-cyan-500",
     },
   ];
