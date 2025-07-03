@@ -38,19 +38,23 @@ export default function SplashScreen({
     },
   ];
 
+  const handleComplete = useCallback(() => {
+    setIsVisible(false);
+    setTimeout(onComplete, 500);
+  }, [onComplete]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentStep < 2) {
-        // steps.length - 1 = 2
-        setCurrentStep(currentStep + 1);
+        // There are 3 steps (0, 1, 2)
+        setCurrentStep((prev) => prev + 1);
       } else {
-        setIsVisible(false);
-        setTimeout(onComplete, 500);
+        handleComplete();
       }
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [currentStep, onComplete]);
+  }, [currentStep, handleComplete]);
 
   if (!isVisible) return null;
 
