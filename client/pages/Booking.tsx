@@ -235,6 +235,9 @@ You'll receive a confirmation shortly.`);
           </div>
         </div>
 
+        {/* Upgrade Notification Banner */}
+        <UpgradeNotificationBanner className="mb-8" />
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Service Selection */}
           <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-100">
