@@ -69,6 +69,8 @@ import StickyHeader from "@/components/StickyHeader";
 import { formatDistanceToNow } from "date-fns";
 import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
+import SalesDashboard from "@/components/SalesDashboard";
+import InventoryDashboard from "@/components/InventoryDashboard";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 
