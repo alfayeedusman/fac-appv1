@@ -29,6 +29,7 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
 import AdminCMS from "./pages/AdminCMS";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
+import AdminGamification from "./pages/AdminGamification";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
@@ -186,6 +187,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminPushNotifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-gamification"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminGamification />
                 </ProtectedRoute>
               }
             />
