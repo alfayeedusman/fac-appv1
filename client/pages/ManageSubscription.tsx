@@ -363,25 +363,28 @@ export default function ManageSubscription() {
                     const isRegularMember =
                       currentSubscription.plan === "Regular Member";
                     const isActive =
-                      currentSubscription.plan !== "Regular Member" &&
-                      currentSubscription.status === "active";
+                      currentSubscription.status === "active" &&
+                      !isRegularMember;
+                    const isExpired =
+                      currentSubscription.status === "inactive" &&
+                      !isRegularMember;
 
                     return (
                       <>
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold text-gray-900 mb-2">
                             {isRegularMember
-                              ? "Activate Subscription"
+                              ? "Choose Your Package"
                               : isActive
                                 ? "Manage Subscription"
-                                : "Activate Account"}
+                                : "Reactivate Account"}
                           </h3>
                           <p className="text-sm text-gray-600">
                             {isRegularMember
-                              ? "Choose a plan to get started"
+                              ? "Select a package to unlock premium services"
                               : isActive
                                 ? "Renew or upgrade your current plan"
-                                : "Reactivate your account"}
+                                : "Your subscription has expired. Choose a package to continue"}
                           </p>
                         </div>
 
