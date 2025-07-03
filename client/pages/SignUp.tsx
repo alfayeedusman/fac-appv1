@@ -300,13 +300,8 @@ export default function SignUp() {
     },
   ];
 
-  // Memoize validation for current step to prevent unnecessary re-calculations
-  const isCurrentStepValid = useMemo(() => {
-    return validateStep(currentStep);
-  }, [currentStep, formData, errors]);
-
   const nextStep = () => {
-    if (isCurrentStepValid && currentStep < 3) {
+    if (validateStep(currentStep) && currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
