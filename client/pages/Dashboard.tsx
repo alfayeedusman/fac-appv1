@@ -129,17 +129,13 @@ export default function Dashboard() {
 
   // Get user-specific wash logs
   const getUserWashLogs = (): WashLog[] => {
-    const userLogs = JSON.parse(localStorage.getItem(`washLogs_${userEmail}`) || "[]");
+    const userLogs = JSON.parse(
+      localStorage.getItem(`washLogs_${userEmail}`) || "[]",
+    );
     return userLogs;
   };
 
   const [washLogs] = useState<WashLog[]>(getUserWashLogs());
-      date: "2024-01-05",
-      status: "completed",
-      amount: 0,
-      branch: "Tumaga Hub",
-    },
-  ]);
 
   const getRenewalUrgency = () => {
     if (membershipData.daysLeft <= 7) return "urgent";
