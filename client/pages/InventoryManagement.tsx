@@ -58,8 +58,11 @@ import {
 } from "@/utils/inventoryData";
 import { notificationManager } from "@/components/NotificationModal";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
+import AdminSidebar from "@/components/AdminSidebar";
+import { useNavigate } from "react-router-dom";
 
 export default function InventoryManagement() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
@@ -1015,6 +1018,7 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
