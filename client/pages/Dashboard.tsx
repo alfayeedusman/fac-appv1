@@ -528,6 +528,20 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+        {/* Credit Card Style Profile */}
+        <div className="mb-6 animate-fade-in-up animate-delay-400">
+          <CreditCardProfile
+            userProfile={{
+              name: currentUser?.fullName || userEmail.split("@")[0],
+              email: userEmail,
+              membershipType: membershipData.package,
+              joinDate: currentUser?.registeredAt || new Date().toISOString(),
+              plateNumber: currentUser?.carPlateNumber,
+            }}
+            membershipData={membershipData}
+          />
+        </div>
+
         {/* Futuristic Tabs */}
         <div className="mb-6 animate-fade-in-up animate-delay-500">
           <div className="glass rounded-2xl p-2">
