@@ -895,7 +895,7 @@ export default function SignUp() {
         </form>
 
         {/* Footer */}
-        <div className="text-center mt-8 animate-fade-in-up animate-delay-500">
+        <div className="text-center mt-8 space-y-4 animate-fade-in-up animate-delay-500">
           <div className="glass rounded-2xl p-4">
             <p className="text-muted-foreground">
               Already have an account?{" "}
@@ -904,6 +904,18 @@ export default function SignUp() {
                 className="text-fac-orange-500 font-semibold hover:underline transition-colors"
               >
                 Sign in here
+              </Link>
+            </p>
+          </div>
+
+          <div className="glass rounded-2xl p-4">
+            <p className="text-muted-foreground text-sm">
+              Need to set up credentials?{" "}
+              <Link
+                to="/credential-setup"
+                className="text-purple-500 font-semibold hover:underline transition-colors"
+              >
+                Credential Setup
               </Link>
             </p>
           </div>
