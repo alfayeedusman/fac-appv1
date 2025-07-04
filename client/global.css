@@ -112,6 +112,10 @@
   animation: breathe 4s ease-in-out infinite;
 }
 
+.animate-ping-slow {
+  animation: ping-slow 1.5s ease-in-out infinite;
+}
+
 .animate-delay-100 {
   animation-delay: 0.1s;
 }
