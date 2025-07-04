@@ -342,7 +342,8 @@ export default function Index() {
             First Smart Carwash & Auto Detailing in Zamboanga City.
           </p>
           <p className="text-xs text-muted-foreground font-medium">
-            Powered by Fdigitals 💗
+            Powered by Fdigitals{" "}
+            <span className="inline-block animate-ping-slow">🧡</span>
           </p>
         </div>
       </div>
