@@ -53,13 +53,13 @@ export default function Index() {
 
       {/* Hero Section */}
       <div className="relative z-10 px-6 py-16 text-center max-w-md mx-auto">
-        {/* Logo with Glow Effect */}
+        {/* Logo - Simple and Flat */}
         <div className="mb-8 animate-fade-in-up">
-          <div className="relative inline-block">
+          <div className="inline-block">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
               alt="Fayeed Auto Care Logo"
-              className="h-24 w-auto mx-auto animate-pulse-glow"
+              className="h-24 w-auto mx-auto"
             />
           </div>
         </div>
@@ -297,7 +297,7 @@ export default function Index() {
           <h2 className="text-3xl font-black text-foreground text-center mb-12 animate-fade-in-up">
             Our{" "}
             <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-              Smart Hubs
+              Branches
             </span>
           </h2>
 
@@ -308,10 +308,10 @@ export default function Index() {
                   <MapPin className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="font-black text-foreground text-base mb-1">
-                  Tumaga Hub
+                  Tumaga Branch
                 </h3>
                 <p className="text-xs text-muted-foreground font-medium">
-                  Main Station
+                  Air Bell Subdivision
                 </p>
               </CardContent>
             </Card>
@@ -321,10 +321,10 @@ export default function Index() {
                   <MapPin className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="font-black text-foreground text-base mb-1">
-                  Boalan Hub
+                  Boalan Branch
                 </h3>
                 <p className="text-xs text-muted-foreground font-medium">
-                  Express Service
+                  Besides Divisoria Checkpoint
                 </p>
               </CardContent>
             </Card>
@@ -338,8 +338,11 @@ export default function Index() {
           <p className="text-sm text-muted-foreground font-medium mb-2">
             © 2025 Fayeed Auto Care
           </p>
+          <p className="text-xs text-muted-foreground font-medium mb-3">
+            First Smart Carwash & Auto Detailing in Zamboanga City.
+          </p>
           <p className="text-xs text-muted-foreground font-medium">
-            Revolutionizing car care with AI • Zamboanga City
+            Powered by Fdigitals 💗
           </p>
         </div>
       </div>
