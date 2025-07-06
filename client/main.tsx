@@ -113,6 +113,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/customer" element={<FlutterCustomerApp />} />
+            <Route path="/flutter-app" element={<FlutterCustomerApp />} />
             <Route
               path="/manage-subscription"
               element={
