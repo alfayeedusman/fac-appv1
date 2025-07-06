@@ -18,5 +18,8 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Customer API routes for Flutter app
+  app.use("/api/v2", customerApiRoutes);
+
   return app;
 }
