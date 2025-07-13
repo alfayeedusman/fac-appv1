@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
-import SimplePackageModal from "@/components/SimplePackageModal";
+import SwipeablePackageModal from "@/components/SwipeablePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
   getUserSubscriptionStatus,
@@ -80,7 +80,8 @@ export default function ManageSubscription() {
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showSimplePackageModal, setShowSimplePackageModal] = useState(false);
+  const [showSwipeablePackageModal, setShowSwipeablePackageModal] =
+    useState(false);
   const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
     useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
@@ -274,14 +275,14 @@ export default function ManageSubscription() {
   };
 
   const handleUpgrade = () => {
-    // Show simple package selection modal
-    setShowSimplePackageModal(true);
+    // Show swipeable package selection modal
+    setShowSwipeablePackageModal(true);
   };
 
-  const handleSimplePackageSelection = (packageId: string) => {
+  const handleSwipeablePackageSelection = (packageId: string) => {
     setSelectedPlan(packageId);
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
-    setShowSimplePackageModal(false);
+    setShowSwipeablePackageModal(false);
     setShowPaymentModal(true);
   };
 
@@ -821,16 +822,16 @@ export default function ManageSubscription() {
 
       <BottomNavigation />
 
-      {/* Simple Package Selection Modal */}
-      <SimplePackageModal
-        isOpen={showSimplePackageModal}
+      {/* Swipeable Package Selection Modal */}
+      <SwipeablePackageModal
+        isOpen={showSwipeablePackageModal}
         onClose={() => {
-          setShowSimplePackageModal(false);
+          setShowSwipeablePackageModal(false);
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);
         }}
-        onSelectPackage={handleSimplePackageSelection}
+        onSelectPackage={handleSwipeablePackageSelection}
         subscriptionRequestStatus={subscriptionRequestStatus}
       />
 
