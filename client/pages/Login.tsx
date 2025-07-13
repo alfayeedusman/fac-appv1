@@ -13,6 +13,7 @@ import {
   Lock,
   Fingerprint,
   Zap,
+  Crown,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
@@ -28,6 +29,33 @@ export default function Login() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Force Superadmin Login Function
+  const forceSuperadminLogin = () => {
+    setIsLoading(true);
+
+    // Clear any existing user data
+    localStorage.clear();
+
+    // Set superadmin credentials
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("userEmail", "superadmin@fac.com");
+    localStorage.setItem("userRole", "superadmin");
+    localStorage.setItem("justLoggedIn", "true");
+
+    toast({
+      title: "Force Superadmin Login! 👑",
+      description: "Welcome, Supreme Administrator!",
+      variant: "default",
+      className: "bg-purple-50 border-purple-200 text-purple-800",
+    });
+
+    setTimeout(() => {
+      navigate("/admin-dashboard");
+    }, 1000);
+
+    setIsLoading(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -148,7 +176,12 @@ export default function Login() {
     try {
       // Check if Web Authentication API is supported
       if (!window.PublicKeyCredential) {
-        alert("Biometric authentication is not supported on this device");
+        toast({
+          title: "Biometric Not Supported",
+          description:
+            "Biometric authentication is not supported on this device",
+          variant: "destructive",
+        });
         setIsLoading(false);
         return;
       }
@@ -163,12 +196,20 @@ export default function Login() {
       localStorage.setItem("userEmail", simulatedUser);
       localStorage.setItem("userRole", "user");
 
-      alert("Biometric authentication successful!");
+      toast({
+        title: "Biometric Authentication Successful! 🔐",
+        description: "Welcome back!",
+        variant: "default",
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
+
       navigate("/welcome");
     } catch (error) {
-      alert(
-        "Biometric authentication failed. Please try again or use email/password.",
-      );
+      toast({
+        title: "Biometric Authentication Failed",
+        description: "Please try again or use email/password.",
+        variant: "destructive",
+      });
     }
 
     setIsLoading(false);
@@ -312,6 +353,20 @@ export default function Login() {
                 )}
               </Button>
 
+              {/* Force Superadmin Login Button */}
+              <Button
+                type="button"
+                onClick={forceSuperadminLogin}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all group"
+              >
+                <div className="flex items-center justify-center">
+                  <span className="text-2xl mr-2">👑</span>
+                  {isLoading ? "Accessing..." : "FORCE SUPERADMIN LOGIN"}
+                  <span className="text-2xl ml-2">⚡</span>
+                </div>
+              </Button>
+
               {/* Biometric Login Option */}
               <Button
                 type="button"
@@ -370,9 +425,16 @@ export default function Login() {
                   <strong>Admin:</strong> admin@fac.com / admin123
                 </span>
               </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Super Admin:</strong> superadmin@fac.com / super123
+              <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200">
+                <span className="text-purple-800 font-bold">
+                  👑 <strong>SUPERADMIN:</strong> superadmin@fac.com / super123
+                  ⚡
+                </span>
+              </div>
+              <div className="text-center p-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                <span className="text-xs text-purple-600 font-semibold">
+                  💡 Or use the FORCE SUPERADMIN LOGIN button above to bypass
+                  everything!
                 </span>
               </div>
             </div>
