@@ -15,25 +15,19 @@ import {
   Crown,
 } from "lucide-react";
 import SplashScreen from "@/components/SplashScreen";
-import AdBanner from "@/components/AdBanner";
-import { getVisibleAdsForUser, Ad } from "@/utils/adsUtils";
 
 export default function Welcome() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const [showSplash, setShowSplash] = useState(false);
-  const [welcomeAds, setWelcomeAds] = useState<Ad[]>([]);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
     if (email) {
       setUserEmail(email);
-      // Load ads for welcome page
-      const ads = getVisibleAdsForUser("welcome", email);
-      setWelcomeAds(ads);
     }
 
     // Check if splash screen should be shown
@@ -48,10 +42,6 @@ export default function Welcome() {
 
   const handleSplashComplete = () => {
     setShowSplash(false);
-  };
-
-  const handleAdDismiss = (adId: string) => {
-    setWelcomeAds((prev) => prev.filter((ad) => ad.id !== adId));
   };
 
   if (showSplash) {
@@ -347,36 +337,6 @@ export default function Welcome() {
           </div>
         </div>
       </div>
-
-      {/* Ads Section */}
-      {welcomeAds.length > 0 && (
-        <div className="px-4 pb-6">
-          <div className="max-w-md mx-auto">
-            <AdBanner
-              ad={welcomeAds[currentAdIndex]}
-              userEmail={userEmail}
-              variant="inline"
-              onDismiss={handleAdDismiss}
-              className="mb-4"
-            />
-            {welcomeAds.length > 1 && (
-              <div className="flex justify-center gap-2">
-                {welcomeAds.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                      index === currentAdIndex
-                        ? "bg-fac-orange-500 w-4"
-                        : "bg-muted-foreground/30"
-                    }`}
-                    onClick={() => setCurrentAdIndex(index)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <div className="text-center py-4 px-6">
