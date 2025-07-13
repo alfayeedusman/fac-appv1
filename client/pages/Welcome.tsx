@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
   ArrowRight,
   Star,
-  Crown,
-  Zap,
   Shield,
   Smartphone,
   Car,
   CheckCircle,
   ArrowLeft,
   Bell,
+  Crown,
 } from "lucide-react";
 import SplashScreen from "@/components/SplashScreen";
 import AdBanner from "@/components/AdBanner";
@@ -44,7 +43,7 @@ export default function Welcome() {
       localStorage.removeItem("showSplashScreen");
     }
 
-        // Remove auto-advance for manual step control
+    // Remove auto-advance for manual step control
   }, []);
 
   const handleSplashComplete = () => {
@@ -84,13 +83,13 @@ export default function Welcome() {
     }
   };
 
-      // Define slides for the journey
+  // Define slides for the journey
   const slides = [
     {
-      id: 'welcome',
-      title: 'Welcome to Fayeed Auto Care',
+      id: "welcome",
+      title: "Welcome to Fayeed Auto Care",
       subtitle: `Hello ${userEmail.split("@")[0]}!`,
-      description: 'Professional car care services in Zamboanga City.',
+      description: "Professional car care services in Zamboanga City.",
       icon: <Sparkles className="h-12 w-12" />,
       content: (
         <div className="space-y-6">
@@ -103,19 +102,35 @@ export default function Welcome() {
       ),
     },
     {
-      id: 'services',
-      title: 'Our Services',
-      subtitle: 'Professional Care',
-      description: 'Expert hand washing, premium cleaning, and protection services for all vehicle types.',
+      id: "services",
+      title: "Our Services",
+      subtitle: "Professional Care",
+      description:
+        "Expert hand washing, premium cleaning, and protection services for all vehicle types.",
       icon: <Car className="h-12 w-12" />,
       content: (
         <div className="grid grid-cols-1 gap-3">
           {[
-            { icon: <Car className="h-5 w-5" />, title: 'Car Washing', desc: 'Professional hand wash' },
-            { icon: <Shield className="h-5 w-5" />, title: 'Paint Protection', desc: 'Graphene coating available' },
-            { icon: <Star className="h-5 w-5" />, title: 'Premium Detailing', desc: 'Expert care service' },
+            {
+              icon: <Car className="h-5 w-5" />,
+              title: "Car Washing",
+              desc: "Professional hand wash",
+            },
+            {
+              icon: <Shield className="h-5 w-5" />,
+              title: "Paint Protection",
+              desc: "Graphene coating available",
+            },
+            {
+              icon: <Star className="h-5 w-5" />,
+              title: "Premium Detailing",
+              desc: "Expert care service",
+            },
           ].map((service, idx) => (
-            <div key={idx} className="flex items-center space-x-3 p-3 border rounded-lg bg-card">
+            <div
+              key={idx}
+              className="flex items-center space-x-3 p-3 border rounded-lg bg-card"
+            >
               <div className="text-fac-orange-500">{service.icon}</div>
               <div>
                 <h4 className="font-semibold text-sm">{service.title}</h4>
@@ -127,19 +142,35 @@ export default function Welcome() {
       ),
     },
     {
-      id: 'features',
-      title: 'Digital Experience',
-      subtitle: 'Modern Technology',
-      description: 'Mobile app booking, QR check-in, and real-time service updates.',
+      id: "features",
+      title: "Digital Experience",
+      subtitle: "Modern Technology",
+      description:
+        "Mobile app booking, QR check-in, and real-time service updates.",
       icon: <Smartphone className="h-12 w-12" />,
       content: (
         <div className="grid grid-cols-1 gap-3">
           {[
-            { icon: <Smartphone className="h-5 w-5" />, title: 'Mobile Booking', desc: 'Book anytime, anywhere' },
-            { icon: <CheckCircle className="h-5 w-5" />, title: 'QR Check-in', desc: 'Quick branch access' },
-            { icon: <Bell className="h-5 w-5" />, title: 'Real-time Updates', desc: 'Service notifications' },
+            {
+              icon: <Smartphone className="h-5 w-5" />,
+              title: "Mobile Booking",
+              desc: "Book anytime, anywhere",
+            },
+            {
+              icon: <CheckCircle className="h-5 w-5" />,
+              title: "QR Check-in",
+              desc: "Quick branch access",
+            },
+            {
+              icon: <Bell className="h-5 w-5" />,
+              title: "Real-time Updates",
+              desc: "Service notifications",
+            },
           ].map((feature, idx) => (
-            <div key={idx} className="flex items-center space-x-3 p-3 border rounded-lg bg-card">
+            <div
+              key={idx}
+              className="flex items-center space-x-3 p-3 border rounded-lg bg-card"
+            >
               <div className="text-fac-orange-500">{feature.icon}</div>
               <div>
                 <h4 className="font-semibold text-sm">{feature.title}</h4>
@@ -151,21 +182,31 @@ export default function Welcome() {
       ),
     },
     {
-      id: 'locations',
-      title: 'Our Locations',
-      subtitle: 'Find Us Here',
-      description: 'Two convenient locations to serve you better.',
+      id: "locations",
+      title: "Our Locations",
+      subtitle: "Find Us Here",
+      description: "Two convenient locations to serve you better.",
       icon: <Crown className="h-12 w-12" />,
       content: (
         <div className="space-y-3">
           {[
-            { name: 'Tumaga Hub', address: 'Tumaga, Zamboanga City', status: 'Open Now' },
-            { name: 'Boalan Hub', address: 'Boalan, Zamboanga City', status: 'Open Now' },
+            {
+              name: "Tumaga Hub",
+              address: "Tumaga, Zamboanga City",
+              status: "Open Now",
+            },
+            {
+              name: "Boalan Hub",
+              address: "Boalan, Zamboanga City",
+              status: "Open Now",
+            },
           ].map((location, idx) => (
             <div key={idx} className="p-4 border rounded-lg bg-card">
               <h4 className="font-semibold text-foreground">{location.name}</h4>
-              <p className="text-sm text-muted-foreground">{location.address}</p>
-              <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+              <p className="text-sm text-muted-foreground">
+                {location.address}
+              </p>
+              <span className="inline-block mt-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full font-medium">
                 {location.status}
               </span>
             </div>
@@ -177,17 +218,17 @@ export default function Welcome() {
 
   const totalSlides = slides.length;
 
-    const nextSlide = () => {
+  const nextSlide = () => {
     if (isAnimating || currentSlide >= totalSlides - 1) return;
     setIsAnimating(true);
-    setCurrentSlide(prev => prev + 1);
+    setCurrentSlide((prev) => prev + 1);
     setTimeout(() => setIsAnimating(false), 300);
   };
 
   const prevSlide = () => {
     if (isAnimating || currentSlide <= 0) return;
     setIsAnimating(true);
-    setCurrentSlide(prev => prev - 1);
+    setCurrentSlide((prev) => prev - 1);
     setTimeout(() => setIsAnimating(false), 300);
   };
 
@@ -201,15 +242,15 @@ export default function Welcome() {
   const currentSlideData = slides[currentSlide];
   const isLastSlide = currentSlide === totalSlides - 1;
 
-    return (
-    <div className="min-h-screen bg-background theme-transition relative">
+  return (
+    <div className="min-h-screen bg-background theme-transition">
       {/* Simple header */}
       <div className="p-4 text-center border-b">
         <h1 className="text-lg font-semibold">Welcome</h1>
       </div>
 
-                  {/* Main Slider Container */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      {/* Main Slider Container */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8 min-h-[calc(100vh-80px)]">
         <div className="w-full max-w-md mx-auto">
           {/* Slide Progress Indicator */}
           <div className="flex justify-center space-x-2 mb-6">
@@ -230,7 +271,9 @@ export default function Welcome() {
           </div>
 
           {/* Slide Card */}
-          <Card className={`border shadow-lg transition-all duration-300 ${isAnimating ? 'scale-95 opacity-70' : 'scale-100 opacity-100'}`}>
+          <Card
+            className={`border shadow-lg transition-all duration-300 ${isAnimating ? "scale-95 opacity-70" : "scale-100 opacity-100"}`}
+          >
             <CardContent className="p-6 text-center">
               {/* Icon */}
               <div className="flex items-center justify-center mb-6">
@@ -255,9 +298,7 @@ export default function Welcome() {
               </p>
 
               {/* Slide-specific Content */}
-              <div className="mb-6">
-                {currentSlideData.content}
-              </div>
+              <div className="mb-6">{currentSlideData.content}</div>
 
               {/* Navigation Buttons */}
               <div className="flex justify-between items-center">
@@ -307,42 +348,41 @@ export default function Welcome() {
         </div>
       </div>
 
-        {/* Ads Section */}
-        {welcomeAds.length > 0 && (
-          <div className="px-6 pb-6">
-            <div className="max-w-md mx-auto">
-              <AdBanner
-                ad={welcomeAds[currentAdIndex]}
-                userEmail={userEmail}
-                variant="inline"
-                onDismiss={handleAdDismiss}
-                className="mb-4"
-              />
-              {welcomeAds.length > 1 && (
-                <div className="flex justify-center gap-2">
-                  {welcomeAds.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                        index === currentAdIndex
-                          ? "bg-fac-orange-500 w-4"
-                          : "bg-muted-foreground/30"
-                      }`}
-                      onClick={() => setCurrentAdIndex(index)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* Ads Section */}
+      {welcomeAds.length > 0 && (
+        <div className="px-4 pb-6">
+          <div className="max-w-md mx-auto">
+            <AdBanner
+              ad={welcomeAds[currentAdIndex]}
+              userEmail={userEmail}
+              variant="inline"
+              onDismiss={handleAdDismiss}
+              className="mb-4"
+            />
+            {welcomeAds.length > 1 && (
+              <div className="flex justify-center gap-2">
+                {welcomeAds.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                      index === currentAdIndex
+                        ? "bg-fac-orange-500 w-4"
+                        : "bg-muted-foreground/30"
+                    }`}
+                    onClick={() => setCurrentAdIndex(index)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-
-                {/* Footer */}
-        <div className="text-center py-4 px-6">
-          <p className="text-xs text-muted-foreground">
-            © 2025 Fayeed Auto Care
-          </p>
         </div>
+      )}
+
+      {/* Footer */}
+      <div className="text-center py-4 px-6">
+        <p className="text-xs text-muted-foreground">
+          © 2025 Fayeed Auto Care
+        </p>
       </div>
     </div>
   );
