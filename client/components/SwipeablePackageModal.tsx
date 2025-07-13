@@ -173,8 +173,8 @@ export default function SwipeablePackageModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <DialogHeader className="p-6 pb-4">
+      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] p-0 gap-0 overflow-y-auto">
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">
               Choose Your Package
@@ -193,11 +193,11 @@ export default function SwipeablePackageModal({
           </p>
         </DialogHeader>
 
-        <div className="px-6 pb-6">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex-1 overflow-y-auto">
           {/* Pending Request Warning */}
           {isPending && (
-            <Card className="mb-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
-              <CardContent className="p-4">
+            <Card className="mb-4 sm:mb-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center space-x-3">
                   <div className="bg-yellow-500 p-2 rounded-full">
                     <Clock className="h-4 w-4 text-white" />
@@ -216,7 +216,7 @@ export default function SwipeablePackageModal({
           )}
 
           {/* Package Indicators */}
-          <div className="flex justify-center space-x-2 mb-6">
+          <div className="flex justify-center space-x-2 mb-4 sm:mb-6">
             {packages.map((_, index) => (
               <button
                 key={index}
@@ -232,7 +232,7 @@ export default function SwipeablePackageModal({
           </div>
 
           {/* Swipeable Package Container */}
-          <div className="relative mb-6">
+          <div className="relative mb-4 sm:mb-6">
             <Card
               className={`transition-all duration-300 cursor-grab active:cursor-grabbing ${
                 currentPackage.popular
@@ -246,35 +246,37 @@ export default function SwipeablePackageModal({
             >
               {/* Popular Badge */}
               {currentPackage.popular && (
-                <div className="bg-gradient-to-r from-fac-orange-500 to-yellow-500 text-white text-center py-3 px-4">
+                <div className="bg-gradient-to-r from-fac-orange-500 to-yellow-500 text-white text-center py-2 sm:py-3 px-3 sm:px-4">
                   <div className="flex items-center justify-center space-x-1">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="font-bold text-sm">MOST POPULAR</span>
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="font-bold text-xs sm:text-sm">
+                      MOST POPULAR
+                    </span>
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                 </div>
               )}
 
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-4 sm:p-6 lg:p-8 text-center">
                 {/* Icon */}
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-4 sm:mb-6">
                   <div
-                    className={`p-4 rounded-full bg-gradient-to-r ${currentPackage.color} text-white`}
+                    className={`p-3 sm:p-4 rounded-full bg-gradient-to-r ${currentPackage.color} text-white`}
                   >
                     {currentPackage.icon}
                   </div>
                 </div>
 
                 {/* Package Name */}
-                <h3 className="text-2xl font-bold text-foreground mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
                   {currentPackage.name}
                 </h3>
 
                 {/* Pricing */}
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   {currentPackage.originalPrice && (
-                    <div className="flex items-center justify-center space-x-2 mb-2">
-                      <span className="text-lg text-muted-foreground line-through">
+                    <div className="flex items-center justify-center space-x-2 mb-1 sm:mb-2">
+                      <span className="text-sm sm:text-lg text-muted-foreground line-through">
                         ₱{currentPackage.originalPrice.toLocaleString()}
                       </span>
                       <Badge className="bg-red-500 text-white text-xs">
@@ -282,12 +284,14 @@ export default function SwipeablePackageModal({
                       </Badge>
                     </div>
                   )}
-                  <div className="text-3xl font-bold text-fac-orange-500">
+                  <div className="text-2xl sm:text-3xl font-bold text-fac-orange-500">
                     ₱{currentPackage.price.toLocaleString()}
                   </div>
-                  <p className="text-muted-foreground">per month</p>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    per month
+                  </p>
                   {currentPackage.originalPrice && (
-                    <p className="text-green-600 font-semibold text-sm mt-2">
+                    <p className="text-green-600 font-semibold text-xs sm:text-sm mt-1 sm:mt-2">
                       Save ₱
                       {(
                         currentPackage.originalPrice - currentPackage.price
@@ -298,14 +302,16 @@ export default function SwipeablePackageModal({
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-8">
+                <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                   {currentPackage.features.map((feature, index) => (
                     <div
                       key={index}
-                      className="flex items-start space-x-3 text-left"
+                      className="flex items-start space-x-2 sm:space-x-3 text-left"
                     >
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-foreground">
+                        {feature}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -316,7 +322,7 @@ export default function SwipeablePackageModal({
                     !isPending && onSelectPackage(currentPackage.id)
                   }
                   disabled={isPending}
-                  className={`w-full py-3 font-semibold transition-all ${
+                  className={`w-full py-2 sm:py-3 text-sm sm:text-base font-semibold transition-all ${
                     currentPackage.popular
                       ? "bg-gradient-to-r from-fac-orange-500 to-yellow-500 hover:from-fac-orange-600 hover:to-yellow-600 text-white"
                       : "bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
@@ -324,11 +330,13 @@ export default function SwipeablePackageModal({
                 >
                   {isPending ? (
                     <>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Under Review
+                      <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                      <span className="text-xs sm:text-sm">Under Review</span>
                     </>
                   ) : (
-                    `Select ${currentPackage.name}`
+                    <span className="text-xs sm:text-sm">
+                      Select {currentPackage.name}
+                    </span>
                   )}
                 </Button>
               </CardContent>
@@ -340,9 +348,9 @@ export default function SwipeablePackageModal({
               size="icon"
               onClick={prevSlide}
               disabled={isAnimating}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg"
+              className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg w-8 h-8 sm:w-10 sm:h-10"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
             <Button
@@ -350,39 +358,39 @@ export default function SwipeablePackageModal({
               size="icon"
               onClick={nextSlide}
               disabled={isAnimating}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg"
+              className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg w-8 h-8 sm:w-10 sm:h-10"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
           {/* Package Counter */}
-          <div className="text-center mb-6">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center mb-4 sm:mb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {currentIndex + 1} of {packages.length} packages
             </p>
           </div>
 
           {/* All Packages Quick View */}
-          <div className="mb-4">
-            <h4 className="text-sm font-semibold text-foreground mb-3">
+          <div className="mb-3 sm:mb-4">
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">
               Quick Compare
             </h4>
-            <div className="flex space-x-3 overflow-x-auto pb-2">
+            <div className="flex space-x-2 sm:space-x-3 overflow-x-auto pb-2 scrollbar-thin">
               {packages.map((pkg, index) => (
                 <Card
                   key={pkg.id}
-                  className={`min-w-[140px] cursor-pointer transition-all hover:scale-105 ${
+                  className={`min-w-[100px] sm:min-w-[120px] cursor-pointer transition-all hover:scale-105 ${
                     index === currentIndex
                       ? "ring-2 ring-fac-orange-500 border-fac-orange-500"
                       : "border-border"
                   }`}
                   onClick={() => goToSlide(index)}
                 >
-                  <CardContent className="p-3 text-center">
-                    <div className="flex justify-center mb-2">
+                  <CardContent className="p-2 sm:p-3 text-center">
+                    <div className="flex justify-center mb-1 sm:mb-2">
                       <div
-                        className={`p-1.5 rounded-lg bg-gradient-to-r ${pkg.color} text-white`}
+                        className={`p-1 sm:p-1.5 rounded-lg bg-gradient-to-r ${pkg.color} text-white`}
                       >
                         {pkg.icon}
                       </div>
@@ -406,12 +414,12 @@ export default function SwipeablePackageModal({
 
           {/* Special Offer */}
           <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="text-center">
-                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-1">
+                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-1 text-sm sm:text-base">
                   🎉 Special Launch Offer
                 </h4>
-                <p className="text-sm text-blue-600 dark:text-blue-300">
+                <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-300">
                   Get 30% off on VIP packages for your first 3 months!
                 </p>
               </div>
