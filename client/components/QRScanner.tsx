@@ -68,29 +68,60 @@ export default function QRScanner({
   const requestCameraPermission = async () => {
     try {
       setError("");
-      const stream = await navigator.mediaDevices.getUserMedia({
+      setHasPermission(null); // Show loading state
+
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera not supported on this device");
+      }
+
+      const constraints = {
         video: {
           facingMode: facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
         },
-      });
+      };
+
+      console.log("Requesting camera access with constraints:", constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log("Camera stream obtained:", stream);
 
       setHasPermission(true);
       streamRef.current = stream;
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        setIsScanning(true);
-        startQRDetection();
+
+        // Wait for video to load before starting detection
+        videoRef.current.onloadedmetadata = () => {
+          console.log("Video metadata loaded");
+          videoRef.current
+            ?.play()
+            .then(() => {
+              console.log("Video playing");
+              setIsScanning(true);
+              startQRDetection();
+            })
+            .catch((err) => {
+              console.error("Video play error:", err);
+              setError("Failed to start video playback");
+            });
+        };
+
+        videoRef.current.onerror = (err) => {
+          console.error("Video error:", err);
+          setError("Video playback error");
+        };
       }
     } catch (err) {
+      console.error("Camera access error:", err);
       setHasPermission(false);
       setError(
-        "Camera access denied. Please enable camera permissions to scan QR codes.",
+        err instanceof Error
+          ? err.message
+          : "Camera access denied. Please enable camera permissions to scan QR codes.",
       );
-      console.error("Camera error:", err);
     }
   };
 
@@ -276,12 +307,15 @@ export default function QRScanner({
           </DialogHeader>
 
           {/* Scanner Area */}
-          <div className="relative bg-black aspect-square mx-6">
+          <div className="relative bg-black aspect-square mx-6 rounded-lg overflow-hidden">
             {hasPermission === null && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-white text-center">
-                  <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Requesting camera permission...</p>
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-fac-orange-500 border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-sm">Requesting camera access...</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Please allow camera permissions
+                  </p>
                 </div>
               </div>
             )}
@@ -289,14 +323,20 @@ export default function QRScanner({
             {hasPermission === false && (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-                <p className="text-white mb-4">{error}</p>
+                <p className="text-white mb-2 text-sm font-medium">
+                  Camera Access Required
+                </p>
+                <p className="text-red-400 mb-4 text-xs">{error}</p>
                 <Button
                   onClick={requestCameraPermission}
-                  className="bg-fac-orange-500 hover:bg-fac-orange-600"
+                  className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white px-4 py-2"
                 >
                   <Camera className="h-4 w-4 mr-2" />
-                  Enable Camera
+                  Try Again
                 </Button>
+                <p className="text-xs text-gray-400 mt-3">
+                  Make sure to allow camera permissions in your browser
+                </p>
               </div>
             )}
 
@@ -307,41 +347,55 @@ export default function QRScanner({
                   className="w-full h-full object-cover"
                   playsInline
                   muted
+                  autoPlay
+                  style={{
+                    transform: facingMode === "user" ? "scaleX(-1)" : "none",
+                    minHeight: "300px",
+                  }}
                 />
 
                 {/* Scanning Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="relative">
                     {/* Scanning frame */}
-                    <div className="w-64 h-64 border-2 border-fac-orange-500 relative">
+                    <div className="w-48 h-48 sm:w-64 sm:h-64 border-2 border-fac-orange-500 relative bg-transparent">
                       {/* Corner indicators */}
-                      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
-                      <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white"></div>
-                      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white"></div>
-                      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white"></div>
+                      <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl"></div>
+                      <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr"></div>
+                      <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl"></div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br"></div>
 
-                      {/* Scanning line */}
+                      {/* Scanning line animation */}
                       {isScanning && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-fac-orange-500 animate-pulse"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-fac-orange-500 to-transparent animate-pulse shadow-lg"></div>
                       )}
                     </div>
 
-                    <p className="text-white text-center mt-4 font-medium">
-                      Position QR code within the frame
-                    </p>
+                    <div className="mt-4 text-center">
+                      <p className="text-white text-sm font-medium drop-shadow-lg">
+                        Position QR code within the frame
+                      </p>
+                      {isScanning && (
+                        <div className="flex items-center justify-center mt-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-ping mr-2"></div>
+                          <p className="text-green-400 text-xs">Scanning...</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Camera Controls */}
-                <div className="absolute bottom-4 left-4 right-4 flex justify-center space-x-4">
+                <div className="absolute bottom-4 left-4 right-4 flex justify-center space-x-4 pointer-events-auto">
                   <Button
                     variant="secondary"
                     size="icon"
                     onClick={toggleFlashlight}
-                    className="bg-white/20 hover:bg-white/30"
+                    className="bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-sm"
+                    title={flashlight ? "Turn off flash" : "Turn on flash"}
                   >
                     {flashlight ? (
-                      <FlashlightOff className="h-5 w-5 text-white" />
+                      <FlashlightOff className="h-5 w-5 text-yellow-400" />
                     ) : (
                       <Flashlight className="h-5 w-5 text-white" />
                     )}
@@ -351,10 +405,19 @@ export default function QRScanner({
                     variant="secondary"
                     size="icon"
                     onClick={switchCamera}
-                    className="bg-white/20 hover:bg-white/30"
+                    className="bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-sm"
+                    title="Switch camera"
                   >
                     <RotateCcw className="h-5 w-5 text-white" />
                   </Button>
+                </div>
+
+                {/* Camera Status Indicator */}
+                <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-white text-xs font-medium">LIVE</span>
+                  </div>
                 </div>
               </>
             )}
