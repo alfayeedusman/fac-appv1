@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
+import {
+  forceSuperadminLogin,
+  checkForSuperadminBypass,
+} from "@/utils/superadminUtils";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -27,22 +31,18 @@ export default function Login() {
     password: "",
   });
 
+  // Check for URL bypass on component mount
+  useEffect(() => {
+    checkForSuperadminBypass(navigate);
+  }, [navigate]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Force Superadmin Login Function
-  const forceSuperadminLogin = () => {
+  // Force Superadmin Login Function using utility
+  const handleForceSuperadminLogin = () => {
     setIsLoading(true);
-
-    // Clear any existing user data
-    localStorage.clear();
-
-    // Set superadmin credentials
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", "superadmin@fac.com");
-    localStorage.setItem("userRole", "superadmin");
-    localStorage.setItem("justLoggedIn", "true");
 
     toast({
       title: "Force Superadmin Login! 👑",
@@ -52,10 +52,9 @@ export default function Login() {
     });
 
     setTimeout(() => {
-      navigate("/admin-dashboard");
+      forceSuperadminLogin(navigate);
+      setIsLoading(false);
     }, 1000);
-
-    setIsLoading(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -356,7 +355,7 @@ export default function Login() {
               {/* Force Superadmin Login Button */}
               <Button
                 type="button"
-                onClick={forceSuperadminLogin}
+                onClick={handleForceSuperadminLogin}
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all group"
               >
