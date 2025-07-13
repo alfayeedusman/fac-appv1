@@ -1,46 +1,89 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
   Crown,
-  CheckCircle,
-  ArrowRight,
-  Star,
-  Sparkles,
-  Shield,
   Clock,
+  CheckCircle,
+  XCircle,
+  Shield,
+  Star,
+  Calendar,
+  CreditCard,
   Gift,
+  AlertTriangle,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
-import PackageSelectionModal from "@/components/PackageSelectionModal";
-import { getUserSubscriptionStatus } from "@/utils/subscriptionApprovalData";
+import ModernPackageModal from "@/components/ModernPackageModal";
+import SubscriptionSubmission from "@/components/SubscriptionSubmission";
+import {
+  getUserSubscriptionStatus,
+  getSubscriptionRequests,
+} from "@/utils/subscriptionApprovalData";
 
 interface SubscriptionPlan {
   id: string;
   name: string;
-  price: number;
-  originalPrice?: number;
-  discount?: string;
-  period: string;
+  basePrice: number;
   features: string[];
   popular?: boolean;
-  color: string;
-  icon: React.ReactNode;
-  savings?: number;
+}
+
+interface LockInOption {
+  id: string;
+  period: string;
+  months: number;
+  discount: number;
+  discountLabel: string;
+  savings: number;
+}
+
+interface CurrentSubscription {
+  plan: string;
+  price: number;
+  startDate: string;
+  endDate: string;
+  lockInPeriod: string;
+  autoRenewal: boolean;
+  status: "active" | "expiring" | "cancelled";
 }
 
 export default function ManageSubscription() {
-  const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<string>("vip-gold");
+  const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showPackageModal, setShowPackageModal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(1); // Start with VIP Gold (popular)
+  const [showModernPackageModal, setShowModernPackageModal] = useState(false);
+  const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
+    useState(false);
+  const [currentPlan, setCurrentPlan] = useState("regular");
   const [subscriptionRequestStatus, setSubscriptionRequestStatus] = useState<{
     hasRequest: boolean;
     status: string | null;
@@ -59,366 +102,736 @@ export default function ManageSubscription() {
     setSubscriptionRequestStatus(status);
   };
 
+  // Load subscription request status
   useEffect(() => {
     refreshSubscriptionStatus();
   }, [userEmail]);
+
+  // Add focus event listener to refresh when page becomes visible
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshSubscriptionStatus();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        refreshSubscriptionStatus();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [userEmail]);
+
+  const currentSubscription: CurrentSubscription = {
+    plan: userSubscription?.package || "Regular Member",
+    price:
+      userSubscription?.package === "Classic Pro"
+        ? 500
+        : userSubscription?.package === "VIP Silver Elite"
+          ? 1500
+          : userSubscription?.package === "VIP Gold Ultimate"
+            ? 3000
+            : 0,
+    startDate:
+      userSubscription?.currentCycleStart ||
+      new Date().toISOString().split("T")[0],
+    endDate:
+      userSubscription?.currentCycleEnd ||
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+    lockInPeriod: "Monthly (Flexible)",
+    autoRenewal: userSubscription?.autoRenewal || false,
+    status:
+      userSubscription?.package !== "Regular Member" &&
+      userSubscription?.daysLeft > 0
+        ? "active"
+        : "inactive",
+  };
 
   const subscriptionPlans: SubscriptionPlan[] = [
     {
       id: "classic",
       name: "Classic",
-      price: 500,
-      period: "Monthly",
-      color: "from-blue-500 to-cyan-500",
-      icon: <Shield className="h-8 w-8" />,
+      basePrice: 500,
       features: [
-        "4 classic wash sessions",
+        "4 classic wash sessions per month",
         "Basic member benefits",
         "Online booking access",
         "Customer support",
-      ],
-    },
-    {
-      id: "vip-gold",
-      name: "VIP Gold",
-      price: 2100,
-      originalPrice: 3000,
-      discount: "30% OFF",
-      period: "Monthly",
-      popular: true,
-      color: "from-fac-orange-500 to-yellow-500",
-      icon: <Crown className="h-8 w-8" />,
-      savings: 900,
-      features: [
-        "Unlimited classic washes",
-        "5 VIP ProMax sessions",
-        "1 Premium wash session",
-        "Priority booking",
-        "Exclusive benefits",
-        "Premium support",
+        "Monthly reset of all benefits",
       ],
     },
     {
       id: "vip-silver",
       name: "VIP Silver",
-      price: 1050,
-      originalPrice: 1500,
-      discount: "30% OFF",
-      period: "Monthly",
-      color: "from-purple-500 to-pink-500",
-      icon: <Star className="h-8 w-8" />,
-      savings: 450,
+      basePrice: 1500,
       features: [
-        "8 classic wash sessions",
-        "2 VIP ProMax sessions",
+        "8 classic wash sessions per month",
+        "2 VIP ProMax wash sessions per month",
         "Member discounts",
         "Priority support",
-        "Loyalty points",
+        "Loyalty points earning",
+        "Monthly reset of all benefits",
+      ],
+    },
+    {
+      id: "vip-gold",
+      name: "VIP Gold",
+      basePrice: 3000,
+      popular: true,
+      features: [
+        "Unlimited classic wash sessions per month",
+        "5 VIP ProMax wash sessions per month",
+        "1 Premium wash session per month",
+        "Priority booking",
+        "Exclusive member benefits",
+        "Premium customer support",
+        "Maximum loyalty points",
+        "Monthly reset of all benefits",
       ],
     },
   ];
 
-  const handleSelectPlan = (planId: string) => {
-    setSelectedPlan(planId);
-    // Show package selection modal
-    setShowPackageModal(true);
+  const lockInOptions: LockInOption[] = [
+    {
+      id: "flexible",
+      period: "Monthly (Flexible)",
+      months: 1,
+      discount: 0,
+      discountLabel: "No Discount",
+      savings: 0,
+    },
+    {
+      id: "3months",
+      period: "3 Months Lock-in",
+      months: 3,
+      discount: 10,
+      discountLabel: "10% OFF",
+      savings: 0,
+    },
+    {
+      id: "6months",
+      period: "6 Months Lock-in",
+      months: 6,
+      discount: 20,
+      discountLabel: "20% OFF",
+      savings: 0,
+    },
+    {
+      id: "1year",
+      period: "1 Year Lock-in",
+      months: 12,
+      discount: 30,
+      discountLabel: "30% OFF",
+      savings: 0,
+    },
+  ];
+
+  const calculatePrice = (planId: string, lockInId: string) => {
+    const plan = subscriptionPlans.find((p) => p.id === planId);
+    const lockIn = lockInOptions.find((l) => l.id === lockInId);
+    if (!plan || !lockIn) return { monthly: 0, total: 0, savings: 0 };
+
+    const basePrice = plan.basePrice;
+    const discountedPrice = basePrice * (1 - lockIn.discount / 100);
+    const totalPrice = discountedPrice * lockIn.months;
+    const originalTotal = basePrice * lockIn.months;
+    const savings = originalTotal - totalPrice;
+
+    return {
+      monthly: Math.round(discountedPrice),
+      total: Math.round(totalPrice),
+      savings: Math.round(savings),
+    };
   };
 
-  const handleSwipeLeft = () => {
-    setCurrentIndex((prev) => (prev + 1) % subscriptionPlans.length);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
-  const handleSwipeRight = () => {
-    setCurrentIndex(
-      (prev) =>
-        (prev - 1 + subscriptionPlans.length) % subscriptionPlans.length,
-    );
+  const selectedPlanData = subscriptionPlans.find((p) => p.id === selectedPlan);
+  const selectedLockInData = lockInOptions.find((l) => l.id === selectedLockIn);
+  const pricing = calculatePrice(selectedPlan, selectedLockIn);
+
+  const handleRenewal = () => {
+    // Only allow renewal for active subscribers
+    if (
+      currentSubscription.status === "active" &&
+      currentSubscription.plan !== "Regular Member"
+    ) {
+      setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+      setShowPaymentModal(true);
+    }
   };
 
-  const currentPlan = subscriptionPlans[currentIndex];
-  const isRegularMember =
-    !userSubscription || userSubscription.package === "Regular Member";
+  const handleUpgrade = () => {
+    // Show modern package selection modal
+    setShowModernPackageModal(true);
+  };
+
+  const handleModernPackageSelection = (packageId: string) => {
+    setSelectedPlan(packageId);
+    setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+    setShowModernPackageModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handleCancellation = () => {
+    alert("Subscription cancelled. It will remain active until the end date.");
+    setShowCancelDialog(false);
+  };
 
   return (
-    <div className="min-h-screen bg-background theme-transition pb-20">
-      <StickyHeader showBack={true} title="Choose Package" />
+    <div className="min-h-screen bg-gradient-to-br from-fac-blue-50 to-blue-100 pb-20">
+      <StickyHeader showBack={true} title="Manage Plans" />
 
-      <div className="px-4 py-6">
+      <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Choose Your Perfect Plan
-          </h1>
-          <p className="text-muted-foreground">
-            Unlock premium car care services with our flexible packages
-          </p>
+        <div className="flex items-center mb-6">
+          <Link to="/dashboard" className="mr-4">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="flex items-center space-x-4">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+              alt="Fayeed Auto Care Logo"
+              className="h-10 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-fac-blue-900">
+                Manage Subscription
+              </h1>
+              <p className="text-fac-blue-700">
+                Renew, upgrade, or cancel your membership
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Current Subscription Status */}
-        {!isRegularMember && (
-          <Card className="mb-6 border-green-200 bg-green-50 dark:bg-green-950/30">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="bg-green-500 p-2 rounded-full">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-green-800 dark:text-green-200">
-                    Current Plan: {userSubscription.package}
-                  </h3>
-                  <p className="text-sm text-green-600 dark:text-green-300">
-                    Active until{" "}
-                    {new Date(
-                      userSubscription.currentCycleEnd,
-                    ).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <Tabs defaultValue="current" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="current">Current Plan</TabsTrigger>
+            <TabsTrigger value="renew">Renew / Upgrade</TabsTrigger>
+          </TabsList>
 
-        {/* Pending Request Status */}
-        {subscriptionRequestStatus.hasRequest &&
-          subscriptionRequestStatus.status === "pending" && (
-            <Card className="mb-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-yellow-500 p-2 rounded-full">
-                    <Clock className="h-5 w-5 text-white" />
+          {/* Current Subscription Tab */}
+          <TabsContent value="current" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Crown className="h-5 w-5 mr-2 text-fac-gold-500" />
+                  Current Subscription
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Active Plan
+                      </label>
+                      <div className="flex items-center mt-1">
+                        <Crown className="h-4 w-4 text-fac-gold-500 mr-2" />
+                        <span className="text-lg font-semibold">
+                          {currentSubscription.plan}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Monthly Price
+                      </label>
+                      <p className="text-lg font-semibold text-fac-blue-600">
+                        ₱{currentSubscription.price.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Lock-in Period
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {currentSubscription.lockInPeriod}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                      Payment Under Review
-                    </h3>
-                    <p className="text-sm text-yellow-600 dark:text-yellow-300">
-                      Your payment request is being processed
-                    </p>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Billing Period
+                      </label>
+                      <p className="text-gray-900">
+                        {formatDate(currentSubscription.startDate)} -{" "}
+                        {formatDate(currentSubscription.endDate)}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Status
+                      </label>
+                      <div className="flex items-center mt-1">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <Badge className="bg-green-100 text-green-700">
+                          Active
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Auto-renewal
+                      </label>
+                      <div className="flex items-center mt-1">
+                        <Shield className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-green-700 font-semibold">
+                          Enabled
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                </div>
+
+                {/* Payment Status Section */}
+                {subscriptionRequestStatus.hasRequest && (
+                  <div className="mt-6 p-4 border-orange-200 bg-orange-50 dark:bg-orange-950/30 rounded-xl border">
+                    <h4 className="font-semibold text-orange-800 dark:text-orange-200 mb-3 flex items-center">
+                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      Payment Request Status
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Request ID:
+                        </span>
+                        <p className="font-mono text-orange-900 dark:text-orange-100">
+                          {subscriptionRequestStatus.request?.id}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Package:
+                        </span>
+                        <p className="font-semibold text-orange-900 dark:text-orange-100">
+                          {subscriptionRequestStatus.request?.packageType}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Amount:
+                        </span>
+                        <p className="font-semibold text-orange-900 dark:text-orange-100">
+                          {
+                            subscriptionRequestStatus.request?.paymentDetails
+                              ?.amount
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-orange-700 dark:text-orange-300">
+                          Status:
+                        </span>
+                        <Badge
+                          className={`ml-2 ${
+                            subscriptionRequestStatus.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : subscriptionRequestStatus.status === "approved"
+                                ? "bg-green-100 text-green-800"
+                                : subscriptionRequestStatus.status ===
+                                    "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {subscriptionRequestStatus.status?.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {subscriptionRequestStatus.request?.reviewNotes && (
+                      <div className="mt-3 p-3 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                        <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                          Admin Notes:
+                        </span>
+                        <p className="text-orange-900 dark:text-orange-100 mt-1 text-sm">
+                          {subscriptionRequestStatus.request.reviewNotes}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-4 text-center">
+                      <Link to="/payment-history">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          View Payment History
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  {(() => {
+                    const isRegularMember =
+                      currentSubscription.plan === "Regular Member";
+                    const isActive =
+                      currentSubscription.status === "active" &&
+                      !isRegularMember;
+                    const isExpired =
+                      currentSubscription.status === "inactive" &&
+                      !isRegularMember;
+
+                    return (
+                      <>
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {isRegularMember
+                              ? "Choose Your Package"
+                              : isActive
+                                ? "Manage Subscription"
+                                : "Reactivate Account"}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {isRegularMember
+                              ? "Select a package to unlock premium services"
+                              : isActive
+                                ? "Renew or upgrade your current plan"
+                                : "Your subscription has expired. Choose a package to continue"}
+                          </p>
+                        </div>
+
+                        {isRegularMember ? (
+                          // Regular member - show package selection or pending status
+                          subscriptionRequestStatus.hasRequest &&
+                          subscriptionRequestStatus.status === "pending" ? (
+                            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <Clock className="h-6 w-6 text-yellow-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-yellow-800">
+                                    Payment Under Review
+                                  </h4>
+                                  <p className="text-sm text-yellow-600">
+                                    Your payment request is being processed
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3"
+                                disabled
+                              >
+                                <Clock className="h-4 w-4 mr-2" />
+                                Waiting for Approval
+                              </Button>
+                            </div>
+                          ) : subscriptionRequestStatus.hasRequest &&
+                            subscriptionRequestStatus.status === "rejected" ? (
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <XCircle className="h-6 w-6 text-red-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-red-800">
+                                    Payment Request Rejected
+                                  </h4>
+                                  <p className="text-sm text-red-600">
+                                    You can submit a new payment request
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
+                                onClick={handleUpgrade}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Try Again
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-4">
+                              <div className="flex items-center mb-4">
+                                <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+                                <div>
+                                  <h4 className="font-bold text-red-800">
+                                    Regular Member
+                                  </h4>
+                                  <p className="text-sm text-red-600">
+                                    Choose a package to unlock premium services
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold py-3"
+                                onClick={handleUpgrade}
+                              >
+                                <Crown className="h-4 w-4 mr-2" />
+                                Choose Package
+                              </Button>
+                            </div>
+                          )
+                        ) : isExpired ? (
+                          // Expired subscription - show reactivation
+                          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200 mb-4">
+                            <div className="flex items-center mb-4">
+                              <XCircle className="h-6 w-6 text-orange-500 mr-3" />
+                              <div>
+                                <h4 className="font-bold text-orange-800">
+                                  Subscription Expired
+                                </h4>
+                                <p className="text-sm text-orange-600">
+                                  Reactivate your subscription to continue
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold py-3"
+                              onClick={handleUpgrade}
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Reactivate Now
+                            </Button>
+                          </div>
+                        ) : (
+                          // Active subscription - show renew and upgrade
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                              className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3"
+                              onClick={handleRenewal}
+                            >
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Confirm Renewal
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="flex-1 border-fac-orange-500 text-fac-orange-600 hover:bg-fac-orange-50 py-3"
+                              onClick={handleUpgrade}
+                            >
+                              <Crown className="h-4 w-4 mr-2" />
+                              Upgrade Plan
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </CardContent>
             </Card>
-          )}
+          </TabsContent>
 
-        {/* Package Cards - Swipable */}
-        <div className="relative mb-8">
-          {/* Package Indicators */}
-          <div className="flex justify-center space-x-2 mb-6">
-            {subscriptionPlans.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex
-                    ? "bg-fac-orange-500 w-8"
-                    : "bg-muted w-2"
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Main Package Card */}
-          <div className="flex justify-center">
-            <Card
-              className={`w-full max-w-sm mx-4 overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
-                currentPlan.popular
-                  ? "border-fac-orange-500 shadow-lg shadow-fac-orange-500/20"
-                  : "border-border"
-              }`}
-            >
-              {/* Popular Badge */}
-              {currentPlan.popular && (
-                <div className="bg-gradient-to-r from-fac-orange-500 to-yellow-500 text-white text-center py-2 px-4">
-                  <div className="flex items-center justify-center space-x-1">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="font-bold text-sm">MOST POPULAR</span>
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                </div>
-              )}
-
-              <CardContent className="p-6">
-                {/* Header */}
-                <div className="text-center mb-6">
-                  <div
-                    className={`inline-flex p-4 rounded-full bg-gradient-to-r ${currentPlan.color} text-white mb-4`}
-                  >
-                    {currentPlan.icon}
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground mb-2">
-                    {currentPlan.name}
-                  </h2>
-
-                  {/* Pricing */}
-                  <div className="space-y-1">
-                    {currentPlan.originalPrice && (
-                      <div className="flex items-center justify-center space-x-2">
-                        <span className="text-lg text-muted-foreground line-through">
-                          ₱{currentPlan.originalPrice.toLocaleString()}
-                        </span>
-                        <Badge className="bg-red-500 text-white text-xs">
-                          {currentPlan.discount}
+          {/* Renew/Upgrade Tab */}
+          <TabsContent value="renew" className="space-y-6">
+            {/* Plan Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Choose Your Plan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {subscriptionPlans.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className={cn(
+                        "relative border rounded-lg p-4 cursor-pointer transition-all",
+                        selectedPlan === plan.id
+                          ? "border-fac-blue-600 bg-fac-blue-50"
+                          : "border-gray-200 hover:border-fac-blue-300",
+                        plan.popular && "ring-2 ring-fac-gold-400",
+                      )}
+                      onClick={() => setSelectedPlan(plan.id)}
+                    >
+                      {plan.popular && (
+                        <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-fac-gold-500 text-white">
+                          <Star className="h-3 w-3 mr-1" />
+                          Most Popular
                         </Badge>
+                      )}
+                      <div className="text-center mb-4">
+                        <h3 className="text-lg font-bold">{plan.name}</h3>
+                        <p className="text-2xl font-bold text-fac-blue-600">
+                          ₱{plan.basePrice.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-gray-600">per month</p>
                       </div>
-                    )}
-                    <div className="text-3xl font-bold text-fac-orange-500">
-                      ₱{currentPlan.price.toLocaleString()}
-                    </div>
-                    <p className="text-muted-foreground">
-                      per {currentPlan.period.toLowerCase()}
-                    </p>
-                    {currentPlan.savings && (
-                      <p className="text-green-600 font-semibold text-sm">
-                        Save ₱{currentPlan.savings.toLocaleString()} per month!
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-3 mb-6">
-                  {currentPlan.features.map((feature, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <ul className="space-y-2">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start text-sm">
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   ))}
                 </div>
-
-                {/* Action Button */}
-                <Button
-                  onClick={() => handleSelectPlan(currentPlan.id)}
-                  disabled={
-                    subscriptionRequestStatus.hasRequest &&
-                    subscriptionRequestStatus.status === "pending"
-                  }
-                  className={`w-full py-3 font-semibold transition-all ${
-                    currentPlan.popular
-                      ? "bg-gradient-to-r from-fac-orange-500 to-yellow-500 hover:from-fac-orange-600 hover:to-yellow-600 text-white"
-                      : "bg-fac-orange-500 hover:bg-fac-orange-600 text-white"
-                  }`}
-                >
-                  {subscriptionRequestStatus.hasRequest &&
-                  subscriptionRequestStatus.status === "pending" ? (
-                    <>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Under Review
-                    </>
-                  ) : (
-                    <>
-                      <span>Select {currentPlan.name}</span>
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </>
-                  )}
-                </Button>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Navigation Buttons - Mobile */}
-          <div className="flex justify-between items-center mt-6 px-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSwipeRight}
-              className="rounded-full"
-            >
-              ←
-            </Button>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} of {subscriptionPlans.length}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSwipeLeft}
-              className="rounded-full"
-            >
-              →
-            </Button>
-          </div>
-        </div>
+            {/* Lock-in Period Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-fac-blue-600" />
+                  Choose Lock-in Period
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Save more with longer lock-in periods
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {lockInOptions.map((option) => {
+                    const price = calculatePrice(selectedPlan, option.id);
+                    return (
+                      <div
+                        key={option.id}
+                        className={cn(
+                          "border rounded-lg p-4 cursor-pointer transition-all relative",
+                          selectedLockIn === option.id
+                            ? "border-fac-blue-600 bg-fac-blue-50"
+                            : "border-gray-200 hover:border-fac-blue-300",
+                          option.discount > 0 && "ring-1 ring-green-300",
+                        )}
+                        onClick={() => setSelectedLockIn(option.id)}
+                      >
+                        {option.discount > 0 && (
+                          <Badge className="absolute -top-2 -right-2 bg-green-500 text-white">
+                            <Gift className="h-3 w-3 mr-1" />
+                            {option.discountLabel}
+                          </Badge>
+                        )}
+                        <div className="text-center">
+                          <h4 className="font-semibold mb-2">
+                            {option.period}
+                          </h4>
+                          <p className="text-xl font-bold text-fac-blue-600">
+                            ₱{price.monthly.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-600">per month</p>
+                          {option.months > 1 && (
+                            <div className="mt-2 pt-2 border-t">
+                              <p className="text-sm font-semibold">
+                                Total: ₱{price.total.toLocaleString()}
+                              </p>
+                              {price.savings > 0 && (
+                                <p className="text-xs text-green-600 font-semibold">
+                                  Save ₱{price.savings.toLocaleString()}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* All Plans Overview - Horizontal Scroll */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            All Plans
-          </h3>
-          <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-thin">
-            {subscriptionPlans.map((plan, index) => (
-              <Card
-                key={plan.id}
-                className={`min-w-[240px] cursor-pointer transition-all hover:scale-105 ${
-                  index === currentIndex ? "ring-2 ring-fac-orange-500" : ""
-                }`}
-                onClick={() => setCurrentIndex(index)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div
-                      className={`p-2 rounded-lg bg-gradient-to-r ${plan.color} text-white`}
-                    >
-                      {plan.icon}
+            {/* Renewal Summary */}
+            <Card className="border-fac-blue-200 bg-fac-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <CreditCard className="h-5 w-5 mr-2 text-fac-blue-600" />
+                  Renewal Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Selected Plan
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {selectedPlanData?.name}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">
-                        {plan.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        ₱{plan.price.toLocaleString()}/month
+                      <label className="text-sm font-medium text-gray-600">
+                        Lock-in Period
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {selectedLockInData?.period}
                       </p>
                     </div>
                   </div>
-                  {plan.popular && (
-                    <Badge className="bg-fac-orange-500 text-white text-xs">
-                      Popular
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
 
-        {/* Features Info */}
-        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-3">
-              <Gift className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-1">
-                  Special Launch Offer
-                </h4>
-                <p className="text-sm text-blue-600 dark:text-blue-300">
-                  Get 30% off on VIP packages for your first 3 months. Limited
-                  time offer!
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Monthly Price
+                      </label>
+                      <p className="text-xl font-bold text-fac-blue-600">
+                        ₱{pricing.monthly.toLocaleString()}
+                      </p>
+                    </div>
+                    {selectedLockInData?.months &&
+                      selectedLockInData.months > 1 && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium text-gray-600">
+                              Total Amount
+                            </label>
+                            <p className="text-xl font-bold text-fac-blue-600">
+                              ₱{pricing.total.toLocaleString()}
+                            </p>
+                          </div>
+                          {pricing.savings > 0 && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">
+                                Your Savings
+                              </label>
+                              <p className="text-xl font-bold text-green-600">
+                                ₱{pricing.savings.toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                  </div>
+
+                  <div className="pt-6 mt-6 border-t border-gray-200">
+                    <Button
+                      className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
+                      onClick={() => setShowSubscriptionSubmission(true)}
+                    >
+                      <RefreshCw className="h-5 w-5 mr-2" />
+                      Confirm Renewal - ₱{pricing.total.toLocaleString()}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BottomNavigation />
 
-      {/* Package Selection Modal */}
-      <PackageSelectionModal
-        isOpen={showPackageModal}
+      {/* Modern Package Selection Modal */}
+      <ModernPackageModal
+        isOpen={showModernPackageModal}
         onClose={() => {
-          setShowPackageModal(false);
+          setShowModernPackageModal(false);
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);
         }}
-        onSelectPackage={(packageType) => {
-          setShowPackageModal(false);
-          // Handle package selection logic here
-          setTimeout(() => {
-            refreshSubscriptionStatus();
-          }, 1000);
-        }}
+        onSelectPackage={handleModernPackageSelection}
+        subscriptionRequestStatus={subscriptionRequestStatus}
       />
 
       {/* Payment Upload Modal */}
@@ -430,12 +843,25 @@ export default function ManageSubscription() {
             refreshSubscriptionStatus();
           }, 1000);
         }}
-        currentPlan={userSubscription?.package || "regular"}
+        currentPlan={currentPlan}
         selectedPlan={selectedPlan}
-        planPrice={currentPlan.price}
+        planPrice={pricing.total}
         onStatusUpdate={() => {
           refreshSubscriptionStatus();
         }}
+      />
+
+      {/* Subscription Submission Modal */}
+      <SubscriptionSubmission
+        isOpen={showSubscriptionSubmission}
+        onClose={() => {
+          setShowSubscriptionSubmission(false);
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
+        userEmail={userEmail}
+        userName={userEmail.split("@")[0]}
       />
     </div>
   );
