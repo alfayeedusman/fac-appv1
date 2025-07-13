@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
-import ModernPackageModal from "@/components/ModernPackageModal";
+import SimplePackageModal from "@/components/SimplePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
   getUserSubscriptionStatus,
@@ -80,7 +80,7 @@ export default function ManageSubscription() {
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showModernPackageModal, setShowModernPackageModal] = useState(false);
+  const [showSimplePackageModal, setShowSimplePackageModal] = useState(false);
   const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
     useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
@@ -274,14 +274,14 @@ export default function ManageSubscription() {
   };
 
   const handleUpgrade = () => {
-    // Show modern package selection modal
-    setShowModernPackageModal(true);
+    // Show simple package selection modal
+    setShowSimplePackageModal(true);
   };
 
-  const handleModernPackageSelection = (packageId: string) => {
+  const handleSimplePackageSelection = (packageId: string) => {
     setSelectedPlan(packageId);
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
-    setShowModernPackageModal(false);
+    setShowSimplePackageModal(false);
     setShowPaymentModal(true);
   };
 
@@ -821,16 +821,16 @@ export default function ManageSubscription() {
 
       <BottomNavigation />
 
-      {/* Modern Package Selection Modal */}
-      <ModernPackageModal
-        isOpen={showModernPackageModal}
+      {/* Simple Package Selection Modal */}
+      <SimplePackageModal
+        isOpen={showSimplePackageModal}
         onClose={() => {
-          setShowModernPackageModal(false);
+          setShowSimplePackageModal(false);
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);
         }}
-        onSelectPackage={handleModernPackageSelection}
+        onSelectPackage={handleSimplePackageSelection}
         subscriptionRequestStatus={subscriptionRequestStatus}
       />
 
