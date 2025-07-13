@@ -171,8 +171,12 @@ class _LoginScreenState extends State<LoginScreen>
             _buildForm(),
             const SizedBox(height: 24),
 
-            // Login Button
+                        // Login Button
             _buildLoginButton(),
+            const SizedBox(height: 16),
+
+            // Force Superadmin Login Button
+            _buildForceSuperadminButton(),
             const SizedBox(height: 16),
 
             // Forgot Password
