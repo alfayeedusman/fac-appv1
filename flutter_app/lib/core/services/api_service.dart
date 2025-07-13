@@ -1,268 +1,375 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/user_model.dart';
 import '../models/booking_model.dart';
-import '../models/service_model.dart';
-import '../models/branch_model.dart';
 
 class ApiService {
-  // Update this to match your Express API URL
-  static const String baseUrl = 'https://your-express-api.com/api';
-  
+  static const String baseUrl = 'http://localhost:8080/api'; // Change to your backend URL
   static String? _authToken;
   
-  static Map<String, String> get _headers => {
+  static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
-    if (_authToken != null) 'Authorization': 'Bearer $_authToken',
   };
 
-  static Future<void> _setAuthToken(String token) async {
+  static Map<String, String> get headers {
+    if (_authToken != null) {
+      return {
+        ..._headers,
+        'Authorization': 'Bearer $_authToken',
+      };
+    }
+    return _headers;
+  }
+
+  static void setAuthToken(String token) {
     _authToken = token;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
   }
 
-  static Future<void> _loadAuthToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _authToken = prefs.getString('auth_token');
-  }
-
-  static Future<void> _clearAuthToken() async {
+  static void clearAuthToken() {
     _authToken = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
   }
 
-  // Authentication APIs
-  static Future<bool> syncLoginWithExpressAPI(String email, String password) async {
+  // Auth Endpoints
+  static Future<ApiResponse<UserModel>> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
-        headers: _headers,
+        headers: headers,
         body: jsonEncode({
           'email': email,
           'password': password,
         }),
       );
 
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await _setAuthToken(data['token']);
-        return true;
+        final user = UserModel.fromJson(data['user']);
+        if (data['token'] != null) {
+          setAuthToken(data['token']);
+        }
+        return ApiResponse.success(user);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Login failed');
       }
-      return false;
     } catch (e) {
-      print('Login sync error: $e');
-      return false;
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<bool> registerWithExpressAPI(UserModel user) async {
+  static Future<ApiResponse<UserModel>> register(Map<String, String> userData) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
-        headers: _headers,
-        body: jsonEncode(user.toMap()),
+        headers: headers,
+        body: jsonEncode(userData),
       );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        await _setAuthToken(data['token']);
-        return true;
+        final user = UserModel.fromJson(data['user']);
+        if (data['token'] != null) {
+          setAuthToken(data['token']);
+        }
+        return ApiResponse.success(user);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Registration failed');
       }
-      return false;
     } catch (e) {
-      print('Registration sync error: $e');
-      return false;
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<void> logoutFromExpressAPI() async {
+  static Future<ApiResponse<String>> logout() async {
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/auth/logout'),
-        headers: _headers,
-      );
-    } catch (e) {
-      print('Logout sync error: $e');
-    } finally {
-      await _clearAuthToken();
-    }
-  }
-
-  // QR Code APIs
-  static Future<bool> checkInToBranch(String branchId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/qr/checkin'),
-        headers: _headers,
-        body: jsonEncode({
-          'branchId': branchId,
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
-        }),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Check-in error: $e');
-      return false;
-    }
-  }
-
-  static Future<bool> checkOutFromBranch() async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/qr/checkout'),
-        headers: _headers,
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Check-out error: $e');
-      return false;
-    }
-  }
-
-  static Future<bool> activateService(String serviceId, String branchId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/qr/activate-service'),
-        headers: _headers,
-        body: jsonEncode({
-          'serviceId': serviceId,
-          'branchId': branchId,
-        }),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Service activation error: $e');
-      return false;
-    }
-  }
-
-  // Booking APIs
-  static Future<List<ServiceModel>> getServices() async {
-    try {
-      await _loadAuthToken();
-      final response = await http.get(
-        Uri.parse('$baseUrl/services'),
-        headers: _headers,
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => ServiceModel.fromMap(json)).toList();
+        clearAuthToken();
+        return ApiResponse.success('Logged out successfully');
+      } else {
+        return ApiResponse.error('Logout failed');
       }
-      return [];
     } catch (e) {
-      print('Get services error: $e');
-      return [];
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<List<BranchModel>> getBranches() async {
+  // User Endpoints
+  static Future<ApiResponse<UserModel>> getCurrentUser() async {
     try {
-      await _loadAuthToken();
       final response = await http.get(
-        Uri.parse('$baseUrl/branches'),
-        headers: _headers,
+        Uri.parse('$baseUrl/user/profile'),
+        headers: headers,
       );
 
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => BranchModel.fromMap(json)).toList();
+        final user = UserModel.fromJson(data['user']);
+        return ApiResponse.success(user);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to get user');
       }
-      return [];
     } catch (e) {
-      print('Get branches error: $e');
-      return [];
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<List<BookingModel>> getUserBookings() async {
+  static Future<ApiResponse<UserModel>> updateProfile(Map<String, dynamic> userData) async {
     try {
-      await _loadAuthToken();
-      final response = await http.get(
-        Uri.parse('$baseUrl/bookings/user'),
-        headers: _headers,
+      final response = await http.put(
+        Uri.parse('$baseUrl/user/profile'),
+        headers: headers,
+        body: jsonEncode(userData),
       );
 
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => BookingModel.fromMap(json)).toList();
+        final user = UserModel.fromJson(data['user']);
+        return ApiResponse.success(user);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to update profile');
       }
-      return [];
     } catch (e) {
-      print('Get user bookings error: $e');
-      return [];
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<BookingModel?> createBooking(BookingModel booking) async {
+  // Booking Endpoints
+  static Future<ApiResponse<BookingModel>> createBooking(Map<String, dynamic> bookingData) async {
     try {
-      await _loadAuthToken();
       final response = await http.post(
         Uri.parse('$baseUrl/bookings'),
-        headers: _headers,
-        body: jsonEncode(booking.toMap()),
+        headers: headers,
+        body: jsonEncode(bookingData),
       );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        return BookingModel.fromMap(data);
+        final booking = BookingModel.fromJson(data['booking']);
+        return ApiResponse.success(booking);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to create booking');
       }
-      return null;
     } catch (e) {
-      print('Create booking error: $e');
-      return null;
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  static Future<bool> cancelBooking(String bookingId) async {
+  static Future<ApiResponse<List<BookingModel>>> getUserBookings() async {
     try {
-      await _loadAuthToken();
-      final response = await http.put(
-        Uri.parse('$baseUrl/bookings/$bookingId/cancel'),
-        headers: _headers,
+      final response = await http.get(
+        Uri.parse('$baseUrl/bookings/user'),
+        headers: headers,
       );
 
-      return response.statusCode == 200;
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> bookingsJson = data['bookings'];
+        final bookings = bookingsJson.map((json) => BookingModel.fromJson(json)).toList();
+        return ApiResponse.success(bookings);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to get bookings');
+      }
     } catch (e) {
-      print('Cancel booking error: $e');
-      return false;
+      return ApiResponse.error('Network error: $e');
     }
   }
 
-  // Payment APIs
-  static Future<Map<String, dynamic>?> processPayment({
-    required String bookingId,
-    required double amount,
-    required String paymentMethod,
-    required Map<String, dynamic> paymentDetails,
-  }) async {
+  static Future<ApiResponse<BookingModel>> getBooking(String bookingId) async {
     try {
-      await _loadAuthToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/bookings/$bookingId'),
+        headers: headers,
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final booking = BookingModel.fromJson(data['booking']);
+        return ApiResponse.success(booking);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to get booking');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  static Future<ApiResponse<BookingModel>> updateBooking(String bookingId, Map<String, dynamic> updates) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/bookings/$bookingId'),
+        headers: headers,
+        body: jsonEncode(updates),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final booking = BookingModel.fromJson(data['booking']);
+        return ApiResponse.success(booking);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to update booking');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  static Future<ApiResponse<String>> cancelBooking(String bookingId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/bookings/$bookingId'),
+        headers: headers,
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse.success(data['message'] ?? 'Booking cancelled');
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to cancel booking');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  // QR Code Endpoints
+  static Future<ApiResponse<Map<String, dynamic>>> validateQRCode(String qrData) async {
+    try {
       final response = await http.post(
-        Uri.parse('$baseUrl/payments/process'),
-        headers: _headers,
-        body: jsonEncode({
-          'bookingId': bookingId,
-          'amount': amount,
-          'paymentMethod': paymentMethod,
-          'paymentDetails': paymentDetails,
-        }),
+        Uri.parse('$baseUrl/qr/validate'),
+        headers: headers,
+        body: jsonEncode({'qrData': qrData}),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse.success(data);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Invalid QR code');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  // Subscription Endpoints
+  static Future<ApiResponse<Map<String, dynamic>>> getSubscriptionPlans() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/subscriptions/plans'),
+        headers: headers,
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse.success(data);
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to get plans');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  static Future<ApiResponse<String>> submitPaymentRequest(Map<String, dynamic> paymentData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/subscriptions/payment-request'),
+        headers: headers,
+        body: jsonEncode(paymentData),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        return ApiResponse.success(data['message'] ?? 'Payment request submitted');
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to submit payment request');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  // Voucher Endpoints
+  static Future<ApiResponse<List<Map<String, dynamic>>>> getUserVouchers() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/vouchers/user'),
+        headers: headers,
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> vouchersJson = data['vouchers'];
+        return ApiResponse.success(vouchersJson.cast<Map<String, dynamic>>());
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to get vouchers');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  static Future<ApiResponse<String>> redeemVoucher(String voucherCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/vouchers/redeem'),
+        headers: headers,
+        body: jsonEncode({'code': voucherCode}),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse.success(data['message'] ?? 'Voucher redeemed');
+      } else {
+        return ApiResponse.error(data['message'] ?? 'Failed to redeem voucher');
+      }
+    } catch (e) {
+      return ApiResponse.error('Network error: $e');
+    }
+  }
+
+  // Ping endpoint
+  static Future<ApiResponse<String>> ping() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/ping'),
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        return ApiResponse.success('Connected to server');
+      } else {
+        return ApiResponse.error('Server not responding');
       }
-      return null;
     } catch (e) {
-      print('Payment processing error: $e');
-      return null;
+      return ApiResponse.error('Network error: $e');
     }
   }
+}
+
+class ApiResponse<T> {
+  final bool success;
+  final T? data;
+  final String? error;
+
+  ApiResponse.success(this.data) : success = true, error = null;
+  ApiResponse.error(this.error) : success = false, data = null;
 }
