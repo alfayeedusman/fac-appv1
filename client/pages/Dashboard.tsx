@@ -27,6 +27,7 @@ import {
   Settings,
   Home,
   History,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -230,6 +231,27 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
+      {/* Floating Icons - Left Side */}
+      <div className="fixed top-6 left-6 z-50 flex flex-col space-y-3">
+        <div className="glass rounded-full p-1 animate-fade-in-scale">
+          <ThemeToggle variant="ghost" size="sm" />
+        </div>
+        <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-100">
+          <NotificationDropdown />
+        </div>
+        <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-200">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => window.location.reload()}
+            title="Refresh"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/6 w-96 h-96 rounded-full bg-fac-orange-500/[0.02] blur-3xl"></div>
@@ -274,8 +296,6 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
-            <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
-            <NotificationDropdown />
             <Button
               variant="ghost"
               size="icon"
@@ -283,7 +303,7 @@ export default function Dashboard() {
               className="rounded-full hover:text-red-500"
               title="Logout"
             >
-              <RefreshCw className="h-5 w-5" />
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
