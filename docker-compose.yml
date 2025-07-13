@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: fayeed_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: fayeed_root_2024
+      MYSQL_DATABASE: fayeed_auto_care
+      MYSQL_USER: fayeed_user
+      MYSQL_PASSWORD: fayeed_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/mysql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - fayeed_network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: fayeed_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: fayeed_user
+      PMA_PASSWORD: fayeed_pass_2024
+      MYSQL_ROOT_PASSWORD: fayeed_root_2024
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - fayeed_network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: fayeed_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fayeed_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  fayeed_network:
+    driver: bridge

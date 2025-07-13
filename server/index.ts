@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import customerApiRoutes from "./routes/customer-api.js";
 
 export function createServer() {
   const app = express();
@@ -16,6 +17,9 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Customer API routes for Flutter app
+  app.use("/api/v2", customerApiRoutes);
 
   return app;
 }

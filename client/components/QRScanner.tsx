@@ -20,6 +20,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import jsQR from "jsqr";
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -131,38 +132,109 @@ export default function QRScanner({
   };
 
   const startQRDetection = () => {
-    // Simulate QR code detection since we don't have a real QR library
+    // Real QR code detection using jsQR
     scanIntervalRef.current = setInterval(() => {
-      // This would normally use a QR detection library like jsQR
-      // For demo purposes, we'll simulate scanning after 3 seconds
-      if (Math.random() > 0.95) {
-        // 5% chance each interval
-        handleQRDetected();
+      if (
+        videoRef.current &&
+        videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA
+      ) {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        if (context) {
+          canvas.width = videoRef.current.videoWidth;
+          canvas.height = videoRef.current.videoHeight;
+
+          context.drawImage(
+            videoRef.current,
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          );
+
+          const imageData = context.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          );
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+
+          if (code) {
+            handleQRDetected(code.data);
+          }
+        }
       }
-    }, 200);
+    }, 100); // Scan every 100ms for better performance
   };
 
-  const handleQRDetected = () => {
-    // Simulate different types of QR codes
-    const qrTypes = [
-      {
-        type: "branch" as const,
-        branchId: "TUMAGA-001",
-        branchName: "Tumaga Hub",
-        timestamp: new Date().toISOString(),
-      },
-      {
-        type: "branch" as const,
-        branchId: "BOALAN-002",
-        branchName: "Boalan Hub",
-        timestamp: new Date().toISOString(),
-      },
-    ];
+  const handleQRDetected = (qrData: string) => {
+    try {
+      // Try to parse the QR code data as JSON
+      const parsedData = JSON.parse(qrData);
 
-    const mockResult = qrTypes[Math.floor(Math.random() * qrTypes.length)];
-    stopCamera();
-    onScanSuccess(mockResult);
-    onClose();
+      // Validate and structure the QR result
+      let result: QRScanResult;
+
+      if (parsedData.type === "branch" && parsedData.id) {
+        result = {
+          type: "branch",
+          branchId: parsedData.id,
+          branchName: parsedData.name || `Branch ${parsedData.id}`,
+          timestamp: new Date().toISOString(),
+        };
+      } else if (parsedData.type === "service" && parsedData.id) {
+        result = {
+          type: "service",
+          serviceId: parsedData.id,
+          timestamp: new Date().toISOString(),
+        };
+      } else if (parsedData.type === "customer" && parsedData.id) {
+        result = {
+          type: "customer",
+          customerId: parsedData.id,
+          timestamp: new Date().toISOString(),
+        };
+      } else {
+        // If not recognized format, treat as branch check-in for demo
+        result = {
+          type: "branch",
+          branchId: "UNKNOWN",
+          branchName: "Unknown Branch",
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      stopCamera();
+      onScanSuccess(result);
+      onClose();
+    } catch (error) {
+      // If QR data is not JSON, try to handle as plain text
+      console.log("QR data is not JSON:", qrData);
+
+      // For demo, create a result based on the raw QR data
+      const result: QRScanResult = {
+        type: "branch",
+        branchId: qrData.includes("TUMAGA")
+          ? "TUMAGA-001"
+          : qrData.includes("BOALAN")
+            ? "BOALAN-002"
+            : "MANUAL-001",
+        branchName: qrData.includes("TUMAGA")
+          ? "Tumaga Hub"
+          : qrData.includes("BOALAN")
+            ? "Boalan Hub"
+            : "Manual Entry",
+        timestamp: new Date().toISOString(),
+      };
+
+      stopCamera();
+      onScanSuccess(result);
+      onClose();
+    }
   };
 
   const handleManualEntry = () => {

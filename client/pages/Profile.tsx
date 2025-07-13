@@ -33,8 +33,6 @@ import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import LevelProgress from "@/components/LevelProgress";
 import UserQRCode from "@/components/UserQRCode";
-import { resetAppState } from "@/utils/resetApp";
-import DebugPanel from "@/components/DebugPanel";
 
 interface UserProfile {
   name: string;
@@ -101,24 +99,8 @@ export default function Profile() {
     <div className="min-h-screen bg-background pb-20">
       <StickyHeader showBack={true} title="Profile" />
 
-      {/* Theme Toggle and Reset */}
+      {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-20 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (
-              confirm(
-                "Are you sure you want to reset the app? This will clear all data and log you out.",
-              )
-            ) {
-              resetAppState();
-            }
-          }}
-          className="text-xs"
-        >
-          Reset App
-        </Button>
         <div className="rounded-full p-1">
           <ThemeToggle />
         </div>
@@ -658,7 +640,6 @@ export default function Profile() {
       </div>
 
       <BottomNavigation />
-      <DebugPanel />
     </div>
   );
 }

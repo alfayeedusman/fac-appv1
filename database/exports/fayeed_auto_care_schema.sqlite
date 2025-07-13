@@ -1,0 +1,260 @@
+-- Fayeed Auto Care SQLite Schema
+-- Compatible with Flutter sqflite package
+
+-- Users table (synced with Firebase Auth)
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,  -- Firebase UID
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    phone_number TEXT,
+    address TEXT,
+    profile_image_url TEXT,
+    is_active INTEGER DEFAULT 1,
+    email_verified INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TEXT
+);
+
+-- User Profiles (additional customer information)
+CREATE TABLE user_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    preferred_branch_id INTEGER,
+    notification_preferences TEXT, -- JSON string
+    loyalty_points INTEGER DEFAULT 0,
+    total_bookings INTEGER DEFAULT 0,
+    total_spent REAL DEFAULT 0.00,
+    referral_code TEXT UNIQUE,
+    referred_by TEXT,
+    date_of_birth TEXT,
+    gender TEXT CHECK(gender IN ('male', 'female', 'other')),
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Vehicles table
+CREATE TABLE vehicles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    plate_number TEXT NOT NULL,
+    make TEXT NOT NULL,
+    model TEXT NOT NULL,
+    year INTEGER NOT NULL,
+    color TEXT,
+    vehicle_type TEXT DEFAULT 'sedan' CHECK(vehicle_type IN ('sedan', 'suv', 'truck', 'van', 'motorcycle', 'other')),
+    is_primary INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Branches table
+CREATE TABLE branches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    phone_number TEXT,
+    email TEXT,
+    latitude REAL,
+    longitude REAL,
+    operating_hours TEXT, -- JSON string
+    services_offered TEXT, -- JSON string
+    is_active INTEGER DEFAULT 1,
+    qr_code_data TEXT,
+    branch_code TEXT UNIQUE,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Services table
+CREATE TABLE services (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT,
+    category TEXT DEFAULT 'wash' CHECK(category IN ('wash', 'detailing', 'maintenance', 'repair', 'other')),
+    base_price REAL NOT NULL,
+    duration_minutes INTEGER DEFAULT 30,
+    is_active INTEGER DEFAULT 1,
+    image_url TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Branch Services (many-to-many relationship)
+CREATE TABLE branch_services (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    branch_id INTEGER NOT NULL,
+    service_id INTEGER NOT NULL,
+    custom_price REAL,
+    is_available INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
+);
+
+-- Bookings table
+CREATE TABLE bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    branch_id INTEGER NOT NULL,
+    service_id INTEGER NOT NULL,
+    vehicle_id INTEGER NOT NULL,
+    booking_date TEXT NOT NULL,
+    booking_time TEXT NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show')),
+    total_amount REAL NOT NULL,
+    payment_status TEXT DEFAULT 'pending' CHECK(payment_status IN ('pending', 'paid', 'failed', 'refunded')),
+    special_requests TEXT,
+    qr_checkin_at TEXT,
+    started_at TEXT,
+    completed_at TEXT,
+    cancelled_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branches(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- QR Check-ins table
+CREATE TABLE qr_checkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    branch_id INTEGER NOT NULL,
+    qr_code_scanned TEXT NOT NULL,
+    checkin_time TEXT DEFAULT CURRENT_TIMESTAMP,
+    device_info TEXT, -- JSON string
+    location_data TEXT, -- JSON string
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branches(id)
+);
+
+-- Payments table
+CREATE TABLE payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    payment_method TEXT NOT NULL CHECK(payment_method IN ('cash', 'card', 'gcash', 'paymaya', 'bank_transfer')),
+    payment_status TEXT DEFAULT 'pending' CHECK(payment_status IN ('pending', 'processing', 'completed', 'failed', 'refunded')),
+    transaction_id TEXT,
+    payment_gateway_response TEXT, -- JSON string
+    processed_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Vouchers table
+CREATE TABLE vouchers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    discount_type TEXT NOT NULL CHECK(discount_type IN ('percentage', 'fixed_amount')),
+    discount_value REAL NOT NULL,
+    minimum_amount REAL DEFAULT 0,
+    max_uses INTEGER,
+    used_count INTEGER DEFAULT 0,
+    valid_from TEXT NOT NULL,
+    valid_until TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    applicable_services TEXT, -- JSON string
+    applicable_branches TEXT, -- JSON string
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Voucher Usage table
+CREATE TABLE voucher_usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    voucher_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    booking_id INTEGER NOT NULL,
+    discount_amount REAL NOT NULL,
+    used_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+-- Notifications table
+CREATE TABLE notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT DEFAULT 'system' CHECK(type IN ('booking', 'payment', 'promotion', 'system', 'reminder')),
+    is_read INTEGER DEFAULT 0,
+    action_data TEXT, -- JSON string
+    sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    read_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Staff table
+CREATE TABLE staff (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    branch_id INTEGER NOT NULL,
+    role TEXT NOT NULL CHECK(role IN ('manager', 'cashier', 'washer', 'admin')),
+    employee_id TEXT UNIQUE,
+    hire_date TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    shift_schedule TEXT, -- JSON string
+    permissions TEXT, -- JSON string
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branches(id)
+);
+
+-- QR Scan Logs table
+CREATE TABLE qr_scan_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    scan_type TEXT NOT NULL CHECK(scan_type IN ('checkin', 'branch_info', 'service_info', 'payment')),
+    qr_data TEXT NOT NULL,
+    branch_id INTEGER,
+    scan_result TEXT NOT NULL CHECK(scan_result IN ('success', 'invalid', 'expired', 'error')),
+    scanned_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    device_info TEXT, -- JSON string
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branches(id)
+);
+
+-- Sync Queue table (for offline sync)
+CREATE TABLE sync_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    table_name TEXT NOT NULL,
+    record_id TEXT NOT NULL,
+    operation TEXT NOT NULL CHECK(operation IN ('insert', 'update', 'delete')),
+    data TEXT, -- JSON string
+    sync_status TEXT DEFAULT 'pending' CHECK(sync_status IN ('pending', 'synced', 'failed')),
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    synced_at TEXT,
+    retry_count INTEGER DEFAULT 0
+);
+
+-- Create indexes
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_phone ON users(phone_number);
+CREATE INDEX idx_users_active ON users(is_active);
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
+CREATE INDEX idx_vehicles_user_id ON vehicles(user_id);
+CREATE INDEX idx_vehicles_plate ON vehicles(plate_number);
+CREATE INDEX idx_branches_active ON branches(is_active);
+CREATE INDEX idx_branches_code ON branches(branch_code);
+CREATE INDEX idx_services_category ON services(category);
+CREATE INDEX idx_services_active ON services(is_active);
+CREATE INDEX idx_bookings_user ON bookings(user_id);
+CREATE INDEX idx_bookings_branch ON bookings(branch_id);
+CREATE INDEX idx_bookings_date ON bookings(booking_date);
+CREATE INDEX idx_bookings_status ON bookings(status);
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_notifications_read ON notifications(is_read);

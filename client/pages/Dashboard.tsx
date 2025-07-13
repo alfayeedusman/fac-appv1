@@ -942,7 +942,11 @@ export default function Dashboard() {
       <QRScanner
         isOpen={showQRScanner}
         onClose={() => setShowQRScanner(false)}
-        onScanComplete={handleScanComplete}
+        onScanSuccess={(result) => {
+          setScanResult(result);
+          setShowQRScanner(false);
+          setShowScanSuccess(true);
+        }}
       />
 
       <QRScanSuccessModal

@@ -1,32 +1,34 @@
 {
-  "name": "fusion-starter",
+  "name": "fayeed-auto-care-mysql",
   "private": true,
   "type": "module",
-  "pkg": {
-    "assets": [
-      "dist/spa/*"
-    ],
-    "scripts": [
-      "dist/server/**/*.js"
-    ]
-  },
+  "version": "2.0.0",
+  "description": "Fayeed Auto Care with MySQL + Firebase Auth + Flutter Customer App",
   "scripts": {
     "dev": "vite",
+    "dev:mysql": "tsx server/mysql-server.ts",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
+    "build:flutter": "cd flutter_app && flutter build web",
     "start": "node dist/server/node-build.mjs",
+    "start:mysql": "node dist/server/mysql-server.js",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "db:up": "docker-compose up -d",
+    "db:down": "docker-compose down",
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "setup": "./setup-mysql.sh"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "firebase-admin": "^13.4.0",
-    "jsqr": "^1.4.0",
-    "mysql2": "^3.14.1",
+    "cors": "^2.8.5",
+    "mysql2": "^3.6.5",
+    "firebase-admin": "^11.11.1",
     "react-is": "^19.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -73,7 +75,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
-    "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.6.2",
@@ -101,5 +102,8 @@
     "vaul": "^0.9.3",
     "vite": "^6.2.2",
     "vitest": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
