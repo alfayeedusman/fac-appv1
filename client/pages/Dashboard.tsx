@@ -95,21 +95,10 @@ export default function Dashboard() {
   const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
   const [dashboardAds, setDashboardAds] = useState<Ad[]>([]);
   const [showPopupAd, setShowPopupAd] = useState(false);
-  const [showFloatingIcons, setShowFloatingIcons] = useState(true);
 
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
 
-  // Handle scroll to show/hide floating icons
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setShowFloatingIcons(scrollPosition < 100);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
   const registeredUsers = JSON.parse(
     localStorage.getItem("registeredUsers") || "[]",
   );
@@ -243,37 +232,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
-      {/* Floating Icons - Right Side Horizontal */}
-      <div
-        className={`fixed top-6 right-6 z-40 transition-all duration-300 ${showFloatingIcons ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"}`}
-      >
-        <div className="glass rounded-full px-3 py-2 flex items-center space-x-2">
-          <ThemeToggle variant="ghost" size="sm" />
-          <div className="w-px h-6 bg-border"></div>
-          <NotificationDropdown />
-          <div className="w-px h-6 bg-border"></div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={() => window.location.reload()}
-            title="Refresh"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <div className="w-px h-6 bg-border"></div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowLogoutModal(true)}
-            className="h-8 w-8 rounded-full hover:text-red-500"
-            title="Logout"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/6 w-96 h-96 rounded-full bg-fac-orange-500/[0.02] blur-3xl"></div>
@@ -318,6 +276,28 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
+
+            {/* Simple Right-side Icons */}
+            <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
+            <NotificationDropdown />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => window.location.reload()}
+              title="Refresh"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLogoutModal(true)}
+              className="rounded-full hover:text-red-500"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
