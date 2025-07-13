@@ -656,7 +656,6 @@ export default function Profile() {
       </div>
 
       <BottomNavigation />
-      <DebugPanel />
     </div>
   );
 }
