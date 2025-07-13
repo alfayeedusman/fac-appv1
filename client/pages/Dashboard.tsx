@@ -95,9 +95,21 @@ export default function Dashboard() {
   const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
   const [dashboardAds, setDashboardAds] = useState<Ad[]>([]);
   const [showPopupAd, setShowPopupAd] = useState(false);
+  const [showFloatingIcons, setShowFloatingIcons] = useState(true);
 
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
+
+  // Handle scroll to show/hide floating icons
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setShowFloatingIcons(scrollPosition < 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const registeredUsers = JSON.parse(
     localStorage.getItem("registeredUsers") || "[]",
   );
@@ -231,15 +243,15 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
       <StickyHeader showBack={false} title="Dashboard" />
 
-      {/* Floating Icons - Left Side */}
-      <div className="fixed top-6 left-6 z-50 flex flex-col space-y-3">
-        <div className="glass rounded-full p-1 animate-fade-in-scale">
+      {/* Floating Icons - Right Side Horizontal */}
+      <div
+        className={`fixed top-6 right-6 z-40 transition-all duration-300 ${showFloatingIcons ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"}`}
+      >
+        <div className="glass rounded-full px-3 py-2 flex items-center space-x-2">
           <ThemeToggle variant="ghost" size="sm" />
-        </div>
-        <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-100">
+          <div className="w-px h-6 bg-border"></div>
           <NotificationDropdown />
-        </div>
-        <div className="glass rounded-full p-1 animate-fade-in-scale animate-delay-200">
+          <div className="w-px h-6 bg-border"></div>
           <Button
             variant="ghost"
             size="icon"
@@ -248,6 +260,16 @@ export default function Dashboard() {
             title="Refresh"
           >
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-6 bg-border"></div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowLogoutModal(true)}
+            className="h-8 w-8 rounded-full hover:text-red-500"
+            title="Logout"
+          >
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -296,15 +318,6 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowLogoutModal(true)}
-              className="rounded-full hover:text-red-500"
-              title="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
           </div>
         </div>
 
