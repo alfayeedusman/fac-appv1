@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import demoRoutes from "./routes/demo.js";
 import customerApiRoutes from "./routes/customer-api.js";
 
 export function createServer() {
