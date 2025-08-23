@@ -273,13 +273,17 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     return { basePrice, totalPrice };
   }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType]);
 
-  // Update prices when calculated values change
+  // Update prices when calculated values change (with debouncing)
   useEffect(() => {
-    setBookingData(prev => ({
-      ...prev,
-      basePrice,
-      totalPrice,
-    }));
+    const timeoutId = setTimeout(() => {
+      setBookingData(prev => ({
+        ...prev,
+        basePrice,
+        totalPrice,
+      }));
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
 
   // Memoize progress calculation to prevent unnecessary re-renders
