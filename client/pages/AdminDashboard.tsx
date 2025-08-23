@@ -721,6 +721,9 @@ export default function AdminDashboard() {
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
+                                  {notification.type === "new_booking" && (
+                                    <Calendar className="h-5 w-5 text-fac-orange-500" />
+                                  )}
                                   {notification.type === "new_customer" && (
                                     <UserPlus className="h-5 w-5 text-blue-500" />
                                   )}
@@ -729,6 +732,21 @@ export default function AdminDashboard() {
                                   )}
                                   {notification.type === "approval_request" && (
                                     <Clock className="h-5 w-5 text-yellow-500" />
+                                  )}
+                                  {notification.type === "status_update" && (
+                                    <CheckCircle className="h-5 w-5 text-blue-500" />
+                                  )}
+                                  {notification.type === "crew_update" && (
+                                    <Wrench className="h-5 w-5 text-purple-500" />
+                                  )}
+                                  {notification.type === "payment_received" && (
+                                    <DollarSign className="h-5 w-5 text-green-500" />
+                                  )}
+                                  {notification.type === "system_alert" && (
+                                    <AlertCircle className="h-5 w-5 text-red-500" />
+                                  )}
+                                  {notification.type === "payment" && (
+                                    <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
