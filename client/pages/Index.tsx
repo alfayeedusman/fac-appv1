@@ -27,12 +27,18 @@ export default function Index() {
       const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
       const userRole = localStorage.getItem("userRole");
 
+      // Always route admin and superadmin users directly to admin dashboard
+      if (userRole === "admin" || userRole === "superadmin") {
+        navigate("/admin-dashboard");
+        return;
+      }
+
       if (hasSeenWelcome === "true") {
         // Route based on user role
-        if (userRole === "admin" || userRole === "superadmin") {
-          navigate("/admin-dashboard");
-        } else if (userRole === "manager") {
+        if (userRole === "manager") {
           navigate("/manager-dashboard");
+        } else if (userRole === "crew") {
+          navigate("/crew-dashboard");
         } else if (userRole === "cashier") {
           navigate("/pos");
         } else if (userRole === "inventory_manager") {
@@ -42,6 +48,19 @@ export default function Index() {
         }
       } else {
         navigate("/welcome");
+      }
+    } else {
+      // Check if this is the superadmin trying to access directly
+      // This handles cases where superadmin might not be authenticated but should auto-login
+      const userEmail = localStorage.getItem("userEmail");
+      if (userEmail === "fffayeed@gmail.com") {
+        // Auto-authenticate superadmin
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "superadmin");
+        localStorage.setItem("hasSeenWelcome", "true");
+        localStorage.setItem(`welcomed_${userEmail}`, "true");
+        navigate("/admin-dashboard");
+        return;
       }
     }
   }, [navigate]);
