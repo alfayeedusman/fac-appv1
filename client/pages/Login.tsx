@@ -393,35 +393,31 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Modern Demo Users */}
+        {/* Guest Booking Option */}
         <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">
           <CardContent className="p-6">
             <h3 className="font-black text-foreground text-base mb-4 flex items-center">
               <Smartphone className="h-5 w-5 mr-2 text-fac-orange-500" />
-              Demo Access Portal
+              Quick Access
             </h3>
-            <div className="space-y-3 text-sm font-medium">
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Customer:</strong> any email/password
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Admin:</strong> admin@fac.com / admin123
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200">
-                <span className="text-purple-800 font-bold">
-                  👑 <strong>SUPERADMIN:</strong> superadmin@fac.com / super123
-                  ⚡
-                </span>
-              </div>
-              <div className="text-center p-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                <span className="text-xs text-purple-600 font-semibold">
-                  💡 Or use the FORCE SUPERADMIN LOGIN button above to bypass
-                  everything!
-                </span>
+            <div className="space-y-3">
+              <Link to="/guest-booking">
+                <Button
+                  variant="outline"
+                  className="w-full border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50 font-bold py-3 rounded-xl transition-all group"
+                >
+                  <span className="text-lg mr-2">📅</span>
+                  Book as Guest
+                  <span className="text-lg ml-2">→</span>
+                </Button>
+              </Link>
+              <div className="text-center">
+                <Link
+                  to="/superadminlogin"
+                  className="text-xs text-muted-foreground hover:text-purple-600 transition-colors"
+                >
+                  Admin Access
+                </Link>
               </div>
             </div>
           </CardContent>
