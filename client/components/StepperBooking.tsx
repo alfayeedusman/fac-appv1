@@ -689,7 +689,7 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
 );
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
-  const availableSlots = bookingData.date ? getTimeSlots(bookingData.date) : [];
+  const availableSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
   return (
     <Card className="glass border-border shadow-xl">
