@@ -108,6 +108,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/guest-booking" element={<GuestBooking />} />
             <Route
               path="/my-bookings"
               element={
