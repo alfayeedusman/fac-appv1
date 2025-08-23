@@ -805,13 +805,22 @@ export default function UserRoleManagement() {
       );
       if (userIndex === -1) return;
 
-      existingUsers[userIndex] = {
+      // Update user data, including password if provided
+      const updatedUser = {
         ...existingUsers[userIndex],
         fullName: formData.fullName,
         role: formData.role,
         permissions: formData.permissions,
         status: formData.status,
+        updatedAt: new Date().toISOString(),
       };
+
+      // Only update password if a new one was provided
+      if (formData.password && formData.password.trim() !== "") {
+        updatedUser.password = formData.password;
+      }
+
+      existingUsers[userIndex] = updatedUser;
 
       localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
       loadUsers();
