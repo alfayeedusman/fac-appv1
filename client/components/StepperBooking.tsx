@@ -568,9 +568,9 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
               {Object.entries(type.sizes).map(([sizeKey, sizeName]) => {
                 const getPrice = () => {
                   if (bookingData.category === "auto_detailing") {
-                    return DETAILING_PRICES[typeKey as keyof typeof DETAILING_PRICES]?.[sizeKey as keyof typeof DETAILING_PRICES.car] || 0;
+                    return adminConfig.pricing.autoDetailing[typeKey as keyof typeof adminConfig.pricing.autoDetailing]?.[sizeKey as keyof typeof adminConfig.pricing.autoDetailing.car] || 0;
                   } else if (bookingData.category === "graphene_coating") {
-                    return COATING_PRICES[typeKey as keyof typeof COATING_PRICES]?.[sizeKey as keyof typeof COATING_PRICES.car] || 0;
+                    return adminConfig.pricing.grapheneCoating[typeKey as keyof typeof adminConfig.pricing.grapheneCoating]?.[sizeKey as keyof typeof adminConfig.pricing.grapheneCoating.car] || 0;
                   }
                   return 0;
                 };
@@ -587,7 +587,7 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
                   >
                     <p className="font-semibold text-sm">{sizeName}</p>
                     {bookingData.category !== "carwash" && (
-                      <p className="text-xs opacity-75">��{getPrice().toLocaleString()}</p>
+                      <p className="text-xs opacity-75">₱{getPrice().toLocaleString()}</p>
                     )}
                   </div>
                 );
