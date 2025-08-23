@@ -539,6 +539,33 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       // Create booking using advanced database system
       const createdBooking = await createBooking(bookingPayload);
 
+      // Send system notification to admin and manager about new booking
+      const customerName = isGuest ? `${bookingData.fullName}` : 'Registered Customer';
+      const notificationMessage = `New booking received from ${customerName}\n` +
+        `Service: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\n` +
+        `Date: ${bookingData.date} at ${bookingData.timeSlot}\n` +
+        `Amount: ₱${bookingData.totalPrice.toLocaleString()}\n` +
+        `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
+
+      createSystemNotification({
+        type: 'new_booking',
+        title: '🎯 New Booking Received',
+        message: notificationMessage,
+        priority: 'high',
+        targetRoles: ['admin', 'superadmin', 'manager'],
+        data: {
+          bookingId: createdBooking.id,
+          customerId: createdBooking.userId,
+          guestInfo: createdBooking.guestInfo,
+          service: bookingData.service,
+          totalPrice: bookingData.totalPrice,
+          date: bookingData.date,
+          timeSlot: bookingData.timeSlot
+        },
+        playSound: true,
+        soundType: 'new_booking'
+      });
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
         `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\nYou will receive confirmation shortly.`,
