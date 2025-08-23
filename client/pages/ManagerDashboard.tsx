@@ -343,10 +343,43 @@ export default function ManagerDashboard() {
               Manage bookings and customer relationships
             </p>
           </div>
-          <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Notification Bell */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // Mark all notifications as read
+                  const userEmail = localStorage.getItem("userEmail") || "";
+                  notifications.forEach(notification => {
+                    if (!notification.read) {
+                      markSystemNotificationAsRead(notification.id, userEmail);
+                    }
+                  });
+                  loadNotifications();
+
+                  toast({
+                    title: "📢 Notifications",
+                    description: `You have ${notifications.length} total notifications`,
+                  });
+                }}
+                className="relative"
+              >
+                <Bell className="h-4 w-4" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-5 w-5 rounded-full p-0 flex items-center justify-center">
+                    {notifications.filter(n => !n.read).length > 9 ? "9+" : notifications.filter(n => !n.read).length}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+
+            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
