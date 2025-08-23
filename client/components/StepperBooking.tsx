@@ -132,8 +132,14 @@ const UNIT_TYPES = {
 
 // Get dynamic time slots based on admin config
 const getTimeSlots = (date: string) => {
-  const dayOfWeek = new Date(date).toLocaleDateString('en-us', { weekday: 'long' }).toLowerCase();
-  return generateTimeSlots(dayOfWeek);
+  try {
+    if (!date) return [];
+    const dayOfWeek = new Date(date).toLocaleDateString('en-us', { weekday: 'long' }).toLowerCase();
+    return generateTimeSlots(dayOfWeek);
+  } catch (error) {
+    console.error('Error generating time slots:', error);
+    return [];
+  }
 };
 
 export default function StepperBooking({ isGuest = false }: StepperBookingProps) {
