@@ -1338,7 +1338,7 @@ const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: Book
       <CardContent className="p-3 md:p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs md:text-sm font-medium text-foreground">Booking Progress</span>
-          <span className="text-xs md:text-sm text-muted-foreground">{progressPercentage}%</span>
+          <span className="text-xs md:text-sm text-muted-foreground">{progressPercentage || 0}%</span>
         </div>
         <div className="w-full bg-border rounded-full h-2">
           <div
