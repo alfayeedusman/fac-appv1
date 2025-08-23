@@ -221,11 +221,20 @@ export default function EnhancedCrewDashboard() {
         timestamp: new Date(position.timestamp).toLocaleTimeString()
       });
 
-      // Show success toast only on first successful location
-      if (!currentLocation) {
+      // Check location accuracy and provide guidance
+      const accuracy = position.coords.accuracy;
+      if (accuracy > 100) {
+        toast({
+          title: "⚠️ Poor GPS Signal",
+          description: `Location accuracy is ${Math.round(accuracy)}m. For better accuracy, try moving outdoors or near a window.`,
+          variant: "destructive",
+          duration: 4000,
+        });
+      } else if (!currentLocation) {
+        // Show success toast only on first successful location
         toast({
           title: "📍 Location Tracking Active",
-          description: `GPS coordinates acquired (±${Math.round(position.coords.accuracy)}m accuracy)`,
+          description: `GPS coordinates acquired (±${Math.round(accuracy)}m accuracy)`,
           duration: 3000,
         });
       }
