@@ -169,15 +169,15 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
   const calculatePrice = () => {
     let price = 0;
-    
+
     if (bookingData.category === "carwash" && bookingData.service) {
-      price = SERVICE_CATEGORIES.carwash.services[bookingData.service as keyof typeof SERVICE_CATEGORIES.carwash.services]?.price || 0;
+      price = adminConfig.pricing.carwash[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.price || 0;
     } else if (bookingData.category === "auto_detailing" && bookingData.unitType && bookingData.unitSize) {
-      price = DETAILING_PRICES[bookingData.unitType as keyof typeof DETAILING_PRICES]?.[bookingData.unitSize as keyof typeof DETAILING_PRICES.car] || 0;
+      price = adminConfig.pricing.autoDetailing[bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing]?.[bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car] || 0;
     } else if (bookingData.category === "graphene_coating" && bookingData.unitType && bookingData.unitSize) {
-      price = COATING_PRICES[bookingData.unitType as keyof typeof COATING_PRICES]?.[bookingData.unitSize as keyof typeof COATING_PRICES.car] || 0;
+      price = adminConfig.pricing.grapheneCoating[bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating]?.[bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car] || 0;
     }
-    
+
     setBookingData(prev => ({
       ...prev,
       basePrice: price,
