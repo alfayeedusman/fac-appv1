@@ -8,8 +8,7 @@ import StepperBooking from "@/components/StepperBooking";
 
 export default function GuestBooking() {
   return (
-    <div className="min-h-screen bg-background theme-transition relative">
-      <StickyHeader showBack={true} title="Guest Booking" />
+    <div className="min-h-screen bg-background theme-transition relative">{/* Removed StickyHeader - using custom navigation */}
 
       {/* Responsive Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
