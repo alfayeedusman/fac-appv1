@@ -1333,6 +1333,29 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "bookings" && (
+            <div className="animate-fade-in-scale">
+              <EnhancedBookingManagement
+                userRole={userRole as "admin" | "superadmin"}
+                showCrewAssignment={true}
+              />
+            </div>
+          )}
+
+          {activeTab === "images" && (
+            <div className="animate-fade-in-scale">
+              <ImageUploadManager
+                allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
+                maxFileSize={10}
+                currentUser={{
+                  id: localStorage.getItem('userEmail'),
+                  email: localStorage.getItem('userEmail'),
+                  role: userRole
+                }}
+              />
+            </div>
+          )}
+
           {activeTab === "notifications" && (
             <NotificationCenter
               notifications={notifications}
