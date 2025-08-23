@@ -597,64 +597,80 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
   </Card>
 );
 
-const ScheduleStep = ({ bookingData, updateBookingData }: any) => (
-  <Card className="glass border-border shadow-xl">
-    <CardHeader>
-      <CardTitle className="flex items-center text-2xl">
-        <Calendar className="h-6 w-6 mr-3 text-fac-orange-500" />
-        Schedule Your Visit
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <Label className="text-foreground font-semibold">Select Date</Label>
-          <Input
-            type="date"
-            min={new Date().toISOString().split("T")[0]}
-            value={bookingData.date}
-            onChange={(e) => updateBookingData("date", e.target.value)}
-            className="mt-2"
-          />
-        </div>
-        
-        <div>
-          <Label className="text-foreground font-semibold">Select Branch</Label>
-          <Select value={bookingData.branch} onValueChange={(value) => updateBookingData("branch", value)}>
-            <SelectTrigger className="mt-2">
-              <SelectValue placeholder="Choose branch" />
-            </SelectTrigger>
-            <SelectContent>
-              {BRANCHES.map((branch) => (
-                <SelectItem key={branch.id} value={branch.name}>
-                  {branch.name} - {branch.address}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      {bookingData.date && (
-        <div>
-          <Label className="text-foreground font-semibold">Available Time Slots</Label>
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
-            {TIME_SLOTS.map((slot) => (
-              <Button
-                key={slot}
-                variant={bookingData.timeSlot === slot ? "default" : "outline"}
-                onClick={() => updateBookingData("timeSlot", slot)}
-                className="h-auto py-3"
-              >
-                {slot}
-              </Button>
-            ))}
+const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
+  const availableSlots = bookingData.date ? getTimeSlots(bookingData.date) : [];
+
+  return (
+    <Card className="glass border-border shadow-xl">
+      <CardHeader>
+        <CardTitle className="flex items-center text-2xl">
+          <Calendar className="h-6 w-6 mr-3 text-fac-orange-500" />
+          Schedule Your Visit
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <Label className="text-foreground font-semibold">Select Date</Label>
+            <Input
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              value={bookingData.date}
+              onChange={(e) => updateBookingData("date", e.target.value)}
+              className="mt-2"
+            />
+          </div>
+
+          <div>
+            <Label className="text-foreground font-semibold">Select Branch</Label>
+            <Select value={bookingData.branch} onValueChange={(value) => updateBookingData("branch", value)}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Choose branch" />
+              </SelectTrigger>
+              <SelectContent>
+                {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
+                  <SelectItem key={branch.id} value={branch.name}>
+                    {branch.name} - {branch.address}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      )}
-    </CardContent>
-  </Card>
-);
+
+        {bookingData.date && (
+          <div>
+            <Label className="text-foreground font-semibold">Available Time Slots</Label>
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
+              {availableSlots.map((slot) => {
+                const isAvailable = isSlotAvailable(bookingData.date, slot, bookingData.branch);
+                return (
+                  <Button
+                    key={slot}
+                    variant={bookingData.timeSlot === slot ? "default" : "outline"}
+                    onClick={() => isAvailable && updateBookingData("timeSlot", slot)}
+                    disabled={!isAvailable}
+                    className={`h-auto py-3 ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {slot}
+                    {!isAvailable && (
+                      <span className="block text-xs text-red-500">Full</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+            {availableSlots.length === 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                No available slots for this date. Please select another date.
+              </p>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) => (
   <Card className="glass border-border shadow-xl">
