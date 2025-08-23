@@ -429,47 +429,37 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   ))}
                 </div>
 
-                {/* Mobile Stepper - Compact Version */}
+                {/* Mobile Stepper - More Compact Version */}
                 <div className="md:hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-foreground">Current Step:</span>
-                    <span className="text-sm text-muted-foreground">{currentStep} of {STEPS.length}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-foreground">Progress:</span>
+                    <span className="text-xs text-muted-foreground">{currentStep} of {STEPS.length}</span>
                   </div>
-                  <div className="flex space-x-2 overflow-x-auto pb-2">
-                    {STEPS.map((step) => (
-                      <div
-                        key={step.id}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border flex-shrink-0 ${
-                          currentStep === step.id
-                            ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50'
-                            : currentStep > step.id
-                              ? 'border-green-500 bg-green-50 dark:bg-green-950/50'
-                              : 'border-border bg-background'
-                        }`}
-                      >
-                        <div className={`
-                          flex items-center justify-center w-6 h-6 rounded-full border transition-all
-                          ${currentStep === step.id
-                            ? 'border-fac-orange-500 bg-fac-orange-500 text-white'
-                            : currentStep > step.id
-                              ? 'border-green-500 bg-green-500 text-white'
-                              : 'border-border bg-background text-muted-foreground'
-                          }
-                        `}>
-                          {currentStep > step.id ? (
-                            <CheckCircle className="h-3 w-3" />
-                          ) : (
-                            <step.icon className="h-3 w-3" />
-                          )}
-                        </div>
-                        <span className={`text-xs font-medium ${
-                          currentStep === step.id ? 'text-fac-orange-500' :
-                          currentStep > step.id ? 'text-green-500' : 'text-muted-foreground'
-                        }`}>
-                          {step.title}
-                        </span>
+
+                  {/* Progress Bar for Mobile */}
+                  <div className="w-full bg-border rounded-full h-2 mb-3">
+                    <div
+                      className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+                    ></div>
+                  </div>
+
+                  {/* Current Step Indicator */}
+                  <div className="flex items-center justify-center p-3 rounded-lg border border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-fac-orange-500 text-white">
+                        {(() => {
+                          const CurrentIcon = STEPS[currentStep - 1].icon;
+                          return <CurrentIcon className="h-3 w-3" />;
+                        })()}
                       </div>
-                    ))}
+                      <div>
+                        <span className="text-sm font-semibold text-fac-orange-500">
+                          {STEPS[currentStep - 1].title}
+                        </span>
+                        <p className="text-xs text-muted-foreground">{STEPS[currentStep - 1].description}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
