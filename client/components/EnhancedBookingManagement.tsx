@@ -120,24 +120,28 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
 
   const loadBookings = () => {
     try {
-      const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      const guestBookings = JSON.parse(localStorage.getItem('guestBookings') || '[]');
-      
-      const allBookings = [...userBookings, ...guestBookings].map(booking => ({
+      // Use the database schema to get all bookings
+      const databaseBookings = getAllBookings();
+
+      const allBookings = databaseBookings.map(booking => ({
         ...booking,
-        customerName: booking.fullName || booking.customerName || 'N/A',
-        customerEmail: booking.email || booking.customerEmail || 'N/A',
-        customerPhone: booking.mobile || booking.customerPhone || 'N/A',
-        customerAddress: booking.address || booking.customerAddress || 'N/A',
-        plateNumber: booking.plateNo || booking.plateNumber || 'N/A',
+        customerName: booking.guestInfo ?
+          `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
+          'Registered Customer',
+        customerEmail: booking.guestInfo?.email || 'N/A',
+        customerPhone: booking.guestInfo?.phone || 'N/A',
+        customerAddress: 'N/A', // This would need to be added to booking schema if needed
+        plateNumber: booking.plateNumber || 'N/A',
         status: booking.status || 'pending',
         createdAt: booking.createdAt || new Date().toISOString(),
       }));
 
       // Sort by creation date (newest first)
       allBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
+
       setBookings(allBookings);
+
+      console.log(`✅ Loaded ${allBookings.length} bookings from database`);
     } catch (error) {
       console.error('Error loading bookings:', error);
       toast({
