@@ -33,7 +33,12 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { getAllBookings, updateBookingStatus } from '@/utils/databaseSchema';
+import {
+  getAllBookings,
+  updateBookingStatus,
+  getUserSystemNotifications,
+  markSystemNotificationAsRead
+} from '@/utils/databaseSchema';
 
 interface Booking {
   id: string;
