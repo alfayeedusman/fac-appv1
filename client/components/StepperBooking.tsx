@@ -344,7 +344,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         <div className="flex flex-col lg:flex-row">
           {/* Sidebar */}
           <div className={`
-            fixed lg:sticky top-0 left-0 h-screen w-72 md:w-80 lg:w-80 xl:w-96 bg-card/95 backdrop-blur-sm border-r z-50 lg:z-10
+            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-card/95 backdrop-blur-sm border-r z-50 lg:z-10
             transform transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
