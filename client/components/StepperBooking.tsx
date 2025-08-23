@@ -39,6 +39,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { notificationManager } from "@/components/NotificationModal";
 import { getAdminConfig, generateTimeSlots, isSlotAvailable } from "@/utils/adminConfig";
+import { createBooking, getSlotAvailability, type Booking } from "@/utils/databaseSchema";
 
 interface BookingData {
   // Service Selection
