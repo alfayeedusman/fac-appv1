@@ -768,6 +768,12 @@ export default function EnhancedCrewDashboard() {
                 <Navigation className="h-3 w-3" />
               </Button>
             </div>
+            {/* Debug info in development */}
+            {currentLocation && import.meta.env.DEV && (
+              <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
+              </div>
+            )}
             <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logout
