@@ -6,7 +6,7 @@ export interface User {
   email: string;
   fullName: string;
   password: string; // In production, this should be hashed
-  role: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager';
+  role: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager';
   contactNumber: string;
   address: string;
   carUnit?: string;
