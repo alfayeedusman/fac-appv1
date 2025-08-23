@@ -642,7 +642,15 @@ export default function EnhancedCrewDashboard() {
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            description = "Location permission denied. Please enable location access.";
+            description = "Location permission denied. Please enable location access in your browser settings.";
+            // Provide helpful instructions
+            setTimeout(() => {
+              toast({
+                title: "🔧 Location Setup Help",
+                description: "Chrome/Edge: Click 🔒 in address bar → Site settings → Location → Allow\nFirefox: Click 🛡️ → Permissions → Location → Allow",
+                duration: 10000,
+              });
+            }, 1000);
             break;
           case error.POSITION_UNAVAILABLE:
             description = "Location information unavailable.";
