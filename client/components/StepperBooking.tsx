@@ -108,7 +108,7 @@ try {
 }
 
 // Function to check if a service is available for home service
-const isServiceAvailableForHome = (category: string, service?: string) => {
+const isServiceAvailableForHome = (category: string, service?: string, vehicleType?: string) => {
   const homeServiceConfig = adminConfig?.homeService || {};
 
   if (!homeServiceConfig.enabled) {
@@ -116,6 +116,10 @@ const isServiceAvailableForHome = (category: string, service?: string) => {
   }
 
   if (category === 'carwash' && service) {
+    // Special validation for motorcycles - only FAC wash allowed
+    if (vehicleType === 'motorcycle') {
+      return service === 'fac';
+    }
     return homeServiceConfig.availableServices?.carwash?.includes(service) || false;
   } else if (category === 'auto_detailing') {
     return homeServiceConfig.availableServices?.autoDetailing || false;
@@ -855,9 +859,12 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
 
                       // Check if this service is available for current service type
                       if (bookingData.serviceType === 'home') {
-                        const isAvailable = isServiceAvailableForHome('carwash', serviceKey);
+                        const isAvailable = isServiceAvailableForHome('carwash', serviceKey, bookingData.unitType);
                         if (!isAvailable) {
-                          showHomeServiceUnavailableAlert(service.name, goBackToStep1);
+                          const alertMessage = bookingData.unitType === 'motorcycle'
+                            ? `${service.name} is not available for motorcycle home service. Only FAC Wash Special is available for motorcycles.`
+                            : service.name;
+                          showHomeServiceUnavailableAlert(alertMessage, goBackToStep1);
                           return;
                         }
                       }
