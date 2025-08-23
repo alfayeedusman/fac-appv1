@@ -41,6 +41,7 @@ import { notificationManager } from "@/components/NotificationModal";
 import Swal from 'sweetalert2';
 import { getAdminConfig, generateTimeSlots, isSlotAvailable } from "@/utils/adminConfig";
 import { createBooking, getSlotAvailability, type Booking } from "@/utils/databaseSchema";
+import { getCarWashServices } from "@/utils/carWashServices";
 
 interface BookingData {
   // Service Selection
@@ -165,13 +166,24 @@ const getAvailableServices = (serviceType: string) => {
   const homeServiceConfig = adminConfig?.homeService || {};
 
   if (serviceType === 'home' && homeServiceConfig.enabled) {
-    // Filter services based on home service availability
+    // Get actual carwash services from the carwash services utility
+    const allCarwashServices = getCarWashServices();
     const availableCarwashServices = homeServiceConfig.availableServices?.carwash || [];
-    const carwashServices = adminConfig?.pricing?.carwash || {};
 
-    const filteredCarwashServices = Object.fromEntries(
-      Object.entries(carwashServices).filter(([key]) => availableCarwashServices.includes(key))
-    );
+    // Convert carwash services array to object format expected by the UI
+    const filteredCarwashServices = allCarwashServices
+      .filter(service => availableCarwashServices.includes(service.id))
+      .reduce((acc, service) => {
+        acc[service.id] = {
+          name: service.name,
+          price: service.basePrice,
+          duration: service.duration,
+          description: service.description,
+          features: service.features,
+          popular: service.category === 'premium',
+        };
+        return acc;
+      }, {} as any);
 
     return {
       ...(Object.keys(filteredCarwashServices).length > 0 && {
