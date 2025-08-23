@@ -213,7 +213,7 @@ export default function AdminCMS() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {cmsContent.map((item) => (
+                    {Array.isArray(cmsContent) && cmsContent.length > 0 ? cmsContent.map((item) => (
                       <div key={item.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -281,7 +281,13 @@ export default function AdminCMS() {
                           </div>
                         )}
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No CMS content available</p>
+                        <p className="text-sm">Content will be loaded automatically</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
