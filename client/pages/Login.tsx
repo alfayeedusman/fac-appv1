@@ -34,6 +34,91 @@ export default function Login() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  const sendOTP = async () => {
+    setIsLoading(true);
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Generate and "send" OTP
+    const otp = generateOTP();
+    setGeneratedOtp(otp);
+
+    // Simulate sending email
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    setOtpSent(true);
+    setOtpStep("otp");
+    setIsLoading(false);
+
+    toast({
+      title: "OTP Sent! 📧",
+      description: `A 6-digit verification code has been sent to ${formData.email}\n\nFor demo purposes, your OTP is: ${otp}`,
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  };
+
+  const verifyOTP = async () => {
+    setIsLoading(true);
+
+    if (!formData.otp) {
+      toast({
+        title: "OTP Required",
+        description: "Please enter the 6-digit verification code",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Simulate OTP verification
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    if (formData.otp === generatedOtp) {
+      setOtpStep("password");
+      toast({
+        title: "OTP Verified! ✅",
+        description: "Please enter your password to continue",
+        variant: "default",
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
+    } else {
+      toast({
+        title: "Invalid OTP",
+        description: "The verification code you entered is incorrect. Please try again.",
+        variant: "destructive",
+      });
+    }
+
+    setIsLoading(false);
+  };
+
+  const resendOTP = async () => {
+    const otp = generateOTP();
+    setGeneratedOtp(otp);
+
+    toast({
+      title: "OTP Resent! 📧",
+      description: `A new verification code has been sent to ${formData.email}\n\nFor demo purposes, your new OTP is: ${otp}`,
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
