@@ -42,6 +42,7 @@ import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminHomeService from "./pages/AdminHomeService";
+import AdminBookingSettings from "./pages/AdminBookingSettings";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -278,6 +279,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminHomeService />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-booking-settings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminBookingSettings />
                 </ProtectedRoute>
               }
             />
