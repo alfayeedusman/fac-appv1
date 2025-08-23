@@ -9,6 +9,7 @@ import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -56,12 +57,15 @@ import { initializeAllSampleData } from "./utils/initializeSampleBookings";
 
 const queryClient = new QueryClient();
 
-// Initialize admin accounts and sample ads on app startup
-initializeAdminAccounts();
-initializeSampleAds();
-initializeAllSampleData();
+const App = () => {
+  useEffect(() => {
+    // Initialize admin accounts and sample data on app startup
+    initializeAdminAccounts();
+    initializeSampleAds();
+    initializeAllSampleData();
+  }, []);
 
-const App = () => (
+  return (
   <ThemeProvider>
     <QueryClientProvider client={queryClient}>
       <DatabaseProvider>
@@ -329,6 +333,7 @@ const App = () => (
       </DatabaseProvider>
     </QueryClientProvider>
   </ThemeProvider>
-);
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);
