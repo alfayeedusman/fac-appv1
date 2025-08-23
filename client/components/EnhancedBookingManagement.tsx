@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { 
+import {
   Calendar,
   Clock,
   Users,
@@ -44,6 +44,13 @@ import {
   Zap,
   RefreshCw
 } from 'lucide-react';
+import {
+  getAllBookings,
+  updateBookingStatus,
+  assignCrewToBooking,
+  createSystemNotification,
+  type Booking as DatabaseBooking
+} from '@/utils/databaseSchema';
 
 interface Booking {
   id: string;
