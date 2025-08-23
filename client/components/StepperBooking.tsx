@@ -127,7 +127,7 @@ const isServiceAvailableForHome = (category: string, service?: string) => {
 };
 
 // Function to show home service unavailable alert
-const showHomeServiceUnavailableAlert = (serviceName: string) => {
+const showHomeServiceUnavailableAlert = (serviceName: string, goBackToStep1: () => void) => {
   Swal.fire({
     icon: 'warning',
     title: 'Service Not Available for Home Service',
@@ -143,13 +143,16 @@ const showHomeServiceUnavailableAlert = (serviceName: string) => {
         <li>Graphene Coating</li>
       </ul>
       <br>
-      <p>Please choose an available service or switch to branch service.</p>
+      <p>Please choose an available service.</p>
     </div>`,
     confirmButtonText: 'Choose Another Service',
     confirmButtonColor: '#f97316',
-    showCancelButton: true,
-    cancelButtonText: 'Switch to Branch Service',
-    cancelButtonColor: '#6b7280',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      goBackToStep1();
+    }
   });
 };
 
