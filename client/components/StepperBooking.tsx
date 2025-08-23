@@ -512,7 +512,10 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => (
                       <p className="text-xs text-muted-foreground">{service.duration}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-black text-fac-orange-500">₱{service.price}</p>
+                      <p className="text-lg font-black text-fac-orange-500">₱{service.price.toLocaleString()}</p>
+                      {service.popular && (
+                        <Badge className="bg-fac-orange-500 text-white text-xs mt-1">Popular</Badge>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -584,7 +587,7 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
                   >
                     <p className="font-semibold text-sm">{sizeName}</p>
                     {bookingData.category !== "carwash" && (
-                      <p className="text-xs opacity-75">₱{getPrice().toLocaleString()}</p>
+                      <p className="text-xs opacity-75">��{getPrice().toLocaleString()}</p>
                     )}
                   </div>
                 );
