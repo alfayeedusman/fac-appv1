@@ -105,6 +105,9 @@ export default function Login() {
       { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
       { email: "fffayeed@gmail.com", password: "Fayeed22beats", role: "superadmin" },
       { email: "manager@fayeedautocare.com", password: "manager123", role: "manager" },
+      { email: "john.santos@fayeedautocare.com", password: "crew123", role: "crew" },
+      { email: "mike.rodriguez@fayeedautocare.com", password: "crew123", role: "crew" },
+      { email: "sarah.delgado@fayeedautocare.com", password: "crew123", role: "crew" },
       { email: "user@fac.com", password: "user123", role: "user" },
       { email: "demo@fac.com", password: "demo123", role: "user" },
       { email: "fayeedtest@g.com", password: "test101", role: "user" },
@@ -163,6 +166,8 @@ export default function Login() {
           navigate("/admin-dashboard");
         } else if (authenticatedUser.role === "manager") {
           navigate("/manager-dashboard");
+        } else if (authenticatedUser.role === "crew") {
+          navigate("/crew-dashboard");
         } else if (authenticatedUser.role === "cashier") {
           navigate("/pos");
         } else if (authenticatedUser.role === "inventory_manager") {
