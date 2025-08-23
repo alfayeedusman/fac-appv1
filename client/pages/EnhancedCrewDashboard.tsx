@@ -178,12 +178,28 @@ export default function EnhancedCrewDashboard() {
     setIsTrackingLocation(true);
 
     const handleLocationSuccess = (position: GeolocationPosition) => {
-      setCurrentLocation({
+      const newLocation = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
-      });
+      };
+      setCurrentLocation(newLocation);
       setIsTrackingLocation(true);
-      console.log('Location updated:', position.coords.latitude, position.coords.longitude);
+
+      console.log('✅ Location updated successfully:', {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date(position.timestamp).toLocaleTimeString()
+      });
+
+      // Show success toast only on first successful location
+      if (!currentLocation) {
+        toast({
+          title: "📍 Location Tracking Active",
+          description: `GPS coordinates acquired (±${Math.round(position.coords.accuracy)}m accuracy)`,
+          duration: 3000,
+        });
+      }
     };
 
     const handleLocationError = (error: GeolocationPositionError) => {
