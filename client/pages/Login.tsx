@@ -327,7 +327,21 @@ export default function Login() {
                 )}
               </Button>
 
-
+              {/* Superadmin Quick Access */}
+              <div className="border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={triggerAutoLogin}
+                  className="w-full py-3 text-sm font-bold text-purple-600 border-purple-200 hover:bg-purple-50 hover:border-purple-300 rounded-xl transition-all duration-300"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Superadmin Quick Access
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Direct access for owner account
+                </p>
+              </div>
 
               {/* Forgot Password Link */}
               <div className="text-center">
