@@ -1206,7 +1206,7 @@ const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: Book
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Category:</span>
               <span className="font-medium text-foreground text-right">
-                {bookingData.category && SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || '-'}
+                {bookingData.category && SERVICE_CATEGORIES?.[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || '-'}
               </span>
             </div>
             {bookingData.service && bookingData.category === "carwash" && (
