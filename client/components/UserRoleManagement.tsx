@@ -35,6 +35,7 @@ import {
   UserX,
   Eye,
   EyeOff,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,7 @@ interface User {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "admin" | "superadmin" | "manager" | "cashier" | "inventory_manager";
+  role: "user" | "admin" | "superadmin" | "manager" | "cashier" | "inventory_manager" | "crew";
   permissions: string[];
   status: "active" | "inactive" | "suspended";
   createdAt: string;
@@ -170,15 +171,81 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     description: "Can manage security settings",
     category: "System Settings",
   },
+
+  // Crew Management
+  {
+    id: "crew.assign",
+    name: "Assign Crew",
+    description: "Can assign crew to bookings",
+    category: "Crew Management",
+  },
+  {
+    id: "crew.manage",
+    name: "Manage Crew",
+    description: "Can manage crew members",
+    category: "Crew Management",
+  },
+  {
+    id: "bookings.view_assigned",
+    name: "View Assigned Bookings",
+    description: "Can view bookings assigned to them",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.update_status",
+    name: "Update Booking Status",
+    description: "Can update booking status",
+    category: "Booking Management",
+  },
+  {
+    id: "location.update",
+    name: "Update Location",
+    description: "Can update current location",
+    category: "Location Management",
+  },
+  {
+    id: "images.upload",
+    name: "Upload Images",
+    description: "Can upload images for bookings",
+    category: "Media Management",
+  },
+  {
+    id: "assignments.accept",
+    name: "Accept Assignments",
+    description: "Can accept booking assignments",
+    category: "Assignment Management",
+  },
+  {
+    id: "assignments.reject",
+    name: "Reject Assignments",
+    description: "Can reject booking assignments",
+    category: "Assignment Management",
+  },
+  {
+    id: "bookings.approve",
+    name: "Approve Bookings",
+    description: "Can approve or reject bookings",
+    category: "Booking Management",
+  },
 ];
 
 const ROLE_PRESETS = {
   user: [],
+  crew: [
+    "bookings.view_assigned",
+    "bookings.update_status",
+    "location.update",
+    "images.upload",
+    "assignments.accept",
+    "assignments.reject",
+  ],
   manager: [
     "customers.view",
     "customers.edit",
     "customers.approve",
     "analytics.view",
+    "crew.assign",
+    "bookings.approve",
   ],
   cashier: [
     "customers.view",
@@ -202,6 +269,8 @@ const ROLE_PRESETS = {
     "customers.approve",
     "packages.view",
     "packages.edit",
+    "crew.manage",
+    "crew.assign",
   ],
   superadmin: DEFAULT_PERMISSIONS.map((p) => p.id),
 };
@@ -245,8 +314,8 @@ export default function UserRoleManagement() {
         .filter((user: any) => user && typeof user === 'object' && user.email) // Filter out invalid entries
         .map((user: any) => {
           const userRole = user.role || "user";
-          const validRole = ["user", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole) 
-            ? userRole 
+          const validRole = ["user", "crew", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole)
+            ? userRole
             : "user";
 
           return {
