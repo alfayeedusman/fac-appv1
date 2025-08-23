@@ -309,7 +309,7 @@ const App = () => (
               path="/crew-dashboard"
               element={
                 <ProtectedRoute requiredRole="crew">
-                  <CrewDashboard />
+                  <EnhancedCrewDashboard />
                 </ProtectedRoute>
               }
             />
