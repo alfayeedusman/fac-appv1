@@ -34,7 +34,6 @@ import {
   EyeOff,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import StickyHeader from "@/components/StickyHeader";
 import RegistrationSuccessModal from "@/components/RegistrationSuccessModal";
 
 interface SignUpFormData {
