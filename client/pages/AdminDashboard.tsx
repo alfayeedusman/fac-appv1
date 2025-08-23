@@ -708,17 +708,15 @@ export default function AdminDashboard() {
                               }`}
                               onClick={() => {
                                 if (!notification.read) {
-                                  const updatedNotifications =
-                                    notifications.map((n) =>
-                                      n.id === notification.id
-                                        ? { ...n, read: true }
-                                        : n,
-                                    );
-                                  setNotifications(updatedNotifications);
-                                  localStorage.setItem(
-                                    "admin_notifications",
-                                    JSON.stringify(updatedNotifications),
-                                  );
+                                  const userEmail = localStorage.getItem("userEmail") || "";
+                                  markSystemNotificationAsRead(notification.id, userEmail);
+                                  loadSystemNotifications(); // Refresh notifications
+
+                                  // If it's a booking notification, navigate to bookings tab
+                                  if (notification.type === 'new_booking') {
+                                    setActiveTab('bookings');
+                                    setIsNotificationDropdownOpen(false);
+                                  }
                                 }
                               }}
                             >
