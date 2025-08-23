@@ -767,6 +767,7 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   const availableSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
+  const homeServiceConfig = adminConfig?.homeService || {};
 
   return (
     <Card className="glass border-border shadow-xl">
@@ -777,6 +778,67 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Service Type Selection */}
+        <div>
+          <Label className="text-foreground font-semibold">Service Type</Label>
+          <div className="grid md:grid-cols-2 gap-4 mt-3">
+            <div
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                bookingData.serviceType === 'branch'
+                  ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg'
+                  : 'border-border hover:border-fac-orange-300'
+              }`}
+              onClick={() => {
+                updateBookingData("serviceType", "branch");
+                updateBookingData("branch", ""); // Reset branch selection
+              }}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="bg-blue-500 p-2 rounded-lg">
+                  <MapPin className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">Visit Branch</h3>
+                  <p className="text-sm text-muted-foreground">Come to our service center</p>
+                </div>
+              </div>
+              {bookingData.serviceType === 'branch' && (
+                <Badge className="bg-fac-orange-500 text-white text-xs mt-2">Selected</Badge>
+              )}
+            </div>
+
+            {homeServiceConfig.enabled && (
+              <div
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                  bookingData.serviceType === 'home'
+                    ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg'
+                    : 'border-border hover:border-fac-orange-300'
+                }`}
+                onClick={() => {
+                  updateBookingData("serviceType", "home");
+                  updateBookingData("branch", "Home Service"); // Set branch to home service
+                }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-500 p-2 rounded-lg">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground">Home Service</h3>
+                    <p className="text-sm text-muted-foreground">We come to your location</p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      +{Math.round((homeServiceConfig.priceMultiplier - 1) * 100)}% additional fee
+                    </p>
+                  </div>
+                </div>
+                {bookingData.serviceType === 'home' && (
+                  <Badge className="bg-fac-orange-500 text-white text-xs mt-2">Selected</Badge>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label className="text-foreground font-semibold">Select Date</Label>
@@ -789,24 +851,43 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             />
           </div>
 
-          <div>
-            <Label className="text-foreground font-semibold">Select Branch</Label>
-            <Select value={bookingData.branch} onValueChange={(value) => updateBookingData("branch", value)}>
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Choose branch" />
-              </SelectTrigger>
-              <SelectContent>
-                {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
-                  <SelectItem key={branch.id} value={branch.name}>
-                    {branch.name} - {branch.address}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {bookingData.serviceType === 'branch' && (
+            <div>
+              <Label className="text-foreground font-semibold">Select Branch</Label>
+              <Select value={bookingData.branch} onValueChange={(value) => updateBookingData("branch", value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Choose branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
+                    <SelectItem key={branch.id} value={branch.name}>
+                      {branch.name} - {branch.address}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {bookingData.serviceType === 'home' && (
+            <div>
+              <Label className="text-foreground font-semibold">Service Area</Label>
+              <div className="mt-2 p-3 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
+                <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                  Available Areas:
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  {homeServiceConfig.coverage?.areas?.join(', ') || 'Coverage areas not configured'}
+                </p>
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                  Minimum {homeServiceConfig.leadTime || 4} hours advance booking required
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {bookingData.date && (
+        {bookingData.date && (bookingData.serviceType === 'branch' ? bookingData.branch : true) && (
           <div>
             <Label className="text-foreground font-semibold">Available Time Slots</Label>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
