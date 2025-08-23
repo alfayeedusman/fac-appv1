@@ -311,139 +311,193 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-transparent relative">
       {/* Mobile Sidebar Overlay */}
       {showSidebar && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setShowSidebar(false)} />
       )}
-      
-      <div className="flex">
-        {/* Sidebar */}
-        <div className={`
-          fixed lg:sticky top-0 left-0 h-screen w-80 bg-card border-r z-50 lg:z-10
-          transform transition-transform duration-300 ease-in-out
-          ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-          <div className="p-6 h-full overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-foreground">Booking Summary</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSidebar(false)}
-                className="lg:hidden"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <BookingSummary bookingData={bookingData} />
-          </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-0">
-          <div className="p-6">
-            {/* Mobile Sidebar Toggle */}
-            <Button
-              variant="outline"
-              onClick={() => setShowSidebar(true)}
-              className="lg:hidden mb-6"
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              View Summary
-            </Button>
-
-            {/* Stepper Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-black text-foreground">
-                  {isGuest ? "Guest " : ""}Booking
-                </h1>
-                <Badge variant="outline" className="text-sm">
-                  Step {currentStep} of 5
-                </Badge>
+      {/* Container with max width */}
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row">
+          {/* Sidebar */}
+          <div className={`
+            fixed lg:sticky top-0 left-0 h-screen w-72 md:w-80 lg:w-80 xl:w-96 bg-card/95 backdrop-blur-sm border-r z-50 lg:z-10
+            transform transition-transform duration-300 ease-in-out
+            ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
+          `}>
+            <div className="p-4 md:p-6 h-full overflow-y-auto">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h3 className="text-base md:text-lg font-bold text-foreground">Booking Summary</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSidebar(false)}
+                  className="lg:hidden h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-              
-              <div className="flex items-center space-x-4 overflow-x-auto pb-4">
-                {STEPS.map((step, index) => (
-                  <div key={step.id} className="flex items-center flex-shrink-0">
-                    <div className={`
-                      flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all
-                      ${currentStep === step.id 
-                        ? 'border-fac-orange-500 bg-fac-orange-500 text-white' 
-                        : currentStep > step.id 
-                          ? 'border-green-500 bg-green-500 text-white'
-                          : 'border-border bg-background text-muted-foreground'
-                      }
-                    `}>
-                      {currentStep > step.id ? (
-                        <CheckCircle className="h-5 w-5" />
-                      ) : (
-                        <step.icon className="h-5 w-5" />
+              <BookingSummary bookingData={bookingData} />
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 lg:ml-0 min-w-0">
+            <div className="p-4 md:p-6 lg:p-8">
+              {/* Mobile Sidebar Toggle */}
+              <div className="lg:hidden mb-4 md:mb-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSidebar(true)}
+                  className="w-full sm:w-auto glass border-fac-orange-200 hover:bg-fac-orange-50"
+                >
+                  <Menu className="h-4 w-4 mr-2" />
+                  View Booking Summary
+                </Button>
+              </div>
+
+              {/* Stepper Header */}
+              <div className="mb-6 md:mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
+                    {isGuest ? "Guest " : ""}
+                    <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                      Booking
+                    </span>
+                  </h1>
+                  <Badge variant="outline" className="text-xs md:text-sm w-fit">
+                    Step {currentStep} of 5
+                  </Badge>
+                </div>
+
+                {/* Desktop Stepper */}
+                <div className="hidden md:flex items-center space-x-4 overflow-x-auto pb-4">
+                  {STEPS.map((step, index) => (
+                    <div key={step.id} className="flex items-center flex-shrink-0">
+                      <div className={`
+                        flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full border-2 transition-all
+                        ${currentStep === step.id
+                          ? 'border-fac-orange-500 bg-fac-orange-500 text-white shadow-lg shadow-fac-orange-500/25'
+                          : currentStep > step.id
+                            ? 'border-green-500 bg-green-500 text-white'
+                            : 'border-border bg-background text-muted-foreground'
+                        }
+                      `}>
+                        {currentStep > step.id ? (
+                          <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6" />
+                        ) : (
+                          <step.icon className="h-5 w-5 lg:h-6 lg:w-6" />
+                        )}
+                      </div>
+                      <div className="ml-3 min-w-0">
+                        <p className={`text-sm lg:text-base font-semibold ${
+                          currentStep === step.id ? 'text-fac-orange-500' :
+                          currentStep > step.id ? 'text-green-500' : 'text-muted-foreground'
+                        }`}>
+                          {step.title}
+                        </p>
+                        <p className="text-xs lg:text-sm text-muted-foreground">{step.description}</p>
+                      </div>
+                      {index < STEPS.length - 1 && (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground mx-4 flex-shrink-0" />
                       )}
                     </div>
-                    <div className="ml-3 min-w-0">
-                      <p className={`text-sm font-semibold ${
-                        currentStep === step.id ? 'text-fac-orange-500' : 
-                        currentStep > step.id ? 'text-green-500' : 'text-muted-foreground'
-                      }`}>
-                        {step.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{step.description}</p>
-                    </div>
-                    {index < STEPS.length - 1 && (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground mx-4 flex-shrink-0" />
-                    )}
+                  ))}
+                </div>
+
+                {/* Mobile Stepper - Compact Version */}
+                <div className="md:hidden">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold text-foreground">Current Step:</span>
+                    <span className="text-sm text-muted-foreground">{currentStep} of {STEPS.length}</span>
                   </div>
-                ))}
+                  <div className="flex space-x-2 overflow-x-auto pb-2">
+                    {STEPS.map((step) => (
+                      <div
+                        key={step.id}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border flex-shrink-0 ${
+                          currentStep === step.id
+                            ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50'
+                            : currentStep > step.id
+                              ? 'border-green-500 bg-green-50 dark:bg-green-950/50'
+                              : 'border-border bg-background'
+                        }`}
+                      >
+                        <div className={`
+                          flex items-center justify-center w-6 h-6 rounded-full border transition-all
+                          ${currentStep === step.id
+                            ? 'border-fac-orange-500 bg-fac-orange-500 text-white'
+                            : currentStep > step.id
+                              ? 'border-green-500 bg-green-500 text-white'
+                              : 'border-border bg-background text-muted-foreground'
+                          }
+                        `}>
+                          {currentStep > step.id ? (
+                            <CheckCircle className="h-3 w-3" />
+                          ) : (
+                            <step.icon className="h-3 w-3" />
+                          )}
+                        </div>
+                        <span className={`text-xs font-medium ${
+                          currentStep === step.id ? 'text-fac-orange-500' :
+                          currentStep > step.id ? 'text-green-500' : 'text-muted-foreground'
+                        }`}>
+                          {step.title}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Step Content */}
-            <div className="max-w-2xl">
-              {renderStepContent()}
-            </div>
+              {/* Step Content */}
+              <div className="max-w-4xl">
+                {renderStepContent()}
+              </div>
 
-            {/* Navigation */}
-            <div className="flex justify-between mt-8 max-w-2xl">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="flex items-center"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
+              {/* Navigation */}
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6 md:mt-8 max-w-4xl">
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="flex items-center justify-center w-full sm:w-auto order-2 sm:order-1"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
               
-              {currentStep === 5 ? (
-                <Button
-                  onClick={submitBooking}
-                  disabled={!canProceed() || isLoading}
-                  className="btn-futuristic flex items-center"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="spinner mr-2" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Confirm Booking
-                      <CheckCircle className="h-4 w-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={nextStep}
-                  disabled={!canProceed()}
-                  className="btn-futuristic flex items-center"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
+                {currentStep === 5 ? (
+                  <Button
+                    onClick={submitBooking}
+                    disabled={!canProceed() || isLoading}
+                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="spinner mr-2" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        Confirm Booking
+                        <CheckCircle className="h-4 w-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={nextStep}
+                    disabled={!canProceed()}
+                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
