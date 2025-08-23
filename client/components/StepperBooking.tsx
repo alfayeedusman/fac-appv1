@@ -888,8 +888,18 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
                         ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950 shadow-lg shadow-fac-orange-500/20'
                         : 'border-border hover:border-fac-orange-300 hover:shadow-md'
                     }`}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
+
+                      // Check if this service is available for current service type
+                      if (bookingData.serviceType === 'home') {
+                        const isAvailable = isServiceAvailableForHome('carwash', serviceKey);
+                        if (!isAvailable) {
+                          await showHomeServiceUnavailableAlert(service.name);
+                          return;
+                        }
+                      }
+
                       updateBookingData("service", serviceKey);
                     }}
                   >
