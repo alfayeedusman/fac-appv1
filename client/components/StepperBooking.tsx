@@ -820,10 +820,13 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
           />
           <div className="text-sm">
             <p className="text-foreground font-semibold">Terms and Conditions *</p>
-            <p className="text-muted-foreground mt-1">
-              I agree to the terms and conditions. No cancellation within 2 hours of appointment time.
-              Payment terms and service policies apply.
-            </p>
+            <div className="text-muted-foreground mt-1 space-y-2">
+              <p>{adminConfig.terms.termsAndConditions}</p>
+              <p><strong>Cancellation Policy:</strong> {adminConfig.terms.cancellationPolicy}</p>
+              {adminConfig.terms.noShowPolicy && (
+                <p><strong>No-Show Policy:</strong> {adminConfig.terms.noShowPolicy}</p>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
