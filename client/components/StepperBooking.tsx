@@ -1247,7 +1247,10 @@ const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: Book
               <span className="font-medium text-foreground">
                 {(() => {
                   try {
-                    return new Date(bookingData.date).toLocaleDateString('en-US', {
+                    if (!bookingData.date) return '-';
+                    const date = new Date(bookingData.date);
+                    if (isNaN(date.getTime())) return bookingData.date;
+                    return date.toLocaleDateString('en-US', {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric'
