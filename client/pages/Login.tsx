@@ -166,6 +166,9 @@ export default function Login() {
           authenticatedUser.role === "admin" ||
           authenticatedUser.role === "superadmin"
         ) {
+          // Set welcome flags for admin users to bypass welcome screen
+          localStorage.setItem("hasSeenWelcome", "true");
+          localStorage.setItem(`welcomed_${authenticatedUser.email}`, "true");
           navigate("/admin-dashboard");
         } else if (authenticatedUser.role === "manager") {
           navigate("/manager-dashboard");
