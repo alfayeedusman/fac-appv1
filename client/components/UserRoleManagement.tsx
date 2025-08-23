@@ -42,7 +42,7 @@ interface User {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "admin" | "superadmin";
+  role: "user" | "admin" | "superadmin" | "manager" | "cashier" | "inventory_manager";
   permissions: string[];
   status: "active" | "inactive" | "suspended";
   createdAt: string;
@@ -174,6 +174,21 @@ const DEFAULT_PERMISSIONS: Permission[] = [
 
 const ROLE_PRESETS = {
   user: [],
+  manager: [
+    "customers.view",
+    "customers.edit",
+    "customers.approve",
+    "analytics.view",
+  ],
+  cashier: [
+    "customers.view",
+    "packages.view",
+  ],
+  inventory_manager: [
+    "packages.view",
+    "packages.edit",
+    "analytics.view",
+  ],
   admin: [
     "users.view",
     "users.create",
@@ -222,7 +237,7 @@ export default function UserRoleManagement() {
       fullName: user.fullName || user.name || "Unknown",
       email: user.email,
       role: user.role || "user",
-      permissions: user.permissions || ROLE_PRESETS[user.role || "user"],
+      permissions: user.permissions || ROLE_PRESETS[user.role as keyof typeof ROLE_PRESETS] || [],
       status: user.status || "active",
       createdAt:
         user.createdAt || user.registeredAt || new Date().toISOString(),
@@ -248,7 +263,7 @@ export default function UserRoleManagement() {
     setFormData({
       ...formData,
       role,
-      permissions: ROLE_PRESETS[role],
+      permissions: ROLE_PRESETS[role as keyof typeof ROLE_PRESETS] || [],
     });
   };
 
@@ -394,6 +409,12 @@ export default function UserRoleManagement() {
         return <Crown className="h-4 w-4" />;
       case "admin":
         return <Shield className="h-4 w-4" />;
+      case "manager":
+        return <UserCheck className="h-4 w-4" />;
+      case "cashier":
+        return <Star className="h-4 w-4" />;
+      case "inventory_manager":
+        return <Settings className="h-4 w-4" />;
       default:
         return <Users className="h-4 w-4" />;
     }
@@ -405,6 +426,12 @@ export default function UserRoleManagement() {
         return "bg-gradient-to-r from-yellow-500 to-orange-600";
       case "admin":
         return "bg-gradient-to-r from-purple-500 to-blue-600";
+      case "manager":
+        return "bg-gradient-to-r from-blue-500 to-cyan-600";
+      case "cashier":
+        return "bg-gradient-to-r from-emerald-500 to-green-600";
+      case "inventory_manager":
+        return "bg-gradient-to-r from-orange-500 to-red-600";
       default:
         return "bg-gradient-to-r from-green-500 to-teal-600";
     }
@@ -526,6 +553,9 @@ export default function UserRoleManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="cashier">Cashier</SelectItem>
+                      <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="superadmin">Super Admin</SelectItem>
                     </SelectContent>
@@ -702,6 +732,9 @@ export default function UserRoleManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Super Admin</SelectItem>
                   </SelectContent>
