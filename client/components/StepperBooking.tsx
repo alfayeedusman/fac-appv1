@@ -132,7 +132,7 @@ const UNIT_TYPES = {
 
 // Get dynamic time slots based on admin config
 const getTimeSlots = (date: string) => {
-  const dayOfWeek = new Date(date).toLocaleLowerCase('en-us', { weekday: 'long' });
+  const dayOfWeek = new Date(date).toLocaleDateString('en-us', { weekday: 'long' }).toLowerCase();
   return generateTimeSlots(dayOfWeek);
 };
 
