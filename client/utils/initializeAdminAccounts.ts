@@ -264,7 +264,7 @@ export function initializeAdminAccounts() {
     console.log("👑 Superadmin: fffayeed@gmail.com / Fayeed22beats");
     console.log("🔧 Admin: adminyeed@fayeedautocare.com / 123456789");
     console.log("👥 Manager: manager@fayeedautocare.com / manager123");
-    console.log("🔨 Crew: john.santos@fayeedautocare.com / crew123");
+    console.log("🔨 Crew: juan.cruz@fayeedautocare.com / crew123");
     console.log("🔨 Crew: mike.rodriguez@fayeedautocare.com / crew123");
     console.log("🔨 Crew: sarah.delgado@fayeedautocare.com / crew123");
     console.log("\n🎯 Complete user ecosystem initialization completed!");
