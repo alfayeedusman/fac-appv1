@@ -682,41 +682,54 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) 
     </CardHeader>
     <CardContent className="space-y-6">
       <div className="space-y-4">
-        <div
-          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-            bookingData.paymentMethod === "branch"
-              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
-              : 'border-border hover:border-fac-orange-300'
-          }`}
-          onClick={() => updateBookingData("paymentMethod", "branch")}
-        >
-          <h3 className="font-bold text-foreground">Pay at Branch</h3>
-          <p className="text-sm text-muted-foreground">Pay when you arrive for your appointment</p>
-        </div>
-        
-        <div
-          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-            bookingData.paymentMethod === "online"
-              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
-              : 'border-border hover:border-fac-orange-300'
-          }`}
-          onClick={() => updateBookingData("paymentMethod", "online")}
-        >
-          <h3 className="font-bold text-foreground">Online Payment</h3>
-          <p className="text-sm text-muted-foreground">Bank transfer or GCash</p>
-        </div>
+        {adminConfig.paymentMethods.branch.enabled && (
+          <div
+            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              bookingData.paymentMethod === "branch"
+                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
+                : 'border-border hover:border-fac-orange-300'
+            }`}
+            onClick={() => updateBookingData("paymentMethod", "branch")}
+          >
+            <h3 className="font-bold text-foreground">{adminConfig.paymentMethods.branch.name}</h3>
+            <p className="text-sm text-muted-foreground">{adminConfig.paymentMethods.branch.description}</p>
+          </div>
+        )}
+
+        {adminConfig.paymentMethods.online.enabled && (
+          <div
+            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              bookingData.paymentMethod === "online"
+                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
+                : 'border-border hover:border-fac-orange-300'
+            }`}
+            onClick={() => updateBookingData("paymentMethod", "online")}
+          >
+            <h3 className="font-bold text-foreground">{adminConfig.paymentMethods.online.name}</h3>
+            <p className="text-sm text-muted-foreground">{adminConfig.paymentMethods.online.description}</p>
+          </div>
+        )}
       </div>
-      
-      {bookingData.paymentMethod === "online" && (
+
+      {bookingData.paymentMethod === "online" && adminConfig.paymentMethods.online.enabled && (
         <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200">
           <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-3">Payment Instructions</h4>
           <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-            <p><strong>Bank Transfer:</strong> BPI - 1234-5678-90</p>
-            <p><strong>GCash:</strong> 09123456789</p>
-            <p><strong>Account Name:</strong> Fayeed Auto Care</p>
+            {adminConfig.paymentMethods.online.instructions.bankTransfer && (
+              <>
+                <p><strong>Bank Transfer:</strong> {adminConfig.paymentMethods.online.instructions.bankTransfer.bankName} - {adminConfig.paymentMethods.online.instructions.bankTransfer.accountNumber}</p>
+                <p><strong>Account Name:</strong> {adminConfig.paymentMethods.online.instructions.bankTransfer.accountName}</p>
+              </>
+            )}
+            {adminConfig.paymentMethods.online.instructions.gcash && (
+              <>
+                <p><strong>GCash:</strong> {adminConfig.paymentMethods.online.instructions.gcash.number}</p>
+                <p><strong>Account Name:</strong> {adminConfig.paymentMethods.online.instructions.gcash.accountName}</p>
+              </>
+            )}
             <p><strong>Amount:</strong> ₱{bookingData.totalPrice.toLocaleString()}</p>
           </div>
-          
+
           <div className="mt-4">
             <Label className="text-blue-800 dark:text-blue-200 font-semibold">Upload Receipt</Label>
             <Input
