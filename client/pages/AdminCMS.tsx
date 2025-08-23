@@ -187,6 +187,36 @@ export default function AdminCMS() {
     return <Icon className="h-5 w-5" />;
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading CMS content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <FileText className="h-12 w-12 mx-auto mb-2" />
+            <p className="text-lg font-semibold">Failed to load CMS content</p>
+            <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+          </div>
+          <Button onClick={() => window.location.reload()} className="bg-fac-orange-500 hover:bg-fac-orange-600">
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       <StickyHeader
