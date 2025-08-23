@@ -552,36 +552,53 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => (
           </div>
           
           {bookingData.category === categoryKey && categoryKey === "carwash" && (
-            <div className="mt-4 space-y-3">
-              <p className="text-sm font-semibold text-foreground">Select wash type:</p>
-              {Object.entries(category.services).map(([serviceKey, service]) => (
-                <div
-                  key={serviceKey}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                    bookingData.service === serviceKey
-                      ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950'
-                      : 'border-border hover:border-fac-orange-300'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateBookingData("service", serviceKey);
-                  }}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-bold text-foreground">{service.name}</h4>
-                      <p className="text-xs text-muted-foreground">{service.description}</p>
-                      <p className="text-xs text-muted-foreground">{service.duration}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-black text-fac-orange-500">₱{service.price.toLocaleString()}</p>
-                      {service.popular && (
-                        <Badge className="bg-fac-orange-500 text-white text-xs mt-1">Popular</Badge>
-                      )}
+            <div className="mt-4 space-y-3 animate-fade-in-up">
+              <div className="flex items-center space-x-2">
+                <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
+                <p className="text-sm md:text-base font-semibold text-foreground">Select wash type:</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+                {Object.entries(category.services).map(([serviceKey, service]) => (
+                  <div
+                    key={serviceKey}
+                    className={`relative p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-300 hover-lift ${
+                      bookingData.service === serviceKey
+                        ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950 shadow-lg shadow-fac-orange-500/20'
+                        : 'border-border hover:border-fac-orange-300 hover:shadow-md'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateBookingData("service", serviceKey);
+                    }}
+                  >
+                    {service.popular && (
+                      <div className="absolute -top-2 -right-2">
+                        <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs animate-pulse-glow">
+                          Popular
+                        </Badge>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <h4 className="font-bold text-foreground text-sm md:text-base">{service.name}</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">{service.description}</p>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">{service.duration}</p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-base md:text-lg font-black text-fac-orange-500">₱{service.price.toLocaleString()}</p>
+                        {bookingData.service === serviceKey && (
+                          <div className="flex items-center justify-end mt-1">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
           
