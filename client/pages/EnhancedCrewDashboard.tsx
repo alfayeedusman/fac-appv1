@@ -165,11 +165,23 @@ export default function EnhancedCrewDashboard() {
   };
 
   const startLocationTracking = () => {
+    // Check for geolocation support
     if (!navigator.geolocation) {
       console.warn('Geolocation is not supported by this browser');
       toast({
         title: "Location Not Available",
-        description: "Location tracking is not supported on this device",
+        description: "Location tracking is not supported on this device. GPS features will be disabled.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for HTTPS requirement (geolocation requires secure context)
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      console.warn('Geolocation requires HTTPS or localhost');
+      toast({
+        title: "Secure Connection Required",
+        description: "Location tracking requires a secure (HTTPS) connection",
         variant: "destructive",
       });
       return;
