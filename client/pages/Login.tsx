@@ -143,8 +143,7 @@ export default function Login() {
 
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
-      <StickyHeader showBack={false} title="Sign In" />
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">{/* Removed StickyHeader - using custom navigation */}
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
