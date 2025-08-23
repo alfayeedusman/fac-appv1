@@ -17,10 +17,6 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StickyHeader from "@/components/StickyHeader";
-import {
-  forceSuperadminLogin,
-  checkForSuperadminBypass,
-} from "@/utils/superadminUtils";
 
 export default function Login() {
   const navigate = useNavigate();
