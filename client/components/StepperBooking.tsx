@@ -1343,7 +1343,7 @@ const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: Book
         <div className="w-full bg-border rounded-full h-2">
           <div
             className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all"
-            style={{ width: `${progressPercentage}%` }}
+            style={{ width: `${progressPercentage || 0}%` }}
           ></div>
         </div>
       </CardContent>
