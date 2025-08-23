@@ -60,7 +60,8 @@ export interface AdminConfig {
   homeService: {
     enabled: boolean;
     availableServices: {
-      carwash: string[]; // Array of carwash service keys
+      carwash: string[]; // Array of carwash service keys for cars
+      motorcycleCarwash: string[]; // Array of carwash service keys for motorcycles
       autoDetailing: boolean;
       grapheneCoating: boolean;
     };

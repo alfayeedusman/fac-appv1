@@ -116,9 +116,9 @@ const isServiceAvailableForHome = (category: string, service?: string, vehicleTy
   }
 
   if (category === 'carwash' && service) {
-    // Special validation for motorcycles - only FAC wash allowed
+    // Special validation for motorcycles
     if (vehicleType === 'motorcycle') {
-      return service === 'fac';
+      return homeServiceConfig.availableServices?.motorcycleCarwash?.includes(service) || false;
     }
     return homeServiceConfig.availableServices?.carwash?.includes(service) || false;
   } else if (category === 'auto_detailing') {
