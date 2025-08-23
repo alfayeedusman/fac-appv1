@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import GlobalNotificationProvider from "@/components/GlobalNotificationProvider";
+import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
