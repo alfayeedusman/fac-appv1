@@ -440,7 +440,7 @@ export default function AdminCMS() {
 
                   {/* Existing Perks */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {memberPerks.map((perk) => (
+                    {Array.isArray(memberPerks) && memberPerks.length > 0 ? memberPerks.map((perk) => (
                       <Card key={perk.id} className="relative">
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
@@ -515,7 +515,13 @@ export default function AdminCMS() {
                           </p>
                         </CardContent>
                       </Card>
-                    ))}
+                    )) : (
+                      <div className="col-span-full text-center py-8 text-muted-foreground">
+                        <Crown className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No member perks available</p>
+                        <p className="text-sm">Add your first perk using the button above</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
