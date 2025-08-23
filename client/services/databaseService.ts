@@ -33,20 +33,55 @@ export class DatabaseService {
 
   // Generic API request method
   private static async apiRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: this.getAuthHeaders(),
-      ...options,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: this.getAuthHeaders(),
+        ...options,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+
+        if (isJson) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            // If JSON parsing fails, use the status message
+            errorMessage = `API error: ${response.status} ${response.statusText}`;
+          }
+        } else {
+          // For non-JSON responses (like HTML error pages)
+          const textResponse = await response.text();
+          if (textResponse.includes('Cannot GET') || textResponse.includes('404')) {
+            errorMessage = 'API endpoint not found. Backend server may not be running.';
+          } else {
+            errorMessage = `Server returned non-JSON response: ${response.status}`;
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      if (!isJson) {
+        throw new Error('Server returned non-JSON response. Expected JSON data.');
+      }
+
+      return response.json();
+    } catch (error: any) {
+      // Handle network errors (server not running, etc.)
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to server. Please check if the backend is running.');
+      }
+      throw error;
     }
-
-    return response.json();
   }
 
   // ============= USER MANAGEMENT =============
