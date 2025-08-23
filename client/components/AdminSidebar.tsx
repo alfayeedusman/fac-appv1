@@ -25,6 +25,7 @@ import {
   Crown,
   Zap,
   CreditCard,
+  Home,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -105,6 +106,13 @@ const sidebarItems = [
     icon: Settings,
     description: "Content Management",
     gradient: "from-fac-orange-500 to-yellow-500",
+  },
+  {
+    id: "home-service",
+    label: "Home Service",
+    icon: Home,
+    description: "Service Availability Settings",
+    gradient: "from-green-500 to-blue-500",
   },
   {
     id: "push-notifications",
