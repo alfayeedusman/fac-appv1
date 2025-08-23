@@ -11,7 +11,6 @@ import {
   Smartphone,
   Mail,
   Lock,
-  Fingerprint,
   Zap,
   Crown,
 } from "lucide-react";
@@ -143,50 +142,6 @@ export default function Login() {
     setIsLoading(false);
   };
 
-  const handleBiometricLogin = async () => {
-    setIsLoading(true);
-
-    try {
-      // Check if Web Authentication API is supported
-      if (!window.PublicKeyCredential) {
-        toast({
-          title: "Biometric Not Supported",
-          description:
-            "Biometric authentication is not supported on this device",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Simulate biometric authentication
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // For demo purposes, simulate successful biometric auth
-      const simulatedUser =
-        localStorage.getItem("biometricUser") || "demo@fac.com";
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", simulatedUser);
-      localStorage.setItem("userRole", "user");
-
-      toast({
-        title: "Biometric Authentication Successful! 🔐",
-        description: "Welcome back!",
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
-
-      navigate("/welcome");
-    } catch (error) {
-      toast({
-        title: "Biometric Authentication Failed",
-        description: "Please try again or use email/password.",
-        variant: "destructive",
-      });
-    }
-
-    setIsLoading(false);
-  };
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
@@ -327,17 +282,6 @@ export default function Login() {
               </Button>
 
 
-              {/* Biometric Login Option */}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBiometricLogin}
-                disabled={isLoading}
-                className="w-full border-border text-foreground hover:bg-accent font-bold py-4 rounded-xl theme-transition glass hover-glow group"
-              >
-                <Fingerprint className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                {isLoading ? "Authenticating..." : "Biometric Login"}
-              </Button>
 
               {/* Forgot Password Link */}
               <div className="text-center">
@@ -385,14 +329,6 @@ export default function Login() {
                   <span className="text-lg ml-2">→</span>
                 </Button>
               </Link>
-              <div className="text-center">
-                <Link
-                  to="/superadminlogin"
-                  className="text-xs text-muted-foreground hover:text-purple-600 transition-colors"
-                >
-                  Admin Access
-                </Link>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -402,7 +338,7 @@ export default function Login() {
       <div className="text-center py-8 px-6 relative z-10">
         <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-700">
           <p className="text-xs text-muted-foreground font-medium">
-            © 2025 Fayeed Auto Care. Secured by quantum encryption.
+© 2025 Fayeed Auto Care. Made with love by FDigitals
           </p>
         </div>
       </div>
