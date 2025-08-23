@@ -57,6 +57,7 @@ export default function StickyHeader({
     const alwaysVisiblePages = [
       "/inventory-management",
       "/pos",
+      "/manager-dashboard",
       "/admin-user-management",
       "/admin-cms",
       "/admin-home-service",
