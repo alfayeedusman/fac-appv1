@@ -49,7 +49,9 @@ export class DatabaseService {
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
 
-        if (isJson) {
+        if (response.status === 404) {
+          errorMessage = 'API endpoint not found. Backend server may not be running.';
+        } else if (isJson) {
           try {
             const errorData = await response.json();
             errorMessage = errorData.error || errorMessage;
@@ -58,10 +60,12 @@ export class DatabaseService {
             errorMessage = `API error: ${response.status} ${response.statusText}`;
           }
         } else {
-          // For non-JSON responses (like HTML error pages)
+          // For non-JSON responses (like HTML error pages or Vite dev server responses)
           const textResponse = await response.text();
           if (textResponse.includes('Cannot GET') || textResponse.includes('404')) {
             errorMessage = 'API endpoint not found. Backend server may not be running.';
+          } else if (textResponse.includes('<!DOCTYPE html>')) {
+            errorMessage = 'Received HTML response instead of JSON. Backend API may not be configured properly.';
           } else {
             errorMessage = `Server returned non-JSON response: ${response.status}`;
           }
