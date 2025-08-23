@@ -572,7 +572,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} />;
+        return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} goBackToStep1={goBackToStep1} />;
       case 2:
         return <UnitStep bookingData={bookingData} updateBookingData={updateBookingData} />;
       case 3:
@@ -774,7 +774,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 }
 
 // Step Components
-const ServiceStep = ({ bookingData, updateBookingData }: any) => {
+const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => {
   const availableServices = getAvailableServices(bookingData.serviceType || 'branch');
 
   return (
