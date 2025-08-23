@@ -214,12 +214,25 @@ const getAvailableServices = (serviceType: string) => {
   }
 
   // Branch service - show all services
+  const allCarwashServices = getCarWashServices();
+  const branchCarwashServices = allCarwashServices.reduce((acc, service) => {
+    acc[service.id] = {
+      name: service.name,
+      price: service.basePrice,
+      duration: service.duration,
+      description: service.description,
+      features: service.features,
+      popular: service.category === 'premium',
+    };
+    return acc;
+  }, {} as any);
+
   return {
     carwash: {
       name: "Car Wash",
       icon: Car,
       gradient: "from-blue-500 to-cyan-500",
-      services: adminConfig?.pricing?.carwash || {},
+      services: branchCarwashServices,
     },
     auto_detailing: {
       name: "Auto Detailing",
