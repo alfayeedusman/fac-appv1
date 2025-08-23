@@ -191,7 +191,7 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-8">
-              {/* Email Field - Always visible but disabled after OTP sent */}
+              {/* Email Field with Icons */}
               <div className="space-y-3">
                 <Label
                   htmlFor="email"
@@ -199,7 +199,6 @@ export default function Login() {
                 >
                   <Mail className="h-4 w-4 mr-2 text-fac-orange-500" />
                   Email Address
-                  {otpSent && <span className="ml-2 text-green-500 text-xs">✓ Verified</span>}
                 </Label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
@@ -209,101 +208,61 @@ export default function Login() {
                     placeholder="your.email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    disabled={otpSent}
-                    className={`pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02] ${otpSent ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
                     required
                   />
                 </div>
               </div>
 
-              {/* OTP Field - Only visible during OTP step */}
-              {otpStep === "otp" && (
-                <div className="space-y-3 animate-fade-in-up">
-                  <Label
-                    htmlFor="otp"
-                    className="font-bold text-foreground text-sm flex items-center"
+              {/* Password Field with Icons */}
+              <div className="space-y-3">
+                <Label
+                  htmlFor="password"
+                  className="font-bold text-foreground text-sm flex items-center"
+                >
+                  <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
+                  Password
+                </Label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
+                    className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
+                    onClick={() => setShowPassword(!showPassword)}
                   >
-                    <Lock className="h-4 w-4 mr-2 text-blue-500" />
-                    Verification Code
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors z-10" />
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="Enter 6-digit code"
-                      value={formData.otp}
-                      onChange={(e) => handleInputChange("otp", e.target.value)}
-                      maxLength={6}
-                      className="pl-12 py-4 text-foreground font-medium border-border focus:border-blue-500 focus:ring-blue-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02] text-center text-xl tracking-widest"
-                      required
-                    />
-                  </div>
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={resendOTP}
-                      className="text-sm text-blue-500 hover:text-blue-600 transition-colors hover:underline"
-                    >
-                      Didn't receive code? Resend OTP
-                    </button>
-                  </div>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
-              )}
+              </div>
 
-              {/* Password Field - Only visible during password step */}
-              {otpStep === "password" && (
-                <div className="space-y-3 animate-fade-in-up">
-                  <Label
-                    htmlFor="password"
-                    className="font-bold text-foreground text-sm flex items-center"
-                  >
-                    <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
-                    Password
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        handleInputChange("password", e.target.value)
-                      }
-                      className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600 transition-colors hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
 
-              {/* Forgot Password Link - Only show during password step */}
-              {otpStep === "password" && (
-                <div className="text-right">
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600 transition-colors hover:underline"
-                  >
-                    Forgot Password?
-                  </Link>
-                </div>
-              )}
-
-              {/* Dynamic Submit Button */}
+              {/* Modern Login Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
@@ -312,40 +271,15 @@ export default function Login() {
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="spinner mr-3"></div>
-                    {otpStep === "email" && "SENDING OTP..."}
-                    {otpStep === "otp" && "VERIFYING OTP..."}
-                    {otpStep === "password" && "AUTHENTICATING..."}
+                    AUTHENTICATING...
                   </div>
                 ) : (
                   <span className="relative z-10 flex items-center justify-center">
-                    {otpStep === "email" && "SEND VERIFICATION CODE"}
-                    {otpStep === "otp" && "VERIFY CODE"}
-                    {otpStep === "password" && "SIGN IN"}
+                    SIGN IN
                     <Zap className="h-5 w-5 ml-3 group-hover:scale-125 transition-transform duration-300" />
                   </span>
                 )}
               </Button>
-
-              {/* Back Button for OTP and Password steps */}
-              {otpStep !== "email" && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    if (otpStep === "otp") {
-                      setOtpStep("email");
-                      setOtpSent(false);
-                      setFormData(prev => ({ ...prev, otp: "" }));
-                    } else if (otpStep === "password") {
-                      setOtpStep("otp");
-                      setFormData(prev => ({ ...prev, password: "" }));
-                    }
-                  }}
-                  className="w-full border-border text-foreground hover:bg-accent font-bold py-3 rounded-xl transition-all"
-                >
-                  ← Back
-                </Button>
-              )}
 
 
 
