@@ -40,7 +40,7 @@ import { toast } from "@/hooks/use-toast";
 import { notificationManager } from "@/components/NotificationModal";
 import Swal from 'sweetalert2';
 import { getAdminConfig, generateTimeSlots, isSlotAvailable } from "@/utils/adminConfig";
-import { createBooking, getSlotAvailability, type Booking } from "@/utils/databaseSchema";
+import { createBooking, getSlotAvailability, createSystemNotification, type Booking } from "@/utils/databaseSchema";
 import { getCarWashServices } from "@/utils/carWashServices";
 
 interface BookingData {
