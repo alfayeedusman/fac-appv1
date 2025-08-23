@@ -244,6 +244,7 @@ const DEFAULT_CONFIG: AdminConfig = {
     enabled: true,
     availableServices: {
       carwash: ["vip_pro_max", "premium", "fac"], // VIP PROMAX, PREMIUM WASH, FASWASH (FAC)
+      motorcycleCarwash: ["fac"], // Only FAC wash special for motorcycles
       autoDetailing: true,
       grapheneCoating: true,
     },
