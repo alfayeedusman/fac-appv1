@@ -56,7 +56,8 @@ initializeSampleAds();
 const App = () => (
   <ThemeProvider>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+      <DatabaseProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <GlobalNotificationProvider />
@@ -274,7 +275,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </DatabaseProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );
