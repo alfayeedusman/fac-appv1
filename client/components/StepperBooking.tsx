@@ -809,8 +809,10 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             <Label className="text-foreground font-semibold">Available Time Slots</Label>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
               {availableSlots.map((slot) => {
-                const isAvailable = bookingData?.date && bookingData?.branch ?
-                  isSlotAvailable(bookingData.date, slot, bookingData.branch) : true;
+                const slotInfo = bookingData?.date && bookingData?.branch ?
+                  getSlotAvailability(bookingData.date, slot, bookingData.branch) :
+                  { isAvailable: true, currentBookings: 0, maxCapacity: 2 };
+                const isAvailable = slotInfo.isAvailable;
                 return (
                   <Button
                     key={slot}
