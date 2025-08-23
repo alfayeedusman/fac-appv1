@@ -342,6 +342,19 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     return Math.round((filledFields / 10) * 100);
   }, [bookingData]);
 
+  const goBackToStep1 = () => {
+    setCurrentStep(1);
+    setBookingData(prev => ({
+      ...prev,
+      serviceType: 'home',
+      category: '',
+      service: '',
+      branch: 'Home Service',
+      basePrice: 0,
+      totalPrice: 0,
+    }));
+  };
+
   const updateBookingData = async (field: keyof BookingData, value: any) => {
     // Special handling for service type changes
     if (field === 'serviceType') {
@@ -356,83 +369,20 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 ? 'Auto Detailing'
                 : 'Graphene Coating';
 
-            const result = await Swal.fire({
-              icon: 'warning',
-              title: 'Service Not Available for Home Service',
-              html: `<div style="text-align: left;">
-                <p><strong>${serviceName}</strong> is not available for home service.</p>
-                <br>
-                <p><strong>Available home services:</strong></p>
-                <ul style="margin-left: 20px;">
-                  <li>VIP ProMax Wash</li>
-                  <li>Premium Wash</li>
-                  <li>FAC Wash</li>
-                  <li>Auto Detailing</li>
-                  <li>Graphene Coating</li>
-                </ul>
-                <br>
-                <p>Would you like to:</p>
-              </div>`,
-              confirmButtonText: 'Clear Selection & Continue',
-              confirmButtonColor: '#f97316',
-              showCancelButton: true,
-              cancelButtonText: 'Stay with Branch Service',
-              cancelButtonColor: '#6b7280',
-            });
-
-            if (result.isConfirmed) {
-              // Clear service selection and switch to home
-              setBookingData(prev => ({
-                ...prev,
-                serviceType: value,
-                category: '',
-                service: '',
-                branch: 'Home Service',
-                basePrice: 0,
-                totalPrice: 0,
-              }));
-            }
-            // If cancelled, don't change service type
+            showHomeServiceUnavailableAlert(serviceName || 'Selected Service', goBackToStep1);
             return;
           }
         } else if (bookingData.category && !bookingData.service) {
           // Category selected but no specific service, check if category is available
           const isAvailable = isServiceAvailableForHome(bookingData.category);
           if (!isAvailable) {
-            const result = await Swal.fire({
-              icon: 'warning',
-              title: 'Service Category Not Available for Home Service',
-              html: `<div style="text-align: left;">
-                <p><strong>${bookingData.category}</strong> is not available for home service.</p>
-                <br>
-                <p><strong>Available home services:</strong></p>
-                <ul style="margin-left: 20px;">
-                  <li>VIP ProMax Wash</li>
-                  <li>Premium Wash</li>
-                  <li>FAC Wash</li>
-                  <li>Auto Detailing</li>
-                  <li>Graphene Coating</li>
-                </ul>
-              </div>`,
-              confirmButtonText: 'Clear Selection & Continue',
-              confirmButtonColor: '#f97316',
-              showCancelButton: true,
-              cancelButtonText: 'Stay with Branch Service',
-              cancelButtonColor: '#6b7280',
-            });
+            const categoryDisplayName = bookingData.category === 'auto_detailing'
+              ? 'Auto Detailing'
+              : bookingData.category === 'graphene_coating'
+                ? 'Graphene Coating'
+                : bookingData.category;
 
-            if (result.isConfirmed) {
-              // Clear category selection and switch to home
-              setBookingData(prev => ({
-                ...prev,
-                serviceType: value,
-                category: '',
-                service: '',
-                branch: 'Home Service',
-                basePrice: 0,
-                totalPrice: 0,
-              }));
-            }
+            showHomeServiceUnavailableAlert(categoryDisplayName, goBackToStep1);
             return;
           }
         }
