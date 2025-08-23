@@ -178,24 +178,28 @@ export default function StickyHeader({
             </div>
 
             <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => alert("🔍 Search feature coming soon!")}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-              <NotificationDropdown />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
-                onClick={() => setShowLogoutModal(true)}
-                title="Logout"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              {shouldShowNavigation && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => alert("🔍 Search feature coming soon!")}
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                  <NotificationDropdown />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
+                    onClick={() => setShowLogoutModal(true)}
+                    title="Logout"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
               <ThemeToggle />
             </div>
           </div>
