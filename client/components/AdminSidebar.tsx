@@ -26,6 +26,8 @@ import {
   Zap,
   CreditCard,
   Home,
+  Camera,
+  Wrench,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -85,6 +87,20 @@ const sidebarItems = [
     icon: BarChart3,
     description: "Reports & Insights",
     gradient: "from-indigo-500 to-purple-500",
+  },
+  {
+    id: "bookings",
+    label: "Booking Hub",
+    icon: Calendar,
+    description: "Booking & Crew Management",
+    gradient: "from-green-500 to-blue-500",
+  },
+  {
+    id: "images",
+    label: "Image Manager",
+    icon: Camera,
+    description: "Booking Images",
+    gradient: "from-purple-500 to-pink-500",
   },
   {
     id: "sales",
