@@ -11,7 +11,8 @@
     ]
   },
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "vite",
+    "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
     "dev:server": "tsx server/mysql-server.ts",
     "dev:frontend-only": "vite",
