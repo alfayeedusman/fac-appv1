@@ -269,43 +269,99 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
   const submitBooking = async () => {
     setIsLoading(true);
-    
+
     try {
-      // Simulate API submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const bookingId = `${isGuest ? 'GUEST' : 'USER'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const completeBooking = {
-        id: bookingId,
-        ...bookingData,
+      // Prepare booking data for database
+      const currentUser = localStorage.getItem("userEmail");
+
+      const bookingPayload: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'confirmationCode'> = {
+        userId: isGuest ? undefined : currentUser || undefined,
+        guestInfo: isGuest ? {
+          firstName: bookingData.fullName.split(' ')[0] || '',
+          lastName: bookingData.fullName.split(' ').slice(1).join(' ') || '',
+          email: bookingData.email,
+          phone: bookingData.mobile,
+        } : undefined,
         type: isGuest ? "guest" : "registered",
-        status: "pending",
-        createdAt: new Date().toISOString(),
+
+        // Service Details
+        category: bookingData.category as any,
+        service: bookingData.service,
+
+        // Vehicle Details
+        unitType: bookingData.unitType as any,
+        unitSize: bookingData.unitSize,
+        plateNumber: bookingData.plateNo,
+
+        // Schedule Details
+        date: bookingData.date,
+        timeSlot: bookingData.timeSlot,
+        branch: bookingData.branch,
+        estimatedDuration: getEstimatedDuration(bookingData.category, bookingData.service),
+
+        // Pricing
+        basePrice: bookingData.basePrice,
+        totalPrice: bookingData.totalPrice,
+        currency: 'PHP',
+
+        // Payment Details
+        paymentMethod: bookingData.paymentMethod as any,
+        paymentStatus: bookingData.paymentMethod === 'online' ? 'pending' : 'pending',
+        receiptUrl: bookingData.receiptFile ? URL.createObjectURL(bookingData.receiptFile) : undefined,
+
+        // Status
+        status: 'pending',
+
+        // Additional Info
+        notes: bookingData.notes,
+        specialRequests: bookingData.notes,
+
+        // Loyalty Points (for registered users)
+        pointsEarned: isGuest ? 0 : Math.floor(bookingData.totalPrice / 100), // 1 point per 100 pesos
       };
-      
-      // Save booking
-      const storageKey = isGuest ? "guestBookings" : "userBookings";
-      const existingBookings = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      existingBookings.push(completeBooking);
-      localStorage.setItem(storageKey, JSON.stringify(existingBookings));
-      
+
+      // Create booking using advanced database system
+      const createdBooking = await createBooking(bookingPayload);
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
-        `Your booking has been successfully submitted!\n\nBooking ID: ${bookingId}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\nYou will receive confirmation shortly.`,
+        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\nYou will receive confirmation shortly.`,
         { autoClose: 5000 }
       );
-      
+
+      // Reset form
+      setBookingData({
+        category: "",
+        service: "",
+        unitType: "",
+        unitSize: "",
+        fullName: "",
+        mobile: "",
+        email: "",
+        plateNo: "",
+        address: "",
+        date: "",
+        timeSlot: "",
+        branch: "",
+        paymentMethod: "",
+        receiptFile: null,
+        acceptTerms: false,
+        basePrice: 0,
+        totalPrice: 0,
+      });
+      setCurrentStep(1);
+
       // Navigate based on user type
       setTimeout(() => {
         if (isGuest) {
-          navigate("/login");
+          navigate("/login?message=booking_created");
         } else {
           navigate("/my-bookings");
         }
       }, 3000);
-      
+
     } catch (error) {
+      console.error('Booking submission error:', error);
       toast({
         title: "Booking Failed",
         description: "There was an error submitting your booking. Please try again.",
@@ -314,6 +370,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to get estimated duration
+  const getEstimatedDuration = (category: string, service: string): number => {
+    if (category === "carwash" && adminConfig?.pricing?.carwash?.[service as keyof typeof adminConfig.pricing.carwash]) {
+      const serviceData = adminConfig.pricing.carwash[service as keyof typeof adminConfig.pricing.carwash];
+      const durationStr = serviceData.duration || "60 mins";
+      return parseInt(durationStr.replace(/\D/g, '')) || 60;
+    }
+    return 60; // Default duration
   };
 
   const renderStepContent = () => {
