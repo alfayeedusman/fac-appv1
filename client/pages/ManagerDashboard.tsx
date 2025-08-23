@@ -87,12 +87,42 @@ export default function ManagerDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [messageText, setMessageText] = useState('');
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   // Load data on component mount
   useEffect(() => {
     loadBookings();
     loadCustomers();
+    loadNotifications();
+
+    // Set up polling for new notifications every 10 seconds
+    const notificationInterval = setInterval(loadNotifications, 10000);
+
+    return () => clearInterval(notificationInterval);
   }, []);
+
+  const loadNotifications = () => {
+    try {
+      const userEmail = localStorage.getItem("userEmail") || "";
+      const systemNotifications = getUserSystemNotifications(userEmail, 'manager');
+
+      // Convert system notifications to UI format
+      const formattedNotifications = systemNotifications.map(notification => ({
+        id: notification.id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        timestamp: new Date(notification.createdAt),
+        read: notification.readBy.some(r => r.userId === userEmail),
+        priority: notification.priority,
+        data: notification.data,
+      }));
+
+      setNotifications(formattedNotifications);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  };
 
   const loadBookings = () => {
     try {
