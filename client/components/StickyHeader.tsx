@@ -59,6 +59,7 @@ export default function StickyHeader({
       "/pos",
       "/admin-user-management",
       "/admin-cms",
+      "/admin-home-service",
       "/admin-push-notifications",
       "/admin-subscription-approval",
       "/admin-gamification",
