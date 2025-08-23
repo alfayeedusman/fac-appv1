@@ -156,6 +156,7 @@ export default function EnhancedCrewDashboard() {
 
   const startLocationTracking = () => {
     if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser');
       toast({
         title: "Location Not Available",
         description: "Location tracking is not supported on this device",
@@ -165,28 +166,94 @@ export default function EnhancedCrewDashboard() {
     }
 
     setIsTrackingLocation(true);
-    navigator.geolocation.watchPosition(
-      (position) => {
-        setCurrentLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      },
+
+    const handleLocationSuccess = (position: GeolocationPosition) => {
+      setCurrentLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      });
+      setIsTrackingLocation(true);
+      console.log('Location updated:', position.coords.latitude, position.coords.longitude);
+    };
+
+    const handleLocationError = (error: GeolocationPositionError) => {
+      console.error('Geolocation error details:', {
+        code: error.code,
+        message: error.message,
+        PERMISSION_DENIED: error.PERMISSION_DENIED,
+        POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+        TIMEOUT: error.TIMEOUT
+      });
+
+      setIsTrackingLocation(false);
+
+      let title = "Location Error";
+      let description = "Unable to track location";
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          title = "Location Permission Denied";
+          description = "Please enable location permissions in your browser settings to use GPS tracking.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          title = "Location Unavailable";
+          description = "Your location information is currently unavailable. Please check your GPS settings.";
+          break;
+        case error.TIMEOUT:
+          title = "Location Timeout";
+          description = "Location request timed out. Trying again...";
+          // Retry after timeout
+          setTimeout(() => {
+            if (navigator.geolocation) {
+              console.log('Retrying location tracking after timeout...');
+              startLocationTracking();
+            }
+          }, 5000);
+          return; // Don't show error toast for timeout, just retry
+        default:
+          title = "Location Error";
+          description = `Location tracking failed: ${error.message}`;
+          break;
+      }
+
+      toast({
+        title,
+        description,
+        variant: "destructive",
+      });
+    };
+
+    // First try to get current position
+    navigator.geolocation.getCurrentPosition(
+      handleLocationSuccess,
       (error) => {
-        console.error('Location tracking error:', error);
-        setIsTrackingLocation(false);
-        toast({
-          title: "Location Error",
-          description: "Unable to track location",
-          variant: "destructive",
-        });
+        console.warn('Initial location fetch failed, starting watch anyway:', error.message);
+        // Continue to watchPosition even if getCurrentPosition fails
       },
       {
+        enableHighAccuracy: false, // Use less accurate but faster for initial position
+        timeout: 5000,
+        maximumAge: 60000
+      }
+    );
+
+    // Then start watching position
+    const watchId = navigator.geolocation.watchPosition(
+      handleLocationSuccess,
+      handleLocationError,
+      {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000, // Increased timeout
         maximumAge: 30000
       }
     );
+
+    // Store watch ID for cleanup if needed
+    return () => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
   };
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
