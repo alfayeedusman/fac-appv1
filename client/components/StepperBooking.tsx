@@ -679,7 +679,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
   const availableServices = getAvailableServices(bookingData.serviceType || 'branch');
 
   return (
-  <Card className="glass border-border shadow-xl animate-fade-in-up">
+  <Card className="glass border-border shadow-xl">
     <CardHeader className="pb-4 md:pb-6">
       <CardTitle className="flex items-center text-xl md:text-2xl">
         <Sparkles className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
@@ -698,7 +698,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
       {Object.entries(availableServices).map(([categoryKey, category]) => (
         <div
           key={categoryKey}
-          className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 hover-lift ${
+          className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
             bookingData.category === categoryKey
               ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg shadow-fac-orange-500/10'
               : 'border-border glass hover:border-fac-orange-300 hover:shadow-lg'
@@ -710,7 +710,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex items-center space-x-3 md:space-x-4">
-              <div className={`bg-gradient-to-r ${category.gradient} p-2 md:p-3 rounded-xl animate-pulse-glow`}>
+              <div className={`bg-gradient-to-r ${category.gradient} p-2 md:p-3 rounded-xl`}>
                 <category.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
@@ -728,7 +728,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
           </div>
           
           {bookingData.category === categoryKey && categoryKey === "carwash" && (
-            <div className="mt-4 space-y-3 animate-fade-in-up">
+            <div className="mt-4 space-y-3">
               <div className="flex items-center space-x-2">
                 <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
                 <p className="text-sm md:text-base font-semibold text-foreground">Select wash type:</p>
@@ -737,7 +737,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
                 {Object.entries(category.services).map(([serviceKey, service]) => (
                   <div
                     key={serviceKey}
-                    className={`relative p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-300 hover-lift ${
+                    className={`relative p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
                       bookingData.service === serviceKey
                         ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950 shadow-lg shadow-fac-orange-500/20'
                         : 'border-border hover:border-fac-orange-300 hover:shadow-md'
@@ -749,7 +749,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
                   >
                     {service.popular && (
                       <div className="absolute -top-2 -right-2">
-                        <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs animate-pulse-glow">
+                        <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs">
                           Popular
                         </Badge>
                       </div>
@@ -779,7 +779,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
           )}
           
           {bookingData.category === categoryKey && categoryKey !== "carwash" && (
-            <div className="mt-4 animate-fade-in-up">
+            <div className="mt-4">
               <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
