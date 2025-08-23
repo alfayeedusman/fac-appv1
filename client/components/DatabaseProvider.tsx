@@ -35,7 +35,16 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
   const checkDatabaseConnection = async () => {
     try {
       setIsLoading(true);
-      const health = await DatabaseService.healthCheck();
+
+      // Try to connect to the backend with a shorter timeout
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout')), 3000)
+      );
+
+      const health = await Promise.race([
+        DatabaseService.healthCheck(),
+        timeoutPromise
+      ]);
 
       if (health && health.status === 'healthy') {
         setIsConnected(true);
@@ -52,29 +61,18 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
       }
     } catch (error: any) {
       setIsConnected(false);
-      console.error('Database connection failed:', error.message || error);
+      console.log('ℹ️ Running in offline mode - backend not available');
 
-      // Determine the appropriate user message based on error type
-      let userMessage = "Using offline mode. Some features may be limited.";
-      let showToast = false;
+      // Only show user-facing error for actual connection issues
+      // Don't show error for development mode without backend
+      const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-      if (error.message?.includes('Backend server may not be running')) {
-        userMessage = "Backend server is not running. Working in offline mode.";
-        showToast = true;
-      } else if (error.message?.includes('Unable to connect to server')) {
-        userMessage = "Cannot connect to server. Working in offline mode.";
-        showToast = true;
-      } else if (error.message?.includes('API endpoint not found')) {
-        console.warn('API endpoints not available, likely in development mode');
-        // Don't show toast for missing API in development
-      }
-
-      // Only show toast if it's an important connection issue
-      if (showToast) {
+      if (!isDevelopment) {
+        // In production, show connection error
         toast({
-          title: "Connection Issue",
-          description: userMessage,
-          variant: "destructive",
+          title: "Offline Mode",
+          description: "Working offline. Some features may be limited.",
+          variant: "default", // Changed from destructive to default for less alarming appearance
         });
       }
     } finally {
