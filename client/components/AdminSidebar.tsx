@@ -115,6 +115,13 @@ const sidebarItems = [
     gradient: "from-green-500 to-blue-500",
   },
   {
+    id: "booking",
+    label: "Booking Settings",
+    icon: Calendar,
+    description: "All Booking Configuration",
+    gradient: "from-blue-500 to-purple-500",
+  },
+  {
     id: "push-notifications",
     label: "Push Notifications",
     icon: Bell,
@@ -289,6 +296,8 @@ export default function AdminSidebar({
                       navigate("/admin-cms");
                     } else if (item.id === "home-service") {
                       navigate("/admin-home-service");
+                    } else if (item.id === "booking") {
+                      navigate("/admin-booking-settings");
                     } else if (item.id === "push-notifications") {
                       navigate("/admin-push-notifications");
                     } else if (item.id === "gamification") {
