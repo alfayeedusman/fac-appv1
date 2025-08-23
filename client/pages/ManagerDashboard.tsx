@@ -150,35 +150,32 @@ export default function ManagerDashboard() {
     }
   };
 
-  const updateBookingStatus = (bookingId: string, status: 'approved' | 'rejected', notes?: string) => {
+  const updateBookingStatusManager = (bookingId: string, status: 'approved' | 'rejected', notes?: string) => {
     try {
-      // Update user bookings
-      const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      const updatedUserBookings = userBookings.map((booking: any) => 
-        booking.id === bookingId ? { ...booking, status, notes, updatedAt: new Date().toISOString() } : booking
-      );
-      localStorage.setItem('userBookings', JSON.stringify(updatedUserBookings));
+      // Use the database schema function to update booking status
+      const success = updateBookingStatus(bookingId, status === 'approved' ? 'confirmed' : 'cancelled', notes);
 
-      // Update guest bookings
-      const guestBookings = JSON.parse(localStorage.getItem('guestBookings') || '[]');
-      const updatedGuestBookings = guestBookings.map((booking: any) => 
-        booking.id === bookingId ? { ...booking, status, notes, updatedAt: new Date().toISOString() } : booking
-      );
-      localStorage.setItem('guestBookings', JSON.stringify(updatedGuestBookings));
+      if (success) {
+        // Reload bookings
+        loadBookings();
 
-      // Reload bookings
-      loadBookings();
+        // Send notification to customer
+        const booking = bookings.find(b => b.id === bookingId);
+        if (booking) {
+          sendNotificationToCustomer(booking, status, notes);
+        }
 
-      // Send notification to customer
-      const booking = bookings.find(b => b.id === bookingId);
-      if (booking) {
-        sendNotificationToCustomer(booking, status, notes);
+        toast({
+          title: "Success",
+          description: `Booking ${status} successfully`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Booking not found",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Success",
-        description: `Booking ${status} successfully`,
-      });
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
