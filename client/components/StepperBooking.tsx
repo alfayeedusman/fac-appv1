@@ -592,7 +592,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   {/* Progress Bar for Mobile */}
                   <div className="w-full bg-border rounded-full h-2 mb-3">
                     <div
-                      className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all"
                       style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
                     ></div>
                   </div>
