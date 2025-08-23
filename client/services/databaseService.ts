@@ -199,29 +199,59 @@ export class DatabaseService {
   }
 
   // ============= OTP FUNCTIONALITY =============
-  
+
   // Send OTP
   static async sendOTP(email: string, type: 'signup' | 'forgot_password' | 'login'): Promise<ApiResponse> {
-    return this.apiRequest('/otp/send', {
-      method: 'POST',
-      body: JSON.stringify({ email, type }),
-    });
+    if (!this.useBackend) {
+      return FallbackService.sendOTP(email, type);
+    }
+
+    try {
+      return await this.apiRequest('/otp/send', {
+        method: 'POST',
+        body: JSON.stringify({ email, type }),
+      });
+    } catch (error) {
+      console.warn('Backend OTP failed, using fallback:', error);
+      this.useBackend = false;
+      return FallbackService.sendOTP(email, type);
+    }
   }
 
   // Verify OTP
   static async verifyOTP(email: string, otp: string, type: 'signup' | 'forgot_password' | 'login'): Promise<ApiResponse & { firebaseUid?: string }> {
-    return this.apiRequest('/otp/verify', {
-      method: 'POST',
-      body: JSON.stringify({ email, otp, type }),
-    });
+    if (!this.useBackend) {
+      return FallbackService.verifyOTP(email, otp, type);
+    }
+
+    try {
+      return await this.apiRequest('/otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({ email, otp, type }),
+      });
+    } catch (error) {
+      console.warn('Backend OTP verification failed, using fallback:', error);
+      this.useBackend = false;
+      return FallbackService.verifyOTP(email, otp, type);
+    }
   }
 
   // Resend OTP
   static async resendOTP(email: string, type: 'signup' | 'forgot_password' | 'login'): Promise<ApiResponse> {
-    return this.apiRequest('/otp/resend', {
-      method: 'POST',
-      body: JSON.stringify({ email, type }),
-    });
+    if (!this.useBackend) {
+      return FallbackService.resendOTP(email, type);
+    }
+
+    try {
+      return await this.apiRequest('/otp/resend', {
+        method: 'POST',
+        body: JSON.stringify({ email, type }),
+      });
+    } catch (error) {
+      console.warn('Backend OTP resend failed, using fallback:', error);
+      this.useBackend = false;
+      return FallbackService.resendOTP(email, type);
+    }
   }
 
   // ============= MIGRATION UTILITIES =============
