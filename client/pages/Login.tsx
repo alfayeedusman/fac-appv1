@@ -32,19 +32,6 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Handle different steps
-    if (otpStep === "email") {
-      sendOTP();
-      return;
-    }
-
-    if (otpStep === "otp") {
-      verifyOTP();
-      return;
-    }
-
-    // Final login step (password verification)
     setIsLoading(true);
 
     // Input validation
@@ -52,6 +39,18 @@ export default function Login() {
       toast({
         title: "Login Failed",
         description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
         variant: "destructive",
       });
       setIsLoading(false);
