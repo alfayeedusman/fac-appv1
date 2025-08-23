@@ -849,7 +849,16 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
               ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg shadow-fac-orange-500/10'
               : 'border-border glass hover:border-fac-orange-300 hover:shadow-lg'
           }`}
-          onClick={() => {
+          onClick={async () => {
+            // Check if this category is available for current service type
+            if (bookingData.serviceType === 'home') {
+              const isAvailable = isServiceAvailableForHome(categoryKey);
+              if (!isAvailable) {
+                await showHomeServiceUnavailableAlert(category.name);
+                return;
+              }
+            }
+
             updateBookingData("category", categoryKey);
             updateBookingData("service", ""); // Reset service when category changes
           }}
