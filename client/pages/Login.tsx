@@ -52,6 +52,8 @@ export default function Login() {
     localStorage.setItem("userEmail", "fffayeed@gmail.com");
     localStorage.setItem("userRole", "superadmin");
     localStorage.setItem("justLoggedIn", "true");
+    localStorage.setItem("hasSeenWelcome", "true"); // Bypass welcome screen
+    localStorage.setItem(`welcomed_fffayeed@gmail.com`, "true"); // Mark user as welcomed
 
     toast({
       title: "Auto-Login Successful! 🎉",
