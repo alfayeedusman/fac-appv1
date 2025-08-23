@@ -27,30 +27,8 @@ export default function Login() {
     password: "",
   });
 
-  // Check for URL bypass on component mount
-  useEffect(() => {
-    checkForSuperadminBypass(navigate);
-  }, [navigate]);
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // Force Superadmin Login Function using utility
-  const handleForceSuperadminLogin = () => {
-    setIsLoading(true);
-
-    toast({
-      title: "Force Superadmin Login! 👑",
-      description: "Welcome, Supreme Administrator!",
-      variant: "default",
-      className: "bg-purple-50 border-purple-200 text-purple-800",
-    });
-
-    setTimeout(() => {
-      forceSuperadminLogin(navigate);
-      setIsLoading(false);
-    }, 1000);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
