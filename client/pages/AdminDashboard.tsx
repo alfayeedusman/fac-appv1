@@ -652,15 +652,14 @@ export default function AdminDashboard() {
                               size="sm"
                               className="text-xs h-7"
                               onClick={() => {
-                                const updatedNotifications = notifications.map(
-                                  (n) => ({ ...n, read: true }),
-                                );
-                                setNotifications(updatedNotifications);
-                                // Save to localStorage or your data source
-                                localStorage.setItem(
-                                  "admin_notifications",
-                                  JSON.stringify(updatedNotifications),
-                                );
+                                const userEmail = localStorage.getItem("userEmail") || "";
+                                // Mark all unread notifications as read
+                                notifications.forEach(notification => {
+                                  if (!notification.read) {
+                                    markSystemNotificationAsRead(notification.id, userEmail);
+                                  }
+                                });
+                                loadSystemNotifications(); // Refresh notifications
                               }}
                             >
                               Mark all read
