@@ -1317,7 +1317,9 @@ export default function AdminDashboard() {
 
           {activeTab === "roles" && userRole === "superadmin" && (
             <div className="animate-fade-in-scale">
-              <UserRoleManagement />
+              <ErrorBoundary>
+                <UserRoleManagement />
+              </ErrorBoundary>
             </div>
           )}
 
