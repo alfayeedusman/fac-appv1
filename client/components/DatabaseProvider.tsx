@@ -55,6 +55,9 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         if (userId) {
           await migrateUserData(userId);
         }
+      } else if (health && health.status === 'offline') {
+        setIsConnected(false);
+        console.log('ℹ️ Running in offline/demo mode');
       } else {
         setIsConnected(false);
         console.warn('Database health check failed:', health);
