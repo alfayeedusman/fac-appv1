@@ -254,7 +254,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   // Calculate price when service/unit changes
   useEffect(() => {
     calculatePrice();
-  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize]);
+  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType]);
 
   const calculatePrice = () => {
     let price = 0;
@@ -267,10 +267,17 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       price = adminConfig.pricing.grapheneCoating[bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating]?.[bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car] || 0;
     }
 
+    // Apply home service multiplier if applicable
+    const basePrice = price;
+    let totalPrice = price;
+    if (bookingData.serviceType === 'home' && adminConfig.homeService?.enabled) {
+      totalPrice = price * (adminConfig.homeService.priceMultiplier || 1.2);
+    }
+
     setBookingData(prev => ({
       ...prev,
-      basePrice: price,
-      totalPrice: price, // Add any additional fees here later
+      basePrice: basePrice,
+      totalPrice: totalPrice,
     }));
   };
 
