@@ -272,6 +272,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/database-test"
+              element={
+                <div className="min-h-screen bg-background p-4">
+                  <DatabaseConnectionTest />
+                </div>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
