@@ -1289,6 +1289,14 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
               <span className="text-muted-foreground">Base Price:</span>
               <span className="font-medium text-foreground">₱{bookingData.basePrice.toLocaleString()}</span>
             </div>
+            {bookingData.serviceType === 'home' && adminConfig.homeService?.enabled && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Home Service Fee:</span>
+                <span className="font-medium text-orange-600">
+                  +₱{(bookingData.totalPrice - bookingData.basePrice).toLocaleString()}
+                </span>
+              </div>
+            )}
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-foreground text-base md:text-lg">Total:</span>
