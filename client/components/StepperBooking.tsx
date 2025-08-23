@@ -893,76 +893,144 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
 
 // Booking Summary Component
 const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
-  <div className="space-y-4">
-    <Card className="border-border">
-      <CardContent className="p-4">
-        <h4 className="font-bold text-foreground mb-3">Service Details</h4>
-        {bookingData.category && (
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
+  <div className="space-y-3 md:space-y-4">
+    {/* Service Details */}
+    <Card className="border-border glass">
+      <CardContent className="p-3 md:p-4">
+        <h4 className="font-bold text-foreground mb-2 md:mb-3 text-sm md:text-base flex items-center">
+          <Sparkles className="h-4 w-4 mr-2 text-fac-orange-500" />
+          Service Details
+        </h4>
+        {bookingData.category ? (
+          <div className="space-y-2 text-xs md:text-sm">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Category:</span>
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-foreground text-right">
                 {SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || '-'}
               </span>
             </div>
             {bookingData.service && bookingData.category === "carwash" && (
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Service:</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-foreground text-right">
                   {adminConfig.pricing.carwash[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.name || '-'}
                 </span>
               </div>
             )}
             {bookingData.unitType && (
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start">
                 <span className="text-muted-foreground">Vehicle:</span>
-                <span className="font-medium text-foreground">
-                  {UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.name} 
+                <span className="font-medium text-foreground text-right max-w-[60%]">
+                  {UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.name}
                   {bookingData.unitSize && ` - ${UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.sizes[bookingData.unitSize as keyof typeof UNIT_TYPES.car] || ''}`}
                 </span>
               </div>
             )}
           </div>
+        ) : (
+          <p className="text-xs md:text-sm text-muted-foreground">Select a service to see details</p>
         )}
       </CardContent>
     </Card>
-    
+
+    {/* Schedule Details */}
     {bookingData.date && (
-      <Card className="border-border">
-        <CardContent className="p-4">
-          <h4 className="font-bold text-foreground mb-3">Schedule</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
+      <Card className="border-border glass">
+        <CardContent className="p-3 md:p-4">
+          <h4 className="font-bold text-foreground mb-2 md:mb-3 text-sm md:text-base flex items-center">
+            <Calendar className="h-4 w-4 mr-2 text-fac-orange-500" />
+            Schedule
+          </h4>
+          <div className="space-y-2 text-xs md:text-sm">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Date:</span>
-              <span className="font-medium text-foreground">{bookingData.date}</span>
+              <span className="font-medium text-foreground">
+                {new Date(bookingData.date).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Time:</span>
-              <span className="font-medium text-foreground">{bookingData.timeSlot}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Branch:</span>
-              <span className="font-medium text-foreground">{bookingData.branch}</span>
-            </div>
+            {bookingData.timeSlot && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Time:</span>
+                <span className="font-medium text-foreground">{bookingData.timeSlot}</span>
+              </div>
+            )}
+            {bookingData.branch && (
+              <div className="flex justify-between items-start">
+                <span className="text-muted-foreground">Branch:</span>
+                <span className="font-medium text-foreground text-right max-w-[60%]">{bookingData.branch}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
     )}
-    
-    <Card className="border-border">
-      <CardContent className="p-4">
-        <h4 className="font-bold text-foreground mb-3">Price Summary</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Base Price:</span>
-            <span className="font-medium text-foreground">₱{bookingData.basePrice.toLocaleString()}</span>
+
+    {/* Customer Info (for guest bookings) */}
+    {bookingData.fullName && (
+      <Card className="border-border glass">
+        <CardContent className="p-3 md:p-4">
+          <h4 className="font-bold text-foreground mb-2 md:mb-3 text-sm md:text-base flex items-center">
+            <User className="h-4 w-4 mr-2 text-fac-orange-500" />
+            Customer
+          </h4>
+          <div className="space-y-2 text-xs md:text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Name:</span>
+              <span className="font-medium text-foreground text-right max-w-[60%]">{bookingData.fullName}</span>
+            </div>
+            {bookingData.mobile && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Mobile:</span>
+                <span className="font-medium text-foreground">{bookingData.mobile}</span>
+              </div>
+            )}
           </div>
-          <div className="border-t pt-2 mt-2">
-            <div className="flex justify-between">
-              <span className="font-bold text-foreground">Total:</span>
-              <span className="font-bold text-fac-orange-500 text-lg">₱{bookingData.totalPrice.toLocaleString()}</span>
+        </CardContent>
+      </Card>
+    )}
+
+    {/* Price Summary */}
+    <Card className="border-fac-orange-200 glass bg-gradient-to-br from-fac-orange-50/50 to-purple-50/50 dark:from-fac-orange-950/30 dark:to-purple-950/30">
+      <CardContent className="p-3 md:p-4">
+        <h4 className="font-bold text-foreground mb-2 md:mb-3 text-sm md:text-base flex items-center">
+          <CreditCard className="h-4 w-4 mr-2 text-fac-orange-500" />
+          Price Summary
+        </h4>
+        {bookingData.basePrice > 0 ? (
+          <div className="space-y-2 text-xs md:text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Base Price:</span>
+              <span className="font-medium text-foreground">₱{bookingData.basePrice.toLocaleString()}</span>
+            </div>
+            <div className="border-t pt-2 mt-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-foreground text-base md:text-lg">Total:</span>
+                <span className="font-bold text-fac-orange-500 text-lg md:text-xl">₱{bookingData.totalPrice.toLocaleString()}</span>
+              </div>
             </div>
           </div>
+        ) : (
+          <p className="text-xs md:text-sm text-muted-foreground">Price will be calculated based on your selections</p>
+        )}
+      </CardContent>
+    </Card>
+
+    {/* Progress Indicator */}
+    <Card className="border-border glass">
+      <CardContent className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs md:text-sm font-medium text-foreground">Booking Progress</span>
+          <span className="text-xs md:text-sm text-muted-foreground">{Math.round((Object.values(bookingData).filter(v => v && v !== "").length / 10) * 100)}%</span>
+        </div>
+        <div className="w-full bg-border rounded-full h-2">
+          <div
+            className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${Math.round((Object.values(bookingData).filter(v => v && v !== "").length / 10) * 100)}%` }}
+          ></div>
         </div>
       </CardContent>
     </Card>
