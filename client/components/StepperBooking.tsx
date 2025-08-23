@@ -603,11 +603,14 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => (
           )}
           
           {bookingData.category === categoryKey && categoryKey !== "carwash" && (
-            <div className="mt-4">
-              <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200">
-                <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                  ✓ Selected - Price will be calculated based on your vehicle type in the next step
-                </p>
+            <div className="mt-4 animate-fade-in-up">
+              <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
+                    Selected - Price will be calculated based on your vehicle type in the next step
+                  </p>
+                </div>
               </div>
             </div>
           )}
