@@ -124,13 +124,6 @@ const sidebarItems = [
     gradient: "from-fac-orange-500 to-yellow-500",
   },
   {
-    id: "home-service",
-    label: "Home Service",
-    icon: Home,
-    description: "Service Availability Settings",
-    gradient: "from-green-500 to-blue-500",
-  },
-  {
     id: "booking",
     label: "Booking Settings",
     icon: Calendar,
