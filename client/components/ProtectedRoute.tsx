@@ -10,7 +10,8 @@ interface ProtectedRouteProps {
     | "superadmin"
     | "cashier"
     | "inventory_manager"
-    | "manager";
+    | "manager"
+    | "crew";
   redirectTo?: string;
 }
 
@@ -72,11 +73,12 @@ export default function ProtectedRoute({
     // Check role-based access
     const roleHierarchy = {
       user: 1,
+      crew: 2,
       cashier: 2,
       inventory_manager: 2,
-      manager: 2,
-      admin: 3,
-      superadmin: 4,
+      manager: 3,
+      admin: 4,
+      superadmin: 5,
     };
 
     const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy];
@@ -94,6 +96,8 @@ export default function ProtectedRoute({
         navigate("/admin-dashboard", { replace: true });
       } else if (userRole === "manager") {
         navigate("/manager-dashboard", { replace: true });
+      } else if (userRole === "crew") {
+        navigate("/crew-dashboard", { replace: true });
       } else if (userRole === "cashier") {
         navigate("/pos", { replace: true });
       } else if (userRole === "inventory_manager") {
