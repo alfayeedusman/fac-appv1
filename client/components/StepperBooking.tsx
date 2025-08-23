@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -251,12 +251,8 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     totalPrice: 0,
   });
 
-  // Calculate price when service/unit changes
-  useEffect(() => {
-    calculatePrice();
-  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType]);
-
-  const calculatePrice = () => {
+  // Memoize price calculation to prevent infinite loops
+  const { basePrice, totalPrice } = useMemo(() => {
     let price = 0;
 
     if (bookingData.category === "carwash" && bookingData.service) {
@@ -274,12 +270,17 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       totalPrice = price * (adminConfig.homeService.priceMultiplier || 1.2);
     }
 
+    return { basePrice, totalPrice };
+  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType]);
+
+  // Update prices when calculated values change
+  useEffect(() => {
     setBookingData(prev => ({
       ...prev,
-      basePrice: basePrice,
-      totalPrice: totalPrice,
+      basePrice,
+      totalPrice,
     }));
-  };
+  }, [basePrice, totalPrice]);
 
   const updateBookingData = (field: keyof BookingData, value: any) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
@@ -1322,12 +1323,12 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
       <CardContent className="p-3 md:p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs md:text-sm font-medium text-foreground">Booking Progress</span>
-          <span className="text-xs md:text-sm text-muted-foreground">{Math.round((Object.values(bookingData).filter(v => v && v !== "").length / 10) * 100)}%</span>
+          <span className="text-xs md:text-sm text-muted-foreground">{progressPercentage}%</span>
         </div>
         <div className="w-full bg-border rounded-full h-2">
           <div
             className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${Math.round((Object.values(bookingData).filter(v => v && v !== "").length / 10) * 100)}%` }}
+            style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
       </CardContent>
