@@ -189,6 +189,23 @@ export default function EnhancedCrewDashboard() {
 
     setIsTrackingLocation(true);
 
+    // Check permissions if supported
+    if ('permissions' in navigator) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        console.log('Geolocation permission status:', result.state);
+        if (result.state === 'denied') {
+          toast({
+            title: "⚠️ Location Permission Denied",
+            description: "Location access is blocked. Please enable it in your browser settings.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      }).catch((error) => {
+        console.warn('Could not check geolocation permissions:', error);
+      });
+    }
+
     const handleLocationSuccess = (position: GeolocationPosition) => {
       const newLocation = {
         lat: position.coords.latitude,
