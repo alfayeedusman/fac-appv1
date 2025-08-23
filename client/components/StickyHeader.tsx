@@ -60,6 +60,7 @@ export default function StickyHeader({
       "/admin-user-management",
       "/admin-cms",
       "/admin-home-service",
+      "/admin-booking-settings",
       "/admin-push-notifications",
       "/admin-subscription-approval",
       "/admin-gamification",
