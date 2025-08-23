@@ -79,8 +79,8 @@ export default function StickyHeader({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [location.pathname, isKioskRoute]);
 
-  // Don't render StickyHeader on public routes, kiosk routes, or if not authenticated
-  if ((isPublicRoute && !isAuthenticated) || isKioskRoute) {
+  // Don't render StickyHeader on certain routes or kiosk mode
+  if (shouldHideHeader || isKioskRoute) {
     return null;
   }
 
