@@ -287,6 +287,8 @@ export default function AdminSidebar({
                   onClick={() => {
                     if (item.id === "cms") {
                       navigate("/admin-cms");
+                    } else if (item.id === "home-service") {
+                      navigate("/admin-home-service");
                     } else if (item.id === "push-notifications") {
                       navigate("/admin-push-notifications");
                     } else if (item.id === "gamification") {
