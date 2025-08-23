@@ -348,10 +348,17 @@ export class DatabaseService {
   }
 
   // ============= HEALTH CHECK =============
-  
+
   // Check database connection
   static async healthCheck(): Promise<any> {
-    return this.apiRequest('/health');
+    try {
+      const result = await this.apiRequest('/health');
+      this.useBackend = true;
+      return result;
+    } catch (error) {
+      this.useBackend = false;
+      return FallbackService.healthCheck();
+    }
   }
 }
 
