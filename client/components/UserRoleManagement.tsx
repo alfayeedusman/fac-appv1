@@ -227,24 +227,49 @@ export default function UserRoleManagement() {
   }, []);
 
   const loadUsers = () => {
-    const registeredUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
+    try {
+      const registeredUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
 
-    // Convert to our User interface format
-    const formattedUsers: User[] = registeredUsers.map((user: any) => ({
-      id: user.id || user.email,
-      fullName: user.fullName || user.name || "Unknown",
-      email: user.email,
-      role: user.role || "user",
-      permissions: user.permissions || ROLE_PRESETS[user.role as keyof typeof ROLE_PRESETS] || [],
-      status: user.status || "active",
-      createdAt:
-        user.createdAt || user.registeredAt || new Date().toISOString(),
-      lastLogin: user.lastLogin,
-    }));
+      // Ensure we have an array
+      if (!Array.isArray(registeredUsers)) {
+        console.warn("registeredUsers is not an array, resetting to empty array");
+        localStorage.setItem("registeredUsers", "[]");
+        setUsers([]);
+        return;
+      }
 
-    setUsers(formattedUsers);
+      // Convert to our User interface format with safe fallbacks
+      const formattedUsers: User[] = registeredUsers
+        .filter((user: any) => user && typeof user === 'object' && user.email) // Filter out invalid entries
+        .map((user: any) => {
+          const userRole = user.role || "user";
+          const validRole = ["user", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole)
+            ? userRole
+            : "user";
+
+          return {
+            id: user.id || user.email || `user_${Date.now()}_${Math.random()}`,
+            fullName: user.fullName || user.name || "Unknown User",
+            email: user.email || "",
+            role: validRole as User["role"],
+            permissions: user.permissions || ROLE_PRESETS[validRole as keyof typeof ROLE_PRESETS] || [],
+            status: (user.status && ["active", "inactive", "suspended"].includes(user.status))
+              ? user.status
+              : "active",
+            createdAt: user.createdAt || user.registeredAt || new Date().toISOString(),
+            lastLogin: user.lastLogin || undefined,
+          };
+        });
+
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      // Reset to empty array on error
+      localStorage.setItem("registeredUsers", "[]");
+      setUsers([]);
+    }
   };
 
   const resetForm = () => {
@@ -293,26 +318,26 @@ export default function UserRoleManagement() {
       return;
     }
 
-    const newUser = {
-      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      permissions: formData.permissions,
-      status: formData.status,
-      createdAt: new Date().toISOString(),
-      // Additional required fields for compatibility
-      address: "Admin Created Account",
-      contactNumber: "+63 999 000 0000",
-      carUnit: "N/A",
-      carPlateNumber: "N/A",
-      carType: "N/A",
-      selectedPackage: "classic",
-    };
+      const newUser = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        permissions: formData.permissions,
+        status: formData.status,
+        createdAt: new Date().toISOString(),
+        // Additional required fields for compatibility
+        address: "Admin Created Account",
+        contactNumber: "+63 999 000 0000",
+        carUnit: "N/A",
+        carPlateNumber: "N/A",
+        carType: "N/A",
+        selectedPackage: "classic",
+      };
 
-    existingUsers.push(newUser);
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+      userArray.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(userArray));
 
     // Create basic subscription data for new user
     const subscriptionData = {
