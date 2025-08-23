@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
-import { 
+import {
   Calendar,
   Clock,
   Users,
@@ -33,6 +33,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+import { getAllBookings, updateBookingStatus } from '@/utils/databaseSchema';
 
 interface Booking {
   id: string;
