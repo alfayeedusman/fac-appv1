@@ -150,6 +150,7 @@ export default function AdminCMS() {
       icon: newPerk.icon || "Gift",
       color: newPerk.color || "#3B82F6",
       enabled: true,
+      order: memberPerks.length + 1,
     };
 
     const updatedPerks = [...memberPerks, perk];
