@@ -18,7 +18,7 @@ const pool = mysql.createPool(mysqlConfig);
 
 // Email transporter configuration
 const createEmailTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail', // You can change this to your preferred email service
     auth: {
       user: process.env.EMAIL_USER || 'your-email@gmail.com',
