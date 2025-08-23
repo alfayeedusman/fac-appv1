@@ -106,6 +106,70 @@ try {
   };
 }
 
+// Function to get available services based on service type
+const getAvailableServices = (serviceType: string) => {
+  const homeServiceConfig = adminConfig?.homeService || {};
+
+  if (serviceType === 'home' && homeServiceConfig.enabled) {
+    // Filter services based on home service availability
+    const availableCarwashServices = homeServiceConfig.availableServices?.carwash || [];
+    const carwashServices = adminConfig?.pricing?.carwash || {};
+
+    const filteredCarwashServices = Object.fromEntries(
+      Object.entries(carwashServices).filter(([key]) => availableCarwashServices.includes(key))
+    );
+
+    return {
+      ...(Object.keys(filteredCarwashServices).length > 0 && {
+        carwash: {
+          name: "Car Wash (Home Service)",
+          icon: Car,
+          gradient: "from-blue-500 to-cyan-500",
+          services: filteredCarwashServices,
+        }
+      }),
+      ...(homeServiceConfig.availableServices?.autoDetailing && {
+        auto_detailing: {
+          name: "Auto Detailing (Home Service)",
+          icon: Star,
+          gradient: "from-purple-500 to-pink-500",
+          description: "Professional interior and exterior detailing at your location",
+        }
+      }),
+      ...(homeServiceConfig.availableServices?.grapheneCoating && {
+        graphene_coating: {
+          name: "Graphene Coating (Home Service)",
+          icon: Shield,
+          gradient: "from-orange-500 to-red-500",
+          description: "Advanced protection coating applied at your location",
+        }
+      }),
+    };
+  }
+
+  // Branch service - show all services
+  return {
+    carwash: {
+      name: "Car Wash",
+      icon: Car,
+      gradient: "from-blue-500 to-cyan-500",
+      services: adminConfig?.pricing?.carwash || {},
+    },
+    auto_detailing: {
+      name: "Auto Detailing",
+      icon: Star,
+      gradient: "from-purple-500 to-pink-500",
+      description: "Professional interior and exterior detailing",
+    },
+    graphene_coating: {
+      name: "Graphene Coating",
+      icon: Shield,
+      gradient: "from-orange-500 to-red-500",
+      description: "Advanced protection coating",
+    },
+  };
+};
+
 const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
