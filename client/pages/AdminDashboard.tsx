@@ -78,6 +78,12 @@ import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
+import {
+  getUserSystemNotifications,
+  markSystemNotificationAsRead,
+  getAllBookings,
+  type SystemNotification
+} from "@/utils/databaseSchema";
 
 interface Customer {
   id: string;
