@@ -65,6 +65,7 @@ export const createServer = () => {
   // API Routes
   app.use("/api", demoRoutes);
   app.use("/api", mysqlApiRoutes);
+  app.use("/api", otpApiRoutes);
 
   // Serve Flutter web app (replaces React customer pages)
   const flutterBuildPath = path.join(__dirname, "../flutter_app/build/web");
