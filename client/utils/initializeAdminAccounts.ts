@@ -1,3 +1,19 @@
+import type { User } from "./databaseSchema";
+
+// Crew skills available in the system
+export const CREW_SKILLS = [
+  'exterior_wash',
+  'interior_detail', 
+  'tire_cleaning',
+  'premium_detailing',
+  'coating_application',
+  'quality_inspection',
+  'motorcycle_wash',
+  'engine_cleaning'
+] as const;
+
+export type CrewSkill = typeof CREW_SKILLS[number];
+
 // Initialize admin accounts on app startup
 export function initializeAdminAccounts() {
   const existingUsers = JSON.parse(
@@ -23,6 +39,11 @@ export function initializeAdminAccounts() {
   const managerExists = existingUsers.some(
     (user: any) => user.email === "manager@fayeedautocare.com",
   );
+  
+  // Check if crew accounts exist
+  const crewExists = existingUsers.some(
+    (user: any) => user.role === "crew"
+  );
 
   const newUsers = [];
 
@@ -40,7 +61,14 @@ export function initializeAdminAccounts() {
       carType: "SUV",
       selectedPackage: "vip-gold",
       role: "superadmin",
+      branchLocation: "Main Office",
+      profileImage: "",
+      isActive: true,
+      emailVerified: true,
+      loyaltyPoints: 0,
+      subscriptionStatus: "vip" as const,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     newUsers.push(customSuperAdminUser);
     console.log("✅ Custom Superadmin account created: fffayeed@gmail.com");
@@ -60,7 +88,14 @@ export function initializeAdminAccounts() {
       carType: "SUV",
       selectedPackage: "vip-gold",
       role: "superadmin",
+      branchLocation: "Main Office",
+      profileImage: "",
+      isActive: true,
+      emailVerified: true,
+      loyaltyPoints: 0,
+      subscriptionStatus: "vip" as const,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     newUsers.push(superAdminUser);
     console.log("✅ Default Superadmin account created: superyeed@fayeedautocare.com");
@@ -80,7 +115,14 @@ export function initializeAdminAccounts() {
       carType: "Sedan",
       selectedPackage: "vip-silver",
       role: "admin",
+      branchLocation: "Main Branch",
+      profileImage: "",
+      isActive: true,
+      emailVerified: true,
+      loyaltyPoints: 0,
+      subscriptionStatus: "premium" as const,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     newUsers.push(adminUser);
     console.log("✅ Admin account created: adminyeed@fayeedautocare.com");
@@ -100,10 +142,101 @@ export function initializeAdminAccounts() {
       carType: "Sedan",
       selectedPackage: "vip-silver",
       role: "manager",
+      branchLocation: "Operations Center",
+      profileImage: "",
+      isActive: true,
+      emailVerified: true,
+      loyaltyPoints: 0,
+      subscriptionStatus: "premium" as const,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     newUsers.push(managerUser);
     console.log("✅ Manager account created: manager@fayeedautocare.com");
+  }
+  
+  // Create sample crew accounts if they don't exist
+  if (!crewExists) {
+    const crewMembers = [
+      {
+        id: `crew_john_${Date.now()}`,
+        fullName: "John Santos",
+        email: "john.santos@fayeedautocare.com",
+        password: "crew123",
+        role: "crew",
+        contactNumber: "+63 918 111 2222",
+        address: "Zamboanga City",
+        branchLocation: "Tumaga Hub",
+        profileImage: "",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: true,
+        loyaltyPoints: 0,
+        subscriptionStatus: "basic" as const,
+        selectedPackage: "classic",
+        carUnit: "Honda Click 150",
+        carPlateNumber: "CREW-001",
+        carType: "Motorcycle",
+        crewSkills: ["exterior_wash", "interior_detail", "tire_cleaning"],
+        crewStatus: "available" as const,
+        crewRating: 4.8,
+        crewExperience: 3,
+      },
+      {
+        id: `crew_mike_${Date.now() + 1}`,
+        fullName: "Mike Rodriguez",
+        email: "mike.rodriguez@fayeedautocare.com",
+        password: "crew123",
+        role: "crew",
+        contactNumber: "+63 918 333 4444",
+        address: "Zamboanga City",
+        branchLocation: "Boalan Hub",
+        profileImage: "",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: true,
+        loyaltyPoints: 0,
+        subscriptionStatus: "basic" as const,
+        selectedPackage: "classic",
+        carUnit: "Yamaha Sniper",
+        carPlateNumber: "CREW-002",
+        carType: "Motorcycle",
+        crewSkills: ["exterior_wash", "premium_detailing", "coating_application"],
+        crewStatus: "available" as const,
+        crewRating: 4.6,
+        crewExperience: 2,
+      },
+      {
+        id: `crew_sarah_${Date.now() + 2}`,
+        fullName: "Sarah Delgado",
+        email: "sarah.delgado@fayeedautocare.com",
+        password: "crew123",
+        role: "crew",
+        contactNumber: "+63 918 555 6666",
+        address: "Zamboanga City",
+        branchLocation: "Tumaga Hub",
+        profileImage: "",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: true,
+        loyaltyPoints: 0,
+        subscriptionStatus: "basic" as const,
+        selectedPackage: "classic",
+        carUnit: "Honda Beat",
+        carPlateNumber: "CREW-003",
+        carType: "Motorcycle",
+        crewSkills: ["interior_detail", "premium_detailing", "quality_inspection"],
+        crewStatus: "available" as const,
+        crewRating: 4.9,
+        crewExperience: 4,
+      },
+    ];
+    
+    newUsers.push(...crewMembers);
+    console.log("✅ Sample crew accounts created (3 members)");
   }
 
   // Add new users to existing users array
@@ -124,10 +257,22 @@ export function initializeAdminAccounts() {
     });
 
     console.log(
-      `✅ ${newUsers.length} admin account(s) initialized successfully`,
+      `✅ ${newUsers.length} account(s) initialized successfully`,
     );
+    
+    console.log("\n🔑 Login Credentials Summary:");
+    console.log("👑 Superadmin: fffayeed@gmail.com / Fayeed22beats");
+    console.log("🔧 Admin: adminyeed@fayeedautocare.com / 123456789");
+    console.log("👥 Manager: manager@fayeedautocare.com / manager123");
+    console.log("🔨 Crew: john.santos@fayeedautocare.com / crew123");
+    console.log("🔨 Crew: mike.rodriguez@fayeedautocare.com / crew123");
+    console.log("🔨 Crew: sarah.delgado@fayeedautocare.com / crew123");
+    console.log("\n🎯 Complete user ecosystem initialization completed!");
+    console.log("📱 Roles available: Superadmin, Admin, Manager, Crew, User");
   }
 }
+
+console.log("📼 Booking ecosystem ready with all user roles!");
 
 // Package data helper function
 function getPackageData(packageId: string) {
@@ -172,7 +317,27 @@ function getPackageData(packageId: string) {
         premium: 0,
       },
     },
+    "classic": {
+      package: "Classic Pro",
+      daysLeft: 7,
+      currentCycleStart: new Date().toISOString().split("T")[0],
+      currentCycleEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      daysLeftInCycle: 7,
+      autoRenewal: false,
+      remainingWashes: {
+        classic: 2,
+        vipProMax: 0,
+        premium: 0,
+      },
+      totalWashes: {
+        classic: 2,
+        vipProMax: 0,
+        premium: 0,
+      },
+    },
   };
 
-  return packages[packageId as keyof typeof packages] || packages["vip-silver"];
+  return packages[packageId as keyof typeof packages] || packages["classic"];
 }
