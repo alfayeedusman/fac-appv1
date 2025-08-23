@@ -45,7 +45,7 @@ import AdminSidebar from "@/components/AdminSidebar";
 import {
   CMSContent,
   MemberPerk,
-  getCMSContent,
+  getAllCMSContent,
   updateCMSContent,
   getMemberPerks,
   updateMemberPerks,
@@ -80,8 +80,13 @@ export default function AdminCMS() {
   }, []);
 
   const loadCMSContent = () => {
-    const content = getCMSContent();
-    setCmsContent(content);
+    try {
+      const content = getAllCMSContent();
+      setCmsContent(Array.isArray(content) ? content : []);
+    } catch (error) {
+      console.error('Error loading CMS content:', error);
+      setCmsContent([]);
+    }
   };
 
   const loadMemberPerks = () => {
@@ -90,13 +95,22 @@ export default function AdminCMS() {
   };
 
   const handleUpdateContent = (contentId: string, newContent: string) => {
-    updateCMSContent(contentId, newContent);
-    loadCMSContent();
-    setEditingContent("");
-    toast({
-      title: "Content Updated! 🎉",
-      description: "The content has been successfully updated.",
-    });
+    try {
+      updateCMSContent(contentId, newContent, userEmail);
+      loadCMSContent();
+      setEditingContent("");
+      toast({
+        title: "Content Updated! 🎉",
+        description: "The content has been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Error updating content:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update content. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddPerk = () => {
@@ -119,7 +133,7 @@ export default function AdminCMS() {
     };
 
     const updatedPerks = [...memberPerks, perk];
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
     setNewPerk({});
     setEditingPerks(false);
@@ -132,7 +146,7 @@ export default function AdminCMS() {
 
   const handleDeletePerk = (id: string) => {
     const updatedPerks = memberPerks.filter((perk) => perk.id !== id);
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
     toast({
       title: "Perk Deleted",
@@ -144,7 +158,7 @@ export default function AdminCMS() {
     const updatedPerks = memberPerks.map((perk) =>
       perk.id === id ? { ...perk, enabled: !perk.enabled } : perk,
     );
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
   };
 
