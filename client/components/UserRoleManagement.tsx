@@ -490,45 +490,134 @@ const DEFAULT_PERMISSIONS: Permission[] = [
 const ROLE_PRESETS = {
   user: [],
   crew: [
+    // Field Operations
+    "field.update_status",
+    "field.upload_photos",
+    "field.collect_signature",
+    "field.update_location",
+    "field.accept_assignments",
+    "field.reject_assignments",
+    // Basic Booking Access
     "bookings.view_assigned",
     "bookings.update_status",
-    "location.update",
-    "images.upload",
-    "assignments.accept",
-    "assignments.reject",
   ],
   manager: [
+    // Tab Access
+    "tab.overview",
+    "tab.customers",
+    "tab.bookings",
+    "tab.analytics",
+    // Customer Management
     "customers.view",
     "customers.edit",
     "customers.approve",
-    "analytics.view",
-    "crew.assign",
+    "customers.message",
+    "customers.view_details",
+    // Booking Management
+    "bookings.view_all",
     "bookings.approve",
+    "bookings.cancel",
+    "bookings.reschedule",
+    // Crew Management
+    "crew.assign",
+    "crew.view_assignments",
+    "crew.track_location",
+    // Analytics
+    "analytics.view",
   ],
   cashier: [
+    // Tab Access
+    "tab.pos",
+    "tab.customers",
+    "tab.packages",
+    // Customer Management
     "customers.view",
+    "customers.view_details",
+    // Package Management
     "packages.view",
+    // Financial
+    "finance.process_payments",
   ],
   inventory_manager: [
+    // Tab Access
+    "tab.inventory",
+    "tab.packages",
+    "tab.analytics",
+    // Inventory Management
+    "inventory.view",
+    "inventory.update",
+    "inventory.order",
+    // Package Management
     "packages.view",
     "packages.edit",
+    "packages.create",
+    // Analytics
     "analytics.view",
   ],
   admin: [
+    // Most tab access except user roles
+    "tab.overview",
+    "tab.customers",
+    "tab.ads",
+    "tab.packages",
+    "tab.branches",
+    "tab.analytics",
+    "tab.bookings",
+    "tab.images",
+    "tab.sales",
+    "tab.notifications",
+    "tab.cms",
+    "tab.booking_settings",
+    "tab.push_notifications",
+    "tab.gamification",
+    "tab.subscription_approval",
+    "tab.pos",
+    "tab.inventory",
+    "tab.user_management",
+    // User Management
     "users.view",
     "users.create",
     "users.edit",
+    // Ads Management
     "ads.view",
     "ads.create",
     "ads.edit",
+    "ads.delete",
+    // Analytics
     "analytics.view",
+    "analytics.export",
+    // Customer Management
     "customers.view",
     "customers.edit",
     "customers.approve",
+    "customers.message",
+    "customers.view_details",
+    // Package Management
     "packages.view",
     "packages.edit",
+    "packages.create",
+    "packages.delete",
+    // Booking Management
+    "bookings.view_all",
+    "bookings.approve",
+    "bookings.cancel",
+    "bookings.reschedule",
+    // Crew Management
     "crew.manage",
     "crew.assign",
+    "crew.view_assignments",
+    "crew.track_location",
+    // System Settings
+    "settings.booking",
+    "settings.pricing",
+    // Financial
+    "finance.view_revenue",
+    "finance.process_payments",
+    "finance.refunds",
+    // Communication
+    "communication.send_notifications",
+    "communication.broadcast",
+    "communication.sms",
   ],
   superadmin: DEFAULT_PERMISSIONS.map((p) => p.id),
 };
