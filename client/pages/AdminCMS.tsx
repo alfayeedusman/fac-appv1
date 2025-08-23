@@ -70,13 +70,28 @@ export default function AdminCMS() {
   const [editingContent, setEditingContent] = useState<string>("");
   const [editingPerks, setEditingPerks] = useState<boolean>(false);
   const [newPerk, setNewPerk] = useState<Partial<MemberPerk>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
 
   const userEmail = localStorage.getItem("userEmail") || "";
 
   useEffect(() => {
-    initializeCMSData();
-    loadCMSContent();
-    loadMemberPerks();
+    const initializeData = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+        initializeCMSData();
+        loadCMSContent();
+        loadMemberPerks();
+      } catch (error) {
+        console.error('Error initializing CMS data:', error);
+        setHasError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
   }, []);
 
   const loadCMSContent = () => {
@@ -90,8 +105,13 @@ export default function AdminCMS() {
   };
 
   const loadMemberPerks = () => {
-    const perks = getMemberPerks();
-    setMemberPerks(perks);
+    try {
+      const perks = getMemberPerks();
+      setMemberPerks(Array.isArray(perks) ? perks : []);
+    } catch (error) {
+      console.error('Error loading member perks:', error);
+      setMemberPerks([]);
+    }
   };
 
   const handleUpdateContent = (contentId: string, newContent: string) => {
