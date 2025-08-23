@@ -85,8 +85,24 @@ const STEPS = [
   { id: 5, title: "Review", icon: CheckCircle, description: "Confirm booking" },
 ];
 
-// Load admin configuration
-const adminConfig = getAdminConfig();
+// Load admin configuration with error handling
+let adminConfig;
+try {
+  adminConfig = getAdminConfig();
+} catch (error) {
+  console.error('Error loading admin config:', error);
+  // Fallback to basic config
+  adminConfig = {
+    pricing: {
+      carwash: {},
+      autoDetailing: { car: {}, motorcycle: {} },
+      grapheneCoating: { car: {}, motorcycle: {} }
+    },
+    branches: [],
+    paymentMethods: { branch: { enabled: true }, online: { enabled: true } },
+    terms: { termsAndConditions: '', cancellationPolicy: '', noShowPolicy: '' }
+  };
+}
 
 const SERVICE_CATEGORIES = {
   carwash: {
