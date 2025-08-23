@@ -145,6 +145,32 @@ export default function Index() {
               </span>
             </Button>
           </Link>
+
+          <div className="relative my-8 animate-fade-in-up animate-delay-800">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border opacity-30"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-6 bg-background text-muted-foreground font-medium glass rounded-full py-2">
+                or book instantly
+              </span>
+            </div>
+          </div>
+
+          <Link
+            to="/guest-booking"
+            className="block animate-fade-in-up animate-delay-900"
+          >
+            <Button
+              variant="outline"
+              className="group w-full border-2 border-blue-200 hover:border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white font-black py-6 text-lg rounded-2xl transition-all duration-300 transform hover-lift glass"
+            >
+              <span className="flex items-center justify-center">
+                📅 BOOK AS GUEST
+                <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
+              </span>
+            </Button>
+          </Link>
         </div>
       </div>
 
