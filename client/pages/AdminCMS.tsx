@@ -264,7 +264,9 @@ export default function AdminCMS() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {Array.isArray(cmsContent) && cmsContent.length > 0 ? cmsContent.map((item) => (
+                    {Array.isArray(cmsContent) && cmsContent.length > 0 ? cmsContent
+                      .filter(item => item && item.id && item.title)
+                      .map((item) => (
                       <div key={item.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -441,7 +443,9 @@ export default function AdminCMS() {
 
                   {/* Existing Perks */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Array.isArray(memberPerks) && memberPerks.length > 0 ? memberPerks.map((perk) => (
+                    {Array.isArray(memberPerks) && memberPerks.length > 0 ? memberPerks
+                      .filter(perk => perk && perk.id && perk.title)
+                      .map((perk) => (
                       <Card key={perk.id} className="relative">
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
