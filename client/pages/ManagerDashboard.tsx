@@ -31,7 +31,8 @@ import {
   Search,
   Download,
   Settings,
-  LogOut
+  LogOut,
+  Bell
 } from 'lucide-react';
 import {
   getAllBookings,
