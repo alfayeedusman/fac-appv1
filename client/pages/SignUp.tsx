@@ -373,8 +373,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
-      <StickyHeader showBack={true} backTo="/" title="Sign Up" />
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">{/* Removed StickyHeader - using custom navigation */}
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
