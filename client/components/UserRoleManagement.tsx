@@ -528,6 +528,8 @@ export default function UserRoleManagement() {
         return <Shield className="h-4 w-4" />;
       case "manager":
         return <UserCheck className="h-4 w-4" />;
+      case "crew":
+        return <Wrench className="h-4 w-4" />;
       case "cashier":
         return <Star className="h-4 w-4" />;
       case "inventory_manager":
@@ -545,6 +547,8 @@ export default function UserRoleManagement() {
         return "bg-gradient-to-r from-purple-500 to-blue-600";
       case "manager":
         return "bg-gradient-to-r from-blue-500 to-cyan-600";
+      case "crew":
+        return "bg-gradient-to-r from-red-500 to-pink-600";
       case "cashier":
         return "bg-gradient-to-r from-emerald-500 to-green-600";
       case "inventory_manager":
