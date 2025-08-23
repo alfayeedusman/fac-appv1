@@ -282,6 +282,12 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     }));
   }, [basePrice, totalPrice]);
 
+  // Memoize progress calculation to prevent unnecessary re-renders
+  const progressPercentage = useMemo(() => {
+    const filledFields = Object.values(bookingData).filter(v => v && v !== "").length;
+    return Math.round((filledFields / 10) * 100);
+  }, [bookingData]);
+
   const updateBookingData = (field: keyof BookingData, value: any) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
   };
