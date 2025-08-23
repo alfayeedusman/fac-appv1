@@ -292,14 +292,19 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       case 2: // Unit
         return !!(bookingData.unitType && bookingData.unitSize);
       case 3: // Schedule
-        return !!(bookingData.date && bookingData.timeSlot && bookingData.branch);
+        const serviceTypeValid = !!bookingData.serviceType;
+        const scheduleValid = !!(bookingData.date && bookingData.timeSlot);
+        const locationValid = bookingData.serviceType === 'home' || !!bookingData.branch;
+        return serviceTypeValid && scheduleValid && locationValid;
       case 4: // Payment
         const paymentValid = !!bookingData.paymentMethod;
         const receiptValid = bookingData.paymentMethod === "branch" || !!bookingData.receiptFile;
         return paymentValid && receiptValid;
       case 5: // Review
-        const customerValid = !!(bookingData.fullName && bookingData.mobile && bookingData.address);
-        return customerValid && bookingData.acceptTerms;
+        const basicCustomerValid = !!(bookingData.fullName && bookingData.mobile);
+        const homeServiceAddressValid = bookingData.serviceType !== 'home' || !!bookingData.address;
+        const emailValid = !isGuest || !!bookingData.email; // Email required for guests
+        return basicCustomerValid && homeServiceAddressValid && emailValid && bookingData.acceptTerms;
       default:
         return false;
     }
