@@ -107,6 +107,52 @@ try {
   };
 }
 
+// Function to check if a service is available for home service
+const isServiceAvailableForHome = (category: string, service?: string) => {
+  const homeServiceConfig = adminConfig?.homeService || {};
+
+  if (!homeServiceConfig.enabled) {
+    return false;
+  }
+
+  if (category === 'carwash' && service) {
+    return homeServiceConfig.availableServices?.carwash?.includes(service) || false;
+  } else if (category === 'auto_detailing') {
+    return homeServiceConfig.availableServices?.autoDetailing || false;
+  } else if (category === 'graphene_coating') {
+    return homeServiceConfig.availableServices?.grapheneCoating || false;
+  }
+
+  return false;
+};
+
+// Function to show home service unavailable alert
+const showHomeServiceUnavailableAlert = (serviceName: string) => {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Service Not Available for Home Service',
+    html: `<div style="text-align: left;">
+      <p><strong>${serviceName}</strong> is not available for home service.</p>
+      <br>
+      <p><strong>Available home services:</strong></p>
+      <ul style="margin-left: 20px;">
+        <li>VIP ProMax Wash</li>
+        <li>Premium Wash</li>
+        <li>FAC Wash</li>
+        <li>Auto Detailing</li>
+        <li>Graphene Coating</li>
+      </ul>
+      <br>
+      <p>Please choose an available service or switch to branch service.</p>
+    </div>`,
+    confirmButtonText: 'Choose Another Service',
+    confirmButtonColor: '#f97316',
+    showCancelButton: true,
+    cancelButtonText: 'Switch to Branch Service',
+    cancelButtonColor: '#6b7280',
+  });
+};
+
 // Function to get available services based on service type
 const getAvailableServices = (serviceType: string) => {
   const homeServiceConfig = adminConfig?.homeService || {};
