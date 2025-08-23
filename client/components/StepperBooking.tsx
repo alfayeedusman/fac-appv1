@@ -508,39 +508,47 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
 // Step Components
 const ServiceStep = ({ bookingData, updateBookingData }: any) => (
-  <Card className="glass border-border shadow-xl">
-    <CardHeader>
-      <CardTitle className="flex items-center text-2xl">
-        <Sparkles className="h-6 w-6 mr-3 text-fac-orange-500" />
+  <Card className="glass border-border shadow-xl animate-fade-in-up">
+    <CardHeader className="pb-4 md:pb-6">
+      <CardTitle className="flex items-center text-xl md:text-2xl">
+        <Sparkles className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
         Choose Your Service
       </CardTitle>
+      <p className="text-sm md:text-base text-muted-foreground mt-2">
+        Select the perfect car care service for your vehicle
+      </p>
     </CardHeader>
-    <CardContent className="space-y-6">
+    <CardContent className="space-y-4 md:space-y-6">
       {Object.entries(SERVICE_CATEGORIES).map(([categoryKey, category]) => (
         <div
           key={categoryKey}
-          className={`p-6 rounded-xl border-2 cursor-pointer transition-all hover-lift ${
+          className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 hover-lift ${
             bookingData.category === categoryKey
-              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
-              : 'border-border glass hover:border-fac-orange-300'
+              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg shadow-fac-orange-500/10'
+              : 'border-border glass hover:border-fac-orange-300 hover:shadow-lg'
           }`}
           onClick={() => {
             updateBookingData("category", categoryKey);
             updateBookingData("service", ""); // Reset service when category changes
           }}
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className={`bg-gradient-to-r ${category.gradient} p-3 rounded-xl`}>
-                <category.icon className="h-6 w-6 text-white" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
+              <div className={`bg-gradient-to-r ${category.gradient} p-2 md:p-3 rounded-xl animate-pulse-glow`}>
+                <category.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
-              <div>
-                <h3 className="font-black text-foreground text-lg">{category.name}</h3>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-black text-foreground text-base md:text-lg">{category.name}</h3>
                 {category.description && (
-                  <p className="text-muted-foreground text-sm">{category.description}</p>
+                  <p className="text-muted-foreground text-xs md:text-sm mt-1">{category.description}</p>
                 )}
               </div>
             </div>
+            {bookingData.category === categoryKey && (
+              <div className="mt-2 sm:mt-0 flex-shrink-0">
+                <Badge className="bg-fac-orange-500 text-white text-xs">Selected</Badge>
+              </div>
+            )}
           </div>
           
           {bookingData.category === categoryKey && categoryKey === "carwash" && (
