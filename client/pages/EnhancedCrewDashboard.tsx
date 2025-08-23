@@ -605,6 +605,65 @@ export default function EnhancedCrewDashboard() {
     return statusProgress[status as keyof typeof statusProgress] || 0;
   };
 
+  const refreshLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location Not Supported",
+        description: "Your browser doesn't support location services",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTrackingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        toast({
+          title: "Location Updated",
+          description: `Location refreshed successfully`,
+        });
+      },
+      (error) => {
+        setIsTrackingLocation(false);
+        let description = "Failed to get current location";
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            description = "Location permission denied. Please enable location access.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            description = "Location information unavailable.";
+            break;
+          case error.TIMEOUT:
+            description = "Location request timed out.";
+            break;
+        }
+
+        toast({
+          title: "Location Error",
+          description,
+          variant: "destructive",
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0 // Force fresh location
+      }
+    );
+  };
+
+  const getLocationStatus = () => {
+    if (!navigator.geolocation) return "Not Supported";
+    if (isTrackingLocation && currentLocation) return "Active";
+    if (isTrackingLocation && !currentLocation) return "Searching...";
+    return "Inactive";
+  };
+
   const stats = {
     totalAssignments: assignments.length,
     pendingAssignments: assignments.filter(a => a.status === 'assigned').length,
