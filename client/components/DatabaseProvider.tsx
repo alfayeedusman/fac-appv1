@@ -36,10 +36,11 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     try {
       setIsLoading(true);
       const health = await DatabaseService.healthCheck();
-      
-      if (health.status === 'healthy') {
+
+      if (health && health.status === 'healthy') {
         setIsConnected(true);
-        
+        console.log('✅ Database connected successfully');
+
         // Auto-migrate localStorage data if user is logged in
         const userId = localStorage.getItem('currentUserId');
         if (userId) {
@@ -49,16 +50,33 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         setIsConnected(false);
         console.warn('Database health check failed:', health);
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsConnected(false);
-      console.error('Database connection failed:', error);
-      
-      // Show user-friendly message
-      toast({
-        title: "Connection Issue",
-        description: "Using offline mode. Some features may be limited.",
-        variant: "destructive",
-      });
+      console.error('Database connection failed:', error.message || error);
+
+      // Determine the appropriate user message based on error type
+      let userMessage = "Using offline mode. Some features may be limited.";
+      let showToast = false;
+
+      if (error.message?.includes('Backend server may not be running')) {
+        userMessage = "Backend server is not running. Working in offline mode.";
+        showToast = true;
+      } else if (error.message?.includes('Unable to connect to server')) {
+        userMessage = "Cannot connect to server. Working in offline mode.";
+        showToast = true;
+      } else if (error.message?.includes('API endpoint not found')) {
+        console.warn('API endpoints not available, likely in development mode');
+        // Don't show toast for missing API in development
+      }
+
+      // Only show toast if it's an important connection issue
+      if (showToast) {
+        toast({
+          title: "Connection Issue",
+          description: userMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
