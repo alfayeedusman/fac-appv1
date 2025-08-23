@@ -44,6 +44,7 @@ import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
 
