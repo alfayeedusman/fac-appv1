@@ -52,12 +52,14 @@ import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
+import { initializeAllSampleData } from "./utils/initializeSampleBookings";
 
 const queryClient = new QueryClient();
 
 // Initialize admin accounts and sample ads on app startup
 initializeAdminAccounts();
 initializeSampleAds();
+initializeAllSampleData();
 
 const App = () => (
   <ThemeProvider>
