@@ -4,7 +4,12 @@ export function initializeAdminAccounts() {
     localStorage.getItem("registeredUsers") || "[]",
   );
 
-  // Check if superadmin already exists
+  // Check if custom superadmin already exists
+  const customSuperAdminExists = existingUsers.some(
+    (user: any) => user.email === "fffayeed@gmail.com",
+  );
+
+  // Check if default superadmin already exists
   const superAdminExists = existingUsers.some(
     (user: any) => user.email === "superyeed@fayeedautocare.com",
   );
@@ -14,9 +19,34 @@ export function initializeAdminAccounts() {
     (user: any) => user.email === "adminyeed@fayeedautocare.com",
   );
 
+  // Check if manager already exists
+  const managerExists = existingUsers.some(
+    (user: any) => user.email === "manager@fayeedautocare.com",
+  );
+
   const newUsers = [];
 
-  // Create superadmin account if it doesn't exist
+  // Create custom superadmin account if it doesn't exist
+  if (!customSuperAdminExists) {
+    const customSuperAdminUser = {
+      id: `superadmin_fayeed_${Date.now()}`,
+      fullName: "Al-Fayeed Usman",
+      address: "Fayeed Auto Care Owner, Zamboanga City",
+      email: "fffayeed@gmail.com",
+      password: "Fayeed22beats",
+      contactNumber: "+63 917 123 4567",
+      carUnit: "Toyota Land Cruiser",
+      carPlateNumber: "FAC-BOSS",
+      carType: "SUV",
+      selectedPackage: "vip-gold",
+      role: "superadmin",
+      createdAt: new Date().toISOString(),
+    };
+    newUsers.push(customSuperAdminUser);
+    console.log("✅ Custom Superadmin account created: fffayeed@gmail.com");
+  }
+
+  // Create default superadmin account if it doesn't exist
   if (!superAdminExists) {
     const superAdminUser = {
       id: `superadmin_${Date.now()}`,
@@ -33,7 +63,7 @@ export function initializeAdminAccounts() {
       createdAt: new Date().toISOString(),
     };
     newUsers.push(superAdminUser);
-    console.log("✅ Superadmin account created: superyeed@fayeedautocare.com");
+    console.log("✅ Default Superadmin account created: superyeed@fayeedautocare.com");
   }
 
   // Create admin account if it doesn't exist
@@ -54,6 +84,26 @@ export function initializeAdminAccounts() {
     };
     newUsers.push(adminUser);
     console.log("✅ Admin account created: adminyeed@fayeedautocare.com");
+  }
+
+  // Create manager account if it doesn't exist
+  if (!managerExists) {
+    const managerUser = {
+      id: `manager_${Date.now()}`,
+      fullName: "Booking Manager",
+      address: "Fayeed Auto Care Operations, Zamboanga City",
+      email: "manager@fayeedautocare.com",
+      password: "manager123",
+      contactNumber: "+63 999 555 4444",
+      carUnit: "Toyota Vios",
+      carPlateNumber: "FAC-MGR",
+      carType: "Sedan",
+      selectedPackage: "vip-silver",
+      role: "manager",
+      createdAt: new Date().toISOString(),
+    };
+    newUsers.push(managerUser);
+    console.log("✅ Manager account created: manager@fayeedautocare.com");
   }
 
   // Add new users to existing users array
