@@ -95,8 +95,17 @@ export default function EnhancedCrewDashboard() {
 
   useEffect(() => {
     loadCrewData();
-    startLocationTracking();
-    
+    const locationCleanup = startLocationTracking();
+
+    return () => {
+      // Cleanup location tracking
+      if (locationCleanup) {
+        locationCleanup();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     // Work timer
     let interval: NodeJS.Timeout;
     if (isWorkActive) {
@@ -104,7 +113,7 @@ export default function EnhancedCrewDashboard() {
         setWorkTimer(prev => prev + 1);
       }, 1000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
