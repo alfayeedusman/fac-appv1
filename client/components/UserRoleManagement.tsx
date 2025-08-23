@@ -58,6 +58,122 @@ interface Permission {
 }
 
 const DEFAULT_PERMISSIONS: Permission[] = [
+  // Tab Access Permissions
+  {
+    id: "tab.overview",
+    name: "Command Center Tab",
+    description: "Access to overview dashboard",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.customers",
+    name: "Customer Hub Tab",
+    description: "Access to customer management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.roles",
+    name: "User & Roles Tab",
+    description: "Access to role management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.ads",
+    name: "Ad Studio Tab",
+    description: "Access to advertisement management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.packages",
+    name: "Package Studio Tab",
+    description: "Access to service packages tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.branches",
+    name: "Branch Network Tab",
+    description: "Access to location management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.analytics",
+    name: "Analytics Center Tab",
+    description: "Access to reports and insights tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.bookings",
+    name: "Booking Hub Tab",
+    description: "Access to booking management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.images",
+    name: "Image Manager Tab",
+    description: "Access to booking images tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.sales",
+    name: "Revenue Hub Tab",
+    description: "Access to revenue tracking tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.notifications",
+    name: "Notifications Tab",
+    description: "Access to system alerts tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.cms",
+    name: "CMS Manager Tab",
+    description: "Access to content management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.booking_settings",
+    name: "Booking Settings Tab",
+    description: "Access to booking configuration tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.push_notifications",
+    name: "Push Notifications Tab",
+    description: "Access to broadcast messages tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.gamification",
+    name: "Gamification Tab",
+    description: "Access to customer levels & rewards tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.subscription_approval",
+    name: "Subscription Approval Tab",
+    description: "Access to payment verification tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.pos",
+    name: "Point of Sale Tab",
+    description: "Access to sales terminal tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.inventory",
+    name: "Inventory Tab",
+    description: "Access to stock management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.user_management",
+    name: "User Management Tab",
+    description: "Access to staff & roles tab",
+    category: "Tab Access",
+  },
+
   // User Management
   {
     id: "users.view",
@@ -143,6 +259,18 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     description: "Can approve customer registrations",
     category: "Customer Management",
   },
+  {
+    id: "customers.message",
+    name: "Message Customers",
+    description: "Can send messages to customers",
+    category: "Customer Management",
+  },
+  {
+    id: "customers.view_details",
+    name: "View Customer Details",
+    description: "Can view full customer information",
+    category: "Customer Management",
+  },
 
   // Package Management
   {
@@ -157,19 +285,55 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     description: "Can modify packages",
     category: "Package Management",
   },
-
-  // System Settings
   {
-    id: "settings.system",
-    name: "System Settings",
-    description: "Can modify system settings",
-    category: "System Settings",
+    id: "packages.create",
+    name: "Create Packages",
+    description: "Can create new packages",
+    category: "Package Management",
   },
   {
-    id: "settings.security",
-    name: "Security Settings",
-    description: "Can manage security settings",
-    category: "System Settings",
+    id: "packages.delete",
+    name: "Delete Packages",
+    description: "Can remove packages",
+    category: "Package Management",
+  },
+
+  // Booking Management
+  {
+    id: "bookings.view_all",
+    name: "View All Bookings",
+    description: "Can view all system bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.view_assigned",
+    name: "View Assigned Bookings",
+    description: "Can view bookings assigned to them",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.update_status",
+    name: "Update Booking Status",
+    description: "Can update booking status",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.approve",
+    name: "Approve Bookings",
+    description: "Can approve or reject bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.cancel",
+    name: "Cancel Bookings",
+    description: "Can cancel bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.reschedule",
+    name: "Reschedule Bookings",
+    description: "Can reschedule bookings",
+    category: "Booking Management",
   },
 
   // Crew Management
@@ -186,46 +350,140 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     category: "Crew Management",
   },
   {
-    id: "bookings.view_assigned",
-    name: "View Assigned Bookings",
-    description: "Can view bookings assigned to them",
-    category: "Booking Management",
+    id: "crew.view_assignments",
+    name: "View Crew Assignments",
+    description: "Can view crew assignments",
+    category: "Crew Management",
   },
   {
-    id: "bookings.update_status",
-    name: "Update Booking Status",
-    description: "Can update booking status",
-    category: "Booking Management",
+    id: "crew.track_location",
+    name: "Track Crew Location",
+    description: "Can track crew member locations",
+    category: "Crew Management",
+  },
+
+  // Field Operations (for crew members)
+  {
+    id: "field.update_status",
+    name: "Update Field Status",
+    description: "Can update booking status from field",
+    category: "Field Operations",
   },
   {
-    id: "location.update",
+    id: "field.upload_photos",
+    name: "Upload Progress Photos",
+    description: "Can upload photos of work progress",
+    category: "Field Operations",
+  },
+  {
+    id: "field.collect_signature",
+    name: "Collect Customer Signature",
+    description: "Can collect electronic signatures",
+    category: "Field Operations",
+  },
+  {
+    id: "field.update_location",
     name: "Update Location",
     description: "Can update current location",
-    category: "Location Management",
+    category: "Field Operations",
   },
   {
-    id: "images.upload",
-    name: "Upload Images",
-    description: "Can upload images for bookings",
-    category: "Media Management",
-  },
-  {
-    id: "assignments.accept",
+    id: "field.accept_assignments",
     name: "Accept Assignments",
     description: "Can accept booking assignments",
-    category: "Assignment Management",
+    category: "Field Operations",
   },
   {
-    id: "assignments.reject",
+    id: "field.reject_assignments",
     name: "Reject Assignments",
     description: "Can reject booking assignments",
-    category: "Assignment Management",
+    category: "Field Operations",
+  },
+
+  // System Settings
+  {
+    id: "settings.system",
+    name: "System Settings",
+    description: "Can modify system settings",
+    category: "System Settings",
   },
   {
-    id: "bookings.approve",
-    name: "Approve Bookings",
-    description: "Can approve or reject bookings",
-    category: "Booking Management",
+    id: "settings.security",
+    name: "Security Settings",
+    description: "Can manage security settings",
+    category: "System Settings",
+  },
+  {
+    id: "settings.booking",
+    name: "Booking Configuration",
+    description: "Can configure booking settings",
+    category: "System Settings",
+  },
+  {
+    id: "settings.pricing",
+    name: "Pricing Settings",
+    description: "Can modify service pricing",
+    category: "System Settings",
+  },
+
+  // Financial Management
+  {
+    id: "finance.view_revenue",
+    name: "View Revenue Reports",
+    description: "Can view financial reports",
+    category: "Financial Management",
+  },
+  {
+    id: "finance.process_payments",
+    name: "Process Payments",
+    description: "Can handle payment processing",
+    category: "Financial Management",
+  },
+  {
+    id: "finance.refunds",
+    name: "Issue Refunds",
+    description: "Can process refunds",
+    category: "Financial Management",
+  },
+
+  // Inventory Management
+  {
+    id: "inventory.view",
+    name: "View Inventory",
+    description: "Can view inventory levels",
+    category: "Inventory Management",
+  },
+  {
+    id: "inventory.update",
+    name: "Update Inventory",
+    description: "Can modify inventory levels",
+    category: "Inventory Management",
+  },
+  {
+    id: "inventory.order",
+    name: "Order Supplies",
+    description: "Can place supply orders",
+    category: "Inventory Management",
+  },
+
+  // Communication
+  {
+    id: "communication.send_notifications",
+    name: "Send Notifications",
+    description: "Can send push notifications",
+    category: "Communication",
+  },
+  {
+    id: "communication.broadcast",
+    name: "Broadcast Messages",
+    description: "Can send broadcast messages",
+    category: "Communication",
+  },
+  {
+    id: "communication.sms",
+    name: "Send SMS",
+    description: "Can send SMS messages",
+    category: "Communication",
   },
 ];
 
