@@ -713,12 +713,28 @@ export default function EnhancedCrewDashboard() {
                 {formatTime(workTimer)}
               </div>
             )}
-            {isTrackingLocation && (
-              <Badge variant="outline" className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={isTrackingLocation && currentLocation ? "default" : "outline"}
+                className={cn(
+                  "flex items-center gap-1",
+                  isTrackingLocation && currentLocation ? "bg-green-100 text-green-800" :
+                  isTrackingLocation ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
+                )}
+              >
                 <Navigation className="h-3 w-3" />
-                GPS Active
+                GPS {getLocationStatus()}
               </Badge>
-            )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={refreshLocation}
+                disabled={isTrackingLocation && !currentLocation}
+                className="px-2"
+              >
+                <Navigation className="h-3 w-3" />
+              </Button>
+            </div>
             <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logout
