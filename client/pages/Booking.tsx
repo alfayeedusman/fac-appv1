@@ -1,41 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  MapPin,
-  Car,
-  Sparkles,
-  CheckCircle,
-  Star,
-  Crown,
-  Zap,
-  Shield,
-  Camera,
-  Smartphone,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import VehicleSelector from "@/components/VehicleSelector";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import UpgradeNotificationBanner from "@/components/UpgradeNotificationBanner";
-import ConfirmModal from "@/components/ConfirmModal";
 import QRScanner from "@/components/QRScanner";
-import { notificationManager } from "@/components/NotificationModal";
+import StepperBooking from "@/components/StepperBooking";
 
 interface BookingData {
   service: string;
