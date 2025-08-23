@@ -852,7 +852,7 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Service:</span>
                 <span className="font-medium text-foreground">
-                  {SERVICE_CATEGORIES.carwash.services[bookingData.service as keyof typeof SERVICE_CATEGORIES.carwash.services]?.name || '-'}
+                  {adminConfig.pricing.carwash[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.name || '-'}
                 </span>
               </div>
             )}
