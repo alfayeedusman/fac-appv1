@@ -49,6 +49,7 @@ import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
 
@@ -200,7 +201,9 @@ const App = () => (
               path="/admin-cms"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminCMS />
+                  <ErrorBoundary>
+                    <AdminCMS />
+                  </ErrorBoundary>
                 </ProtectedRoute>
               }
             />
