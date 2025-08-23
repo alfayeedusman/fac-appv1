@@ -21,12 +21,8 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [otpStep, setOtpStep] = useState("email"); // "email", "otp", "password"
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
-    otp: "",
     password: "",
   });
 
