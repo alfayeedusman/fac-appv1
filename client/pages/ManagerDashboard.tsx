@@ -91,16 +91,15 @@ export default function ManagerDashboard() {
 
   const loadBookings = () => {
     try {
-      const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      const guestBookings = JSON.parse(localStorage.getItem('guestBookings') || '[]');
-      
-      const allBookings = [...userBookings, ...guestBookings].map(booking => ({
+      const allBookings = getAllBookings().map(booking => ({
         ...booking,
-        customerName: booking.fullName || booking.customerName || 'N/A',
-        customerEmail: booking.email || booking.customerEmail || 'N/A',
-        customerPhone: booking.mobile || booking.customerPhone || 'N/A',
-        customerAddress: booking.address || booking.customerAddress || 'N/A',
-        plateNumber: booking.plateNo || booking.plateNumber || 'N/A',
+        customerName: booking.guestInfo ?
+          `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
+          'Registered Customer',
+        customerEmail: booking.guestInfo?.email || 'N/A',
+        customerPhone: booking.guestInfo?.phone || 'N/A',
+        customerAddress: 'N/A', // This would need to be added to the booking schema if needed
+        plateNumber: booking.plateNumber || 'N/A',
         status: booking.status || 'pending',
         createdAt: booking.createdAt || new Date().toISOString(),
       }));
