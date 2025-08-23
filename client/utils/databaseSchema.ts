@@ -6,7 +6,7 @@ export interface User {
   email: string;
   fullName: string;
   password: string; // In production, this should be hashed
-  role: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager';
+  role: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew';
   contactNumber: string;
   address: string;
   carUnit?: string;
@@ -22,6 +22,12 @@ export interface User {
   loyaltyPoints: number;
   subscriptionStatus: 'free' | 'basic' | 'premium' | 'vip';
   subscriptionExpiry?: string;
+  // Crew specific fields
+  crewSkills?: string[]; // e.g., ['exterior_wash', 'interior_detail', 'coating']
+  crewStatus?: 'available' | 'busy' | 'offline';
+  currentAssignment?: string; // booking ID if assigned
+  crewRating?: number; // 1-5 rating
+  crewExperience?: number; // years of experience
 }
 
 export interface Booking {
@@ -63,7 +69,7 @@ export interface Booking {
   receiptUrl?: string;
   
   // Booking Status
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  status: 'pending' | 'confirmed' | 'crew_assigned' | 'crew_going' | 'crew_arrived' | 'in_progress' | 'washing' | 'completed' | 'cancelled' | 'no_show' | 'paid';
   confirmationCode: string;
   
   // Tracking
@@ -79,8 +85,21 @@ export interface Booking {
   notes?: string;
   specialRequests?: string;
   assignedStaff?: string[];
+  assignedCrew?: string[]; // crew member IDs
+  crewNotes?: string; // notes from crew
   qualityRating?: number; // 1-5 stars
   customerFeedback?: string;
+
+  // Crew Status Updates
+  statusHistory?: BookingStatusUpdate[];
+  crewStartTime?: string;
+  crewArrivalTime?: string;
+  crewCompletionTime?: string;
+
+  // Image attachments
+  beforeImages?: ImageAttachment[];
+  afterImages?: ImageAttachment[];
+  receiptImages?: ImageAttachment[];
   
   // Loyalty & Gamification
   pointsEarned?: number;
@@ -223,6 +242,76 @@ export interface CustomerReward {
   expiresAt?: string;
 }
 
+export interface BookingStatusUpdate {
+  id: string;
+  bookingId: string;
+  status: Booking['status'];
+  updatedBy: string; // user ID who made the update
+  updatedByRole: User['role'];
+  timestamp: string;
+  notes?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
+}
+
+export interface ImageAttachment {
+  id: string;
+  bookingId: string;
+  type: 'before' | 'after' | 'receipt' | 'damage' | 'other';
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  base64Data: string; // stored as base64 for localStorage
+  uploadedBy: string; // user ID
+  uploadedAt: string;
+  description?: string;
+}
+
+export interface CrewAssignment {
+  id: string;
+  bookingId: string;
+  crewId: string;
+  assignedBy: string; // manager/admin ID
+  assignedAt: string;
+  acceptedAt?: string;
+  status: 'assigned' | 'accepted' | 'rejected' | 'completed';
+  notes?: string;
+}
+
+export interface NotificationSound {
+  id: string;
+  type: 'new_booking' | 'status_update' | 'crew_update' | 'payment_received';
+  soundFile: string; // path to sound file
+  enabled: boolean;
+  volume: number; // 0-100
+}
+
+export interface SystemNotification {
+  id: string;
+  type: 'new_booking' | 'booking_update' | 'crew_assignment' | 'payment' | 'system_alert';
+  title: string;
+  message: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  targetRoles: User['role'][];
+  targetUsers?: string[]; // specific user IDs
+  data?: any;
+  createdAt: string;
+  scheduledFor?: string;
+  sentAt?: string;
+  readBy: { userId: string; readAt: string }[];
+  actions?: {
+    label: string;
+    action: string;
+    variant?: 'default' | 'destructive' | 'secondary';
+  }[];
+  playSound?: boolean;
+  soundType?: NotificationSound['type'];
+}
+
 // Database Management Class
 export class BookingDatabase {
   private static instance: BookingDatabase;
@@ -310,14 +399,34 @@ export class BookingDatabase {
       booking.cancellationReason = reason;
     } else if (status === 'confirmed') {
       booking.confirmedAt = new Date().toISOString();
+    } else if (status === 'crew_assigned') {
+      // Crew has been assigned
+    } else if (status === 'crew_going') {
+      // Crew is on the way
+    } else if (status === 'crew_arrived') {
+      booking.crewArrivalTime = new Date().toISOString();
     } else if (status === 'in_progress') {
       booking.startedAt = new Date().toISOString();
+    } else if (status === 'washing') {
+      booking.crewStartTime = new Date().toISOString();
     } else if (status === 'completed') {
       booking.completedAt = new Date().toISOString();
+      booking.crewCompletionTime = new Date().toISOString();
+      // Free up assigned crew
+      if (booking.assignedCrew) {
+        booking.assignedCrew.forEach(crewId => {
+          this.updateCrewStatus(crewId, 'available');
+        });
+      }
+    } else if (status === 'paid') {
+      // Payment completed
     }
     
     bookings[bookingIndex] = booking;
     localStorage.setItem('bookings', JSON.stringify(bookings));
+
+    // Add status update to history
+    this.addStatusUpdate(bookingId, status, 'system', reason);
     
     // Send notification
     this.createNotification({
@@ -442,6 +551,265 @@ export class BookingDatabase {
     return true;
   }
 
+  // Image Management
+  async saveImage(imageData: Omit<ImageAttachment, 'id' | 'uploadedAt'>): Promise<ImageAttachment> {
+    const image: ImageAttachment = {
+      ...imageData,
+      id: this.generateId('IMG'),
+      uploadedAt: new Date().toISOString(),
+    };
+
+    const images = this.getAllImages();
+    images.push(image);
+    localStorage.setItem('booking_images', JSON.stringify(images));
+
+    return image;
+  }
+
+  getAllImages(): ImageAttachment[] {
+    const images = localStorage.getItem('booking_images');
+    return images ? JSON.parse(images) : [];
+  }
+
+  getBookingImages(bookingId: string, type?: ImageAttachment['type']): ImageAttachment[] {
+    const images = this.getAllImages();
+    return images.filter(img => {
+      const matchesBooking = img.bookingId === bookingId;
+      const matchesType = type ? img.type === type : true;
+      return matchesBooking && matchesType;
+    });
+  }
+
+  deleteImage(imageId: string): boolean {
+    const images = this.getAllImages();
+    const filteredImages = images.filter(img => img.id !== imageId);
+    localStorage.setItem('booking_images', JSON.stringify(filteredImages));
+    return true;
+  }
+
+  // Crew Management
+  assignCrewToBooking(bookingId: string, crewIds: string[], assignedBy: string): CrewAssignment[] {
+    const assignments: CrewAssignment[] = crewIds.map(crewId => ({
+      id: this.generateId('CREW_ASSIGN'),
+      bookingId,
+      crewId,
+      assignedBy,
+      assignedAt: new Date().toISOString(),
+      status: 'assigned'
+    }));
+
+    // Save assignments
+    const allAssignments = this.getAllCrewAssignments();
+    allAssignments.push(...assignments);
+    localStorage.setItem('crew_assignments', JSON.stringify(allAssignments));
+
+    // Update booking with assigned crew
+    this.updateBookingAssignedCrew(bookingId, crewIds);
+
+    // Update crew status
+    crewIds.forEach(crewId => {
+      this.updateCrewStatus(crewId, 'busy', bookingId);
+    });
+
+    // Send notifications to crew
+    assignments.forEach(assignment => {
+      this.createNotification({
+        userId: assignment.crewId,
+        type: 'booking_confirmation',
+        title: 'New Assignment',
+        message: `You have been assigned to booking ${bookingId}`,
+        data: { bookingId, assignmentId: assignment.id }
+      });
+    });
+
+    return assignments;
+  }
+
+  getAllCrewAssignments(): CrewAssignment[] {
+    const assignments = localStorage.getItem('crew_assignments');
+    return assignments ? JSON.parse(assignments) : [];
+  }
+
+  getCrewAssignments(crewId: string): CrewAssignment[] {
+    const assignments = this.getAllCrewAssignments();
+    return assignments.filter(a => a.crewId === crewId);
+  }
+
+  updateCrewAssignmentStatus(assignmentId: string, status: CrewAssignment['status'], notes?: string): boolean {
+    const assignments = this.getAllCrewAssignments();
+    const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
+
+    if (assignmentIndex === -1) return false;
+
+    const assignment = assignments[assignmentIndex];
+    assignment.status = status;
+    assignment.notes = notes;
+
+    if (status === 'accepted') {
+      assignment.acceptedAt = new Date().toISOString();
+    }
+
+    assignments[assignmentIndex] = assignment;
+    localStorage.setItem('crew_assignments', JSON.stringify(assignments));
+
+    return true;
+  }
+
+  updateCrewStatus(crewId: string, status: User['crewStatus'], currentAssignment?: string): boolean {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const crewIndex = users.findIndex((u: User) => u.id === crewId && u.role === 'crew');
+
+    if (crewIndex === -1) return false;
+
+    users[crewIndex].crewStatus = status;
+    users[crewIndex].currentAssignment = currentAssignment;
+    users[crewIndex].updatedAt = new Date().toISOString();
+
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    return true;
+  }
+
+  updateBookingAssignedCrew(bookingId: string, crewIds: string[]): boolean {
+    const bookings = this.getAllBookings();
+    const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+
+    if (bookingIndex === -1) return false;
+
+    bookings[bookingIndex].assignedCrew = crewIds;
+    bookings[bookingIndex].updatedAt = new Date().toISOString();
+
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+    return true;
+  }
+
+  // Status Update History
+  addStatusUpdate(bookingId: string, status: Booking['status'], updatedBy: string, notes?: string, location?: BookingStatusUpdate['location']): BookingStatusUpdate {
+    const user = this.getUserById(updatedBy);
+    const statusUpdate: BookingStatusUpdate = {
+      id: this.generateId('STATUS'),
+      bookingId,
+      status,
+      updatedBy,
+      updatedByRole: user?.role || 'user',
+      timestamp: new Date().toISOString(),
+      notes,
+      location
+    };
+
+    const updates = this.getAllStatusUpdates();
+    updates.push(statusUpdate);
+    localStorage.setItem('booking_status_updates', JSON.stringify(updates));
+
+    return statusUpdate;
+  }
+
+  getAllStatusUpdates(): BookingStatusUpdate[] {
+    const updates = localStorage.getItem('booking_status_updates');
+    return updates ? JSON.parse(updates) : [];
+  }
+
+  getBookingStatusHistory(bookingId: string): BookingStatusUpdate[] {
+    const updates = this.getAllStatusUpdates();
+    return updates.filter(u => u.bookingId === bookingId).sort((a, b) =>
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }
+
+  private getUserById(userId: string): User | null {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    return users.find((u: User) => u.id === userId) || null;
+  }
+
+  // Enhanced Notification System
+  createSystemNotification(notificationData: Omit<SystemNotification, 'id' | 'createdAt' | 'readBy'>): SystemNotification {
+    const notification: SystemNotification = {
+      ...notificationData,
+      id: this.generateId('SYS_NOTIF'),
+      createdAt: new Date().toISOString(),
+      readBy: []
+    };
+
+    const notifications = this.getAllSystemNotifications();
+    notifications.push(notification);
+    localStorage.setItem('system_notifications', JSON.stringify(notifications));
+
+    // Play sound if enabled
+    if (notification.playSound && notification.soundType) {
+      this.playNotificationSound(notification.soundType);
+    }
+
+    return notification;
+  }
+
+  getAllSystemNotifications(): SystemNotification[] {
+    const notifications = localStorage.getItem('system_notifications');
+    return notifications ? JSON.parse(notifications) : [];
+  }
+
+  getUserSystemNotifications(userId: string, userRole: User['role']): SystemNotification[] {
+    const notifications = this.getAllSystemNotifications();
+    return notifications.filter(n => {
+      const isTargetUser = n.targetUsers?.includes(userId);
+      const isTargetRole = n.targetRoles.includes(userRole);
+      return isTargetUser || isTargetRole;
+    });
+  }
+
+  markSystemNotificationAsRead(notificationId: string, userId: string): boolean {
+    const notifications = this.getAllSystemNotifications();
+    const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+
+    if (notificationIndex === -1) return false;
+
+    const notification = notifications[notificationIndex];
+    const existingRead = notification.readBy.find(r => r.userId === userId);
+
+    if (!existingRead) {
+      notification.readBy.push({
+        userId,
+        readAt: new Date().toISOString()
+      });
+    }
+
+    notifications[notificationIndex] = notification;
+    localStorage.setItem('system_notifications', JSON.stringify(notifications));
+
+    return true;
+  }
+
+  private playNotificationSound(soundType: NotificationSound['type']): void {
+    const soundSettings = this.getNotificationSoundSettings();
+    const sound = soundSettings.find(s => s.type === soundType && s.enabled);
+
+    if (sound && typeof Audio !== 'undefined') {
+      try {
+        const audio = new Audio(sound.soundFile);
+        audio.volume = sound.volume / 100;
+        audio.play().catch(console.error);
+      } catch (error) {
+        console.error('Error playing notification sound:', error);
+      }
+    }
+  }
+
+  private getNotificationSoundSettings(): NotificationSound[] {
+    const settings = localStorage.getItem('notification_sounds');
+    if (settings) {
+      return JSON.parse(settings);
+    }
+
+    // Default sound settings
+    const defaultSettings: NotificationSound[] = [
+      { id: '1', type: 'new_booking', soundFile: '/sounds/new-booking.mp3', enabled: true, volume: 70 },
+      { id: '2', type: 'status_update', soundFile: '/sounds/status-update.mp3', enabled: true, volume: 50 },
+      { id: '3', type: 'crew_update', soundFile: '/sounds/crew-update.mp3', enabled: true, volume: 60 },
+      { id: '4', type: 'payment_received', soundFile: '/sounds/payment.mp3', enabled: true, volume: 80 }
+    ];
+
+    localStorage.setItem('notification_sounds', JSON.stringify(defaultSettings));
+    return defaultSettings;
+  }
+
   // Utility Methods
   private generateId(prefix: string): string {
     const timestamp = Date.now();
@@ -556,11 +924,76 @@ export const createBooking = (data: Omit<Booking, 'id' | 'createdAt' | 'updatedA
 
 export const getAllBookings = () => bookingDB.getAllBookings();
 export const getUserBookings = (userId: string) => bookingDB.getUserBookings(userId);
-export const updateBookingStatus = (bookingId: string, status: Booking['status'], reason?: string) => 
+export const updateBookingStatus = (bookingId: string, status: Booking['status'], reason?: string) =>
   bookingDB.updateBookingStatus(bookingId, status, reason);
+
+// Image management exports
+export const saveBookingImage = (imageData: Omit<ImageAttachment, 'id' | 'uploadedAt'>) =>
+  bookingDB.saveImage(imageData);
+
+export const getBookingImages = (bookingId: string, type?: ImageAttachment['type']) =>
+  bookingDB.getBookingImages(bookingId, type);
+
+export const deleteBookingImage = (imageId: string) =>
+  bookingDB.deleteImage(imageId);
+
+// Crew management exports
+export const assignCrewToBooking = (bookingId: string, crewIds: string[], assignedBy: string) =>
+  bookingDB.assignCrewToBooking(bookingId, crewIds, assignedBy);
+
+export const getCrewAssignments = (crewId: string) =>
+  bookingDB.getCrewAssignments(crewId);
+
+export const updateCrewAssignmentStatus = (assignmentId: string, status: CrewAssignment['status'], notes?: string) =>
+  bookingDB.updateCrewAssignmentStatus(assignmentId, status, notes);
+
+export const updateCrewStatus = (crewId: string, status: User['crewStatus'], currentAssignment?: string) =>
+  bookingDB.updateCrewStatus(crewId, status, currentAssignment);
+
+// Status history exports
+export const addBookingStatusUpdate = (bookingId: string, status: Booking['status'], updatedBy: string, notes?: string, location?: BookingStatusUpdate['location']) =>
+  bookingDB.addStatusUpdate(bookingId, status, updatedBy, notes, location);
+
+export const getBookingStatusHistory = (bookingId: string) =>
+  bookingDB.getBookingStatusHistory(bookingId);
+
+// Enhanced notification exports
+export const createSystemNotification = (notificationData: Omit<SystemNotification, 'id' | 'createdAt' | 'readBy'>) =>
+  bookingDB.createSystemNotification(notificationData);
+
+export const getUserSystemNotifications = (userId: string, userRole: User['role']) =>
+  bookingDB.getUserSystemNotifications(userId, userRole);
+
+export const markSystemNotificationAsRead = (notificationId: string, userId: string) =>
+  bookingDB.markSystemNotificationAsRead(notificationId, userId);
+
+// Utility for file uploads
+export const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to convert file to base64'));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export const getDashboardStats = (dateRange?: { start: string; end: string }) => 
   bookingDB.getDashboardStats(dateRange);
 
 export const getSlotAvailability = (date: string, timeSlot: string, branch: string) =>
   bookingDB.getSlotAvailability(date, timeSlot, branch);
+
+// Enhanced booking exports with crew and status tracking
+export type {
+  BookingStatusUpdate,
+  ImageAttachment,
+  CrewAssignment,
+  NotificationSound,
+  SystemNotification
+};
