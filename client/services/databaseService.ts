@@ -13,10 +13,16 @@ interface ApiResponse<T = any> {
 
 export class DatabaseService {
   private static authToken: string | null = null;
+  private static useBackend: boolean = true;
 
   // Set authentication token
   static setAuthToken(token: string) {
     this.authToken = token;
+  }
+
+  // Check if backend is available
+  static setBackendAvailable(available: boolean) {
+    this.useBackend = available;
   }
 
   // Get authentication headers
