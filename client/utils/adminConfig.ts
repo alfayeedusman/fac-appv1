@@ -57,6 +57,20 @@ export interface AdminConfig {
     grapheneCoating: PricingMatrix;
   };
   scheduling: SchedulingConfig;
+  homeService: {
+    enabled: boolean;
+    availableServices: {
+      carwash: string[]; // Array of carwash service keys
+      autoDetailing: boolean;
+      grapheneCoating: boolean;
+    };
+    priceMultiplier: number; // Additional fee for home service (1.0 = no extra charge)
+    coverage: {
+      areas: string[]; // List of covered areas
+      maxDistance: number; // Max distance in km
+    };
+    leadTime: number; // Minimum hours in advance for home service
+  };
   terms: {
     cancellationPolicy: string;
     termsAndConditions: string;
@@ -225,6 +239,20 @@ const DEFAULT_CONFIG: AdminConfig = {
     leadTime: 2,
     blackoutDates: [],
     timezone: "Asia/Manila",
+  },
+  homeService: {
+    enabled: true,
+    availableServices: {
+      carwash: ["vip_pro", "vip_pro_max", "premium", "fac"], // VIP, PROMAX WASH (vip_pro_max), PREMIUM WASH, FAC WASH
+      autoDetailing: true,
+      grapheneCoating: true,
+    },
+    priceMultiplier: 1.2, // 20% additional charge for home service
+    coverage: {
+      areas: ["Tumaga", "Boalan", "Zamboanga City", "Downtown", "Rio Hondo", "Tetuan"],
+      maxDistance: 15, // 15km radius
+    },
+    leadTime: 4, // 4 hours minimum advance booking for home service
   },
   terms: {
     cancellationPolicy: "Free cancellation up to 2 hours before appointment time. No-show or late cancellation may result in charges.",
@@ -445,6 +473,10 @@ export class AdminConfigManager {
           ...DEFAULT_CONFIG.scheduling.workingHours,
           ...config.scheduling?.workingHours,
         },
+      },
+      homeService: {
+        ...DEFAULT_CONFIG.homeService,
+        ...config.homeService,
       },
       terms: {
         ...DEFAULT_CONFIG.terms,
