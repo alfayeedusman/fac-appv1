@@ -109,7 +109,7 @@ const SERVICE_CATEGORIES = {
     name: "Car Wash",
     icon: Car,
     gradient: "from-blue-500 to-cyan-500",
-    services: adminConfig.pricing.carwash,
+    services: adminConfig?.pricing?.carwash || {},
   },
   auto_detailing: {
     name: "Auto Detailing",
