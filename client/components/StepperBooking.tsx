@@ -807,7 +807,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
             if (bookingData.serviceType === 'home') {
               const isAvailable = isServiceAvailableForHome(categoryKey);
               if (!isAvailable) {
-                await showHomeServiceUnavailableAlert(category.name);
+                showHomeServiceUnavailableAlert(category.name, goBackToStep1);
                 return;
               }
             }
@@ -857,7 +857,7 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => {
                       if (bookingData.serviceType === 'home') {
                         const isAvailable = isServiceAvailableForHome('carwash', serviceKey);
                         if (!isAvailable) {
-                          await showHomeServiceUnavailableAlert(service.name);
+                          showHomeServiceUnavailableAlert(service.name, goBackToStep1);
                           return;
                         }
                       }
