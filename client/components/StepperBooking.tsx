@@ -365,6 +365,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         // Service Details
         category: bookingData.category as any,
         service: bookingData.service,
+        serviceType: bookingData.serviceType, // 'branch' or 'home'
 
         // Vehicle Details
         unitType: bookingData.unitType as any,
@@ -375,6 +376,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         date: bookingData.date,
         timeSlot: bookingData.timeSlot,
         branch: bookingData.branch,
+        serviceLocation: bookingData.serviceType === 'home' ? bookingData.address : bookingData.branch,
         estimatedDuration: getEstimatedDuration(bookingData.category, bookingData.service),
 
         // Pricing
