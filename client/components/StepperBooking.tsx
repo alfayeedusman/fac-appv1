@@ -85,19 +85,15 @@ const STEPS = [
   { id: 5, title: "Review", icon: CheckCircle, description: "Confirm booking" },
 ];
 
+// Load admin configuration
+const adminConfig = getAdminConfig();
+
 const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
     icon: Car,
     gradient: "from-blue-500 to-cyan-500",
-    services: {
-      classic: { name: "Classic Wash", price: 200, duration: "30 mins", description: "Basic exterior cleaning" },
-      regular: { name: "Regular Wash", price: 300, duration: "45 mins", description: "Standard wash with interior wipe" },
-      vip_pro: { name: "VIP Pro Wash", price: 400, duration: "60 mins", description: "Premium wash with wax" },
-      vip_pro_max: { name: "VIP Pro Max", price: 800, duration: "75 mins", description: "Complete wash with detailing" },
-      premium: { name: "Premium Wash", price: 1500, duration: "90 mins", description: "Full premium service" },
-      fac: { name: "FAC Wash", price: 2500, duration: "120 mins", description: "Ultimate luxury experience" },
-    },
+    services: adminConfig.pricing.carwash,
   },
   auto_detailing: {
     name: "Auto Detailing",
@@ -118,14 +114,14 @@ const UNIT_TYPES = {
     name: "Car",
     sizes: {
       sedan: "Sedan",
-      suv: "SUV", 
+      suv: "SUV",
       pickup: "Pickup",
       van_small: "Van Small",
       van_big: "Van Big",
     },
   },
   motorcycle: {
-    name: "Motorcycle", 
+    name: "Motorcycle",
     sizes: {
       regular: "Regular",
       medium: "Medium",
@@ -134,26 +130,11 @@ const UNIT_TYPES = {
   },
 };
 
-// Pricing matrices (admin-configurable)
-const DETAILING_PRICES = {
-  car: { sedan: 3500, suv: 4500, pickup: 5000, van_small: 5500, van_big: 6500 },
-  motorcycle: { regular: 1200, medium: 1500, big_bike: 1800 },
+// Get dynamic time slots based on admin config
+const getTimeSlots = (date: string) => {
+  const dayOfWeek = new Date(date).toLocaleLowerCase('en-us', { weekday: 'long' });
+  return generateTimeSlots(dayOfWeek);
 };
-
-const COATING_PRICES = {
-  car: { sedan: 15000, suv: 18000, pickup: 20000, van_small: 22000, van_big: 25000 },
-  motorcycle: { regular: 5000, medium: 6500, big_bike: 8000 },
-};
-
-const TIME_SLOTS = [
-  "08:00", "09:00", "10:00", "11:00", "12:00",
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
-];
-
-const BRANCHES = [
-  { id: "tumaga", name: "Tumaga Hub", address: "Main Street, Tumaga District" },
-  { id: "boalan", name: "Boalan Hub", address: "Commercial Center, Boalan" },
-];
 
 export default function StepperBooking({ isGuest = false }: StepperBookingProps) {
   const navigate = useNavigate();
