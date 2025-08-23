@@ -1153,9 +1153,28 @@ export default function UserRoleManagement() {
                   assigned
                 </p>
                 <p className="text-sm text-muted-foreground">
+                  <strong>Tab Access:</strong>{" "}
+                  {user.permissions.filter(p => p.startsWith('tab.')).length} tabs
+                </p>
+                <p className="text-sm text-muted-foreground">
                   <strong>Created:</strong>{" "}
                   {new Date(user.createdAt).toLocaleDateString()}
                 </p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {user.permissions.filter(p => p.startsWith('tab.')).slice(0, 3).map(tabPerm => {
+                    const tabName = DEFAULT_PERMISSIONS.find(p => p.id === tabPerm)?.name || tabPerm;
+                    return (
+                      <Badge key={tabPerm} variant="outline" className="text-xs">
+                        {tabName.replace(" Tab", "")}
+                      </Badge>
+                    );
+                  })}
+                  {user.permissions.filter(p => p.startsWith('tab.')).length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{user.permissions.filter(p => p.startsWith('tab.')).length - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
