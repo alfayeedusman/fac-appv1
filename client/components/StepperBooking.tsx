@@ -654,7 +654,10 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 }
 
 // Step Components
-const ServiceStep = ({ bookingData, updateBookingData }: any) => (
+const ServiceStep = ({ bookingData, updateBookingData }: any) => {
+  const availableServices = getAvailableServices(bookingData.serviceType || 'branch');
+
+  return (
   <Card className="glass border-border shadow-xl animate-fade-in-up">
     <CardHeader className="pb-4 md:pb-6">
       <CardTitle className="flex items-center text-xl md:text-2xl">
@@ -663,10 +666,15 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => (
       </CardTitle>
       <p className="text-sm md:text-base text-muted-foreground mt-2">
         Select the perfect car care service for your vehicle
+        {bookingData.serviceType === 'home' && (
+          <span className="block text-xs text-orange-600 mt-1">
+            Only selected services are available for home service
+          </span>
+        )}
       </p>
     </CardHeader>
     <CardContent className="space-y-4 md:space-y-6">
-      {Object.entries(SERVICE_CATEGORIES).map(([categoryKey, category]) => (
+      {Object.entries(availableServices).map(([categoryKey, category]) => (
         <div
           key={categoryKey}
           className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 hover-lift ${
@@ -765,7 +773,8 @@ const ServiceStep = ({ bookingData, updateBookingData }: any) => (
       ))}
     </CardContent>
   </Card>
-);
+  );
+};
 
 const UnitStep = ({ bookingData, updateBookingData }: any) => (
   <Card className="glass border-border shadow-xl">
