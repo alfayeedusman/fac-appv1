@@ -821,10 +821,18 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                     disabled={!isAvailable}
                     className={`h-auto py-3 ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    {slot}
-                    {!isAvailable && (
-                      <span className="block text-xs text-red-500">Full</span>
-                    )}
+                    <div className="text-center">
+                      <div className="font-medium">{slot}</div>
+                      {!isAvailable ? (
+                        <span className="block text-xs text-red-500">Full</span>
+                      ) : slotInfo.currentBookings > 0 ? (
+                        <span className="block text-xs text-orange-500">
+                          {slotInfo.currentBookings}/{slotInfo.maxCapacity} booked
+                        </span>
+                      ) : (
+                        <span className="block text-xs text-green-500">Available</span>
+                      )}
+                    </div>
                   </Button>
                 );
               })}
