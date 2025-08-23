@@ -245,8 +245,8 @@ export default function UserRoleManagement() {
         .filter((user: any) => user && typeof user === 'object' && user.email) // Filter out invalid entries
         .map((user: any) => {
           const userRole = user.role || "user";
-          const validRole = ["user", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole)
-            ? userRole
+          const validRole = ["user", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole) 
+            ? userRole 
             : "user";
 
           return {
@@ -255,8 +255,8 @@ export default function UserRoleManagement() {
             email: user.email || "",
             role: validRole as User["role"],
             permissions: user.permissions || ROLE_PRESETS[validRole as keyof typeof ROLE_PRESETS] || [],
-            status: (user.status && ["active", "inactive", "suspended"].includes(user.status))
-              ? user.status
+            status: (user.status && ["active", "inactive", "suspended"].includes(user.status)) 
+              ? user.status 
               : "active",
             createdAt: user.createdAt || user.registeredAt || new Date().toISOString(),
             lastLogin: user.lastLogin || undefined,
@@ -301,22 +301,31 @@ export default function UserRoleManagement() {
   };
 
   const handleCreateUser = () => {
-    if (!formData.fullName || !formData.email || !formData.password) {
-      alert("Please fill in all required fields");
-      return;
-    }
+    try {
+      if (!formData.fullName || !formData.email || !formData.password) {
+        alert("Please fill in all required fields");
+        return;
+      }
 
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
+      const existingUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
 
-    const userExists = existingUsers.find(
-      (user: any) => user.email === formData.email,
-    );
-    if (userExists) {
-      alert("User with this email already exists");
-      return;
-    }
+      // Ensure existingUsers is an array
+      if (!Array.isArray(existingUsers)) {
+        console.warn("existingUsers is not an array, resetting");
+        localStorage.setItem("registeredUsers", "[]");
+      }
+
+      const userArray = Array.isArray(existingUsers) ? existingUsers : [];
+
+      const userExists = userArray.find(
+        (user: any) => user && user.email === formData.email,
+      );
+      if (userExists) {
+        alert("User with this email already exists");
+        return;
+      }
 
       const newUser = {
         id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -339,55 +348,64 @@ export default function UserRoleManagement() {
       userArray.push(newUser);
       localStorage.setItem("registeredUsers", JSON.stringify(userArray));
 
-    // Create basic subscription data for new user
-    const subscriptionData = {
-      package: "Regular Member",
-      daysLeft: 0,
-      currentCycleStart: new Date().toISOString().split("T")[0],
-      currentCycleEnd: new Date().toISOString().split("T")[0],
-      daysLeftInCycle: 0,
-      autoRenewal: false,
-      remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
-      totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
-    };
+      // Create basic subscription data for new user
+      const subscriptionData = {
+        package: "Regular Member",
+        daysLeft: 0,
+        currentCycleStart: new Date().toISOString().split("T")[0],
+        currentCycleEnd: new Date().toISOString().split("T")[0],
+        daysLeftInCycle: 0,
+        autoRenewal: false,
+        remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
+        totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
+      };
 
-    localStorage.setItem(
-      `subscription_${formData.email}`,
-      JSON.stringify(subscriptionData),
-    );
-    localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
+      localStorage.setItem(
+        `subscription_${formData.email}`,
+        JSON.stringify(subscriptionData),
+      );
+      localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
 
-    loadUsers();
-    setIsCreateModalOpen(false);
-    resetForm();
-    alert("User created successfully!");
+      loadUsers();
+      setIsCreateModalOpen(false);
+      resetForm();
+      alert("User created successfully!");
+    } catch (error) {
+      console.error("Error creating user:", error);
+      alert("Failed to create user. Please try again.");
+    }
   };
 
   const handleEditUser = () => {
     if (!editingUser) return;
 
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
+    try {
+      const existingUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
 
-    const userIndex = existingUsers.findIndex(
-      (user: any) => user.email === editingUser.email,
-    );
-    if (userIndex === -1) return;
+      const userIndex = existingUsers.findIndex(
+        (user: any) => user.email === editingUser.email,
+      );
+      if (userIndex === -1) return;
 
-    existingUsers[userIndex] = {
-      ...existingUsers[userIndex],
-      fullName: formData.fullName,
-      role: formData.role,
-      permissions: formData.permissions,
-      status: formData.status,
-    };
+      existingUsers[userIndex] = {
+        ...existingUsers[userIndex],
+        fullName: formData.fullName,
+        role: formData.role,
+        permissions: formData.permissions,
+        status: formData.status,
+      };
 
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-    loadUsers();
-    setIsEditModalOpen(false);
-    resetForm();
-    alert("User updated successfully!");
+      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+      loadUsers();
+      setIsEditModalOpen(false);
+      resetForm();
+      alert("User updated successfully!");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user. Please try again.");
+    }
   };
 
   const handleDeleteUser = (user: User) => {
@@ -397,21 +415,26 @@ export default function UserRoleManagement() {
     }
 
     if (confirm(`Are you sure you want to delete ${user.fullName}?`)) {
-      const existingUsers = JSON.parse(
-        localStorage.getItem("registeredUsers") || "[]",
-      );
+      try {
+        const existingUsers = JSON.parse(
+          localStorage.getItem("registeredUsers") || "[]",
+        );
 
-      const filteredUsers = existingUsers.filter(
-        (u: any) => u.email !== user.email,
-      );
-      localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+        const filteredUsers = existingUsers.filter(
+          (u: any) => u.email !== user.email,
+        );
+        localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
 
-      // Clean up user data
-      localStorage.removeItem(`subscription_${user.email}`);
-      localStorage.removeItem(`washLogs_${user.email}`);
+        // Clean up user data
+        localStorage.removeItem(`subscription_${user.email}`);
+        localStorage.removeItem(`washLogs_${user.email}`);
 
-      loadUsers();
-      alert("User deleted successfully!");
+        loadUsers();
+        alert("User deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Failed to delete user. Please try again.");
+      }
     }
   };
 
