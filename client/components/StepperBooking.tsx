@@ -518,7 +518,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <BookingSummary bookingData={bookingData} />
+              <BookingSummary bookingData={bookingData} progressPercentage={progressPercentage} />
             </div>
           </div>
 
@@ -1192,7 +1192,7 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
 );
 
 // Booking Summary Component
-const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
+const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: BookingData; progressPercentage: number }) => (
   <div className="space-y-3 md:space-y-4">
     {/* Service Details */}
     <Card className="border-border glass">
@@ -1206,14 +1206,14 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Category:</span>
               <span className="font-medium text-foreground text-right">
-                {SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || '-'}
+                {bookingData.category && SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || '-'}
               </span>
             </div>
             {bookingData.service && bookingData.category === "carwash" && (
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Service:</span>
                 <span className="font-medium text-foreground text-right">
-                  {adminConfig.pricing.carwash[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.name || '-'}
+                  {adminConfig?.pricing?.carwash?.[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.name || '-'}
                 </span>
               </div>
             )}
@@ -1221,8 +1221,8 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
               <div className="flex justify-between items-start">
                 <span className="text-muted-foreground">Vehicle:</span>
                 <span className="font-medium text-foreground text-right max-w-[60%]">
-                  {UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.name}
-                  {bookingData.unitSize && ` - ${UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.sizes[bookingData.unitSize as keyof typeof UNIT_TYPES.car] || ''}`}
+                  {bookingData.unitType ? UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.name : '-'}
+                  {bookingData.unitSize && bookingData.unitType && ` - ${UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.sizes?.[bookingData.unitSize as keyof typeof UNIT_TYPES.car] || ''}`}
                 </span>
               </div>
             )}
@@ -1245,11 +1245,17 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Date:</span>
               <span className="font-medium text-foreground">
-                {new Date(bookingData.date).toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric'
-                })}
+                {(() => {
+                  try {
+                    return new Date(bookingData.date).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    });
+                  } catch {
+                    return bookingData.date || '-';
+                  }
+                })()}
               </span>
             </div>
             {bookingData.timeSlot && (
@@ -1304,20 +1310,20 @@ const BookingSummary = ({ bookingData }: { bookingData: BookingData }) => (
           <div className="space-y-2 text-xs md:text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Base Price:</span>
-              <span className="font-medium text-foreground">₱{bookingData.basePrice.toLocaleString()}</span>
+              <span className="font-medium text-foreground">₱{(bookingData.basePrice || 0).toLocaleString()}</span>
             </div>
-            {bookingData.serviceType === 'home' && adminConfig.homeService?.enabled && (
+            {bookingData.serviceType === 'home' && adminConfig?.homeService?.enabled && (
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Home Service Fee:</span>
                 <span className="font-medium text-orange-600">
-                  +₱{(bookingData.totalPrice - bookingData.basePrice).toLocaleString()}
+                  +₱{((bookingData.totalPrice || 0) - (bookingData.basePrice || 0)).toLocaleString()}
                 </span>
               </div>
             )}
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-foreground text-base md:text-lg">Total:</span>
-                <span className="font-bold text-fac-orange-500 text-lg md:text-xl">₱{bookingData.totalPrice.toLocaleString()}</span>
+                <span className="font-bold text-fac-orange-500 text-lg md:text-xl">₱{(bookingData.totalPrice || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
