@@ -25,8 +25,21 @@ export default function Index() {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated === "true") {
       const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
+      const userRole = localStorage.getItem("userRole");
+
       if (hasSeenWelcome === "true") {
-        navigate("/dashboard");
+        // Route based on user role
+        if (userRole === "admin" || userRole === "superadmin") {
+          navigate("/admin-dashboard");
+        } else if (userRole === "manager") {
+          navigate("/manager-dashboard");
+        } else if (userRole === "cashier") {
+          navigate("/pos");
+        } else if (userRole === "inventory_manager") {
+          navigate("/inventory-management");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         navigate("/welcome");
       }
