@@ -21,12 +21,12 @@ export default function Welcome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const [showSplash, setShowSplash] = useState(false);
-
+  
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
-    if (email) {
+        if (email) {
       setUserEmail(email);
     }
 
@@ -43,6 +43,8 @@ export default function Welcome() {
   const handleSplashComplete = () => {
     setShowSplash(false);
   };
+
+  
 
   if (showSplash) {
     const userName = userEmail.split("@")[0];
@@ -68,6 +70,12 @@ export default function Welcome() {
     const userRole = localStorage.getItem("userRole");
     if (userRole === "admin" || userRole === "superadmin") {
       navigate("/admin-dashboard");
+    } else if (userRole === "manager") {
+      navigate("/manager-dashboard");
+    } else if (userRole === "cashier") {
+      navigate("/pos");
+    } else if (userRole === "inventory_manager") {
+      navigate("/inventory-management");
     } else {
       navigate("/dashboard");
     }
@@ -337,6 +345,8 @@ export default function Welcome() {
           </div>
         </div>
       </div>
+
+      
 
       {/* Footer */}
       <div className="text-center py-4 px-6">
