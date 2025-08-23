@@ -482,15 +482,15 @@ export default function ManagerDashboard() {
                                 </div>
                                 {selectedBooking.status === 'pending' && (
                                   <div className="flex gap-2">
-                                    <Button 
-                                      onClick={() => updateBookingStatus(selectedBooking.id, 'approved')}
+                                    <Button
+                                      onClick={() => updateBookingStatusManager(selectedBooking.id, 'approved')}
                                       className="bg-green-500 hover:bg-green-600"
                                     >
                                       <CheckCircle className="h-4 w-4 mr-1" />
                                       Approve
                                     </Button>
-                                    <Button 
-                                      onClick={() => updateBookingStatus(selectedBooking.id, 'rejected')}
+                                    <Button
+                                      onClick={() => updateBookingStatusManager(selectedBooking.id, 'rejected')}
                                       variant="destructive"
                                     >
                                       <XCircle className="h-4 w-4 mr-1" />
