@@ -601,6 +601,7 @@ export default function UserRoleManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="crew">Crew</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
                       <SelectItem value="cashier">Cashier</SelectItem>
                       <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
@@ -780,6 +781,7 @@ export default function UserRoleManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="crew">Crew</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="cashier">Cashier</SelectItem>
                     <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
