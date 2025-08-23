@@ -243,7 +243,7 @@ const DEFAULT_CONFIG: AdminConfig = {
   homeService: {
     enabled: true,
     availableServices: {
-      carwash: ["vip_promax", "premium_wash", "fac"], // VIP PROMAX, PREMIUM WASH, FASWASH (FAC)
+      carwash: ["vip_pro_max", "premium", "fac"], // VIP PROMAX, PREMIUM WASH, FASWASH (FAC)
       autoDetailing: true,
       grapheneCoating: true,
     },
