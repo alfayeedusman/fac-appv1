@@ -861,10 +861,11 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
                       if (bookingData.serviceType === 'home') {
                         const isAvailable = isServiceAvailableForHome('carwash', serviceKey, bookingData.unitType);
                         if (!isAvailable) {
-                          const alertMessage = bookingData.unitType === 'motorcycle'
-                            ? `${service.name} is not available for motorcycle home service. Only FAC Wash Special is available for motorcycles.`
-                            : service.name;
-                          showHomeServiceUnavailableAlert(alertMessage, goBackToStep1);
+                          if (bookingData.unitType === 'motorcycle') {
+                          showHomeServiceUnavailableAlert(`${service.name} is not available for motorcycle home service. Please check available motorcycle services in admin settings.`, goBackToStep1);
+                        } else {
+                          showHomeServiceUnavailableAlert(service.name, goBackToStep1);
+                        }
                           return;
                         }
                       }
