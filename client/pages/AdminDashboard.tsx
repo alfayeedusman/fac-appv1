@@ -73,6 +73,8 @@ import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
 import SalesDashboard from "@/components/SalesDashboard";
 import InventoryDashboard from "@/components/InventoryDashboard";
+import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
+import ImageUploadManager from "@/components/ImageUploadManager";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 
