@@ -44,6 +44,7 @@ import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminHomeService from "./pages/AdminHomeService";
 import AdminBookingSettings from "./pages/AdminBookingSettings";
 import ManagerDashboard from "./pages/ManagerDashboard";
+import CrewDashboard from "./pages/CrewDashboard";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -296,6 +297,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="manager">
                   <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crew-dashboard"
+              element={
+                <ProtectedRoute requiredRole="crew">
+                  <CrewDashboard />
                 </ProtectedRoute>
               }
             />
