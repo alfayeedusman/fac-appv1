@@ -25,6 +25,46 @@ export default function Login() {
     password: "",
   });
 
+  // Check for auto-login on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoLogin = urlParams.get("auto");
+    const userEmail = urlParams.get("email");
+
+    // Auto-login for superadmin
+    if (autoLogin === "true" && userEmail === "fffayeed@gmail.com") {
+      setFormData({
+        email: "fffayeed@gmail.com",
+        password: "Fayeed22beats"
+      });
+
+      // Trigger auto-login after a short delay
+      setTimeout(() => {
+        const event = new Event('submit');
+        document.querySelector('form')?.dispatchEvent(event);
+      }, 1000);
+    }
+  }, []);
+
+  // Auto-login function for superadmin
+  const triggerAutoLogin = () => {
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("userEmail", "fffayeed@gmail.com");
+    localStorage.setItem("userRole", "superadmin");
+    localStorage.setItem("justLoggedIn", "true");
+
+    toast({
+      title: "Auto-Login Successful! 🎉",
+      description: "Welcome back, Superadmin!",
+      variant: "default",
+      className: "bg-green-50 border-green-200 text-green-800",
+    });
+
+    setTimeout(() => {
+      navigate("/admin-dashboard");
+    }, 1000);
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -63,6 +103,8 @@ export default function Login() {
     const validUsers = [
       { email: "admin@fac.com", password: "admin123", role: "admin" },
       { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
+      { email: "fffayeed@gmail.com", password: "Fayeed22beats", role: "superadmin" },
+      { email: "manager@fayeedautocare.com", password: "manager123", role: "manager" },
       { email: "user@fac.com", password: "user123", role: "user" },
       { email: "demo@fac.com", password: "demo123", role: "user" },
       { email: "fayeedtest@g.com", password: "test101", role: "user" },
@@ -119,6 +161,12 @@ export default function Login() {
           authenticatedUser.role === "superadmin"
         ) {
           navigate("/admin-dashboard");
+        } else if (authenticatedUser.role === "manager") {
+          navigate("/manager-dashboard");
+        } else if (authenticatedUser.role === "cashier") {
+          navigate("/pos");
+        } else if (authenticatedUser.role === "inventory_manager") {
+          navigate("/inventory-management");
         } else if (hasCompletedWelcome) {
           // Returning user - go straight to dashboard
           navigate("/dashboard");
