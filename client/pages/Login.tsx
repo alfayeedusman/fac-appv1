@@ -352,19 +352,6 @@ export default function Login() {
                 )}
               </Button>
 
-              {/* Force Superadmin Login Button */}
-              <Button
-                type="button"
-                onClick={handleForceSuperadminLogin}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all group"
-              >
-                <div className="flex items-center justify-center">
-                  <span className="text-2xl mr-2">👑</span>
-                  {isLoading ? "Accessing..." : "FORCE SUPERADMIN LOGIN"}
-                  <span className="text-2xl ml-2">⚡</span>
-                </div>
-              </Button>
 
               {/* Biometric Login Option */}
               <Button
