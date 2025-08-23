@@ -75,6 +75,7 @@ import SalesDashboard from "@/components/SalesDashboard";
 import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
+import NotificationService from "@/components/NotificationService";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 
@@ -1357,13 +1358,15 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "notifications" && (
-            <NotificationCenter
-              notifications={notifications}
-              onMarkAsRead={() => {}}
-              onMarkAllAsRead={() => {}}
-              onApproveCustomer={() => {}}
-              onRejectCustomer={() => {}}
-            />
+            <div className="animate-fade-in-scale">
+              <NotificationService
+                userRole={userRole}
+                userId={localStorage.getItem('userEmail') || 'unknown'}
+                onNotificationReceived={(notification) => {
+                  console.log('New notification received:', notification);
+                }}
+              />
+            </div>
           )}
         </div>
       </div>
