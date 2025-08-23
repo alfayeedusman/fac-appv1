@@ -203,7 +203,15 @@ export default function EnhancedCrewDashboard() {
       switch (error.code) {
         case error.PERMISSION_DENIED:
           title = "Location Permission Denied";
-          description = "Please enable location permissions in your browser settings to use GPS tracking.";
+          description = "Please enable location permissions: Click the location icon in your browser's address bar, or check your browser settings.";
+          // Show additional help after a delay
+          setTimeout(() => {
+            toast({
+              title: "💡 How to Enable Location",
+              description: "1. Click the location icon (🔒) in address bar\n2. Select 'Allow' for location access\n3. Refresh this page",
+              duration: 8000,
+            });
+          }, 2000);
           break;
         case error.POSITION_UNAVAILABLE:
           title = "Location Unavailable";
