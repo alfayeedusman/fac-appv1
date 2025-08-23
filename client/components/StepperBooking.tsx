@@ -45,30 +45,31 @@ interface BookingData {
   // Service Selection
   category: string; // "carwash", "auto_detailing", "graphene_coating"
   service: string; // specific service type
-  
+  serviceType: string; // "branch" or "home"
+
   // Unit Selection
   unitType: string; // "car" or "motorcycle"
   unitSize: string; // sedan/suv/pickup etc for cars, regular/medium/big for motorcycles
-  
+
   // Customer Details
   fullName: string;
   mobile: string;
   email: string;
   plateNo: string;
   address: string;
-  
+
   // Schedule
   date: string;
   timeSlot: string;
   branch: string;
-  
+
   // Payment
   paymentMethod: string; // "branch" or "online"
   receiptFile: File | null;
-  
+
   // Terms
   acceptTerms: boolean;
-  
+
   // Computed
   basePrice: number;
   totalPrice: number;
@@ -168,6 +169,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   const [bookingData, setBookingData] = useState<BookingData>({
     category: "",
     service: "",
+    serviceType: "branch", // Default to branch service
     unitType: "",
     unitSize: "",
     fullName: "",
