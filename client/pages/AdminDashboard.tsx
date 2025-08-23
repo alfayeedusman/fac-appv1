@@ -316,14 +316,52 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
+    const email = localStorage.getItem("userEmail");
+
     if (role === "admin" || role === "superadmin") {
       setUserRole(role);
       // Initialize sample ads for demonstration
       initializeSampleAds();
+
+      // Load system notifications
+      loadSystemNotifications();
+
+      // Set up polling for new notifications every 10 seconds
+      const notificationInterval = setInterval(loadSystemNotifications, 10000);
+
+      return () => clearInterval(notificationInterval);
     } else {
       navigate("/login");
     }
   }, [navigate]);
+
+  const loadSystemNotifications = () => {
+    try {
+      const userRole = localStorage.getItem("userRole") as "admin" | "superadmin";
+      const userEmail = localStorage.getItem("userEmail") || "";
+
+      if (userRole && userEmail) {
+        const systemNotifications = getUserSystemNotifications(userEmail, userRole);
+
+        // Convert system notifications to the format expected by the UI
+        const formattedNotifications = systemNotifications.map((notification: SystemNotification) => ({
+          id: notification.id,
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          timestamp: new Date(notification.createdAt),
+          read: notification.readBy.some(r => r.userId === userEmail),
+          priority: notification.priority,
+          data: notification.data,
+          actionRequired: notification.type === 'new_booking',
+        }));
+
+        setNotifications(formattedNotifications);
+      }
+    } catch (error) {
+      console.error('Error loading system notifications:', error);
+    }
+  };
 
   const handleAddCustomer = () => {
     if (newCustomer.name && newCustomer.email && newCustomer.phone) {
