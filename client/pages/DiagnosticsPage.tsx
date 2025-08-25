@@ -245,6 +245,64 @@ export default function DiagnosticsPage() {
                 setIsRunning(true);
                 try {
                   toast({
+                    title: "🚨 Running Immediate Timeout Fix",
+                    description: "Diagnosing and fixing GPS timeout issues...",
+                    duration: 3000,
+                  });
+
+                  const result = await debugAndFixTimeout();
+                  console.log('🔧 Immediate fix result:', result);
+
+                  if (result.workaround?.success) {
+                    toast({
+                      title: "✅ Timeout Fix Applied",
+                      description: result.summary || "Workaround location saved for app use",
+                      duration: 6000,
+                    });
+                  } else if (result.diagnosis?.success) {
+                    toast({
+                      title: "✅ GPS Working",
+                      description: "No timeout issues detected - GPS is functioning normally",
+                      duration: 4000,
+                    });
+                  } else {
+                    toast({
+                      title: "⚠️ GPS Issues Detected",
+                      description: "Check console for detailed diagnosis and next steps",
+                      variant: "destructive",
+                      duration: 8000,
+                    });
+                  }
+
+                  setDiagnosticResults({
+                    ...diagnosticResults,
+                    immediateTimeoutFix: result
+                  });
+
+                } catch (error) {
+                  console.error('Immediate timeout fix failed:', error);
+                  toast({
+                    title: "❌ Fix Failed",
+                    description: error instanceof Error ? error.message : "Unknown error",
+                    variant: "destructive",
+                    duration: 5000,
+                  });
+                } finally {
+                  setIsRunning(false);
+                }
+              }}
+              variant="default"
+              disabled={isRunning}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              🚨 Fix Timeout NOW
+            </Button>
+            <Button
+              onClick={async () => {
+                setIsRunning(true);
+                try {
+                  toast({
                     title: "🚀 Testing Emergency GPS",
                     description: "Testing all timeout-resistant GPS strategies...",
                     duration: 3000,
