@@ -1,6 +1,7 @@
 // Database service to replace localStorage with proper MySQL backend
 import { type Booking } from "@/utils/databaseSchema";
 import FallbackService from "./fallbackService";
+import { formatError } from '../lib/errorUtils';
 
 const API_BASE_URL = '/api';
 
