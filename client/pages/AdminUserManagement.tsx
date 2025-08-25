@@ -48,7 +48,6 @@ import {
 import { notificationManager } from "@/components/NotificationModal";
 
 export default function AdminUserManagement() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserAccount[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
