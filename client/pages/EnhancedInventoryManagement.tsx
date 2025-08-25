@@ -628,7 +628,7 @@ export default function EnhancedInventoryManagement() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="products" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="services">Car Wash Services</TabsTrigger>
