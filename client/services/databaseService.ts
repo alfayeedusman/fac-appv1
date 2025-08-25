@@ -3,7 +3,7 @@ import { type Booking } from "@/utils/databaseSchema";
 import FallbackService from "./fallbackService";
 import { formatError } from '../lib/errorUtils';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface ApiResponse<T = any> {
   success?: boolean;
