@@ -693,10 +693,18 @@ export default function EnhancedCrewDashboard() {
       },
       (error) => {
         setIsTrackingLocation(false);
+        console.error('Refresh location error:', {
+          code: error.code,
+          message: error.message,
+          errorType: error.code === 1 ? 'PERMISSION_DENIED' :
+                    error.code === 2 ? 'POSITION_UNAVAILABLE' :
+                    error.code === 3 ? 'TIMEOUT' : 'UNKNOWN'
+        });
+
         let description = "Failed to get current location";
 
         switch (error.code) {
-          case error.PERMISSION_DENIED:
+          case 1: // PERMISSION_DENIED
             description = "Location permission denied. Please enable location access in your browser settings.";
             // Provide helpful instructions
             setTimeout(() => {
@@ -707,11 +715,14 @@ export default function EnhancedCrewDashboard() {
               });
             }, 1000);
             break;
-          case error.POSITION_UNAVAILABLE:
-            description = "Location information unavailable.";
+          case 2: // POSITION_UNAVAILABLE
+            description = "Location information unavailable. Please check your GPS settings.";
             break;
-          case error.TIMEOUT:
-            description = "Location request timed out.";
+          case 3: // TIMEOUT
+            description = "Location request timed out. Please try again.";
+            break;
+          default:
+            description = error.message ? `Location error: ${error.message}` : "An unknown location error occurred.";
             break;
         }
 
