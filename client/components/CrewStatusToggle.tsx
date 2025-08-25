@@ -193,12 +193,28 @@ export default function CrewStatusToggle({
         });
 
       } catch (error) {
-        console.error('Location error:', error);
+        // Use proper geolocation error handling utilities
+        const errorDetails = getGeolocationErrorDetails(error as GeolocationPositionError);
+        const errorHelp = getGeolocationErrorHelp(error as GeolocationPositionError);
+
+        console.error('Location error:', errorDetails);
+
         toast({
-          title: "Location Error",
-          description: "Unable to access your location. Please check permissions.",
+          title: errorHelp.title,
+          description: errorHelp.description,
           variant: "destructive",
         });
+
+        // Show additional help for permission errors
+        if ((error as GeolocationPositionError).code === 1 && errorHelp.helpText) {
+          setTimeout(() => {
+            toast({
+              title: "💡 Location Setup Help",
+              description: errorHelp.helpText,
+              duration: 10000,
+            });
+          }, 2000);
+        }
       }
     } else {
       setCrewData(prev => ({
