@@ -298,14 +298,8 @@ export default function EnhancedCrewDashboard() {
     navigator.geolocation.getCurrentPosition(
       handleLocationSuccess,
       (error) => {
-        const errorType = error.code === 1 ? 'PERMISSION_DENIED' :
-                         error.code === 2 ? 'POSITION_UNAVAILABLE' :
-                         error.code === 3 ? 'TIMEOUT' : 'UNKNOWN';
-        console.warn('Initial location fetch failed, starting watch anyway:', {
-          code: error.code,
-          message: error.message,
-          errorType
-        });
+        const errorDetails = getGeolocationErrorDetails(error);
+        console.warn('Initial location fetch failed, starting watch anyway:', errorDetails);
         // Continue to watchPosition even if getCurrentPosition fails
       },
       {
