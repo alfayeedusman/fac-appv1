@@ -41,7 +41,7 @@ export default function LevelBadge({
     const gradientClasses = `bg-gradient-to-br ${level.gradient}`;
     const glowClasses =
       level.badge.pattern === "glow"
-        ? `shadow-lg shadow-${level.color}/50 animate-pulse-glow`
+        ? `shadow-lg shadow-${level.color}/50`
         : "";
 
     switch (level.badge.shape) {
