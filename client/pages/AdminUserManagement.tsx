@@ -238,9 +238,9 @@ export default function AdminUserManagement() {
             </Card>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
