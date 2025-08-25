@@ -92,8 +92,15 @@ const sidebarItems = [
     id: "bookings",
     label: "Booking Hub",
     icon: Calendar,
-    description: "Booking & Crew Management",
+    description: "Booking Management",
     gradient: "from-green-500 to-blue-500",
+  },
+  {
+    id: "crew",
+    label: "Crew Management",
+    icon: Users,
+    description: "Team Groups & Location Tracking",
+    gradient: "from-orange-500 to-red-500",
   },
   {
     id: "images",
