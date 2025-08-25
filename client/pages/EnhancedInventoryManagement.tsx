@@ -1018,11 +1018,12 @@ export default function EnhancedInventoryManagement() {
                         </div>
                         <Button
                           variant="outline"
-                          className="w-full"
+                          className="w-full text-sm"
                           onClick={() => showServicePricing(service)}
                         >
                           <Car className="h-4 w-4 mr-2" />
-                          View Vehicle Pricing
+                          <span className="hidden sm:inline">View Vehicle Pricing</span>
+                          <span className="sm:hidden">Pricing</span>
                         </Button>
                       </div>
                     </CardContent>
