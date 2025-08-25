@@ -448,6 +448,81 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
         </Card>
       </div>
 
+      {/* Customer Ranking Stats */}
+      {(filters.type === 'customers' || filters.type === 'all') && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="bg-yellow-500 p-2 rounded-lg">
+                  <Crown className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-semibold text-yellow-700">Champions</p>
+                  <p className="text-xl font-bold text-yellow-900">{stats.championCustomers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="bg-red-600 p-2 rounded-lg">
+                  <Star className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-semibold text-red-700">VIP</p>
+                  <p className="text-xl font-bold text-red-900">{stats.vipCustomers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="bg-purple-600 p-2 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-semibold text-purple-700">Loyal</p>
+                  <p className="text-xl font-bold text-purple-900">{stats.loyalCustomers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="bg-blue-500 p-2 rounded-lg">
+                  <UserPlus className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-semibold text-blue-700">Regular</p>
+                  <p className="text-xl font-bold text-blue-900">{filteredLocations.filter(l => l.type === 'customer' && l.metadata?.rankCategory === 'regular').length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="bg-gray-500 p-2 rounded-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-semibold text-gray-700">New</p>
+                  <p className="text-xl font-bold text-gray-900">{stats.newCustomers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
