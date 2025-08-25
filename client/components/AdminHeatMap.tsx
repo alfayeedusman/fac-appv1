@@ -114,11 +114,50 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
       });
     }
 
-    // Generate customer locations
+    // Generate customer locations with ranking system
     for (let i = 1; i <= 50; i++) {
       const latOffset = (Math.random() - 0.5) * 0.3;
       const lngOffset = (Math.random() - 0.5) * 0.3;
-      
+
+      // Generate realistic customer data
+      const totalBookings = Math.floor(Math.random() * 100) + 1;
+      const totalSpent = totalBookings * (500 + Math.random() * 2000); // ₱500-2500 per booking
+      const monthlyVisits = Math.floor(Math.random() * 12) + 1;
+      const averageServiceValue = totalSpent / totalBookings;
+
+      // Determine service frequency based on bookings
+      let serviceFrequency: 'low' | 'medium' | 'high' | 'vip';
+      if (totalBookings >= 50) serviceFrequency = 'vip';
+      else if (totalBookings >= 25) serviceFrequency = 'high';
+      else if (totalBookings >= 10) serviceFrequency = 'medium';
+      else serviceFrequency = 'low';
+
+      // Calculate customer rank (1-100, higher is better)
+      const bookingScore = Math.min(totalBookings * 2, 60); // Max 60 points for bookings
+      const spendingScore = Math.min(totalSpent / 1000, 30); // Max 30 points for spending
+      const frequencyScore = Math.min(monthlyVisits, 10); // Max 10 points for frequency
+      const customerRank = Math.min(bookingScore + spendingScore + frequencyScore, 100);
+
+      // Determine rank category
+      let rankCategory: 'new' | 'regular' | 'loyal' | 'vip' | 'champion';
+      if (customerRank >= 80) rankCategory = 'champion';
+      else if (customerRank >= 60) rankCategory = 'vip';
+      else if (customerRank >= 40) rankCategory = 'loyal';
+      else if (customerRank >= 20) rankCategory = 'regular';
+      else rankCategory = 'new';
+
+      // Determine loyalty level based on rank
+      let loyaltyLevel: 'bronze' | 'silver' | 'gold' | 'platinum';
+      if (customerRank >= 75) loyaltyLevel = 'platinum';
+      else if (customerRank >= 55) loyaltyLevel = 'gold';
+      else if (customerRank >= 35) loyaltyLevel = 'silver';
+      else loyaltyLevel = 'bronze';
+
+      const preferredServices = [
+        'Basic Wash', 'Premium Wash', 'Deluxe Detail', 'Interior Clean',
+        'Wax & Polish', 'Engine Bay Clean'
+      ].slice(0, Math.floor(Math.random() * 3) + 1);
+
       locations.push({
         id: `customer-${i}`,
         type: 'customer',
@@ -128,10 +167,18 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
         status: Math.random() > 0.3 ? 'online' : 'offline',
         lastUpdate: new Date(Date.now() - Math.random() * 86400000).toISOString(),
         metadata: {
-          totalBookings: Math.floor(Math.random() * 50),
+          totalBookings,
           lastBooking: new Date(Date.now() - Math.random() * 2592000000).toISOString(),
           customerRating: 3 + Math.random() * 2,
-          loyaltyLevel: ['bronze', 'silver', 'gold', 'platinum'][Math.floor(Math.random() * 4)] as any
+          loyaltyLevel,
+          totalSpent,
+          averageServiceValue,
+          serviceFrequency,
+          preferredServices,
+          lastServiceDate: new Date(Date.now() - Math.random() * 1209600000).toISOString(), // Within 2 weeks
+          customerRank: Math.round(customerRank),
+          rankCategory,
+          monthlyVisits
         }
       });
     }
