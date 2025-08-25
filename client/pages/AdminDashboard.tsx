@@ -1493,7 +1493,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "user-management" && (
-            <div className="animate-fade-in-scale">
+            <div className="animate-fade-in-scale space-y-6">
               <AdminUserManagement />
             </div>
           )}
