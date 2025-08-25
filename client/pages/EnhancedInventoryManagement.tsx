@@ -1067,8 +1067,9 @@ export default function EnhancedInventoryManagement() {
                   </p>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
+        </TabsContent>
+      </Tabs>
+
       {/* Add Category Modal */}
       <Dialog
         open={showAddCategoryModal}
