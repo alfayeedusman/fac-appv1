@@ -37,7 +37,7 @@ export default function UpgradeNotificationBanner({
     >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3 flex-1">
-          <div className="bg-red-500 p-2 rounded-lg animate-pulse">
+          <div className="bg-red-500 p-2 rounded-lg ">
             {isRegularMember ? (
               <AlertCircle className="h-5 w-5 text-white" />
             ) : (
