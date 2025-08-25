@@ -59,35 +59,6 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-    Future<void> _forceSuperadminLogin() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    // Force superadmin login bypassing registration
-    final success = await authProvider.login(
-      'superadmin@fac.com',
-      'super123',
-    );
-
-    if (!mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('👑 FORCE SUPERADMIN LOGIN SUCCESSFUL! ⚡'),
-          backgroundColor: Color(0xFF9333EA), // Purple color
-          duration: Duration(seconds: 3),
-        ),
-      );
-      context.go('/admin-dashboard');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error ?? 'Force login failed'),
-          backgroundColor: AppColors.destructive,
-        ),
-      );
-    }
-  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
