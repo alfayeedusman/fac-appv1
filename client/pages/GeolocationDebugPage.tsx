@@ -47,10 +47,19 @@ export default function GeolocationDebugPage() {
         title: "Success!",
         description: `Location: ${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       logError(error, 'getCurrentPosition');
-      
-      if (error instanceof GeolocationPositionError) {
+
+      // Handle new formatted GeolocationError from utilities
+      if (error.name === 'GeolocationError' && error.originalError instanceof GeolocationPositionError) {
+        const errorHelp = getGeolocationErrorHelp(error.originalError);
+        toast({
+          title: errorHelp.title,
+          description: errorHelp.description,
+          variant: "destructive",
+        });
+      } else if (error instanceof GeolocationPositionError) {
+        // Handle direct GeolocationPositionError (fallback)
         const errorHelp = getGeolocationErrorHelp(error);
         toast({
           title: errorHelp.title,
