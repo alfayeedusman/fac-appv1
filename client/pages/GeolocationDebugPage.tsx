@@ -30,7 +30,7 @@ export default function GeolocationDebugPage() {
                error instanceof GeolocationPositionError ? getGeolocationErrorDetails(error) : error,
     };
     setErrors(prev => [errorInfo, ...prev.slice(0, 9)]); // Keep last 10 errors
-    console.error(`Geolocation ${context}:`, errorInfo);
+    console.error(`Geolocation ${context}:`, JSON.stringify(errorInfo));
   };
 
   const testGetCurrentPosition = async () => {

@@ -197,7 +197,7 @@ export default function CrewStatusToggle({
         const errorDetails = getGeolocationErrorDetails(error as GeolocationPositionError);
         const errorHelp = getGeolocationErrorHelp(error as GeolocationPositionError);
 
-        console.error('Location error:', errorDetails);
+        console.error('Location error:', JSON.stringify(errorDetails));
 
         toast({
           title: errorHelp.title,
