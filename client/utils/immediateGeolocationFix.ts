@@ -3,7 +3,7 @@
  * Run this to diagnose and fix timeout issues right now
  */
 
-export const immediateTimeoutFix = async () => {
+const immediateTimeoutFix = async () => {
   console.log('🚨 IMMEDIATE GEOLOCATION TIMEOUT FIX STARTING...');
   
   // Step 1: Check basic geolocation support
@@ -207,7 +207,7 @@ export const immediateTimeoutFix = async () => {
 /**
  * Apply immediate workaround for timeout issues
  */
-export const applyImmediateWorkaround = async () => {
+const applyImmediateWorkaround = async () => {
   console.log('🔧 APPLYING IMMEDIATE WORKAROUND...');
   
   // Try to get ANY location using most permissive settings
@@ -261,7 +261,7 @@ export const applyImmediateWorkaround = async () => {
 /**
  * Complete diagnostic and fix process
  */
-export const debugAndFixTimeout = async () => {
+const debugAndFixTimeout = async () => {
   console.log('🚨 STARTING COMPLETE GEOLOCATION DEBUG AND FIX...');
   console.log('=====================================');
   
