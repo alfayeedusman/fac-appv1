@@ -1487,7 +1487,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "inventory" && (
-            <div className="animate-fade-in-scale">
+            <div className="animate-fade-in-scale space-y-6">
               <EnhancedInventoryManagement />
             </div>
           )}
