@@ -181,7 +181,7 @@ export default function AdminUserManagement() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -239,7 +239,7 @@ export default function AdminUserManagement() {
           </div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
         <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -250,7 +250,7 @@ export default function AdminUserManagement() {
               />
             </div>
             <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
@@ -262,7 +262,7 @@ export default function AdminUserManagement() {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={() => setShowAddUserModal(true)}>
+            <Button onClick={() => setShowAddUserModal(true)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add User
             </Button>
@@ -273,7 +273,7 @@ export default function AdminUserManagement() {
             <CardHeader>
               <CardTitle>User Accounts</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -303,7 +303,7 @@ export default function AdminUserManagement() {
                             handleRoleChange(user.id, newRole)
                           }
                         >
-                          <SelectTrigger className="w-40">
+                          <SelectTrigger className="w-full min-w-40">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -333,11 +333,11 @@ export default function AdminUserManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                        <div className="flex gap-2 flex-wrap">
+                          <Button variant="outline" size="sm" className="min-w-0">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="min-w-0">
                             <Eye className="h-3 w-3" />
                           </Button>
                         </div>
