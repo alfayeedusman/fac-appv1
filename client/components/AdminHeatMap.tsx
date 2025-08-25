@@ -507,7 +507,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectItem value="vip">👑 VIP</SelectItem>
                     <SelectItem value="loyal">💎 Loyal</SelectItem>
                     <SelectItem value="regular">⭐ Regular</SelectItem>
-                    <SelectItem value="new">🆕 New</SelectItem>
+                    <SelectItem value="new">�� New</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -737,24 +737,112 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                 )}
                 
                 {selectedLocation.type === 'customer' && selectedLocation.metadata && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total Bookings:</span>
-                      <span className="text-sm font-medium">{selectedLocation.metadata.totalBookings}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Loyalty Level:</span>
-                      <Badge variant="outline" className="capitalize">
-                        {selectedLocation.metadata.loyaltyLevel}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Rating:</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-medium">{selectedLocation.metadata.customerRating?.toFixed(1)}</span>
+                  <div className="space-y-3">
+                    {/* Customer Rank */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Customer Rank</span>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={`capitalize ${
+                              selectedLocation.metadata.rankCategory === 'champion' ? 'bg-yellow-500 text-white' :
+                              selectedLocation.metadata.rankCategory === 'vip' ? 'bg-red-600 text-white' :
+                              selectedLocation.metadata.rankCategory === 'loyal' ? 'bg-purple-600 text-white' :
+                              selectedLocation.metadata.rankCategory === 'regular' ? 'bg-blue-500 text-white' :
+                              'bg-gray-500 text-white'
+                            }`}
+                          >
+                            {selectedLocation.metadata.rankCategory === 'champion' ? '👑 Champion' :
+                             selectedLocation.metadata.rankCategory === 'vip' ? '💎 VIP' :
+                             selectedLocation.metadata.rankCategory === 'loyal' ? '⭐ Loyal' :
+                             selectedLocation.metadata.rankCategory === 'regular' ? '📈 Regular' : '🆕 New'}
+                          </Badge>
+                          <span className="text-lg font-bold text-gray-900">#{selectedLocation.metadata.customerRank}</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Service Statistics */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-2 bg-green-50 rounded">
+                        <div className="text-lg font-bold text-green-700">{selectedLocation.metadata.totalBookings}</div>
+                        <div className="text-xs text-green-600">Total Bookings</div>
+                      </div>
+                      <div className="text-center p-2 bg-blue-50 rounded">
+                        <div className="text-lg font-bold text-blue-700">{selectedLocation.metadata.monthlyVisits}</div>
+                        <div className="text-xs text-blue-600">Monthly Visits</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Total Spent:</span>
+                        <span className="text-sm font-medium text-green-600">₱{selectedLocation.metadata.totalSpent?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Avg. Service Value:</span>
+                        <span className="text-sm font-medium">₱{selectedLocation.metadata.averageServiceValue?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Service Frequency:</span>
+                        <Badge
+                          variant="outline"
+                          className={`capitalize ${
+                            selectedLocation.metadata.serviceFrequency === 'vip' ? 'text-red-600 border-red-300' :
+                            selectedLocation.metadata.serviceFrequency === 'high' ? 'text-orange-600 border-orange-300' :
+                            selectedLocation.metadata.serviceFrequency === 'medium' ? 'text-blue-600 border-blue-300' :
+                            'text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          {selectedLocation.metadata.serviceFrequency}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Loyalty Tier:</span>
+                        <Badge
+                          className={`capitalize ${
+                            selectedLocation.metadata.loyaltyLevel === 'platinum' ? 'bg-gray-400 text-white' :
+                            selectedLocation.metadata.loyaltyLevel === 'gold' ? 'bg-yellow-500 text-white' :
+                            selectedLocation.metadata.loyaltyLevel === 'silver' ? 'bg-gray-300 text-gray-800' :
+                            'bg-orange-400 text-white'
+                          }`}
+                        >
+                          {selectedLocation.metadata.loyaltyLevel === 'platinum' ? '🥇 Platinum' :
+                           selectedLocation.metadata.loyaltyLevel === 'gold' ? '🥈 Gold' :
+                           selectedLocation.metadata.loyaltyLevel === 'silver' ? '🥉 Silver' : '🎖️ Bronze'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Customer Rating:</span>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                          <span className="text-sm font-medium">{selectedLocation.metadata.customerRating?.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Last Service:</span>
+                        <span className="text-sm font-medium">
+                          {selectedLocation.metadata.lastServiceDate ?
+                            new Date(selectedLocation.metadata.lastServiceDate).toLocaleDateString() :
+                            'N/A'
+                          }
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preferred Services */}
+                    {selectedLocation.metadata.preferredServices && selectedLocation.metadata.preferredServices.length > 0 && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Preferred Services</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedLocation.metadata.preferredServices.map((service, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {service}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
