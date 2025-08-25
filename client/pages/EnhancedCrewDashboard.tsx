@@ -1499,6 +1499,150 @@ export default function EnhancedCrewDashboard() {
             </div>
           </TabsContent>
 
+          {/* Status Management Tab */}
+          <TabsContent value="status" className="space-y-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Status Controls */}
+              <div className="lg:col-span-2">
+                <CrewStatusToggle
+                  crewId={currentUser?.id || 'unknown'}
+                  initialStatus={currentUser?.crewStatus as CrewStatus || 'offline'}
+                  onStatusChange={(status) => {
+                    // Update local user status
+                    if (currentUser) {
+                      const updatedUser = { ...currentUser, crewStatus: status };
+                      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    }
+
+                    // Refresh data to reflect status changes
+                    loadCrewData();
+                  }}
+                  onLocationToggle={(enabled) => {
+                    if (enabled) {
+                      startLocationTracking();
+                    } else {
+                      setIsTrackingLocation(false);
+                      setCurrentLocation(null);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Quick Info Panel */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Navigation className="h-5 w-5 text-fac-orange-500" />
+                      Location Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">GPS Tracking:</span>
+                      <Badge
+                        variant={isTrackingLocation ? "default" : "secondary"}
+                        className={isTrackingLocation ? "bg-green-100 text-green-800" : ""}
+                      >
+                        {isTrackingLocation ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+
+                    {currentLocation && (
+                      <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="font-medium">Current Location</span>
+                        </div>
+                        <div>📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Last updated: {new Date().toLocaleTimeString()}
+                        </div>
+                      </div>
+                    )}
+
+                    {!isTrackingLocation && (
+                      <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="font-medium">Location Required</span>
+                        </div>
+                        <p className="text-xs text-amber-700 mt-1">
+                          Enable location to receive nearby assignments
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Today's Performance */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-fac-orange-500" />
+                      Today's Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Assignments:</span>
+                      <span className="font-semibold">{stats.totalAssignments}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Completed:</span>
+                      <span className="font-semibold text-green-600">{stats.completedBookings}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Active Jobs:</span>
+                      <span className="font-semibold text-orange-600">{stats.activeJobs}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Rating:</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <span className="font-semibold">{stats.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Actions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button
+                      onClick={() => setActiveTab('assignments')}
+                      className="w-full justify-start"
+                      variant="outline"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      View New Assignments ({stats.pendingAssignments})
+                    </Button>
+                    <Button
+                      onClick={() => setActiveTab('active')}
+                      className="w-full justify-start"
+                      variant="outline"
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Active Jobs ({stats.activeJobs})
+                    </Button>
+                    <Button
+                      onClick={refreshLocation}
+                      className="w-full justify-start"
+                      variant="outline"
+                      disabled={!isTrackingLocation}
+                    >
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Refresh Location
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
           {/* Images Tab */}
           <TabsContent value="images" className="space-y-6">
             <div className="grid gap-4">
