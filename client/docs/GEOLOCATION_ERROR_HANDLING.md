@@ -158,6 +158,18 @@ if (!isGeolocationContextSecure()) {
 }
 ```
 
+## ⚠️ Important: Updated Error Format
+
+**Note**: As of the latest update, the geolocation utilities (`getCurrentPositionAsync` and `watchPositionAsync`) now return properly formatted Error objects instead of raw `GeolocationPositionError` objects to prevent "[object Object]" logging issues.
+
+The returned errors have the following structure:
+- `error.name`: Set to "GeolocationError"
+- `error.message`: Human-readable error message
+- `error.details`: Formatted error details object (same as `getGeolocationErrorDetails()`)
+- `error.originalError`: Original GeolocationPositionError for advanced handling
+
+This means errors will now always stringify properly when logged or used in templates.
+
 ### 5. Use Async/Await Pattern
 ```typescript
 import { getCurrentPositionAsync } from '@/utils/geolocationUtils';
@@ -166,8 +178,14 @@ try {
   const position = await getCurrentPositionAsync();
   console.log('Location:', position);
 } catch (error) {
-  const errorDetails = getGeolocationErrorDetails(error);
-  console.error('Location error:', errorDetails);
+  // Error is now a properly formatted Error object
+  console.error('Location error:', error.message); // Safe to log directly
+
+  // For detailed information, access error.details or use the original error
+  if (error.name === 'GeolocationError' && error.originalError) {
+    const errorDetails = getGeolocationErrorDetails(error.originalError);
+    console.error('Detailed error:', errorDetails);
+  }
 }
 ```
 
