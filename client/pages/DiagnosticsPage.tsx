@@ -119,8 +119,8 @@ export default function DiagnosticsPage() {
   const testGeolocationError = () => {
     // Simulate a geolocation error to test our error handling
     const mockError = {
-      code: 1,
-      message: 'User denied Geolocation',
+      code: 3,
+      message: 'Position acquisition timed out',
       PERMISSION_DENIED: 1,
       POSITION_UNAVAILABLE: 2,
       TIMEOUT: 3
@@ -129,11 +129,11 @@ export default function DiagnosticsPage() {
     try {
       const errorDetails = getGeolocationErrorDetails(mockError);
       const formattedError = formatAnyError(mockError);
-      
-      console.log('🧪 Mock geolocation error test:');
-      console.log('Error details:', errorDetails);
+
+      console.log('🧪 Test geolocation error formatting:');
+      console.log('Error details:', JSON.stringify(errorDetails));
       console.log('Formatted error:', formattedError);
-      
+
       toast({
         title: "Geolocation Error Test",
         description: formattedError,
@@ -141,6 +141,40 @@ export default function DiagnosticsPage() {
       });
     } catch (error) {
       showSafeErrorToast(error, "Test Error", toast);
+    }
+  };
+
+  const testTimeoutScenario = async () => {
+    setIsRunning(true);
+
+    try {
+      toast({
+        title: "Testing Timeout Handling",
+        description: "Testing GPS with very short timeout to simulate timeout scenario...",
+      });
+
+      // Test with very short timeout to force timeout error
+      const position = await getCurrentPositionAsync({
+        timeout: 1000, // 1 second - very short to force timeout
+        enableHighAccuracy: true
+      });
+
+      toast({
+        title: "Location Acquired",
+        description: `Got location despite short timeout: ±${Math.round(position.accuracy)}m`,
+      });
+
+    } catch (error) {
+      const formattedError = formatAnyError(error);
+      console.log('🧪 Timeout test result:', formattedError);
+
+      toast({
+        title: "Timeout Test Result",
+        description: formattedError,
+        variant: "destructive",
+      });
+    } finally {
+      setIsRunning(false);
     }
   };
 
