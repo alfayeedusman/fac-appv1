@@ -47,9 +47,6 @@ import {
   Trash2,
   Save,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import StickyHeader from "@/components/StickyHeader";
-import AdminSidebar from "@/components/AdminSidebar";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
 import {
   getProducts,
