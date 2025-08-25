@@ -858,6 +858,50 @@ export default function EnhancedCrewDashboard() {
                 >
                   <Navigation className="h-4 w-4" />
                 </Button>
+
+                <Button
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: "🚀 Testing Emergency GPS",
+                        description: "Running timeout-resistant location acquisition...",
+                        duration: 2000,
+                      });
+
+                      const location = await getLocationEmergency();
+                      if (location) {
+                        setCurrentLocation({ lat: location.lat, lng: location.lng });
+                        setIsTrackingLocation(true);
+                        toast({
+                          title: "✅ Emergency GPS Success",
+                          description: `Location acquired: ±${Math.round(location.accuracy || 1000)}m accuracy`,
+                          duration: 4000,
+                        });
+                      } else {
+                        toast({
+                          title: "⚠️ No Location Available",
+                          description: "All GPS methods failed. Check device settings.",
+                          variant: "destructive",
+                          duration: 5000,
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Emergency GPS test failed:', error);
+                      toast({
+                        title: "❌ Emergency GPS Failed",
+                        description: error instanceof Error ? error.message : "Unknown error occurred",
+                        variant: "destructive",
+                        duration: 6000,
+                      });
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="px-3 hover:bg-blue-50 border-blue-300 text-blue-700"
+                  title="Test emergency GPS (timeout-resistant)"
+                >
+                  <span className="text-xs">🚀 Test</span>
+                </Button>
               </div>
 
               {/* Debug info in development */}
