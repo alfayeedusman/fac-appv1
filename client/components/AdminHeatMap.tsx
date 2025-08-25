@@ -42,6 +42,14 @@ interface LocationData {
     lastBooking?: string;
     customerRating?: number;
     loyaltyLevel?: 'bronze' | 'silver' | 'gold' | 'platinum';
+    totalSpent?: number;
+    averageServiceValue?: number;
+    serviceFrequency?: 'low' | 'medium' | 'high' | 'vip';
+    preferredServices?: string[];
+    lastServiceDate?: string;
+    customerRank?: number;
+    rankCategory?: 'new' | 'regular' | 'loyal' | 'vip' | 'champion';
+    monthlyVisits?: number;
     // For crew
     currentAssignments?: number;
     completedJobs?: number;
