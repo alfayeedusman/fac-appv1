@@ -584,8 +584,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="Admin Dashboard" />
-
       {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
