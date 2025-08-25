@@ -19,6 +19,11 @@ import {
   Timer,
   User
 } from 'lucide-react';
+import {
+  getGeolocationErrorDetails,
+  getGeolocationErrorMessage,
+  getGeolocationErrorHelp
+} from '@/utils/geolocationUtils';
 
 export type CrewStatus = 'online' | 'offline' | 'busy' | 'available' | 'on_break';
 
