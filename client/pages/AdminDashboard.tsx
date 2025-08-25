@@ -1231,8 +1231,7 @@ export default function AdminDashboard() {
                 {packages.map((pkg, index) => (
                   <Card
                     key={pkg.id}
-                    className={`glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden animate-fade-in-up`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
