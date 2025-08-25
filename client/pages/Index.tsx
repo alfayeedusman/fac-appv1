@@ -219,7 +219,7 @@ export default function Index() {
           <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-100 group">
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
-                <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
+                <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center">
                   <Car className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div>
@@ -238,7 +238,7 @@ export default function Index() {
           <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-200 group">
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
-                <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
+                <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center">
                   <Star className="h-8 w-8 text-white group-hover:rotate-12 transition-transform duration-300" />
                 </div>
                 <div>
@@ -257,7 +257,7 @@ export default function Index() {
           <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-300 group">
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
-                <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow">
+                <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center">
                   <Droplets className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div>
@@ -276,7 +276,7 @@ export default function Index() {
           <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-400 group">
             <CardContent className="p-8">
               <div className="flex items-center space-x-6">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse-glow bg-gradient-to-r from-yellow-500 to-orange-500">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-r from-yellow-500 to-orange-500">
                   <Shield className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div>
@@ -309,7 +309,7 @@ export default function Index() {
             <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-100">
               <CardContent className="p-8">
                 <div className="text-center">
-                  <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                  <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <Crown className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="font-black text-foreground text-xl mb-4">
@@ -328,7 +328,7 @@ export default function Index() {
             <Card className="glass border-border shadow-xl hover-lift animate-fade-in-up animate-delay-200">
               <CardContent className="p-8">
                 <div className="text-center">
-                  <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                  <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <Star className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="font-black text-foreground text-xl mb-4">
