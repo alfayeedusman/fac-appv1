@@ -37,9 +37,6 @@ import {
   UserX,
   Eye,
 } from "lucide-react";
-import StickyHeader from "@/components/StickyHeader";
-import AdminSidebar from "@/components/AdminSidebar";
-import { useNavigate } from "react-router-dom";
 import {
   getUserAccounts,
   createUserAccount,
