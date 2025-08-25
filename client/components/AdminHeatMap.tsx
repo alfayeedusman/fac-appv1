@@ -520,7 +520,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectItem value="platinum">🥇 Platinum</SelectItem>
                     <SelectItem value="gold">🥈 Gold</SelectItem>
                     <SelectItem value="silver">🥉 Silver</SelectItem>
-                    <SelectItem value="bronze">🎖��� Bronze</SelectItem>
+                    <SelectItem value="bronze">🎖️ Bronze</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -633,24 +633,50 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                       })}
                       
                       {/* Legend */}
-                      <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border">
+                      <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border max-w-xs">
                         <h4 className="font-semibold text-sm mb-2">Legend</h4>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span>Crew Online</span>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="space-y-1">
+                            <div className="font-medium text-gray-700">Status</div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                              <span>Crew Online</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                              <span>Crew Busy</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                              <span>Customer Active</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                              <span>Offline</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                            <span>Crew Busy</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                            <span>Customer Active</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                            <span>Offline</span>
+                          <div className="space-y-1">
+                            <div className="font-medium text-gray-700">Customer Rank</div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs">👑</div>
+                              <span>Champion</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold">V</div>
+                              <span>VIP</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">L</div>
+                              <span>Loyal</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">R</div>
+                              <span>Regular</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-gray-500 rounded-full flex items-center justify-center text-white text-xs font-bold">N</div>
+                              <span>New</span>
+                            </div>
                           </div>
                         </div>
                       </div>
