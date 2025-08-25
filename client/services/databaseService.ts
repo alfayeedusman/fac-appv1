@@ -284,7 +284,7 @@ export class DatabaseService {
           await this.createBooking(dbBooking);
           migrated++;
         } catch (error) {
-          errors.push(`Failed to migrate booking: ${error}`);
+          errors.push(`Failed to migrate booking: ${formatError(error)}`);
         }
       }
       
