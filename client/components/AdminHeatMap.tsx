@@ -350,7 +350,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={refreshData} variant="outline" size="sm">
-            <Refresh className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
           <Button 
@@ -595,7 +595,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                   <SelectContent>
                     <SelectItem value="all">All Tiers</SelectItem>
                     <SelectItem value="platinum">🥇 Platinum</SelectItem>
-                    <SelectItem value="gold">🥈 Gold</SelectItem>
+                    <SelectItem value="gold">�� Gold</SelectItem>
                     <SelectItem value="silver">🥉 Silver</SelectItem>
                     <SelectItem value="bronze">🎖️ Bronze</SelectItem>
                   </SelectContent>
