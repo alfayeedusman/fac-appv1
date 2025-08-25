@@ -24,6 +24,7 @@ import {
   getLocationEmergency,
   testGeolocationStrategies
 } from '@/utils/geolocationTimeoutFix';
+import { emergencyGPSFix } from '@/utils/quickLocationFix';
 import CrewStatusToggle, { type CrewStatus } from '@/components/CrewStatusToggle';
 import { 
   Calendar,
