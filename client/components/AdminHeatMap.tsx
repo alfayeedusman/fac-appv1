@@ -25,7 +25,9 @@ import {
   Maximize2,
   Minimize2,
   Download,
-  Layers
+  Layers,
+  Crown,
+  UserPlus
 } from 'lucide-react';
 
 interface LocationData {
