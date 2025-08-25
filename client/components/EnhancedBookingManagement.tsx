@@ -671,7 +671,10 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
                           <div>
                             <h4 className="font-semibold mb-3">Status & Progress</h4>
                             <div className="space-y-2">
-                              <p><strong>Current Status:</strong> {getStatusBadge(selectedBooking.status)}</p>
+                              <div className="flex items-center gap-2">
+                                <span><strong>Current Status:</strong></span>
+                                {getStatusBadge(selectedBooking.status)}
+                              </div>
                               {selectedBooking.crewArrivalTime && (
                                 <p><strong>Crew Arrival:</strong> {new Date(selectedBooking.crewArrivalTime).toLocaleString()}</p>
                               )}
