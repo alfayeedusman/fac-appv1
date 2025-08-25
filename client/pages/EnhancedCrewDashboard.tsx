@@ -881,112 +881,205 @@ export default function EnhancedCrewDashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="assignments" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              New Assignments
-            </TabsTrigger>
-            <TabsTrigger value="active" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Active Jobs
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="images" className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              Images
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="bg-white rounded-lg shadow-sm border p-1">
+            <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
+              <TabsTrigger
+                value="assignments"
+                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">New Assignments</span>
+                <span className="sm:hidden">New</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="active"
+                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">Active Jobs</span>
+                <span className="sm:hidden">Active</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <CheckCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="images"
+                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <ImageIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Images</span>
+                <span className="sm:hidden">Pics</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Assignments Tab */}
-          <TabsContent value="assignments" className="space-y-6">
-            <div className="grid gap-4">
+          <TabsContent value="assignments" className="space-y-6 mt-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">New Assignments</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {assignments.filter(a => a.status === 'assigned').length} pending assignment{assignments.filter(a => a.status === 'assigned').length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <Badge variant="secondary" className="px-3 py-1">
+                {assignments.filter(a => a.status === 'assigned').length} New
+              </Badge>
+            </div>
+
+            <div className="grid gap-6">
               {assignments.filter(a => a.status === 'assigned').map((assignment) => {
                 const booking = bookings.find(b => b.id === assignment.bookingId);
                 if (!booking) return null;
 
                 return (
-                  <Card key={assignment.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+                  <Card key={assignment.id} className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-fac-orange-500 bg-gradient-to-r from-orange-50 to-white">
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="grid md:grid-cols-3 gap-4 flex-1">
-                          <div>
-                            <h3 className="font-semibold text-lg">
-                              {booking.guestInfo ? 
-                                `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : 
-                                'Registered Customer'
-                              }
-                            </h3>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Phone className="h-4 w-4 mr-1" />
-                              {booking.guestInfo?.phone || 'Customer Phone'}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Mail className="h-4 w-4 mr-1" />
-                              {booking.guestInfo?.email || 'Customer Email'}
-                            </p>
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Main Content */}
+                        <div className="flex-1 space-y-4">
+                          {/* Customer Info */}
+                          <div className="flex items-start gap-4">
+                            <div className="bg-fac-orange-100 p-3 rounded-full">
+                              <User className="h-5 w-5 text-fac-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-bold text-lg text-gray-900">
+                                {booking.guestInfo ?
+                                  `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
+                                  'Registered Customer'
+                                }
+                              </h3>
+                              <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                                <p className="text-sm text-gray-600 flex items-center">
+                                  <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                                  {booking.guestInfo?.phone || 'Customer Phone'}
+                                </p>
+                                <p className="text-sm text-gray-600 flex items-center">
+                                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                                  {booking.guestInfo?.email || 'Customer Email'}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-fac-orange-500">{booking.service}</p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              {booking.date} at {booking.timeSlot}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <MapPin className="h-4 w-4 mr-1" />
-                              {booking.branch}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Clock className="h-4 w-4 mr-1" />
-                              Est. {booking.estimatedDuration} mins
-                            </p>
+
+                          {/* Service & Vehicle Info */}
+                          <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Wrench className="h-5 w-5 text-fac-orange-500" />
+                                <div>
+                                  <p className="font-semibold text-fac-orange-600">{booking.service}</p>
+                                  <p className="text-sm text-gray-500">Service Package</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Calendar className="h-5 w-5 text-blue-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.date}</p>
+                                  <p className="text-sm text-gray-500">{booking.timeSlot}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <MapPin className="h-5 w-5 text-green-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.branch}</p>
+                                  <p className="text-sm text-gray-500">Service Location</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Car className="h-5 w-5 text-purple-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.unitType}</p>
+                                  <p className="text-sm text-gray-500">{booking.plateNumber}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Clock className="h-5 w-5 text-amber-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.estimatedDuration} mins</p>
+                                  <p className="text-sm text-gray-500">Estimated Duration</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">💰</span>
+                                <div>
+                                  <p className="font-bold text-xl text-fac-orange-600">₱{booking.totalPrice.toLocaleString()}</p>
+                                  <p className="text-sm text-gray-500">Total Amount</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-lg text-fac-orange-500">₱{booking.totalPrice.toLocaleString()}</p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Car className="h-4 w-4 mr-1" />
-                              {booking.unitType} - {booking.plateNumber}
-                            </p>
-                            {getStatusBadge(assignment.status)}
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Assigned: {new Date(assignment.assignedAt).toLocaleString()}
-                            </p>
+
+                          {/* Assignment Details */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {getStatusBadge(assignment.status)}
+                                <span className="text-sm text-gray-500">
+                                  Assigned: {new Date(assignment.assignedAt).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4">
-                          <Button 
+
+                        {/* Action Buttons */}
+                        <div className="flex lg:flex-col gap-3 lg:min-w-[140px]">
+                          <Button
                             onClick={() => acceptAssignment(assignment.id)}
-                            className="bg-green-500 hover:bg-green-600"
+                            className="flex-1 lg:flex-none bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
                           >
-                            <CheckCircle className="h-4 w-4 mr-1" />
+                            <CheckCircle className="h-5 w-5 mr-2" />
                             Accept
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => rejectAssignment(assignment.id)}
                             variant="destructive"
+                            className="flex-1 lg:flex-none font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
                           >
-                            <XCircle className="h-4 w-4 mr-1" />
+                            <XCircle className="h-5 w-5 mr-2" />
                             Reject
                           </Button>
                         </div>
                       </div>
+
                       {booking.notes && (
-                        <div className="mt-4 p-3 bg-muted rounded-lg">
-                          <p className="text-sm"><strong>Notes:</strong> {booking.notes}</p>
+                        <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                          <div className="flex items-start gap-3">
+                            <MessageSquare className="h-5 w-5 text-blue-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-blue-900">Special Instructions</p>
+                              <p className="text-sm text-blue-700 mt-1">{booking.notes}</p>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
                 );
               })}
+
               {assignments.filter(a => a.status === 'assigned').length === 0 && (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No new assignments at the moment</p>
+                <Card className="border-2 border-dashed border-gray-200">
+                  <CardContent className="p-12 text-center">
+                    <div className="bg-gray-100 p-6 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                      <Calendar className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No New Assignments</h3>
+                    <p className="text-gray-600 mb-4">You're all caught up! New assignments will appear here when available.</p>
+                    <Badge variant="outline" className="px-4 py-2">
+                      ✨ Ready for new work
+                    </Badge>
                   </CardContent>
                 </Card>
               )}
