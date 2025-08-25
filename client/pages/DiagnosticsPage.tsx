@@ -14,12 +14,16 @@ import {
   getNetworkDiagnostics,
   logNetworkDiagnostics 
 } from '@/utils/networkDiagnostics';
-import { 
+import {
   getCurrentPositionAsync,
   getGeolocationErrorDetails,
   isGeolocationSupported,
-  isGeolocationContextSecure 
+  isGeolocationContextSecure
 } from '@/utils/geolocationUtils';
+import {
+  getLocationEmergency,
+  testGeolocationStrategies
+} from '@/utils/geolocationTimeoutFix';
 import { formatError } from '@/lib/errorUtils';
 import { 
   RefreshCw, 
