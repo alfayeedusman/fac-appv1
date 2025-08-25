@@ -286,12 +286,6 @@ export default function EnhancedCrewDashboard() {
           });
         }, 2000);
       }
-
-      toast({
-        title,
-        description,
-        variant: "destructive",
-      });
     };
 
     // First try to get current position
