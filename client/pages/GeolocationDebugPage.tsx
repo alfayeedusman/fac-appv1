@@ -26,7 +26,8 @@ export default function GeolocationDebugPage() {
     const errorInfo = {
       context,
       timestamp: new Date().toISOString(),
-      details: error instanceof GeolocationPositionError ? getGeolocationErrorDetails(error) : error,
+      details: error.name === 'GeolocationError' && error.details ? error.details :
+               error instanceof GeolocationPositionError ? getGeolocationErrorDetails(error) : error,
     };
     setErrors(prev => [errorInfo, ...prev.slice(0, 9)]); // Keep last 10 errors
     console.error(`Geolocation ${context}:`, errorInfo);
