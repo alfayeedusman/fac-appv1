@@ -1373,7 +1373,7 @@ export default function AdminDashboard() {
 
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <Crown className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-xl font-black text-foreground mb-2">
