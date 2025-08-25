@@ -26,7 +26,6 @@ import {
   UserX,
   RefreshCw,
 } from "lucide-react";
-import StickyHeader from "@/components/StickyHeader";
 import SubscriptionRequestCard from "@/components/SubscriptionRequestCard";
 import {
   SubscriptionRequest,
@@ -227,20 +226,7 @@ export default function AdminSubscriptionApproval() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
-      <StickyHeader
-        showBack={true}
-        title="Subscription Approvals"
-        backTo="/admin-dashboard"
-      />
-
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-80 h-80 rounded-full bg-gradient-to-r from-fac-orange-500/8 to-purple-500/8 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/8 to-fac-orange-500/8 blur-2xl animate-float"></div>
-      </div>
-
-      <div className="px-6 py-8 max-w-7xl mx-auto relative z-10">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 animate-fade-in-up">
           <div className="flex items-center space-x-4">
@@ -479,7 +465,6 @@ export default function AdminSubscriptionApproval() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
