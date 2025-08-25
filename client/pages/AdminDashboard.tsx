@@ -1071,7 +1071,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "customers" && (
-            <Card className="glass border-border shadow-2xl animate-fade-in-scale">
+            <Card className="glass border-border shadow-2xl">
               <CardHeader>
                 <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center">
