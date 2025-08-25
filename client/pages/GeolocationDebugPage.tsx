@@ -105,10 +105,23 @@ export default function GeolocationDebugPage() {
           description: `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`,
         });
       },
-      (error) => {
+      (error: any) => {
         logError(error, 'watchPosition');
-        
-        const errorHelp = getGeolocationErrorHelp(error);
+
+        // Handle new formatted GeolocationError from utilities
+        let errorHelp;
+        if (error.name === 'GeolocationError' && error.originalError instanceof GeolocationPositionError) {
+          errorHelp = getGeolocationErrorHelp(error.originalError);
+        } else if (error instanceof GeolocationPositionError) {
+          // Handle direct GeolocationPositionError (fallback)
+          errorHelp = getGeolocationErrorHelp(error);
+        } else {
+          errorHelp = {
+            title: "Location Error",
+            description: error instanceof Error ? error.message : "Unknown error occurred"
+          };
+        }
+
         toast({
           title: errorHelp.title,
           description: errorHelp.description,
