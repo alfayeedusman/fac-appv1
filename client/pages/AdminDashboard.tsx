@@ -612,6 +612,13 @@ export default function AdminDashboard() {
                   {activeTab === "sales" && "Sales Dashboard"}
                   {activeTab === "inventory" && "Inventory Dashboard"}
                   {activeTab === "notifications" && "Notifications"}
+                  {activeTab === "cms" && "Content Management"}
+                  {activeTab === "push-notifications" && "Push Notifications"}
+                  {activeTab === "gamification" && "Gamification"}
+                  {activeTab === "subscription-approval" && "Subscription Approval"}
+                  {activeTab === "booking" && "Booking Settings"}
+                  {activeTab === "pos" && "Point of Sale"}
+                  {activeTab === "user-management" && "User Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
