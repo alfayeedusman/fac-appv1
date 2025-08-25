@@ -64,6 +64,9 @@ interface HeatMapFilters {
   status: 'all' | 'online' | 'offline' | 'busy' | 'available';
   timeRange: '1h' | '6h' | '24h' | '7d';
   groupId?: string;
+  customerRank?: 'all' | 'new' | 'regular' | 'loyal' | 'vip' | 'champion';
+  loyaltyLevel?: 'all' | 'bronze' | 'silver' | 'gold' | 'platinum';
+  serviceFrequency?: 'all' | 'low' | 'medium' | 'high' | 'vip';
 }
 
 interface AdminHeatMapProps {
