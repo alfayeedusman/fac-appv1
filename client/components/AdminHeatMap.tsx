@@ -80,7 +80,10 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
   const [filters, setFilters] = useState<HeatMapFilters>({
     type: 'all',
     status: 'all',
-    timeRange: '24h'
+    timeRange: '24h',
+    customerRank: 'all',
+    loyaltyLevel: 'all',
+    serviceFrequency: 'all'
   });
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
