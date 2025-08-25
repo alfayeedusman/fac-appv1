@@ -698,44 +698,30 @@ export default function EnhancedCrewDashboard() {
       },
       (error) => {
         setIsTrackingLocation(false);
-        console.error('Refresh location error:', {
-          code: error.code,
-          message: error.message,
-          errorType: error.code === 1 ? 'PERMISSION_DENIED' :
-                    error.code === 2 ? 'POSITION_UNAVAILABLE' :
-                    error.code === 3 ? 'TIMEOUT' : 'UNKNOWN'
-        });
 
-        let description = "Failed to get current location";
+        // Log error details for debugging
+        const errorDetails = getGeolocationErrorDetails(error);
+        console.error('Refresh location error:', errorDetails);
 
-        switch (error.code) {
-          case 1: // PERMISSION_DENIED
-            description = "Location permission denied. Please enable location access in your browser settings.";
-            // Provide helpful instructions
-            setTimeout(() => {
-              toast({
-                title: "🔧 Location Setup Help",
-                description: "Chrome/Edge: Click 🔒 in address bar → Site settings → Location → Allow\nFirefox: Click 🛡️ → Permissions → Location → Allow",
-                duration: 10000,
-              });
-            }, 1000);
-            break;
-          case 2: // POSITION_UNAVAILABLE
-            description = "Location information unavailable. Please check your GPS settings.";
-            break;
-          case 3: // TIMEOUT
-            description = "Location request timed out. Please try again.";
-            break;
-          default:
-            description = error.message ? `Location error: ${error.message}` : "An unknown location error occurred.";
-            break;
-        }
+        // Get user-friendly error information
+        const errorHelp = getGeolocationErrorHelp(error);
 
         toast({
-          title: "Location Error",
-          description,
+          title: errorHelp.title,
+          description: errorHelp.description,
           variant: "destructive",
         });
+
+        // Show additional help for permission errors
+        if (error.code === 1 && errorHelp.helpText) {
+          setTimeout(() => {
+            toast({
+              title: "🔧 Location Setup Help",
+              description: errorHelp.helpText,
+              duration: 10000,
+            });
+          }, 1000);
+        }
       },
       {
         enableHighAccuracy: true,
