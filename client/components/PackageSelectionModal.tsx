@@ -157,7 +157,7 @@ export default function PackageSelectionModal({
 
               <div className="text-center mb-6">
                 <div
-                  className={`w-16 h-16 rounded-full bg-gradient-to-r ${pkg.color} flex items-center justify-center mx-auto mb-4 animate-pulse-glow`}
+                  className={`w-16 h-16 rounded-full bg-gradient-to-r ${pkg.color} flex items-center justify-center mx-auto mb-4 `}
                 >
                   {pkg.id === "classic" ? (
                     <Star className="h-8 w-8 text-white" />
@@ -260,7 +260,7 @@ export default function PackageSelectionModal({
 
                       <div className="text-center mb-6">
                         <div
-                          className={`w-16 h-16 rounded-full bg-gradient-to-r ${pkg.color} flex items-center justify-center mx-auto mb-4 animate-pulse-glow`}
+                          className={`w-16 h-16 rounded-full bg-gradient-to-r ${pkg.color} flex items-center justify-center mx-auto mb-4 `}
                         >
                           {pkg.id === "classic" ? (
                             <Star className="h-8 w-8 text-white" />
