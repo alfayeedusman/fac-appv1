@@ -443,10 +443,7 @@ export default function CrewGroupManagement({ onGroupSelect, selectedGroupId }: 
                       <SelectContent>
                         {GROUP_COLORS.map(color => (
                           <SelectItem key={color.value} value={color.value}>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${color.bgClass}`}></div>
-                              {color.name}
-                            </div>
+                            {color.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

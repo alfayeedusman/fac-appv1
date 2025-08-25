@@ -309,15 +309,7 @@ export default function AdminUserManagement() {
                           <SelectContent>
                             {roleOptions.map((role) => (
                               <SelectItem key={role.value} value={role.value}>
-                                <Badge
-                                  style={{
-                                    backgroundColor: role.color,
-                                    color: "white",
-                                  }}
-                                  className="mr-2"
-                                >
-                                  {role.label}
-                                </Badge>
+                                {role.label}
                               </SelectItem>
                             ))}
                           </SelectContent>

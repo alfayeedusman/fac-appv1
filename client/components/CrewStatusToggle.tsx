@@ -326,36 +326,11 @@ export default function CrewStatusToggle({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="available">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-blue-500" />
-                        Available - Ready for work
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="online">
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-green-500" />
-                        Online - Active
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="busy">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-orange-500" />
-                        Busy - Working
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="on_break">
-                      <div className="flex items-center gap-2">
-                        <Pause className="h-4 w-4 text-purple-500" />
-                        On Break
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="offline">
-                      <div className="flex items-center gap-2">
-                        <WifiOff className="h-4 w-4 text-gray-500" />
-                        Offline - End of shift
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="available">✅ Available - Ready for work</SelectItem>
+                    <SelectItem value="online">🟢 Online - Active</SelectItem>
+                    <SelectItem value="busy">🟠 Busy - Working</SelectItem>
+                    <SelectItem value="on_break">⏸️ On Break</SelectItem>
+                    <SelectItem value="offline">⚫ Offline - End of shift</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
