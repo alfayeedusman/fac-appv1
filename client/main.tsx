@@ -2,6 +2,7 @@ import "./global.css";
 import { setupGlobalErrorCatching } from './utils/globalErrorHandler';
 import './utils/emergencyFix';
 import './utils/immediateGeolocationFix'; // Load immediate GPS fix tools
+import './utils/validateTimeoutFix'; // Load validation tools
 
 // Initialize global error catching to prevent "[object Object]" errors
 setupGlobalErrorCatching();
