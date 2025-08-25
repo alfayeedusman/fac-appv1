@@ -228,7 +228,7 @@ export default function AdminSubscriptionApproval() {
   return (
     <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 animate-fade-in-up">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 animate-fade-in-up">
           <div className="flex items-center space-x-4">
             <Link to="/admin-dashboard">
               <Button
@@ -260,7 +260,7 @@ export default function AdminSubscriptionApproval() {
           <Button
             onClick={loadRequests}
             variant="outline"
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 w-full lg:w-auto"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Refresh</span>
@@ -268,7 +268,7 @@ export default function AdminSubscriptionApproval() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8 animate-fade-in-up animate-delay-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 animate-fade-in-up animate-delay-100">
           <Card className="glass border-border">
             <CardContent className="p-4 text-center">
               <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
@@ -349,7 +349,7 @@ export default function AdminSubscriptionApproval() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
