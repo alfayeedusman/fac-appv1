@@ -2,7 +2,7 @@
  * Quick validation to check if geolocation timeout fixes are working
  */
 
-export const validateTimeoutFixStatus = async () => {
+const validateTimeoutFixStatus = async () => {
   console.log('🔍 VALIDATING GEOLOCATION TIMEOUT FIX STATUS...');
   console.log('================================================');
   
@@ -150,7 +150,7 @@ export const validateTimeoutFixStatus = async () => {
 /**
  * Run immediate fix if validation fails
  */
-export const autoFixIfNeeded = async () => {
+const autoFixIfNeeded = async () => {
   console.log('🔄 RUNNING AUTO-FIX IF NEEDED...');
   
   const validation = await validateTimeoutFixStatus();
