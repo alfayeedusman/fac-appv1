@@ -741,72 +741,96 @@ export default function EnhancedCrewDashboard() {
       
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center">
-              <Wrench className="h-8 w-8 mr-3 text-fac-orange-500" />
-              Crew Dashboard
-            </h1>
-            <div className="flex items-center gap-6 mt-2 text-muted-foreground">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                {currentUser?.fullName}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-fac-orange-100 p-4 rounded-xl">
+                <Wrench className="h-8 w-8 text-fac-orange-600" />
               </div>
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-2" />
-                {currentUser?.branchLocation}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Crew Dashboard</h1>
+                <div className="flex flex-wrap items-center gap-4 text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span className="font-semibold">{currentUser?.fullName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <span>{currentUser?.branchLocation}</span>
+                  </div>
+                  {currentUser?.crewRating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      <span className="font-medium">{currentUser.crewRating}/5.0</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm">Status:</span>
+                    <Badge
+                      className={cn(
+                        "font-medium",
+                        (currentUser?.crewStatus === 'online' || currentUser?.crewStatus === 'busy')
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {currentUser?.crewStatus || 'offline'}
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              {currentUser?.crewRating && (
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                  {currentUser.crewRating}/5.0
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {isWorkActive && (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg font-medium">
+                  <Timer className="h-4 w-4" />
+                  <span>Work Time: {formatTime(workTimer)}</span>
                 </div>
               )}
-              <div className="flex items-center">
-                <Activity className="h-4 w-4 mr-1" />
-                Status: <Badge className="ml-2">{currentUser?.crewStatus || 'offline'}</Badge>
+
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={isTrackingLocation && currentLocation ? "default" : "outline"}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5",
+                    isTrackingLocation && currentLocation ? "bg-green-100 text-green-800 border-green-200" :
+                    isTrackingLocation ? "bg-yellow-100 text-yellow-800 border-yellow-200" :
+                    "bg-red-100 text-red-800 border-red-200"
+                  )}
+                >
+                  <Navigation className="h-3 w-3" />
+                  <span className="font-medium">GPS {getLocationStatus()}</span>
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={refreshLocation}
+                  disabled={isTrackingLocation && !currentLocation}
+                  className="px-3 hover:bg-gray-50"
+                  title="Refresh location"
+                >
+                  <Navigation className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {isWorkActive && (
-              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-lg">
-                <Timer className="h-4 w-4" />
-                {formatTime(workTimer)}
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={isTrackingLocation && currentLocation ? "default" : "outline"}
-                className={cn(
-                  "flex items-center gap-1",
-                  isTrackingLocation && currentLocation ? "bg-green-100 text-green-800" :
-                  isTrackingLocation ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
-                )}
-              >
-                <Navigation className="h-3 w-3" />
-                GPS {getLocationStatus()}
-              </Badge>
+
+              {/* Debug info in development */}
+              {currentLocation && import.meta.env.DEV && (
+                <div className="bg-purple-50 border border-purple-200 text-purple-700 text-xs px-3 py-2 rounded-lg font-medium">
+                  📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
+                </div>
+              )}
+
               <Button
-                size="sm"
+                onClick={handleLogout}
                 variant="outline"
-                onClick={refreshLocation}
-                disabled={isTrackingLocation && !currentLocation}
-                className="px-2"
+                className="flex items-center gap-2 hover:bg-gray-50 border-gray-300 px-4"
               >
-                <Navigation className="h-3 w-3" />
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
               </Button>
             </div>
-            {/* Debug info in development */}
-            {currentLocation && import.meta.env.DEV && (
-              <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
-              </div>
-            )}
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
           </div>
         </div>
 
