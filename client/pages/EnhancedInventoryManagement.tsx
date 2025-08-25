@@ -912,8 +912,8 @@ export default function EnhancedInventoryManagement() {
               </div>
             </TabsContent>
 
-            {/* Car Wash Services Tab */}
-            <TabsContent value="services" className="space-y-6">
+        {/* Car Wash Services Tab */}
+        <TabsContent value="services" className="space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
@@ -1029,8 +1029,8 @@ export default function EnhancedInventoryManagement() {
               </div>
             </TabsContent>
 
-            {/* Other tabs remain the same... */}
-            <TabsContent value="movements">
+        {/* Other tabs remain the same... */}
+        <TabsContent value="movements">
               <Card>
                 <CardHeader>
                   <CardTitle>Stock Movements</CardTitle>
@@ -1043,7 +1043,7 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="suppliers">
+        <TabsContent value="suppliers">
               <Card>
                 <CardHeader>
                   <CardTitle>Suppliers</CardTitle>
@@ -1056,7 +1056,7 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="analytics">
+        <TabsContent value="analytics">
               <Card>
                 <CardHeader>
                   <CardTitle>Analytics</CardTitle>
