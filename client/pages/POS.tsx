@@ -304,14 +304,8 @@ export default function POS() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <StickyHeader
-        showBack={true}
-        title="Point of Sale"
-        backTo="/admin-dashboard"
-      />
-
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row min-h-[500px]">
         {/* Products Section */}
         <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
           {/* Search and Filters */}
