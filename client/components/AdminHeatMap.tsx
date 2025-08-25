@@ -243,10 +243,32 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
       filtered = filtered.filter(loc => loc.metadata?.groupId === filters.groupId);
     }
 
+    // Customer-specific filters
+    if (filters.customerRank && filters.customerRank !== 'all') {
+      filtered = filtered.filter(loc =>
+        loc.type === 'customer' && loc.metadata?.rankCategory === filters.customerRank
+      );
+    }
+
+    if (filters.loyaltyLevel && filters.loyaltyLevel !== 'all') {
+      filtered = filtered.filter(loc =>
+        loc.type === 'customer' && loc.metadata?.loyaltyLevel === filters.loyaltyLevel
+      );
+    }
+
+    if (filters.serviceFrequency && filters.serviceFrequency !== 'all') {
+      filtered = filtered.filter(loc =>
+        loc.type === 'customer' && loc.metadata?.serviceFrequency === filters.serviceFrequency
+      );
+    }
+
     if (searchTerm) {
-      filtered = filtered.filter(loc => 
+      filtered = filtered.filter(loc =>
         loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loc.metadata?.groupName?.toLowerCase().includes(searchTerm.toLowerCase())
+        loc.metadata?.groupName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loc.metadata?.preferredServices?.some(service =>
+          service.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       );
     }
 
