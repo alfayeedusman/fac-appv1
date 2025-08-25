@@ -368,10 +368,7 @@ export default function AdminCMS() {
                             <SelectContent>
                               {Object.keys(iconMap).map((iconName) => (
                                 <SelectItem key={iconName} value={iconName}>
-                                  <div className="flex items-center">
-                                    {renderIcon(iconName)}
-                                    <span className="ml-2">{iconName}</span>
-                                  </div>
+                                  {iconName}
                                 </SelectItem>
                               ))}
                             </SelectContent>
