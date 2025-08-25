@@ -1476,19 +1476,19 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "pos" && (
-            <div className="animate-fade-in-scale space-y-6">
+            <div className="space-y-6">
               <POS />
             </div>
           )}
 
           {activeTab === "inventory" && (
-            <div className="animate-fade-in-scale space-y-6">
+            <div className="space-y-6">
               <EnhancedInventoryManagement />
             </div>
           )}
 
           {activeTab === "user-management" && (
-            <div className="animate-fade-in-scale space-y-6">
+            <div className="space-y-6">
               <AdminUserManagement />
             </div>
           )}
