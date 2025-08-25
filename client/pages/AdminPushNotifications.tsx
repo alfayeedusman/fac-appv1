@@ -385,7 +385,7 @@ export default function AdminPushNotifications() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">
-                          All Users ({registeredUsers.length})
+                          All Users ({String(registeredUsers.length)})
                         </SelectItem>
                         <SelectItem value="members">Members Only</SelectItem>
                         <SelectItem value="vip">VIP Members</SelectItem>
