@@ -971,12 +971,12 @@ export default function EnhancedInventoryManagement() {
                             {service.category}
                           </Badge>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => showServicePricing(service)}
-                            className="text-orange-500 hover:text-orange-600 p-1"
+                            className="text-orange-500 hover:text-orange-600 p-1 min-w-0"
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
@@ -984,7 +984,7 @@ export default function EnhancedInventoryManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEditService(service)}
-                            className="text-blue-500 hover:text-blue-600 p-1"
+                            className="text-blue-500 hover:text-blue-600 p-1 min-w-0"
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -992,7 +992,7 @@ export default function EnhancedInventoryManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteService(service.id)}
-                            className="text-red-500 hover:text-red-600 p-1"
+                            className="text-red-500 hover:text-red-600 p-1 min-w-0"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
