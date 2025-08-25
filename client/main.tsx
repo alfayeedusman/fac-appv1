@@ -303,6 +303,14 @@ const App = () => {
               }
             />
             <Route
+              path="/admin-crew-management"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminCrewManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/manager-dashboard"
               element={
                 <ProtectedRoute requiredRole="manager">
