@@ -201,11 +201,6 @@ export default function AdminPushNotifications() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <Link to="/admin-dashboard" className="mr-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div className="flex items-center space-x-4">
               <div className="bg-fac-orange-500 p-3 rounded-xl">
                 <Bell className="h-6 w-6 text-white" />
