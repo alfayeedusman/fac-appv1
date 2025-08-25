@@ -257,17 +257,31 @@ export default function EnhancedCrewDashboard() {
 
       const errorHelp = getGeolocationErrorHelp(error);
 
-      // Handle timeout with retry logic
+      // Handle timeout with improved retry logic
       if (error.code === 3) { // TIMEOUT
-        console.log('Location timeout, retrying...');
-        // Retry after timeout
-        setTimeout(() => {
-          if (isGeolocationSupported()) {
-            console.log('Retrying location tracking after timeout...');
-            startLocationTracking();
-          }
-        }, 5000);
-        return; // Don't show error toast for timeout, just retry
+        const timeoutCount = (error as any).timeoutCount || 1;
+        const isUsingFallback = (error as any).isUsingFallback || false;
+
+        console.log(`📍 Location timeout (attempt ${timeoutCount}, fallback: ${isUsingFallback})`);
+
+        // Show user-friendly timeout notification
+        if (timeoutCount === 1) {
+          toast({
+            title: "🔍 Searching for GPS Signal",
+            description: "GPS is taking longer than usual. Trying different accuracy settings...",
+            duration: 4000,
+          });
+        } else if (timeoutCount >= 2 && !isUsingFallback) {
+          toast({
+            title: "📡 Poor GPS Signal",
+            description: "Having trouble getting precise location. Try moving near a window or outdoors.",
+            variant: "destructive",
+            duration: 6000,
+          });
+        }
+
+        // Don't retry here - the new geolocation utils handle retry automatically
+        return;
       }
 
       // Show error toast for other errors
@@ -275,6 +289,7 @@ export default function EnhancedCrewDashboard() {
         title: errorHelp.title,
         description: errorHelp.description,
         variant: "destructive",
+        duration: 7000,
       });
 
       // Show additional help for permission errors
@@ -283,7 +298,7 @@ export default function EnhancedCrewDashboard() {
           toast({
             title: "💡 How to Enable Location",
             description: errorHelp.helpText,
-            duration: 8000,
+            duration: 10000,
           });
         }, 2000);
       }
@@ -1114,7 +1129,7 @@ export default function EnhancedCrewDashboard() {
                               <div className="flex items-center gap-3">
                                 <span className="text-2xl">💰</span>
                                 <div>
-                                  <p className="font-bold text-xl text-fac-orange-600">₱{booking.totalPrice.toLocaleString()}</p>
+                                  <p className="font-bold text-xl text-fac-orange-600">��{booking.totalPrice.toLocaleString()}</p>
                                   <p className="text-sm text-gray-500">Total Amount</p>
                                 </div>
                               </div>
