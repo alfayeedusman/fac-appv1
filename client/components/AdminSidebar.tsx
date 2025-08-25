@@ -234,15 +234,15 @@ export default function AdminSidebar({
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between">
               {!isCollapsed && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
                     <img
                       src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                       alt="FAC Logo"
-                      className="h-8 w-auto object-contain"
+                      className="h-6 lg:h-8 w-auto object-contain flex-shrink-0"
                     />
-                    <div>
-                      <h2 className="text-lg font-bold text-foreground">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-sm lg:text-lg font-bold text-foreground truncate">
                         Fayeed Auto Care
                       </h2>
                       <Badge
@@ -250,23 +250,25 @@ export default function AdminSidebar({
                           userRole === "superadmin"
                             ? "bg-red-500"
                             : "bg-fac-orange-500"
-                        } text-white text-xs px-2 py-1`}
+                        } text-white text-xs px-1 lg:px-2 py-1`}
                       >
                         {userRole === "superadmin" ? (
                           <>
-                            <Shield className="h-3 w-3 mr-1" />
-                            SUPER ADMIN
+                            <Shield className="h-2 lg:h-3 w-2 lg:w-3 mr-1" />
+                            <span className="hidden sm:inline">SUPER </span>ADMIN
                           </>
                         ) : (
                           <>
-                            <Crown className="h-3 w-3 mr-1" />
+                            <Crown className="h-2 lg:h-3 w-2 lg:w-3 mr-1" />
                             ADMIN
                           </>
                         )}
                       </Badge>
                     </div>
                   </div>
-                  <AdminNotificationDropdown />
+                  <div className="flex-shrink-0">
+                    <AdminNotificationDropdown />
+                  </div>
                 </div>
               )}
               <Button
