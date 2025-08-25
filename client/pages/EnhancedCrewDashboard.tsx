@@ -13,6 +13,13 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
 import { cn } from '@/lib/utils';
+import {
+  getGeolocationErrorDetails,
+  getGeolocationErrorMessage,
+  getGeolocationErrorHelp,
+  isGeolocationSupported,
+  isGeolocationContextSecure
+} from '@/utils/geolocationUtils';
 import { 
   Calendar,
   Clock,
