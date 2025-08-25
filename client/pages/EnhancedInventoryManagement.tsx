@@ -840,9 +840,9 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
 
-            {/* Categories Tab */}
-            <TabsContent value="categories" className="space-y-6">
-              <div className="flex justify-between items-center">
+        {/* Categories Tab */}
+        <TabsContent value="categories" className="space-y-6">
+          <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Product Categories</h2>
                 <Button onClick={() => setShowAddCategoryModal(true)}>
                   <Plus className="h-4 w-4 mr-2" />
