@@ -2,6 +2,8 @@
  * Validation utilities for Select components to prevent rendering errors
  */
 
+import React from 'react';
+
 export interface SelectValidationResult {
   isValid: boolean;
   error?: string;
