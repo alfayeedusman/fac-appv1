@@ -76,6 +76,14 @@ import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
+import AdminCMS from "./AdminCMS";
+import AdminPushNotifications from "./AdminPushNotifications";
+import AdminGamification from "./AdminGamification";
+import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
+import AdminBookingSettings from "./AdminBookingSettings";
+import POS from "./POS";
+import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
+import AdminUserManagement from "./AdminUserManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
