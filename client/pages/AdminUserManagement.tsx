@@ -183,50 +183,7 @@ export default function AdminUserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="User Management" />
-
-      <AdminSidebar
-        activeTab="user-management"
-        onTabChange={(tab) => {
-          if (tab === "overview") navigate("/admin-dashboard");
-          else if (tab === "customers")
-            navigate("/admin-dashboard"); // Customer Hub -> Dashboard for now
-          else if (tab === "roles")
-            navigate("/admin-user-management"); // User & Roles -> Stay on user management
-          else if (tab === "ads") navigate("/admin-ads");
-          else if (tab === "packages")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "branches")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "analytics")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "bookings")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "images")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "sales")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "notifications") navigate("/admin-notifications");
-          else if (tab === "cms") navigate("/admin-cms");
-          else if (tab === "booking") navigate("/admin-booking-settings");
-          else if (tab === "push-notifications")
-            navigate("/admin-push-notifications");
-          else if (tab === "gamification") navigate("/admin-gamification");
-          else if (tab === "subscription-approval")
-            navigate("/admin-subscription-approval");
-          else if (tab === "pos") navigate("/pos");
-          else if (tab === "inventory") navigate("/inventory-management");
-          else if (tab === "receipt-designer")
-            navigate("/admin-receipt-designer");
-          else if (tab === "home-service") navigate("/admin-home-service");
-        }}
-        userRole={localStorage.getItem("userRole") || "admin"}
-        notificationCount={0}
-      />
-
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 mt-16 space-y-6">
+    <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
@@ -395,9 +352,6 @@ export default function AdminUserManagement() {
               </Table>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
       {/* Add User Modal */}
       <Dialog open={showAddUserModal} onOpenChange={setShowAddUserModal}>
         <DialogContent className="sm:max-w-lg">
