@@ -1189,7 +1189,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "packages" && (
-            <div className="space-y-8 animate-fade-in-scale">
+            <div className="space-y-8">
               {/* Package Management Header */}
               <Card className="glass border-border shadow-2xl">
                 <CardHeader>
