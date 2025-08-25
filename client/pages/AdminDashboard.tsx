@@ -1075,7 +1075,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center">
-                    <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                    <div className="gradient-primary p-3 rounded-xl mr-4">
                       <Users className="h-6 w-6 text-white" />
                     </div>
                     <span className="text-2xl font-black text-foreground">
@@ -1195,7 +1195,7 @@ export default function AdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center space-x-4">
-                      <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+                      <div className="gradient-primary p-3 rounded-xl">
                         <Package className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1242,7 +1242,7 @@ export default function AdminDashboard() {
                         <Badge
                           className={`${
                             pkg.active
-                              ? "bg-green-500 animate-pulse-glow"
+                              ? "bg-green-500"
                               : "bg-gray-400"
                           } text-white font-bold px-3 py-1 rounded-full`}
                         >
@@ -1345,7 +1345,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <DollarSign className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-4xl font-black text-foreground mb-2">
@@ -1359,7 +1359,7 @@ export default function AdminDashboard() {
 
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <TrendingUp className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-4xl font-black text-foreground mb-2">
