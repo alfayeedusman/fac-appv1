@@ -629,16 +629,16 @@ export default function EnhancedInventoryManagement() {
     <div className="space-y-6">
       <Tabs defaultValue="products" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="categories">Categories</TabsTrigger>
-              <TabsTrigger value="services">Car Wash Services</TabsTrigger>
-              <TabsTrigger value="movements">Stock Movements</TabsTrigger>
-              <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="services">Car Wash Services</TabsTrigger>
+          <TabsTrigger value="movements">Stock Movements</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-            {/* Products Tab */}
-            <TabsContent value="products" className="space-y-6">
+        {/* Products Tab */}
+        <TabsContent value="products" className="space-y-6">
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
