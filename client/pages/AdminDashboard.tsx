@@ -1198,15 +1198,16 @@ export default function AdminDashboard() {
                       <div className="gradient-primary p-3 rounded-xl">
                         <Package className="h-6 w-6 text-white" />
                       </div>
-                      <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <span className="text-2xl font-black text-foreground">
                           Package Studio
                         </span>
                         <Badge
                           variant="outline"
-                          className="ml-4 text-sm border-fac-orange-500 text-fac-orange-500"
+                          className="text-xs sm:text-sm border-fac-orange-500 text-fac-orange-500 w-fit"
                         >
-                          Role: {userRole} | Editing:{" "}
+                          <span className="hidden sm:inline">Role: {userRole} | Editing: </span>
+                          <span className="sm:hidden">{userRole} - </span>
                           {userRole === "superadmin" || userRole === "admin"
                             ? "Enabled"
                             : "Disabled"}
