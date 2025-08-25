@@ -1451,13 +1451,13 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "cms" && (
-            <div className="animate-fade-in-scale">
+            <div className="animate-fade-in-scale space-y-6">
               <AdminCMS />
             </div>
           )}
 
           {activeTab === "push-notifications" && (
-            <div className="animate-fade-in-scale">
+            <div className="animate-fade-in-scale space-y-6">
               <AdminPushNotifications />
             </div>
           )}
@@ -1481,7 +1481,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "pos" && (
-            <div className="animate-fade-in-scale">
+            <div className="animate-fade-in-scale space-y-6">
               <POS />
             </div>
           )}
