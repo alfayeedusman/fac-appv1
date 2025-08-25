@@ -520,7 +520,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectItem value="platinum">🥇 Platinum</SelectItem>
                     <SelectItem value="gold">🥈 Gold</SelectItem>
                     <SelectItem value="silver">🥉 Silver</SelectItem>
-                    <SelectItem value="bronze">🎖️ Bronze</SelectItem>
+                    <SelectItem value="bronze">🎖��� Bronze</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -605,8 +605,28 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                             {location.type === 'crew' && (
                               <Truck className="h-3 w-3 text-white absolute top-0.5 left-0.5" />
                             )}
-                            {location.type === 'customer' && location.status === 'online' && (
-                              <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                            {location.type === 'customer' && (
+                              <>
+                                {location.status === 'online' && (
+                                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                                )}
+                                {/* Customer rank indicator */}
+                                {location.metadata?.rankCategory && (
+                                  <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full text-xs flex items-center justify-center text-white font-bold"
+                                       style={{
+                                         backgroundColor:
+                                           location.metadata.rankCategory === 'champion' ? '#FFD700' :
+                                           location.metadata.rankCategory === 'vip' ? '#C0392B' :
+                                           location.metadata.rankCategory === 'loyal' ? '#8E44AD' :
+                                           location.metadata.rankCategory === 'regular' ? '#3498DB' : '#95A5A6'
+                                       }}>
+                                    {location.metadata.rankCategory === 'champion' ? '👑' :
+                                     location.metadata.rankCategory === 'vip' ? 'V' :
+                                     location.metadata.rankCategory === 'loyal' ? 'L' :
+                                     location.metadata.rankCategory === 'regular' ? 'R' : 'N'}
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         );
