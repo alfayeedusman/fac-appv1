@@ -158,12 +158,16 @@ export const watchPositionAsync = (
   options?: PositionOptions
 ): number | null => {
   if (!isGeolocationSupported()) {
-    onError(new Error('Geolocation is not supported by this browser') as any);
+    const error = new Error('Geolocation is not supported by this browser');
+    error.name = 'GeolocationError';
+    onError(error as any);
     return null;
   }
 
   if (!isGeolocationContextSecure()) {
-    onError(new Error('Geolocation requires HTTPS or localhost') as any);
+    const error = new Error('Geolocation requires HTTPS or localhost');
+    error.name = 'GeolocationError';
+    onError(error as any);
     return null;
   }
 
