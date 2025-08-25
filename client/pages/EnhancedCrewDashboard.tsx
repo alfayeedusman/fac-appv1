@@ -835,70 +835,138 @@ export default function EnhancedCrewDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Calendar className="h-6 w-6 text-blue-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Total Assignments</p>
-                  <p className="text-xl font-bold">{stats.totalAssignments}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2.5 rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Total</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats.totalAssignments}</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Clock className="h-6 w-6 text-yellow-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Pending</p>
-                  <p className="text-xl font-bold">{stats.pendingAssignments}</p>
+
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-yellow-500 p-2.5 rounded-lg">
+                    <Clock className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Pending</p>
+                    <p className="text-2xl font-bold text-yellow-900">{stats.pendingAssignments}</p>
+                  </div>
+                </div>
+                {stats.pendingAssignments > 0 && (
+                  <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                    New
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-orange-500 p-2.5 rounded-lg">
+                    <Activity className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Active</p>
+                    <p className="text-2xl font-bold text-orange-900">{stats.activeJobs}</p>
+                  </div>
+                </div>
+                {stats.activeJobs > 0 && (
+                  <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                    Live
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-green-500 p-2.5 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">Done</p>
+                    <p className="text-2xl font-bold text-green-900">{stats.completedBookings}</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Activity className="h-6 w-6 text-orange-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Active Jobs</p>
-                  <p className="text-xl font-bold">{stats.activeJobs}</p>
+
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-amber-500 p-2.5 rounded-lg">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Rating</p>
+                    <div className="flex items-center gap-1">
+                      <p className="text-2xl font-bold text-amber-900">{stats.rating.toFixed(1)}</p>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < Math.floor(stats.rating)
+                                ? 'text-amber-500 fill-amber-500'
+                                : 'text-amber-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Completed</p>
-                  <p className="text-xl font-bold">{stats.completedBookings}</p>
+
+          <Card className={`bg-gradient-to-br border-2 hover:shadow-lg transition-all duration-300 ${
+            isTrackingLocation
+              ? 'from-purple-50 to-purple-100 border-purple-200'
+              : 'from-gray-50 to-gray-100 border-gray-200'
+          }`}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={`p-2.5 rounded-lg ${
+                    isTrackingLocation ? 'bg-purple-500' : 'bg-gray-500'
+                  }`}>
+                    <MapPinned className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isTrackingLocation ? 'text-purple-700' : 'text-gray-700'
+                    }`}>Location</p>
+                    <p className={`text-2xl font-bold ${
+                      isTrackingLocation ? 'text-purple-900' : 'text-gray-900'
+                    }`}>{isTrackingLocation ? 'ON' : 'OFF'}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Star className="h-6 w-6 text-yellow-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Rating</p>
-                  <p className="text-xl font-bold">{stats.rating.toFixed(1)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <MapPinned className="h-6 w-6 text-purple-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Location</p>
-                  <p className="text-xl font-bold">{isTrackingLocation ? 'ON' : 'OFF'}</p>
-                </div>
+                <div className={`w-3 h-3 rounded-full ${
+                  isTrackingLocation
+                    ? 'bg-green-500 animate-pulse'
+                    : 'bg-red-500'
+                }`}></div>
               </div>
             </CardContent>
           </Card>
