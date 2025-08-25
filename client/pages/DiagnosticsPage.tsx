@@ -24,6 +24,11 @@ import {
   getLocationEmergency,
   testGeolocationStrategies
 } from '@/utils/geolocationTimeoutFix';
+import {
+  debugAndFixTimeout,
+  immediateTimeoutFix,
+  applyImmediateWorkaround
+} from '@/utils/immediateGeolocationFix';
 import { formatError } from '@/lib/errorUtils';
 import { 
   RefreshCw, 
