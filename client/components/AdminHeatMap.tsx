@@ -596,8 +596,8 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectItem value="all">All Tiers</SelectItem>
                     <SelectItem value="platinum">🥇 Platinum</SelectItem>
                     <SelectItem value="gold">�� Gold</SelectItem>
-                    <SelectItem value="silver">🥉 Silver</SelectItem>
-                    <SelectItem value="bronze">��️ Bronze</SelectItem>
+                    <SelectItem value="silver">��� Silver</SelectItem>
+                    <SelectItem value="bronze">🎖️ Bronze</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -610,7 +610,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectItem value="vip">🔥 VIP (50+ visits)</SelectItem>
                     <SelectItem value="high">📈 High (25+ visits)</SelectItem>
                     <SelectItem value="medium">📊 Medium (10+ visits)</SelectItem>
-                    <SelectItem value="low">📉 Low (&lt; 10 visits)</SelectItem>
+                    <SelectItem value="low">📉 Low (under 10 visits)</SelectItem>
                   </SelectContent>
                 </Select>
               </>
