@@ -102,7 +102,6 @@ interface EnhancedProduct extends Product {
 }
 
 export default function EnhancedInventoryManagement() {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<EnhancedProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<EnhancedProduct[]>(
     [],
