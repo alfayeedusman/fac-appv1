@@ -495,6 +495,50 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
               </SelectContent>
             </Select>
 
+            {(filters.type === 'customers' || filters.type === 'all') && (
+              <>
+                <Select value={filters.customerRank || 'all'} onValueChange={(value: any) => setFilters({...filters, customerRank: value})}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All Ranks" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Ranks</SelectItem>
+                    <SelectItem value="champion">🏆 Champions</SelectItem>
+                    <SelectItem value="vip">👑 VIP</SelectItem>
+                    <SelectItem value="loyal">💎 Loyal</SelectItem>
+                    <SelectItem value="regular">⭐ Regular</SelectItem>
+                    <SelectItem value="new">🆕 New</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={filters.loyaltyLevel || 'all'} onValueChange={(value: any) => setFilters({...filters, loyaltyLevel: value})}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All Tiers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tiers</SelectItem>
+                    <SelectItem value="platinum">🥇 Platinum</SelectItem>
+                    <SelectItem value="gold">🥈 Gold</SelectItem>
+                    <SelectItem value="silver">🥉 Silver</SelectItem>
+                    <SelectItem value="bronze">🎖️ Bronze</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={filters.serviceFrequency || 'all'} onValueChange={(value: any) => setFilters({...filters, serviceFrequency: value})}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Frequency</SelectItem>
+                    <SelectItem value="vip">🔥 VIP (50+ visits)</SelectItem>
+                    <SelectItem value="high">📈 High (25+ visits)</SelectItem>
+                    <SelectItem value="medium">📊 Medium (10+ visits)</SelectItem>
+                    <SelectItem value="low">📉 Low (&lt;10 visits)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+
             <div className="relative">
               <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
