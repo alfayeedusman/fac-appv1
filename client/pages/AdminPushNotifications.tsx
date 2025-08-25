@@ -172,10 +172,29 @@ export default function AdminPushNotifications() {
     }
   };
 
-  const stats = getNotificationStats();
-  const registeredUsers = JSON.parse(
-    localStorage.getItem("registeredUsers") || "[]",
-  );
+  // Add error handling for stats and users
+  let stats;
+  let registeredUsers = [];
+
+  try {
+    stats = getNotificationStats();
+    registeredUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+  } catch (error) {
+    console.error('Error loading notification stats:', error);
+    // Provide fallback stats object with all required properties
+    stats = {
+      totalSent: 0,
+      totalDelivered: 0,
+      totalRead: 0,
+      totalClicked: 0,
+      deliveryRate: 0,
+      readRate: 0,
+      clickRate: 0
+    };
+    registeredUsers = [];
+  }
 
   return (
     <div className="space-y-6">
