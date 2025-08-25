@@ -240,7 +240,7 @@ export default function AdminSubscriptionApproval() {
               </Button>
             </Link>
             <div className="flex items-center space-x-4">
-              <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+              <div className="gradient-primary p-3 rounded-xl ">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
               <div>
