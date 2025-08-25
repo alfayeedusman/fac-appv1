@@ -233,7 +233,7 @@ export default function EnhancedCrewDashboard() {
       const accuracy = position.coords.accuracy;
       if (accuracy > 100) {
         toast({
-          title: "⚠️ Poor GPS Signal",
+          title: "⚠��� Poor GPS Signal",
           description: `Location accuracy is ${Math.round(accuracy)}m. For better accuracy, try moving outdoors or near a window.`,
           variant: "destructive",
           duration: 4000,
@@ -976,10 +976,10 @@ export default function EnhancedCrewDashboard() {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="bg-white rounded-lg shadow-sm border p-1">
-            <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
+            <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1">
               <TabsTrigger
                 value="assignments"
-                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">New Assignments</span>
@@ -987,7 +987,7 @@ export default function EnhancedCrewDashboard() {
               </TabsTrigger>
               <TabsTrigger
                 value="active"
-                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
               >
                 <Activity className="h-4 w-4" />
                 <span className="hidden sm:inline">Active Jobs</span>
@@ -995,15 +995,23 @@ export default function EnhancedCrewDashboard() {
               </TabsTrigger>
               <TabsTrigger
                 value="completed"
-                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
               >
                 <CheckCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Completed</span>
                 <span className="sm:hidden">Done</span>
               </TabsTrigger>
               <TabsTrigger
+                value="status"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Status</span>
+                <span className="sm:hidden">Status</span>
+              </TabsTrigger>
+              <TabsTrigger
                 value="images"
-                className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
               >
                 <ImageIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">Images</span>
