@@ -48,16 +48,24 @@ export const setupGlobalErrorCatching = () => {
       if (typeof arg === 'string' && arg.includes('[object Object]')) {
         return arg.replace(/\[object Object\]/g, 'Error details available in next log entry');
       }
+      // Format objects to prevent "[object Object]" when logs are serialized
+      if (typeof arg === 'object' && arg !== null && arg.constructor === Object) {
+        return formatAnyError(arg);
+      }
       return arg;
     });
     originalError.apply(console, formattedArgs);
   };
   
-  // Override console.warn  
+  // Override console.warn
   console.warn = (...args: any[]) => {
     const formattedArgs = args.map(arg => {
       if (typeof arg === 'string' && arg.includes('[object Object]')) {
         return arg.replace(/\[object Object\]/g, 'Error details available in next log entry');
+      }
+      // Format objects to prevent "[object Object]" when logs are serialized
+      if (typeof arg === 'object' && arg !== null && arg.constructor === Object) {
+        return formatAnyError(arg);
       }
       return arg;
     });

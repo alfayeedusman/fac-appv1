@@ -136,7 +136,7 @@ export const getCurrentPositionAsync = (
       },
       (error) => {
         const errorDetails = getGeolocationErrorDetails(error);
-        console.error('Geolocation error:', errorDetails);
+        console.error('Geolocation error:', JSON.stringify(errorDetails));
         // Create a proper Error object with formatted message instead of passing raw GeolocationPositionError
         const formattedError = new Error(getGeolocationErrorMessage(error));
         formattedError.name = 'GeolocationError';
@@ -189,7 +189,7 @@ export const watchPositionAsync = (
     },
     (error) => {
       const errorDetails = getGeolocationErrorDetails(error);
-      console.error('Geolocation watch error:', errorDetails);
+      console.error('Geolocation watch error:', JSON.stringify(errorDetails));
       // Create a proper Error object with formatted message instead of passing raw GeolocationPositionError
       const formattedError = new Error(getGeolocationErrorMessage(error));
       formattedError.name = 'GeolocationError';
