@@ -958,7 +958,7 @@ export default function AdminDashboard() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
                       <CardTitle className="flex items-center text-xl text-foreground">
-                        <div className="bg-gradient-to-r from-purple-500 to-violet-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <div className="bg-gradient-to-r from-purple-500 to-violet-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                           <Shield className="h-6 w-6 text-white" />
                         </div>
                         Role Manager
@@ -982,7 +982,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-primary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-primary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <Package className="h-6 w-6 text-white" />
                       </div>
                       Package Studio
@@ -1005,7 +1005,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-secondary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-secondary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <BarChart3 className="h-6 w-6 text-white" />
                       </div>
                       Analytics Center
@@ -1028,7 +1028,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <Sparkles className="h-6 w-6 text-white" />
                       </div>
                       Ad Studio
@@ -1051,7 +1051,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-futuristic p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-futuristic p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       Branch Network
