@@ -140,7 +140,7 @@ export default function CrewDashboard() {
   };
 
   const startLocationTracking = () => {
-    if (!navigator.geolocation) {
+    if (!isGeolocationSupported()) {
       console.warn('Geolocation is not supported by this browser');
       return;
     }
@@ -157,8 +157,9 @@ export default function CrewDashboard() {
         });
       },
       (error) => {
+        const errorDetails = getGeolocationErrorDetails(error);
         const errorMessage = getGeolocationErrorMessage(error);
-        console.error('Location tracking error:', errorMessage);
+        console.error('Location tracking error:', errorDetails);
 
         // Don't retry for permission denied
         if (error.code !== 1) {
@@ -175,19 +176,6 @@ export default function CrewDashboard() {
         maximumAge: 300000 // 5 minutes
       }
     );
-  };
-
-  const getGeolocationErrorMessage = (error: GeolocationPositionError): string => {
-    switch (error.code) {
-      case 1: // PERMISSION_DENIED
-        return `Permission denied: ${error.message}`;
-      case 2: // POSITION_UNAVAILABLE
-        return `Position unavailable: ${error.message}`;
-      case 3: // TIMEOUT
-        return `Request timeout: ${error.message}`;
-      default:
-        return `Unknown error: ${error.message || 'An unknown geolocation error occurred'}`;
-    }
   };
 
   const updateBookingStatus = (bookingId: string, status: Booking['status']) => {
