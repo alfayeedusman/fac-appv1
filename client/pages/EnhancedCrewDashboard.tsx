@@ -912,6 +912,26 @@ export default function EnhancedCrewDashboard() {
                 </div>
               )}
 
+              {/* Emergency GPS Fix Button */}
+              <Button
+                onClick={async () => {
+                  try {
+                    const result = await emergencyGPSFix();
+                    if (result) {
+                      setCurrentLocation({ lat: result.lat, lng: result.lng });
+                      setIsTrackingLocation(true);
+                    }
+                  } catch (error) {
+                    console.error('Emergency GPS fix failed:', error);
+                  }
+                }}
+                variant="outline"
+                className="flex items-center gap-2 hover:bg-red-50 border-red-300 text-red-700 px-4"
+                title="Emergency GPS fix for timeout issues"
+              >
+                <span className="text-sm">🆘 Fix GPS</span>
+              </Button>
+
               <Button
                 onClick={handleLogout}
                 variant="outline"
