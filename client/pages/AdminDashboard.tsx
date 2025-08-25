@@ -83,6 +83,7 @@ import AdminBookingSettings from "./AdminBookingSettings";
 import POS from "./POS";
 import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
 import AdminUserManagement from "./AdminUserManagement";
+import AdminHeatMap from "@/components/AdminHeatMap";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
