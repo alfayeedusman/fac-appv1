@@ -190,7 +190,18 @@ export default function AdminUserManagement() {
         activeTab="user-management"
         onTabChange={(tab) => {
           if (tab === "overview") navigate("/admin-dashboard");
+          else if (tab === "customers") navigate("/admin-dashboard"); // Customer Hub -> Dashboard for now
+          else if (tab === "roles") navigate("/admin-user-management"); // User & Roles -> Stay on user management
+          else if (tab === "ads") navigate("/admin-ads");
+          else if (tab === "packages") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "branches") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "analytics") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "bookings") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "images") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "sales") navigate("/admin-dashboard"); // No specific page yet
+          else if (tab === "notifications") navigate("/admin-notifications");
           else if (tab === "cms") navigate("/admin-cms");
+          else if (tab === "booking") navigate("/admin-booking-settings");
           else if (tab === "push-notifications")
             navigate("/admin-push-notifications");
           else if (tab === "gamification") navigate("/admin-gamification");
@@ -200,6 +211,7 @@ export default function AdminUserManagement() {
           else if (tab === "inventory") navigate("/inventory-management");
           else if (tab === "receipt-designer")
             navigate("/admin-receipt-designer");
+          else if (tab === "home-service") navigate("/admin-home-service");
         }}
         userRole={localStorage.getItem("userRole") || "admin"}
         notificationCount={0}
