@@ -1395,7 +1395,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "roles" && userRole === "superadmin" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <ErrorBoundary>
                 <UserRoleManagement />
               </ErrorBoundary>
@@ -1403,7 +1403,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "ads" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <AdminAdManagement
                 adminEmail={localStorage.getItem("userEmail") || ""}
               />
@@ -1411,7 +1411,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "bookings" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <EnhancedBookingManagement
                 userRole={userRole as "admin" | "superadmin"}
                 showCrewAssignment={true}
@@ -1420,7 +1420,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "images" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <ImageUploadManager
                 allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
                 maxFileSize={10}
@@ -1434,7 +1434,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "notifications" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <NotificationService
                 userRole={userRole}
                 userId={localStorage.getItem('userEmail') || 'unknown'}
