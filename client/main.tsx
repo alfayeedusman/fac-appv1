@@ -1,5 +1,6 @@
 import "./global.css";
 import { setupGlobalErrorCatching } from './utils/globalErrorHandler';
+import './utils/emergencyFix';
 
 // Initialize global error catching to prevent "[object Object]" errors
 setupGlobalErrorCatching();
