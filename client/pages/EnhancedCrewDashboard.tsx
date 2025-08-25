@@ -173,7 +173,7 @@ export default function EnhancedCrewDashboard() {
 
   const startLocationTracking = () => {
     // Check for geolocation support
-    if (!navigator.geolocation) {
+    if (!isGeolocationSupported()) {
       console.warn('Geolocation is not supported by this browser');
       toast({
         title: "Location Not Available",
@@ -184,7 +184,7 @@ export default function EnhancedCrewDashboard() {
     }
 
     // Check for HTTPS requirement (geolocation requires secure context)
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    if (!isGeolocationContextSecure()) {
       console.warn('Geolocation requires HTTPS or localhost');
       toast({
         title: "Secure Connection Required",
