@@ -304,13 +304,30 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
     const totalCustomers = filteredLocations.filter(l => l.type === 'customer').length;
     const onlineCustomers = filteredLocations.filter(l => l.type === 'customer' && l.status === 'online').length;
 
+    // Customer ranking stats
+    const vipCustomers = filteredLocations.filter(l => l.type === 'customer' && l.metadata?.rankCategory === 'vip').length;
+    const championCustomers = filteredLocations.filter(l => l.type === 'customer' && l.metadata?.rankCategory === 'champion').length;
+    const loyalCustomers = filteredLocations.filter(l => l.type === 'customer' && l.metadata?.rankCategory === 'loyal').length;
+    const newCustomers = filteredLocations.filter(l => l.type === 'customer' && l.metadata?.rankCategory === 'new').length;
+
+    // Top customers by rank
+    const topCustomers = filteredLocations
+      .filter(l => l.type === 'customer')
+      .sort((a, b) => (b.metadata?.customerRank || 0) - (a.metadata?.customerRank || 0))
+      .slice(0, 5);
+
     return {
       totalCrew,
       onlineCrew,
       busyCrew,
       totalCustomers,
       onlineCustomers,
-      availableCrew: totalCrew - busyCrew
+      availableCrew: totalCrew - busyCrew,
+      vipCustomers,
+      championCustomers,
+      loyalCustomers,
+      newCustomers,
+      topCustomers
     };
   };
 
