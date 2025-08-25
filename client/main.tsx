@@ -5,9 +5,11 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import GlobalNotificationProvider from "@/components/GlobalNotificationProvider";
+import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -18,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
+import GuestBooking from "./pages/GuestBooking";
 import BookingManagement from "./pages/BookingManagement";
 import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
@@ -39,22 +42,34 @@ import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
+import AdminHomeService from "./pages/AdminHomeService";
+import AdminBookingSettings from "./pages/AdminBookingSettings";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import EnhancedCrewDashboard from "./pages/EnhancedCrewDashboard";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
+import { initializeAllSampleData } from "./utils/initializeSampleBookings";
 
 const queryClient = new QueryClient();
 
-// Initialize admin accounts and sample ads on app startup
-initializeAdminAccounts();
-initializeSampleAds();
+const App = () => {
+  useEffect(() => {
+    // Initialize admin accounts and sample data on app startup
+    initializeAdminAccounts();
+    initializeSampleAds();
+    initializeAllSampleData();
+  }, []);
 
-const App = () => (
+  return (
   <ThemeProvider>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+      <DatabaseProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <GlobalNotificationProvider />
@@ -105,6 +120,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/guest-booking" element={<GuestBooking />} />
             <Route
               path="/my-bookings"
               element={
@@ -191,7 +207,9 @@ const App = () => (
               path="/admin-cms"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminCMS />
+                  <ErrorBoundary>
+                    <AdminCMS />
+                  </ErrorBoundary>
                 </ProtectedRoute>
               }
             />
@@ -267,13 +285,55 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin-home-service"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminHomeService />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-booking-settings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminBookingSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager-dashboard"
+              element={
+                <ProtectedRoute requiredRole="manager">
+                  <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crew-dashboard"
+              element={
+                <ProtectedRoute requiredRole="crew">
+                  <EnhancedCrewDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/database-test"
+              element={
+                <div className="min-h-screen bg-background p-4">
+                  <DatabaseConnectionTest />
+                </div>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </DatabaseProvider>
     </QueryClientProvider>
   </ThemeProvider>
-);
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);

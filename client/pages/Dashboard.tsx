@@ -27,6 +27,7 @@ import {
   Settings,
   Home,
   History,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -94,9 +95,22 @@ export default function Dashboard() {
   const [scanResult, setScanResult] = useState<QRScanResult | null>(null);
   const [dashboardAds, setDashboardAds] = useState<Ad[]>([]);
   const [showPopupAd, setShowPopupAd] = useState(false);
+  const [showRefreshButton, setShowRefreshButton] = useState(false);
 
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
+
+  // Handle scroll to show refresh button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setShowRefreshButton(scrollPosition > 200);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const registeredUsers = JSON.parse(
     localStorage.getItem("registeredUsers") || "[]",
   );
@@ -274,17 +288,9 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
-            <ThemeToggle variant="ghost" size="icon" className="rounded-full" />
+
+            {/* Notification Only */}
             <NotificationDropdown />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowLogoutModal(true)}
-              className="rounded-full hover:text-red-500"
-              title="Logout"
-            >
-              <RefreshCw className="h-5 w-5" />
-            </Button>
           </div>
         </div>
 
@@ -938,6 +944,19 @@ export default function Dashboard() {
       </div>
 
       <BottomNavigation onQRScan={handleQRScan} />
+
+      {/* Scroll-based Refresh Button */}
+      {showRefreshButton && (
+        <div className="fixed bottom-24 right-6 z-40">
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white rounded-full p-3 shadow-lg"
+            title="Refresh"
+          >
+            <RefreshCw className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
 
       <QRScanner
         isOpen={showQRScanner}

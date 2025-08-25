@@ -128,16 +128,26 @@ export const defaultMemberPerks: MemberPerk[] = [
 ];
 
 // CMS Utility Functions
-export const getCMSContent = (id: string): CMSContent | null => {
+export const getCMSContent = (id?: string): CMSContent | CMSContent[] | null => {
   const savedContent = localStorage.getItem("cmsContent");
   const content = savedContent ? JSON.parse(savedContent) : defaultCMSContent;
-  return content.find((item: CMSContent) => item.id === id) || null;
+
+  if (id) {
+    return content.find((item: CMSContent) => item.id === id) || null;
+  }
+
+  return content;
+};
+
+export const getAllCMSContent = (): CMSContent[] => {
+  const savedContent = localStorage.getItem("cmsContent");
+  return savedContent ? JSON.parse(savedContent) : defaultCMSContent;
 };
 
 export const updateCMSContent = (
   id: string,
   newContent: string | string[],
-  updatedBy: string,
+  updatedBy?: string,
 ) => {
   const savedContent = localStorage.getItem("cmsContent");
   const content = savedContent ? JSON.parse(savedContent) : defaultCMSContent;
@@ -147,7 +157,7 @@ export const updateCMSContent = (
     content[index] = {
       ...content[index],
       content: newContent,
-      updatedBy,
+      updatedBy: updatedBy || 'admin',
       updatedAt: new Date().toISOString(),
     };
   }
@@ -160,9 +170,9 @@ export const getMemberPerks = (): MemberPerk[] => {
   return savedPerks ? JSON.parse(savedPerks) : defaultMemberPerks;
 };
 
-export const updateMemberPerks = (perks: MemberPerk[], updatedBy: string) => {
+export const updateMemberPerks = (perks: MemberPerk[], updatedBy?: string) => {
   localStorage.setItem("memberPerks", JSON.stringify(perks));
-  localStorage.setItem("memberPerksUpdatedBy", updatedBy);
+  localStorage.setItem("memberPerksUpdatedBy", updatedBy || 'admin');
   localStorage.setItem("memberPerksUpdatedAt", new Date().toISOString());
 };
 

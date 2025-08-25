@@ -25,10 +25,42 @@ export default function Index() {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated === "true") {
       const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
+      const userRole = localStorage.getItem("userRole");
+
+      // Always route admin and superadmin users directly to admin dashboard
+      if (userRole === "admin" || userRole === "superadmin") {
+        navigate("/admin-dashboard");
+        return;
+      }
+
       if (hasSeenWelcome === "true") {
-        navigate("/dashboard");
+        // Route based on user role
+        if (userRole === "manager") {
+          navigate("/manager-dashboard");
+        } else if (userRole === "crew") {
+          navigate("/crew-dashboard");
+        } else if (userRole === "cashier") {
+          navigate("/pos");
+        } else if (userRole === "inventory_manager") {
+          navigate("/inventory-management");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         navigate("/welcome");
+      }
+    } else {
+      // Check if this is the superadmin trying to access directly
+      // This handles cases where superadmin might not be authenticated but should auto-login
+      const userEmail = localStorage.getItem("userEmail");
+      if (userEmail === "fffayeed@gmail.com") {
+        // Auto-authenticate superadmin
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "superadmin");
+        localStorage.setItem("hasSeenWelcome", "true");
+        localStorage.setItem(`welcomed_${userEmail}`, "true");
+        navigate("/admin-dashboard");
+        return;
       }
     }
   }, [navigate]);
@@ -142,6 +174,32 @@ export default function Index() {
               <span className="flex items-center justify-center">
                 LOG IN
                 <Zap className="h-5 w-5 ml-3 group-hover:scale-125 transition-transform duration-300" />
+              </span>
+            </Button>
+          </Link>
+
+          <div className="relative my-8 animate-fade-in-up animate-delay-800">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border opacity-30"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-6 bg-background text-muted-foreground font-medium glass rounded-full py-2">
+                or book instantly
+              </span>
+            </div>
+          </div>
+
+          <Link
+            to="/guest-booking"
+            className="block animate-fade-in-up animate-delay-900"
+          >
+            <Button
+              variant="outline"
+              className="group w-full border-2 border-blue-200 hover:border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white font-black py-6 text-lg rounded-2xl transition-all duration-300 transform hover-lift glass"
+            >
+              <span className="flex items-center justify-center">
+                📅 BOOK AS GUEST
+                <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
             </Button>
           </Link>

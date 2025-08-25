@@ -7,6 +7,7 @@ import admin from "firebase-admin";
 // Import routes
 import demoRoutes from "./routes/demo.js";
 import mysqlApiRoutes from "./routes/mysql-api.js";
+import otpApiRoutes from "./routes/otp-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,6 +65,7 @@ export const createServer = () => {
   // API Routes
   app.use("/api", demoRoutes);
   app.use("/api", mysqlApiRoutes);
+  app.use("/api", otpApiRoutes);
 
   // Serve Flutter web app (replaces React customer pages)
   const flutterBuildPath = path.join(__dirname, "../flutter_app/build/web");

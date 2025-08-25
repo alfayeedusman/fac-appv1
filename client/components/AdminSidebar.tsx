@@ -25,6 +25,9 @@ import {
   Crown,
   Zap,
   CreditCard,
+  Home,
+  Camera,
+  Wrench,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -86,6 +89,20 @@ const sidebarItems = [
     gradient: "from-indigo-500 to-purple-500",
   },
   {
+    id: "bookings",
+    label: "Booking Hub",
+    icon: Calendar,
+    description: "Booking & Crew Management",
+    gradient: "from-green-500 to-blue-500",
+  },
+  {
+    id: "images",
+    label: "Image Manager",
+    icon: Camera,
+    description: "Booking Images",
+    gradient: "from-purple-500 to-pink-500",
+  },
+  {
     id: "sales",
     label: "Revenue Hub",
     icon: DollarSign,
@@ -105,6 +122,13 @@ const sidebarItems = [
     icon: Settings,
     description: "Content Management",
     gradient: "from-fac-orange-500 to-yellow-500",
+  },
+  {
+    id: "booking",
+    label: "Booking Settings",
+    icon: Calendar,
+    description: "All Booking Configuration",
+    gradient: "from-blue-500 to-purple-500",
   },
   {
     id: "push-notifications",
@@ -279,6 +303,8 @@ export default function AdminSidebar({
                   onClick={() => {
                     if (item.id === "cms") {
                       navigate("/admin-cms");
+                    } else if (item.id === "booking") {
+                      navigate("/admin-booking-settings");
                     } else if (item.id === "push-notifications") {
                       navigate("/admin-push-notifications");
                     } else if (item.id === "gamification") {

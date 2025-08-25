@@ -35,6 +35,7 @@ import {
   UserX,
   Eye,
   EyeOff,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,7 @@ interface User {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "admin" | "superadmin";
+  role: "user" | "admin" | "superadmin" | "manager" | "cashier" | "inventory_manager" | "crew";
   permissions: string[];
   status: "active" | "inactive" | "suspended";
   createdAt: string;
@@ -57,6 +58,122 @@ interface Permission {
 }
 
 const DEFAULT_PERMISSIONS: Permission[] = [
+  // Tab Access Permissions
+  {
+    id: "tab.overview",
+    name: "Command Center Tab",
+    description: "Access to overview dashboard",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.customers",
+    name: "Customer Hub Tab",
+    description: "Access to customer management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.roles",
+    name: "User & Roles Tab",
+    description: "Access to role management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.ads",
+    name: "Ad Studio Tab",
+    description: "Access to advertisement management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.packages",
+    name: "Package Studio Tab",
+    description: "Access to service packages tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.branches",
+    name: "Branch Network Tab",
+    description: "Access to location management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.analytics",
+    name: "Analytics Center Tab",
+    description: "Access to reports and insights tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.bookings",
+    name: "Booking Hub Tab",
+    description: "Access to booking management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.images",
+    name: "Image Manager Tab",
+    description: "Access to booking images tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.sales",
+    name: "Revenue Hub Tab",
+    description: "Access to revenue tracking tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.notifications",
+    name: "Notifications Tab",
+    description: "Access to system alerts tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.cms",
+    name: "CMS Manager Tab",
+    description: "Access to content management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.booking_settings",
+    name: "Booking Settings Tab",
+    description: "Access to booking configuration tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.push_notifications",
+    name: "Push Notifications Tab",
+    description: "Access to broadcast messages tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.gamification",
+    name: "Gamification Tab",
+    description: "Access to customer levels & rewards tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.subscription_approval",
+    name: "Subscription Approval Tab",
+    description: "Access to payment verification tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.pos",
+    name: "Point of Sale Tab",
+    description: "Access to sales terminal tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.inventory",
+    name: "Inventory Tab",
+    description: "Access to stock management tab",
+    category: "Tab Access",
+  },
+  {
+    id: "tab.user_management",
+    name: "User Management Tab",
+    description: "Access to staff & roles tab",
+    category: "Tab Access",
+  },
+
   // User Management
   {
     id: "users.view",
@@ -142,6 +259,18 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     description: "Can approve customer registrations",
     category: "Customer Management",
   },
+  {
+    id: "customers.message",
+    name: "Message Customers",
+    description: "Can send messages to customers",
+    category: "Customer Management",
+  },
+  {
+    id: "customers.view_details",
+    name: "View Customer Details",
+    description: "Can view full customer information",
+    category: "Customer Management",
+  },
 
   // Package Management
   {
@@ -155,6 +284,120 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     name: "Edit Packages",
     description: "Can modify packages",
     category: "Package Management",
+  },
+  {
+    id: "packages.create",
+    name: "Create Packages",
+    description: "Can create new packages",
+    category: "Package Management",
+  },
+  {
+    id: "packages.delete",
+    name: "Delete Packages",
+    description: "Can remove packages",
+    category: "Package Management",
+  },
+
+  // Booking Management
+  {
+    id: "bookings.view_all",
+    name: "View All Bookings",
+    description: "Can view all system bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.view_assigned",
+    name: "View Assigned Bookings",
+    description: "Can view bookings assigned to them",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.update_status",
+    name: "Update Booking Status",
+    description: "Can update booking status",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.approve",
+    name: "Approve Bookings",
+    description: "Can approve or reject bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.cancel",
+    name: "Cancel Bookings",
+    description: "Can cancel bookings",
+    category: "Booking Management",
+  },
+  {
+    id: "bookings.reschedule",
+    name: "Reschedule Bookings",
+    description: "Can reschedule bookings",
+    category: "Booking Management",
+  },
+
+  // Crew Management
+  {
+    id: "crew.assign",
+    name: "Assign Crew",
+    description: "Can assign crew to bookings",
+    category: "Crew Management",
+  },
+  {
+    id: "crew.manage",
+    name: "Manage Crew",
+    description: "Can manage crew members",
+    category: "Crew Management",
+  },
+  {
+    id: "crew.view_assignments",
+    name: "View Crew Assignments",
+    description: "Can view crew assignments",
+    category: "Crew Management",
+  },
+  {
+    id: "crew.track_location",
+    name: "Track Crew Location",
+    description: "Can track crew member locations",
+    category: "Crew Management",
+  },
+
+  // Field Operations (for crew members)
+  {
+    id: "field.update_status",
+    name: "Update Field Status",
+    description: "Can update booking status from field",
+    category: "Field Operations",
+  },
+  {
+    id: "field.upload_photos",
+    name: "Upload Progress Photos",
+    description: "Can upload photos of work progress",
+    category: "Field Operations",
+  },
+  {
+    id: "field.collect_signature",
+    name: "Collect Customer Signature",
+    description: "Can collect electronic signatures",
+    category: "Field Operations",
+  },
+  {
+    id: "field.update_location",
+    name: "Update Location",
+    description: "Can update current location",
+    category: "Field Operations",
+  },
+  {
+    id: "field.accept_assignments",
+    name: "Accept Assignments",
+    description: "Can accept booking assignments",
+    category: "Field Operations",
+  },
+  {
+    id: "field.reject_assignments",
+    name: "Reject Assignments",
+    description: "Can reject booking assignments",
+    category: "Field Operations",
   },
 
   // System Settings
@@ -170,23 +413,211 @@ const DEFAULT_PERMISSIONS: Permission[] = [
     description: "Can manage security settings",
     category: "System Settings",
   },
+  {
+    id: "settings.booking",
+    name: "Booking Configuration",
+    description: "Can configure booking settings",
+    category: "System Settings",
+  },
+  {
+    id: "settings.pricing",
+    name: "Pricing Settings",
+    description: "Can modify service pricing",
+    category: "System Settings",
+  },
+
+  // Financial Management
+  {
+    id: "finance.view_revenue",
+    name: "View Revenue Reports",
+    description: "Can view financial reports",
+    category: "Financial Management",
+  },
+  {
+    id: "finance.process_payments",
+    name: "Process Payments",
+    description: "Can handle payment processing",
+    category: "Financial Management",
+  },
+  {
+    id: "finance.refunds",
+    name: "Issue Refunds",
+    description: "Can process refunds",
+    category: "Financial Management",
+  },
+
+  // Inventory Management
+  {
+    id: "inventory.view",
+    name: "View Inventory",
+    description: "Can view inventory levels",
+    category: "Inventory Management",
+  },
+  {
+    id: "inventory.update",
+    name: "Update Inventory",
+    description: "Can modify inventory levels",
+    category: "Inventory Management",
+  },
+  {
+    id: "inventory.order",
+    name: "Order Supplies",
+    description: "Can place supply orders",
+    category: "Inventory Management",
+  },
+
+  // Communication
+  {
+    id: "communication.send_notifications",
+    name: "Send Notifications",
+    description: "Can send push notifications",
+    category: "Communication",
+  },
+  {
+    id: "communication.broadcast",
+    name: "Broadcast Messages",
+    description: "Can send broadcast messages",
+    category: "Communication",
+  },
+  {
+    id: "communication.sms",
+    name: "Send SMS",
+    description: "Can send SMS messages",
+    category: "Communication",
+  },
 ];
 
 const ROLE_PRESETS = {
   user: [],
-  admin: [
-    "users.view",
-    "users.create",
-    "users.edit",
-    "ads.view",
-    "ads.create",
-    "ads.edit",
-    "analytics.view",
+  crew: [
+    // Field Operations
+    "field.update_status",
+    "field.upload_photos",
+    "field.collect_signature",
+    "field.update_location",
+    "field.accept_assignments",
+    "field.reject_assignments",
+    // Basic Booking Access
+    "bookings.view_assigned",
+    "bookings.update_status",
+  ],
+  manager: [
+    // Tab Access
+    "tab.overview",
+    "tab.customers",
+    "tab.bookings",
+    "tab.analytics",
+    // Customer Management
     "customers.view",
     "customers.edit",
     "customers.approve",
+    "customers.message",
+    "customers.view_details",
+    // Booking Management
+    "bookings.view_all",
+    "bookings.approve",
+    "bookings.cancel",
+    "bookings.reschedule",
+    // Crew Management
+    "crew.assign",
+    "crew.view_assignments",
+    "crew.track_location",
+    // Analytics
+    "analytics.view",
+  ],
+  cashier: [
+    // Tab Access
+    "tab.pos",
+    "tab.customers",
+    "tab.packages",
+    // Customer Management
+    "customers.view",
+    "customers.view_details",
+    // Package Management
+    "packages.view",
+    // Financial
+    "finance.process_payments",
+  ],
+  inventory_manager: [
+    // Tab Access
+    "tab.inventory",
+    "tab.packages",
+    "tab.analytics",
+    // Inventory Management
+    "inventory.view",
+    "inventory.update",
+    "inventory.order",
+    // Package Management
     "packages.view",
     "packages.edit",
+    "packages.create",
+    // Analytics
+    "analytics.view",
+  ],
+  admin: [
+    // Most tab access except user roles
+    "tab.overview",
+    "tab.customers",
+    "tab.ads",
+    "tab.packages",
+    "tab.branches",
+    "tab.analytics",
+    "tab.bookings",
+    "tab.images",
+    "tab.sales",
+    "tab.notifications",
+    "tab.cms",
+    "tab.booking_settings",
+    "tab.push_notifications",
+    "tab.gamification",
+    "tab.subscription_approval",
+    "tab.pos",
+    "tab.inventory",
+    "tab.user_management",
+    // User Management
+    "users.view",
+    "users.create",
+    "users.edit",
+    // Ads Management
+    "ads.view",
+    "ads.create",
+    "ads.edit",
+    "ads.delete",
+    // Analytics
+    "analytics.view",
+    "analytics.export",
+    // Customer Management
+    "customers.view",
+    "customers.edit",
+    "customers.approve",
+    "customers.message",
+    "customers.view_details",
+    // Package Management
+    "packages.view",
+    "packages.edit",
+    "packages.create",
+    "packages.delete",
+    // Booking Management
+    "bookings.view_all",
+    "bookings.approve",
+    "bookings.cancel",
+    "bookings.reschedule",
+    // Crew Management
+    "crew.manage",
+    "crew.assign",
+    "crew.view_assignments",
+    "crew.track_location",
+    // System Settings
+    "settings.booking",
+    "settings.pricing",
+    // Financial
+    "finance.view_revenue",
+    "finance.process_payments",
+    "finance.refunds",
+    // Communication
+    "communication.send_notifications",
+    "communication.broadcast",
+    "communication.sms",
   ],
   superadmin: DEFAULT_PERMISSIONS.map((p) => p.id),
 };
@@ -212,24 +643,49 @@ export default function UserRoleManagement() {
   }, []);
 
   const loadUsers = () => {
-    const registeredUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
+    try {
+      const registeredUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
 
-    // Convert to our User interface format
-    const formattedUsers: User[] = registeredUsers.map((user: any) => ({
-      id: user.id || user.email,
-      fullName: user.fullName || user.name || "Unknown",
-      email: user.email,
-      role: user.role || "user",
-      permissions: user.permissions || ROLE_PRESETS[user.role || "user"],
-      status: user.status || "active",
-      createdAt:
-        user.createdAt || user.registeredAt || new Date().toISOString(),
-      lastLogin: user.lastLogin,
-    }));
+      // Ensure we have an array
+      if (!Array.isArray(registeredUsers)) {
+        console.warn("registeredUsers is not an array, resetting to empty array");
+        localStorage.setItem("registeredUsers", "[]");
+        setUsers([]);
+        return;
+      }
 
-    setUsers(formattedUsers);
+      // Convert to our User interface format with safe fallbacks
+      const formattedUsers: User[] = registeredUsers
+        .filter((user: any) => user && typeof user === 'object' && user.email) // Filter out invalid entries
+        .map((user: any) => {
+          const userRole = user.role || "user";
+          const validRole = ["user", "crew", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole)
+            ? userRole
+            : "user";
+
+          return {
+            id: user.id || user.email || `user_${Date.now()}_${Math.random()}`,
+            fullName: user.fullName || user.name || "Unknown User",
+            email: user.email || "",
+            role: validRole as User["role"],
+            permissions: user.permissions || ROLE_PRESETS[validRole as keyof typeof ROLE_PRESETS] || [],
+            status: (user.status && ["active", "inactive", "suspended"].includes(user.status)) 
+              ? user.status 
+              : "active",
+            createdAt: user.createdAt || user.registeredAt || new Date().toISOString(),
+            lastLogin: user.lastLogin || undefined,
+          };
+        });
+
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      // Reset to empty array on error
+      localStorage.setItem("registeredUsers", "[]");
+      setUsers([]);
+    }
   };
 
   const resetForm = () => {
@@ -248,7 +704,7 @@ export default function UserRoleManagement() {
     setFormData({
       ...formData,
       role,
-      permissions: ROLE_PRESETS[role],
+      permissions: ROLE_PRESETS[role as keyof typeof ROLE_PRESETS] || [],
     });
   };
 
@@ -261,93 +717,120 @@ export default function UserRoleManagement() {
   };
 
   const handleCreateUser = () => {
-    if (!formData.fullName || !formData.email || !formData.password) {
-      alert("Please fill in all required fields");
-      return;
+    try {
+      if (!formData.fullName || !formData.email || !formData.password) {
+        alert("Please fill in all required fields");
+        return;
+      }
+
+      const existingUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
+
+      // Ensure existingUsers is an array
+      if (!Array.isArray(existingUsers)) {
+        console.warn("existingUsers is not an array, resetting");
+        localStorage.setItem("registeredUsers", "[]");
+      }
+
+      const userArray = Array.isArray(existingUsers) ? existingUsers : [];
+
+      const userExists = userArray.find(
+        (user: any) => user && user.email === formData.email,
+      );
+      if (userExists) {
+        alert("User with this email already exists");
+        return;
+      }
+
+      const newUser = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        permissions: formData.permissions,
+        status: formData.status,
+        createdAt: new Date().toISOString(),
+        // Additional required fields for compatibility
+        address: "Admin Created Account",
+        contactNumber: "+63 999 000 0000",
+        carUnit: "N/A",
+        carPlateNumber: "N/A",
+        carType: "N/A",
+        selectedPackage: "classic",
+      };
+
+      userArray.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(userArray));
+
+      // Create basic subscription data for new user
+      const subscriptionData = {
+        package: "Regular Member",
+        daysLeft: 0,
+        currentCycleStart: new Date().toISOString().split("T")[0],
+        currentCycleEnd: new Date().toISOString().split("T")[0],
+        daysLeftInCycle: 0,
+        autoRenewal: false,
+        remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
+        totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
+      };
+
+      localStorage.setItem(
+        `subscription_${formData.email}`,
+        JSON.stringify(subscriptionData),
+      );
+      localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
+
+      loadUsers();
+      setIsCreateModalOpen(false);
+      resetForm();
+      alert("User created successfully!");
+    } catch (error) {
+      console.error("Error creating user:", error);
+      alert("Failed to create user. Please try again.");
     }
-
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-
-    const userExists = existingUsers.find(
-      (user: any) => user.email === formData.email,
-    );
-    if (userExists) {
-      alert("User with this email already exists");
-      return;
-    }
-
-    const newUser = {
-      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      permissions: formData.permissions,
-      status: formData.status,
-      createdAt: new Date().toISOString(),
-      // Additional required fields for compatibility
-      address: "Admin Created Account",
-      contactNumber: "+63 999 000 0000",
-      carUnit: "N/A",
-      carPlateNumber: "N/A",
-      carType: "N/A",
-      selectedPackage: "classic",
-    };
-
-    existingUsers.push(newUser);
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-
-    // Create basic subscription data for new user
-    const subscriptionData = {
-      package: "Regular Member",
-      daysLeft: 0,
-      currentCycleStart: new Date().toISOString().split("T")[0],
-      currentCycleEnd: new Date().toISOString().split("T")[0],
-      daysLeftInCycle: 0,
-      autoRenewal: false,
-      remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
-      totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
-    };
-
-    localStorage.setItem(
-      `subscription_${formData.email}`,
-      JSON.stringify(subscriptionData),
-    );
-    localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
-
-    loadUsers();
-    setIsCreateModalOpen(false);
-    resetForm();
-    alert("User created successfully!");
   };
 
   const handleEditUser = () => {
     if (!editingUser) return;
 
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
+    try {
+      const existingUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
 
-    const userIndex = existingUsers.findIndex(
-      (user: any) => user.email === editingUser.email,
-    );
-    if (userIndex === -1) return;
+      const userIndex = existingUsers.findIndex(
+        (user: any) => user.email === editingUser.email,
+      );
+      if (userIndex === -1) return;
 
-    existingUsers[userIndex] = {
-      ...existingUsers[userIndex],
-      fullName: formData.fullName,
-      role: formData.role,
-      permissions: formData.permissions,
-      status: formData.status,
-    };
+      // Update user data, including password if provided
+      const updatedUser = {
+        ...existingUsers[userIndex],
+        fullName: formData.fullName,
+        role: formData.role,
+        permissions: formData.permissions,
+        status: formData.status,
+        updatedAt: new Date().toISOString(),
+      };
 
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-    loadUsers();
-    setIsEditModalOpen(false);
-    resetForm();
-    alert("User updated successfully!");
+      // Only update password if a new one was provided
+      if (formData.password && formData.password.trim() !== "") {
+        updatedUser.password = formData.password;
+      }
+
+      existingUsers[userIndex] = updatedUser;
+
+      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+      loadUsers();
+      setIsEditModalOpen(false);
+      resetForm();
+      alert("User updated successfully!");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user. Please try again.");
+    }
   };
 
   const handleDeleteUser = (user: User) => {
@@ -357,21 +840,26 @@ export default function UserRoleManagement() {
     }
 
     if (confirm(`Are you sure you want to delete ${user.fullName}?`)) {
-      const existingUsers = JSON.parse(
-        localStorage.getItem("registeredUsers") || "[]",
-      );
+      try {
+        const existingUsers = JSON.parse(
+          localStorage.getItem("registeredUsers") || "[]",
+        );
 
-      const filteredUsers = existingUsers.filter(
-        (u: any) => u.email !== user.email,
-      );
-      localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+        const filteredUsers = existingUsers.filter(
+          (u: any) => u.email !== user.email,
+        );
+        localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
 
-      // Clean up user data
-      localStorage.removeItem(`subscription_${user.email}`);
-      localStorage.removeItem(`washLogs_${user.email}`);
+        // Clean up user data
+        localStorage.removeItem(`subscription_${user.email}`);
+        localStorage.removeItem(`washLogs_${user.email}`);
 
-      loadUsers();
-      alert("User deleted successfully!");
+        loadUsers();
+        alert("User deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Failed to delete user. Please try again.");
+      }
     }
   };
 
@@ -394,6 +882,14 @@ export default function UserRoleManagement() {
         return <Crown className="h-4 w-4" />;
       case "admin":
         return <Shield className="h-4 w-4" />;
+      case "manager":
+        return <UserCheck className="h-4 w-4" />;
+      case "crew":
+        return <Wrench className="h-4 w-4" />;
+      case "cashier":
+        return <Star className="h-4 w-4" />;
+      case "inventory_manager":
+        return <Settings className="h-4 w-4" />;
       default:
         return <Users className="h-4 w-4" />;
     }
@@ -405,6 +901,14 @@ export default function UserRoleManagement() {
         return "bg-gradient-to-r from-yellow-500 to-orange-600";
       case "admin":
         return "bg-gradient-to-r from-purple-500 to-blue-600";
+      case "manager":
+        return "bg-gradient-to-r from-blue-500 to-cyan-600";
+      case "crew":
+        return "bg-gradient-to-r from-red-500 to-pink-600";
+      case "cashier":
+        return "bg-gradient-to-r from-emerald-500 to-green-600";
+      case "inventory_manager":
+        return "bg-gradient-to-r from-orange-500 to-red-600";
       default:
         return "bg-gradient-to-r from-green-500 to-teal-600";
     }
@@ -526,6 +1030,10 @@ export default function UserRoleManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="crew">Crew</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="cashier">Cashier</SelectItem>
+                      <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="superadmin">Super Admin</SelectItem>
                     </SelectContent>
@@ -654,9 +1162,28 @@ export default function UserRoleManagement() {
                   assigned
                 </p>
                 <p className="text-sm text-muted-foreground">
+                  <strong>Tab Access:</strong>{" "}
+                  {user.permissions.filter(p => p.startsWith('tab.')).length} tabs
+                </p>
+                <p className="text-sm text-muted-foreground">
                   <strong>Created:</strong>{" "}
                   {new Date(user.createdAt).toLocaleDateString()}
                 </p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {user.permissions.filter(p => p.startsWith('tab.')).slice(0, 3).map(tabPerm => {
+                    const tabName = DEFAULT_PERMISSIONS.find(p => p.id === tabPerm)?.name || tabPerm;
+                    return (
+                      <Badge key={tabPerm} variant="outline" className="text-xs">
+                        {tabName.replace(" Tab", "")}
+                      </Badge>
+                    );
+                  })}
+                  {user.permissions.filter(p => p.startsWith('tab.')).length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{user.permissions.filter(p => p.startsWith('tab.')).length - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -693,6 +1220,37 @@ export default function UserRoleManagement() {
               </div>
             </div>
 
+            <div>
+              <Label htmlFor="editPassword">Change Password (Optional)</Label>
+              <div className="relative">
+                <Input
+                  id="editPassword"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder="Enter new password (leave blank to keep current)"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave blank to keep the current password unchanged
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="editRole">Role</Label>
@@ -702,6 +1260,10 @@ export default function UserRoleManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="crew">Crew</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Super Admin</SelectItem>
                   </SelectContent>

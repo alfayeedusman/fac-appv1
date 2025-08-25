@@ -45,7 +45,7 @@ import AdminSidebar from "@/components/AdminSidebar";
 import {
   CMSContent,
   MemberPerk,
-  getCMSContent,
+  getAllCMSContent,
   updateCMSContent,
   getMemberPerks,
   updateMemberPerks,
@@ -70,33 +70,67 @@ export default function AdminCMS() {
   const [editingContent, setEditingContent] = useState<string>("");
   const [editingPerks, setEditingPerks] = useState<boolean>(false);
   const [newPerk, setNewPerk] = useState<Partial<MemberPerk>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
 
   const userEmail = localStorage.getItem("userEmail") || "";
 
   useEffect(() => {
-    initializeCMSData();
-    loadCMSContent();
-    loadMemberPerks();
+    const initializeData = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+        initializeCMSData();
+        loadCMSContent();
+        loadMemberPerks();
+      } catch (error) {
+        console.error('Error initializing CMS data:', error);
+        setHasError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
   }, []);
 
   const loadCMSContent = () => {
-    const content = getCMSContent();
-    setCmsContent(content);
+    try {
+      const content = getAllCMSContent();
+      setCmsContent(Array.isArray(content) ? content : []);
+    } catch (error) {
+      console.error('Error loading CMS content:', error);
+      setCmsContent([]);
+    }
   };
 
   const loadMemberPerks = () => {
-    const perks = getMemberPerks();
-    setMemberPerks(perks);
+    try {
+      const perks = getMemberPerks();
+      setMemberPerks(Array.isArray(perks) ? perks : []);
+    } catch (error) {
+      console.error('Error loading member perks:', error);
+      setMemberPerks([]);
+    }
   };
 
   const handleUpdateContent = (contentId: string, newContent: string) => {
-    updateCMSContent(contentId, newContent);
-    loadCMSContent();
-    setEditingContent("");
-    toast({
-      title: "Content Updated! 🎉",
-      description: "The content has been successfully updated.",
-    });
+    try {
+      updateCMSContent(contentId, newContent, userEmail);
+      loadCMSContent();
+      setEditingContent("");
+      toast({
+        title: "Content Updated! 🎉",
+        description: "The content has been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Error updating content:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update content. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddPerk = () => {
@@ -116,10 +150,11 @@ export default function AdminCMS() {
       icon: newPerk.icon || "Gift",
       color: newPerk.color || "#3B82F6",
       enabled: true,
+      order: memberPerks.length + 1,
     };
 
     const updatedPerks = [...memberPerks, perk];
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
     setNewPerk({});
     setEditingPerks(false);
@@ -132,7 +167,7 @@ export default function AdminCMS() {
 
   const handleDeletePerk = (id: string) => {
     const updatedPerks = memberPerks.filter((perk) => perk.id !== id);
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
     toast({
       title: "Perk Deleted",
@@ -144,7 +179,7 @@ export default function AdminCMS() {
     const updatedPerks = memberPerks.map((perk) =>
       perk.id === id ? { ...perk, enabled: !perk.enabled } : perk,
     );
-    updateMemberPerks(updatedPerks);
+    updateMemberPerks(updatedPerks, userEmail);
     setMemberPerks(updatedPerks);
   };
 
@@ -152,6 +187,36 @@ export default function AdminCMS() {
     const Icon = iconMap[iconName as keyof typeof iconMap] || Star;
     return <Icon className="h-5 w-5" />;
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading CMS content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <FileText className="h-12 w-12 mx-auto mb-2" />
+            <p className="text-lg font-semibold">Failed to load CMS content</p>
+            <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+          </div>
+          <Button onClick={() => window.location.reload()} className="bg-fac-orange-500 hover:bg-fac-orange-600">
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -199,7 +264,9 @@ export default function AdminCMS() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {cmsContent.map((item) => (
+                    {Array.isArray(cmsContent) && cmsContent.length > 0 ? cmsContent
+                      .filter(item => item && item.id && item.title)
+                      .map((item) => (
                       <div key={item.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -267,7 +334,13 @@ export default function AdminCMS() {
                           </div>
                         )}
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No CMS content available</p>
+                        <p className="text-sm">Content will be loaded automatically</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -370,7 +443,9 @@ export default function AdminCMS() {
 
                   {/* Existing Perks */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {memberPerks.map((perk) => (
+                    {Array.isArray(memberPerks) && memberPerks.length > 0 ? memberPerks
+                      .filter(perk => perk && perk.id && perk.title)
+                      .map((perk) => (
                       <Card key={perk.id} className="relative">
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
@@ -445,7 +520,13 @@ export default function AdminCMS() {
                           </p>
                         </CardContent>
                       </Card>
-                    ))}
+                    )) : (
+                      <div className="col-span-full text-center py-8 text-muted-foreground">
+                        <Crown className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No member perks available</p>
+                        <p className="text-sm">Add your first perk using the button above</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

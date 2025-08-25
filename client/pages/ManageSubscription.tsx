@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
-import PackageSelectionModal from "@/components/PackageSelectionModal";
+import SwipeablePackageModal from "@/components/SwipeablePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
   getUserSubscriptionStatus,
@@ -80,7 +80,8 @@ export default function ManageSubscription() {
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [showSwipeablePackageModal, setShowSwipeablePackageModal] =
+    useState(false);
   const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
     useState(false);
   const [currentPlan, setCurrentPlan] = useState("regular");
@@ -274,13 +275,14 @@ export default function ManageSubscription() {
   };
 
   const handleUpgrade = () => {
-    // Show package selection modal for upgrades
-    setShowPackageModal(true);
+    // Show swipeable package selection modal
+    setShowSwipeablePackageModal(true);
   };
 
-  const handlePackageSelection = (packageId: string) => {
+  const handleSwipeablePackageSelection = (packageId: string) => {
     setSelectedPlan(packageId);
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
+    setShowSwipeablePackageModal(false);
     setShowPaymentModal(true);
   };
 
@@ -481,180 +483,6 @@ export default function ManageSubscription() {
                     </div>
                   </div>
                 )}
-
-                {/* Payment & Upgrade History */}
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-foreground">
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      Payment & Upgrade History
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const allRequests = getSubscriptionRequests();
-                      const userId = `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
-                      const userRequests = allRequests
-                        .filter((req) => req.userId === userId)
-                        .sort(
-                          (a, b) =>
-                            new Date(b.submissionDate).getTime() -
-                            new Date(a.submissionDate).getTime(),
-                        );
-
-                      if (userRequests.length === 0) {
-                        return (
-                          <div className="text-center py-8">
-                            <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
-                              <CreditCard className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                              No Payment History
-                            </h3>
-                            <p className="text-muted-foreground">
-                              You haven't submitted any payment requests yet.
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-4">
-                          {userRequests.map((request, index) => (
-                            <div
-                              key={request.id}
-                              className="p-4 border rounded-lg bg-background/50"
-                            >
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center space-x-3">
-                                  <div
-                                    className={`p-2 rounded-lg ${
-                                      request.status === "approved"
-                                        ? "bg-green-100 dark:bg-green-900/30"
-                                        : request.status === "pending"
-                                          ? "bg-yellow-100 dark:bg-yellow-900/30"
-                                          : request.status === "rejected"
-                                            ? "bg-red-100 dark:bg-red-900/30"
-                                            : "bg-blue-100 dark:bg-blue-900/30"
-                                    }`}
-                                  >
-                                    {request.status === "approved" ? (
-                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                    ) : request.status === "pending" ? (
-                                      <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                                    ) : request.status === "rejected" ? (
-                                      <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                    ) : (
-                                      <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-foreground">
-                                      {request.packageType}
-                                    </h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      {index === 0
-                                        ? "Latest Request"
-                                        : `Request #${userRequests.length - index}`}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-semibold text-foreground">
-                                    {request.paymentDetails.amount}
-                                  </p>
-                                  <Badge
-                                    className={`${
-                                      request.status === "approved"
-                                        ? "bg-green-100 text-green-800"
-                                        : request.status === "pending"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : request.status === "rejected"
-                                            ? "bg-red-100 text-red-800"
-                                            : "bg-blue-100 text-blue-800"
-                                    }`}
-                                  >
-                                    {request.status.toUpperCase()}
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                <div>
-                                  <span className="font-medium text-muted-foreground">
-                                    Request ID:
-                                  </span>
-                                  <p className="font-mono text-foreground">
-                                    {request.id}
-                                  </p>
-                                </div>
-                                <div>
-                                  <span className="font-medium text-muted-foreground">
-                                    Payment Method:
-                                  </span>
-                                  <p className="capitalize text-foreground">
-                                    {request.paymentMethod.replace("_", " ")}
-                                  </p>
-                                </div>
-                                <div>
-                                  <span className="font-medium text-muted-foreground">
-                                    Submitted:
-                                  </span>
-                                  <p className="text-foreground">
-                                    {new Date(
-                                      request.submissionDate,
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {request.reviewNotes && (
-                                <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                                  <span className="text-sm font-medium text-foreground">
-                                    Admin Notes:
-                                  </span>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {request.reviewNotes}
-                                  </p>
-                                </div>
-                              )}
-
-                              {request.reviewedBy && (
-                                <div className="mt-2 text-xs text-muted-foreground">
-                                  Reviewed by {request.reviewedBy} on{" "}
-                                  {new Date(
-                                    request.reviewedDate!,
-                                  ).toLocaleDateString("en-US", {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-
-                          <div className="text-center pt-4">
-                            <Link to="/payment-history">
-                              <Button variant="outline" className="w-full">
-                                <CreditCard className="h-4 w-4 mr-2" />
-                                View Complete Payment History
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
 
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   {(() => {
@@ -976,34 +804,7 @@ export default function ManageSubscription() {
                       )}
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-gray-200 space-y-6">
-                    <div className="bg-fac-blue-100 p-4 rounded-xl border border-fac-blue-200">
-                      <div className="flex items-center text-sm text-fac-blue-700 mb-2">
-                        <RefreshCw className="h-5 w-5 mr-3" />
-                        <span className="font-semibold text-base">
-                          Monthly Reset System
-                        </span>
-                      </div>
-                      <p className="text-sm text-fac-blue-600 leading-relaxed">
-                        All package benefits reset to full amount at the start
-                        of each billing cycle. Unused washes from previous
-                        months do not carry over.
-                      </p>
-                    </div>
-
-                    <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-                      <div className="flex items-center text-sm text-green-700 mb-2">
-                        <Shield className="h-5 w-5 mr-3" />
-                        <span className="font-semibold text-base">
-                          Auto-Renewal Active
-                        </span>
-                      </div>
-                      <p className="text-sm text-green-600 leading-relaxed">
-                        Your subscription will automatically renew on the expiry
-                        date. You can manage this setting anytime in your
-                        account preferences.
-                      </p>
-                    </div>
+                  <div className="pt-6 mt-6 border-t border-gray-200">
                     <Button
                       className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
                       onClick={() => setShowSubscriptionSubmission(true)}
@@ -1015,86 +816,23 @@ export default function ManageSubscription() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Lock-in Terms */}
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center text-orange-700">
-                  <AlertTriangle className="h-5 w-5 mr-2" />
-                  Important Terms & Conditions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 text-sm text-orange-700">
-                  <div>
-                    <h5 className="font-semibold mb-2">
-                      Monthly Reset Policy:
-                    </h5>
-                    <p>
-                      • All package benefits (wash sessions) reset to full
-                      amount at the start of each monthly billing cycle
-                    </p>
-                    <p>
-                      • Unused washes from previous months do{" "}
-                      <strong>NOT</strong> carry over
-                    </p>
-                    <p>
-                      • Each billing cycle is independent - benefits are
-                      consumed once per month only
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-orange-200">
-                    <h5 className="font-semibold mb-2">Lock-in Terms:</h5>
-                    <p>
-                      • <strong>3-Month Lock-in:</strong> Minimum commitment of
-                      3 months. Early cancellation incurs 50% penalty.
-                    </p>
-                    <p>
-                      • <strong>6-Month Lock-in:</strong> Minimum commitment of
-                      6 months. Early cancellation incurs 60% penalty.
-                    </p>
-                    <p>
-                      • <strong>1-Year Lock-in:</strong> Minimum commitment of
-                      12 months. Early cancellation incurs 70% penalty.
-                    </p>
-                    <p>
-                      • <strong>Flexible Plan:</strong> Cancel anytime with 30
-                      days notice, no penalty.
-                    </p>
-                  </div>
-
-                  <p className="pt-2 border-t border-orange-200">
-                    <strong>Note:</strong> Lock-in discounts are applied
-                    upfront. Penalties are calculated based on remaining months
-                    in the commitment period.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
 
       <BottomNavigation />
 
-      {/* Package Selection Modal */}
-      <PackageSelectionModal
-        isOpen={showPackageModal}
+      {/* Swipeable Package Selection Modal */}
+      <SwipeablePackageModal
+        isOpen={showSwipeablePackageModal}
         onClose={() => {
-          setShowPackageModal(false);
-          // Refresh subscription status after package selection
+          setShowSwipeablePackageModal(false);
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);
         }}
-        onSelectPackage={(packageType) => {
-          handlePackageSelection(packageType);
-          // Refresh subscription status after package selection
-          setTimeout(() => {
-            refreshSubscriptionStatus();
-          }, 1000);
-        }}
+        onSelectPackage={handleSwipeablePackageSelection}
+        subscriptionRequestStatus={subscriptionRequestStatus}
       />
 
       {/* Payment Upload Modal */}
@@ -1102,7 +840,6 @@ export default function ManageSubscription() {
         isOpen={showPaymentModal}
         onClose={() => {
           setShowPaymentModal(false);
-          // Refresh subscription status after payment upload
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);
@@ -1111,7 +848,6 @@ export default function ManageSubscription() {
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
         onStatusUpdate={() => {
-          // Refresh subscription status immediately when payment is submitted
           refreshSubscriptionStatus();
         }}
       />
@@ -1121,7 +857,6 @@ export default function ManageSubscription() {
         isOpen={showSubscriptionSubmission}
         onClose={() => {
           setShowSubscriptionSubmission(false);
-          // Refresh subscription status after submission
           setTimeout(() => {
             refreshSubscriptionStatus();
           }, 1000);

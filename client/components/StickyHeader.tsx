@@ -12,6 +12,8 @@ interface StickyHeaderProps {
   showBack?: boolean;
   backTo?: string;
   className?: string;
+  isGuestMode?: boolean;
+  hideNavigation?: boolean;
 }
 
 export default function StickyHeader({
@@ -19,6 +21,8 @@ export default function StickyHeader({
   showBack = false,
   backTo = "/dashboard",
   className,
+  isGuestMode = false,
+  hideNavigation = false,
 }: StickyHeaderProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -27,13 +31,19 @@ export default function StickyHeader({
   // Check if user is authenticated
   const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
-  // Define public routes where StickyHeader should not appear
-  const publicRoutes = ["/", "/login", "/signup"];
-  const isPublicRoute = publicRoutes.includes(location.pathname);
+  // Define routes where StickyHeader should not appear
+  const noHeaderRoutes = ["/", "/login", "/signup", "/forgot-password", "/credential-setup"];
+  const shouldHideHeader = noHeaderRoutes.includes(location.pathname);
 
   // Don't show StickyHeader on POS Kiosk (it has its own fullscreen header)
   const kioskRoutes = ["/pos-kiosk"];
   const isKioskRoute = kioskRoutes.includes(location.pathname);
+
+  // Check if current route is guest booking
+  const isGuestBookingRoute = location.pathname === "/guest-booking";
+
+  // Determine if we should show navigation elements (search, notifications, logout)
+  const shouldShowNavigation = isAuthenticated && !isGuestMode && !isGuestBookingRoute && !hideNavigation;
 
   // useEffect must be called before any conditional returns (Rules of Hooks)
   useEffect(() => {
@@ -47,8 +57,11 @@ export default function StickyHeader({
     const alwaysVisiblePages = [
       "/inventory-management",
       "/pos",
+      "/manager-dashboard",
       "/admin-user-management",
       "/admin-cms",
+      "/admin-home-service",
+      "/admin-booking-settings",
       "/admin-push-notifications",
       "/admin-subscription-approval",
       "/admin-gamification",
@@ -69,8 +82,8 @@ export default function StickyHeader({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [location.pathname, isKioskRoute]);
 
-  // Don't render StickyHeader on public routes, kiosk routes, or if not authenticated
-  if ((isPublicRoute && !isAuthenticated) || isKioskRoute) {
+  // Don't render StickyHeader on certain routes or kiosk mode
+  if (shouldHideHeader || isKioskRoute) {
     return null;
   }
 
@@ -168,24 +181,28 @@ export default function StickyHeader({
             </div>
 
             <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => alert("🔍 Search feature coming soon!")}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-              <NotificationDropdown />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
-                onClick={() => setShowLogoutModal(true)}
-                title="Logout"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              {shouldShowNavigation && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => alert("🔍 Search feature coming soon!")}
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                  <NotificationDropdown />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
+                    onClick={() => setShowLogoutModal(true)}
+                    title="Logout"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
               <ThemeToggle />
             </div>
           </div>

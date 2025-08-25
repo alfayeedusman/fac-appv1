@@ -63,6 +63,7 @@ import {
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -72,8 +73,17 @@ import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
 import SalesDashboard from "@/components/SalesDashboard";
 import InventoryDashboard from "@/components/InventoryDashboard";
+import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
+import ImageUploadManager from "@/components/ImageUploadManager";
+import NotificationService from "@/components/NotificationService";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
+import {
+  getUserSystemNotifications,
+  markSystemNotificationAsRead,
+  getAllBookings,
+  type SystemNotification
+} from "@/utils/databaseSchema";
 
 interface Customer {
   id: string;
@@ -306,14 +316,52 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
+    const email = localStorage.getItem("userEmail");
+
     if (role === "admin" || role === "superadmin") {
       setUserRole(role);
       // Initialize sample ads for demonstration
       initializeSampleAds();
+
+      // Load system notifications
+      loadSystemNotifications();
+
+      // Set up polling for new notifications every 10 seconds
+      const notificationInterval = setInterval(loadSystemNotifications, 10000);
+
+      return () => clearInterval(notificationInterval);
     } else {
       navigate("/login");
     }
   }, [navigate]);
+
+  const loadSystemNotifications = () => {
+    try {
+      const userRole = localStorage.getItem("userRole") as "admin" | "superadmin";
+      const userEmail = localStorage.getItem("userEmail") || "";
+
+      if (userRole && userEmail) {
+        const systemNotifications = getUserSystemNotifications(userEmail, userRole);
+
+        // Convert system notifications to the format expected by the UI
+        const formattedNotifications = systemNotifications.map((notification: SystemNotification) => ({
+          id: notification.id,
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          timestamp: new Date(notification.createdAt),
+          read: notification.readBy.some(r => r.userId === userEmail),
+          priority: notification.priority,
+          data: notification.data,
+          actionRequired: notification.type === 'new_booking',
+        }));
+
+        setNotifications(formattedNotifications);
+      }
+    } catch (error) {
+      console.error('Error loading system notifications:', error);
+    }
+  };
 
   const handleAddCustomer = () => {
     if (newCustomer.name && newCustomer.email && newCustomer.phone) {
@@ -604,15 +652,14 @@ export default function AdminDashboard() {
                               size="sm"
                               className="text-xs h-7"
                               onClick={() => {
-                                const updatedNotifications = notifications.map(
-                                  (n) => ({ ...n, read: true }),
-                                );
-                                setNotifications(updatedNotifications);
-                                // Save to localStorage or your data source
-                                localStorage.setItem(
-                                  "admin_notifications",
-                                  JSON.stringify(updatedNotifications),
-                                );
+                                const userEmail = localStorage.getItem("userEmail") || "";
+                                // Mark all unread notifications as read
+                                notifications.forEach(notification => {
+                                  if (!notification.read) {
+                                    markSystemNotificationAsRead(notification.id, userEmail);
+                                  }
+                                });
+                                loadSystemNotifications(); // Refresh notifications
                               }}
                             >
                               Mark all read
@@ -660,22 +707,23 @@ export default function AdminDashboard() {
                               }`}
                               onClick={() => {
                                 if (!notification.read) {
-                                  const updatedNotifications =
-                                    notifications.map((n) =>
-                                      n.id === notification.id
-                                        ? { ...n, read: true }
-                                        : n,
-                                    );
-                                  setNotifications(updatedNotifications);
-                                  localStorage.setItem(
-                                    "admin_notifications",
-                                    JSON.stringify(updatedNotifications),
-                                  );
+                                  const userEmail = localStorage.getItem("userEmail") || "";
+                                  markSystemNotificationAsRead(notification.id, userEmail);
+                                  loadSystemNotifications(); // Refresh notifications
+
+                                  // If it's a booking notification, navigate to bookings tab
+                                  if (notification.type === 'new_booking') {
+                                    setActiveTab('bookings');
+                                    setIsNotificationDropdownOpen(false);
+                                  }
                                 }
                               }}
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
+                                  {notification.type === "new_booking" && (
+                                    <Calendar className="h-5 w-5 text-fac-orange-500" />
+                                  )}
                                   {notification.type === "new_customer" && (
                                     <UserPlus className="h-5 w-5 text-blue-500" />
                                   )}
@@ -684,6 +732,21 @@ export default function AdminDashboard() {
                                   )}
                                   {notification.type === "approval_request" && (
                                     <Clock className="h-5 w-5 text-yellow-500" />
+                                  )}
+                                  {notification.type === "status_update" && (
+                                    <CheckCircle className="h-5 w-5 text-blue-500" />
+                                  )}
+                                  {notification.type === "crew_update" && (
+                                    <Wrench className="h-5 w-5 text-purple-500" />
+                                  )}
+                                  {notification.type === "payment_received" && (
+                                    <DollarSign className="h-5 w-5 text-green-500" />
+                                  )}
+                                  {notification.type === "system_alert" && (
+                                    <AlertCircle className="h-5 w-5 text-red-500" />
+                                  )}
+                                  {notification.type === "payment" && (
+                                    <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -1316,7 +1379,9 @@ export default function AdminDashboard() {
 
           {activeTab === "roles" && userRole === "superadmin" && (
             <div className="animate-fade-in-scale">
-              <UserRoleManagement />
+              <ErrorBoundary>
+                <UserRoleManagement />
+              </ErrorBoundary>
             </div>
           )}
 
@@ -1328,14 +1393,39 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "bookings" && (
+            <div className="animate-fade-in-scale">
+              <EnhancedBookingManagement
+                userRole={userRole as "admin" | "superadmin"}
+                showCrewAssignment={true}
+              />
+            </div>
+          )}
+
+          {activeTab === "images" && (
+            <div className="animate-fade-in-scale">
+              <ImageUploadManager
+                allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
+                maxFileSize={10}
+                currentUser={{
+                  id: localStorage.getItem('userEmail'),
+                  email: localStorage.getItem('userEmail'),
+                  role: userRole
+                }}
+              />
+            </div>
+          )}
+
           {activeTab === "notifications" && (
-            <NotificationCenter
-              notifications={notifications}
-              onMarkAsRead={() => {}}
-              onMarkAllAsRead={() => {}}
-              onApproveCustomer={() => {}}
-              onRejectCustomer={() => {}}
-            />
+            <div className="animate-fade-in-scale">
+              <NotificationService
+                userRole={userRole}
+                userId={localStorage.getItem('userEmail') || 'unknown'}
+                onNotificationReceived={(notification) => {
+                  console.log('New notification received:', notification);
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

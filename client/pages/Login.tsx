@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,10 @@ import {
   Smartphone,
   Mail,
   Lock,
-  Fingerprint,
   Zap,
+  Crown,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import StickyHeader from "@/components/StickyHeader";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,6 +24,48 @@ export default function Login() {
     email: "",
     password: "",
   });
+
+  // Check for auto-login on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoLogin = urlParams.get("auto");
+    const userEmail = urlParams.get("email");
+
+    // Auto-login for superadmin
+    if (autoLogin === "true" && userEmail === "fffayeed@gmail.com") {
+      setFormData({
+        email: "fffayeed@gmail.com",
+        password: "Fayeed22beats"
+      });
+
+      // Trigger auto-login after a short delay
+      setTimeout(() => {
+        const event = new Event('submit');
+        document.querySelector('form')?.dispatchEvent(event);
+      }, 1000);
+    }
+  }, []);
+
+  // Auto-login function for superadmin
+  const triggerAutoLogin = () => {
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("userEmail", "fffayeed@gmail.com");
+    localStorage.setItem("userRole", "superadmin");
+    localStorage.setItem("justLoggedIn", "true");
+    localStorage.setItem("hasSeenWelcome", "true"); // Bypass welcome screen
+    localStorage.setItem(`welcomed_fffayeed@gmail.com`, "true"); // Mark user as welcomed
+
+    toast({
+      title: "Auto-Login Successful! 🎉",
+      description: "Welcome back, Superadmin!",
+      variant: "default",
+      className: "bg-green-50 border-green-200 text-green-800",
+    });
+
+    setTimeout(() => {
+      navigate("/admin-dashboard");
+    }, 1000);
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -64,6 +105,12 @@ export default function Login() {
     const validUsers = [
       { email: "admin@fac.com", password: "admin123", role: "admin" },
       { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
+      { email: "fffayeed@gmail.com", password: "Fayeed22beats", role: "superadmin" },
+      { email: "manager@fayeedautocare.com", password: "manager123", role: "manager" },
+      { email: "juan.cruz@fayeedautocare.com", password: "crew123", role: "crew" },
+      { email: "maria.santos@fayeedautocare.com", password: "crew123", role: "crew" },
+      { email: "carlos.mendoza@fayeedautocare.com", password: "crew123", role: "crew" },
+      { email: "ana.reyes@fayeedautocare.com", password: "crew123", role: "crew" },
       { email: "user@fac.com", password: "user123", role: "user" },
       { email: "demo@fac.com", password: "demo123", role: "user" },
       { email: "fayeedtest@g.com", password: "test101", role: "user" },
@@ -119,7 +166,18 @@ export default function Login() {
           authenticatedUser.role === "admin" ||
           authenticatedUser.role === "superadmin"
         ) {
+          // Set welcome flags for admin users to bypass welcome screen
+          localStorage.setItem("hasSeenWelcome", "true");
+          localStorage.setItem(`welcomed_${authenticatedUser.email}`, "true");
           navigate("/admin-dashboard");
+        } else if (authenticatedUser.role === "manager") {
+          navigate("/manager-dashboard");
+        } else if (authenticatedUser.role === "crew") {
+          navigate("/crew-dashboard");
+        } else if (authenticatedUser.role === "cashier") {
+          navigate("/pos");
+        } else if (authenticatedUser.role === "inventory_manager") {
+          navigate("/inventory-management");
         } else if (hasCompletedWelcome) {
           // Returning user - go straight to dashboard
           navigate("/dashboard");
@@ -142,41 +200,9 @@ export default function Login() {
     setIsLoading(false);
   };
 
-  const handleBiometricLogin = async () => {
-    setIsLoading(true);
-
-    try {
-      // Check if Web Authentication API is supported
-      if (!window.PublicKeyCredential) {
-        alert("Biometric authentication is not supported on this device");
-        setIsLoading(false);
-        return;
-      }
-
-      // Simulate biometric authentication
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // For demo purposes, simulate successful biometric auth
-      const simulatedUser =
-        localStorage.getItem("biometricUser") || "demo@fac.com";
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", simulatedUser);
-      localStorage.setItem("userRole", "user");
-
-      alert("Biometric authentication successful!");
-      navigate("/welcome");
-    } catch (error) {
-      alert(
-        "Biometric authentication failed. Please try again or use email/password.",
-      );
-    }
-
-    setIsLoading(false);
-  };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
-      <StickyHeader showBack={false} title="Sign In" />
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">{/* Removed StickyHeader - using custom navigation */}
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -312,17 +338,21 @@ export default function Login() {
                 )}
               </Button>
 
-              {/* Biometric Login Option */}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBiometricLogin}
-                disabled={isLoading}
-                className="w-full border-border text-foreground hover:bg-accent font-bold py-4 rounded-xl theme-transition glass hover-glow group"
-              >
-                <Fingerprint className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                {isLoading ? "Authenticating..." : "Biometric Login"}
-              </Button>
+              {/* Superadmin Quick Access */}
+              <div className="border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={triggerAutoLogin}
+                  className="w-full py-3 text-sm font-bold text-purple-600 border-purple-200 hover:bg-purple-50 hover:border-purple-300 rounded-xl transition-all duration-300"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Superadmin Quick Access
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Direct access for owner account
+                </p>
+              </div>
 
               {/* Forgot Password Link */}
               <div className="text-center">
@@ -352,29 +382,24 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Modern Demo Users */}
+        {/* Guest Booking Option */}
         <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">
           <CardContent className="p-6">
             <h3 className="font-black text-foreground text-base mb-4 flex items-center">
               <Smartphone className="h-5 w-5 mr-2 text-fac-orange-500" />
-              Demo Access Portal
+              Quick Access
             </h3>
-            <div className="space-y-3 text-sm font-medium">
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Customer:</strong> any email/password
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Admin:</strong> admin@fac.com / admin123
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">
-                  <strong>Super Admin:</strong> superadmin@fac.com / super123
-                </span>
-              </div>
+            <div className="space-y-3">
+              <Link to="/guest-booking">
+                <Button
+                  variant="outline"
+                  className="w-full border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50 font-bold py-3 rounded-xl transition-all group"
+                >
+                  <span className="text-lg mr-2">📅</span>
+                  Book as Guest
+                  <span className="text-lg ml-2">→</span>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -384,7 +409,7 @@ export default function Login() {
       <div className="text-center py-8 px-6 relative z-10">
         <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-700">
           <p className="text-xs text-muted-foreground font-medium">
-            © 2025 Fayeed Auto Care. Secured by quantum encryption.
+© 2025 Fayeed Auto Care. Made with love by FDigitals
           </p>
         </div>
       </div>

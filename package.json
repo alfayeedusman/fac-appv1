@@ -12,20 +12,30 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite",
+    "dev:server": "tsx server/mysql-server.ts",
+    "dev:frontend-only": "vite",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
     "start": "node dist/server/node-build.mjs",
+    "start:dev": "tsx server/mysql-server.ts",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^7.0.1",
+    "bcryptjs": "^3.0.2",
     "express": "^4.18.2",
     "firebase-admin": "^13.4.0",
     "jsqr": "^1.4.0",
     "mysql2": "^3.14.1",
+    "nodemailer": "^7.0.5",
     "react-is": "^19.1.0",
+    "sweetalert2": "^11.22.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
