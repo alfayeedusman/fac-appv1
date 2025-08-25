@@ -916,7 +916,7 @@ export default function EnhancedInventoryManagement() {
 
         {/* Car Wash Services Tab */}
         <TabsContent value="services" className="space-y-6">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
                     Car Wash Services
@@ -940,14 +940,14 @@ export default function EnhancedInventoryManagement() {
                     setServiceModalMode("add");
                     setShowServiceModal(true);
                   }}
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Service
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 {carWashServices.map((service) => (
                   <Card
                     key={service.id}
@@ -1251,7 +1251,7 @@ export default function EnhancedInventoryManagement() {
                             </TableCell>
                             <TableCell>{subtype.name}</TableCell>
                             <TableCell className="font-bold text-orange-600">
-                              ���{finalPrice}
+                              ₱{finalPrice}
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
