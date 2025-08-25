@@ -844,15 +844,15 @@ export default function EnhancedInventoryManagement() {
 
         {/* Categories Tab */}
         <TabsContent value="categories" className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-2xl font-bold">Product Categories</h2>
-                <Button onClick={() => setShowAddCategoryModal(true)}>
+                <Button onClick={() => setShowAddCategoryModal(true)} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Category
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 {categories.map((category) => (
                   <Card
                     key={category.id}
@@ -1251,7 +1251,7 @@ export default function EnhancedInventoryManagement() {
                             </TableCell>
                             <TableCell>{subtype.name}</TableCell>
                             <TableCell className="font-bold text-orange-600">
-                              ₱{finalPrice}
+                              ���{finalPrice}
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
