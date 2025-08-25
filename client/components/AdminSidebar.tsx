@@ -296,11 +296,11 @@ export default function AdminSidebar({
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "w-full justify-start relative transition-colors rounded-lg p-3",
+                    "w-full justify-start relative transition-colors rounded-lg p-2 lg:p-3",
                     isActive
                       ? "bg-fac-orange-500 text-white"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                    isCollapsed ? "px-2" : "px-3",
+                    isCollapsed ? "px-2" : "px-2 lg:px-3",
                   )}
                   onClick={() => {
                     onTabChange(item.id);
@@ -311,31 +311,31 @@ export default function AdminSidebar({
                   <div
                     className={cn(
                       "flex items-center w-full",
-                      isCollapsed ? "justify-center" : "space-x-3",
+                      isCollapsed ? "justify-center" : "space-x-2 lg:space-x-3",
                     )}
                   >
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <Icon
                         className={cn(
-                          "h-5 w-5",
+                          "h-4 lg:h-5 w-4 lg:w-5",
                           isActive ? "text-white" : "text-muted-foreground",
                         )}
                       />
                       {showNotification && (
-                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-4 w-4 rounded-full p-0 flex items-center justify-center">
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-3 lg:h-4 w-3 lg:w-4 rounded-full p-0 flex items-center justify-center">
                           {notificationCount > 9 ? "9+" : notificationCount}
                         </Badge>
                       )}
                     </div>
 
                     {!isCollapsed && (
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-sm">{item.label}</div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-medium text-xs lg:text-sm truncate">{item.label}</div>
                       </div>
                     )}
 
                     {showNotification && !isCollapsed && (
-                      <Badge className="bg-red-500 text-white text-xs">
+                      <Badge className="bg-red-500 text-white text-xs flex-shrink-0">
                         {notificationCount > 9 ? "9+" : notificationCount}
                       </Badge>
                     )}
