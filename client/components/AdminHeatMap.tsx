@@ -12,7 +12,7 @@ import {
   Car,
   Navigation,
   Filter,
-  Refresh,
+  RefreshCw,
   Search,
   Settings,
   Activity,
