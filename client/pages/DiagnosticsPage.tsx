@@ -236,6 +236,61 @@ export default function DiagnosticsPage() {
               Test Timeout Handling
             </Button>
             <Button
+              onClick={async () => {
+                setIsRunning(true);
+                try {
+                  toast({
+                    title: "🚀 Testing Emergency GPS",
+                    description: "Testing all timeout-resistant GPS strategies...",
+                    duration: 3000,
+                  });
+
+                  const results = await testGeolocationStrategies();
+                  console.log('📊 Geolocation strategy test results:', results);
+
+                  const successCount = results.summary.successfulMethods;
+                  const totalCount = results.summary.totalMethods;
+
+                  if (successCount > 0) {
+                    toast({
+                      title: "✅ GPS Strategies Tested",
+                      description: `${successCount}/${totalCount} methods succeeded. Best accuracy: ±${Math.round(results.summary.bestAccuracy || 1000)}m`,
+                      duration: 6000,
+                    });
+                  } else {
+                    toast({
+                      title: "❌ All GPS Methods Failed",
+                      description: "Check console for detailed results. May need to enable location permissions.",
+                      variant: "destructive",
+                      duration: 8000,
+                    });
+                  }
+
+                  setDiagnosticResults({
+                    ...diagnosticResults,
+                    geolocationStrategies: results
+                  });
+
+                } catch (error) {
+                  console.error('Strategy test failed:', error);
+                  toast({
+                    title: "❌ Strategy Test Failed",
+                    description: error instanceof Error ? error.message : "Unknown error",
+                    variant: "destructive",
+                    duration: 5000,
+                  });
+                } finally {
+                  setIsRunning(false);
+                }
+              }}
+              variant="outline"
+              disabled={isRunning}
+              className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+            >
+              <MapPin className="h-4 w-4" />
+              Test GPS Strategies
+            </Button>
+            <Button
               onClick={runAllDiagnostics}
               disabled={isRunning}
               className="flex items-center gap-2"
