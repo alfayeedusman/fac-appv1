@@ -44,6 +44,7 @@ import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminHomeService from "./pages/AdminHomeService";
 import AdminBookingSettings from "./pages/AdminBookingSettings";
+import AdminCrewManagement from "./pages/AdminCrewManagement";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import EnhancedCrewDashboard from "./pages/EnhancedCrewDashboard";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
