@@ -133,7 +133,12 @@ export const getCurrentPositionAsync = (
       (error) => {
         const errorDetails = getGeolocationErrorDetails(error);
         console.error('Geolocation error:', errorDetails);
-        reject(error);
+        // Create a proper Error object with formatted message instead of passing raw GeolocationPositionError
+        const formattedError = new Error(getGeolocationErrorMessage(error));
+        formattedError.name = 'GeolocationError';
+        (formattedError as any).details = errorDetails;
+        (formattedError as any).originalError = error;
+        reject(formattedError);
       },
       defaultOptions
     );
