@@ -634,6 +634,13 @@ export default function AdminDashboard() {
                   {activeTab === "inventory" &&
                     "Track stock levels and inventory value"}
                   {activeTab === "notifications" && "System alerts"}
+                  {activeTab === "cms" && "Manage content and pages"}
+                  {activeTab === "push-notifications" && "Send push notifications"}
+                  {activeTab === "gamification" && "Manage rewards and levels"}
+                  {activeTab === "subscription-approval" && "Approve payment plans"}
+                  {activeTab === "booking" && "Configure booking settings"}
+                  {activeTab === "pos" && "Point of sale system"}
+                  {activeTab === "user-management" && "Manage staff and users"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
