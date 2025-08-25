@@ -241,12 +241,13 @@ export default function EnhancedCrewDashboard() {
     };
 
     const handleLocationError = (error: GeolocationPositionError) => {
-      console.error('Geolocation error details:', {
+      // Log proper error details for debugging
+      console.error('Geolocation error:', {
         code: error.code,
         message: error.message,
-        PERMISSION_DENIED: error.PERMISSION_DENIED,
-        POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
-        TIMEOUT: error.TIMEOUT
+        errorType: error.code === 1 ? 'PERMISSION_DENIED' :
+                  error.code === 2 ? 'POSITION_UNAVAILABLE' :
+                  error.code === 3 ? 'TIMEOUT' : 'UNKNOWN'
       });
 
       setIsTrackingLocation(false);
@@ -255,7 +256,7 @@ export default function EnhancedCrewDashboard() {
       let description = "Unable to track location";
 
       switch (error.code) {
-        case error.PERMISSION_DENIED:
+        case 1: // PERMISSION_DENIED
           title = "Location Permission Denied";
           description = "Please enable location permissions: Click the location icon in your browser's address bar, or check your browser settings.";
           // Show additional help after a delay
@@ -267,11 +268,11 @@ export default function EnhancedCrewDashboard() {
             });
           }, 2000);
           break;
-        case error.POSITION_UNAVAILABLE:
+        case 2: // POSITION_UNAVAILABLE
           title = "Location Unavailable";
-          description = "Your location information is currently unavailable. Please check your GPS settings.";
+          description = "Your location information is currently unavailable. Please check your GPS settings or try again later.";
           break;
-        case error.TIMEOUT:
+        case 3: // TIMEOUT
           title = "Location Timeout";
           description = "Location request timed out. Trying again...";
           // Retry after timeout
@@ -284,7 +285,7 @@ export default function EnhancedCrewDashboard() {
           return; // Don't show error toast for timeout, just retry
         default:
           title = "Location Error";
-          description = `Location tracking failed: ${error.message}`;
+          description = error.message ? `Location tracking failed: ${error.message}` : "An unknown location error occurred.";
           break;
       }
 
