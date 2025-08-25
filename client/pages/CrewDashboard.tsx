@@ -161,8 +161,10 @@ export default function CrewDashboard() {
         const errorMessage = getGeolocationErrorMessage(error);
         console.error('Location tracking error:', errorDetails);
 
-        // Don't retry for permission denied
-        if (error.code !== 1) {
+        // Handle different error types appropriately
+        if (error.code === 3) { // TIMEOUT - new geolocation utils handle retry automatically
+          console.log('📍 Location timeout - system will retry automatically');
+        } else if (error.code !== 1) { // Don't retry for permission denied
           // Retry for other errors after a delay
           setTimeout(() => {
             console.log('Retrying location tracking...');
