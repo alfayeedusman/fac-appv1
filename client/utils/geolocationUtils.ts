@@ -105,12 +105,16 @@ export const getCurrentPositionAsync = (
 ): Promise<LocationCoordinates> => {
   return new Promise((resolve, reject) => {
     if (!isGeolocationSupported()) {
-      reject(new Error('Geolocation is not supported by this browser'));
+      const error = new Error('Geolocation is not supported by this browser');
+      error.name = 'GeolocationError';
+      reject(error);
       return;
     }
 
     if (!isGeolocationContextSecure()) {
-      reject(new Error('Geolocation requires HTTPS or localhost'));
+      const error = new Error('Geolocation requires HTTPS or localhost');
+      error.name = 'GeolocationError';
+      reject(error);
       return;
     }
 
