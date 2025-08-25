@@ -20,6 +20,10 @@ import {
   isGeolocationSupported,
   isGeolocationContextSecure
 } from '@/utils/geolocationUtils';
+import {
+  getLocationEmergency,
+  testGeolocationStrategies
+} from '@/utils/geolocationTimeoutFix';
 import CrewStatusToggle, { type CrewStatus } from '@/components/CrewStatusToggle';
 import { 
   Calendar,
