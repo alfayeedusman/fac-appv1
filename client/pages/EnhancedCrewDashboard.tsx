@@ -249,51 +249,42 @@ export default function EnhancedCrewDashboard() {
 
     const handleLocationError = (error: GeolocationPositionError) => {
       // Log proper error details for debugging
-      console.error('Geolocation error:', {
-        code: error.code,
-        message: error.message,
-        errorType: error.code === 1 ? 'PERMISSION_DENIED' :
-                  error.code === 2 ? 'POSITION_UNAVAILABLE' :
-                  error.code === 3 ? 'TIMEOUT' : 'UNKNOWN'
-      });
+      const errorDetails = getGeolocationErrorDetails(error);
+      console.error('Geolocation error:', errorDetails);
 
       setIsTrackingLocation(false);
 
-      let title = "Location Error";
-      let description = "Unable to track location";
+      const errorHelp = getGeolocationErrorHelp(error);
 
-      switch (error.code) {
-        case 1: // PERMISSION_DENIED
-          title = "Location Permission Denied";
-          description = "Please enable location permissions: Click the location icon in your browser's address bar, or check your browser settings.";
-          // Show additional help after a delay
-          setTimeout(() => {
-            toast({
-              title: "💡 How to Enable Location",
-              description: "1. Click the location icon (🔒) in address bar\n2. Select 'Allow' for location access\n3. Refresh this page",
-              duration: 8000,
-            });
-          }, 2000);
-          break;
-        case 2: // POSITION_UNAVAILABLE
-          title = "Location Unavailable";
-          description = "Your location information is currently unavailable. Please check your GPS settings or try again later.";
-          break;
-        case 3: // TIMEOUT
-          title = "Location Timeout";
-          description = "Location request timed out. Trying again...";
-          // Retry after timeout
-          setTimeout(() => {
-            if (navigator.geolocation) {
-              console.log('Retrying location tracking after timeout...');
-              startLocationTracking();
-            }
-          }, 5000);
-          return; // Don't show error toast for timeout, just retry
-        default:
-          title = "Location Error";
-          description = error.message ? `Location tracking failed: ${error.message}` : "An unknown location error occurred.";
-          break;
+      // Handle timeout with retry logic
+      if (error.code === 3) { // TIMEOUT
+        console.log('Location timeout, retrying...');
+        // Retry after timeout
+        setTimeout(() => {
+          if (isGeolocationSupported()) {
+            console.log('Retrying location tracking after timeout...');
+            startLocationTracking();
+          }
+        }, 5000);
+        return; // Don't show error toast for timeout, just retry
+      }
+
+      // Show error toast for other errors
+      toast({
+        title: errorHelp.title,
+        description: errorHelp.description,
+        variant: "destructive",
+      });
+
+      // Show additional help for permission errors
+      if (error.code === 1 && errorHelp.helpText) {
+        setTimeout(() => {
+          toast({
+            title: "💡 How to Enable Location",
+            description: errorHelp.helpText,
+            duration: 8000,
+          });
+        }, 2000);
       }
 
       toast({
