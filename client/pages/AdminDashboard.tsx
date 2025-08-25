@@ -596,7 +596,7 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-3 sm:p-4 lg:p-6">
+        <div className="pt-20 p-3 sm:p-4 lg:p-6">
           {/* Header */}
           <div className="mb-6 ml-12 lg:ml-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
