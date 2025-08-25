@@ -135,23 +135,53 @@ export default function CrewDashboard() {
   };
 
   const startLocationTracking = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Location tracking error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser');
+      return;
+    }
+
+    navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        console.log('Location updated:', {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        const errorMessage = getGeolocationErrorMessage(error);
+        console.error('Location tracking error:', errorMessage);
+
+        // Don't retry for permission denied
+        if (error.code !== 1) {
+          // Retry for other errors after a delay
+          setTimeout(() => {
+            console.log('Retrying location tracking...');
+            startLocationTracking();
+          }, 10000);
         }
-      );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
+  const getGeolocationErrorMessage = (error: GeolocationPositionError): string => {
+    switch (error.code) {
+      case 1: // PERMISSION_DENIED
+        return `Permission denied: ${error.message}`;
+      case 2: // POSITION_UNAVAILABLE
+        return `Position unavailable: ${error.message}`;
+      case 3: // TIMEOUT
+        return `Request timeout: ${error.message}`;
+      default:
+        return `Unknown error: ${error.message || 'An unknown geolocation error occurred'}`;
     }
   };
 
