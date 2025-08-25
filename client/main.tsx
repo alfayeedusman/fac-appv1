@@ -1,4 +1,8 @@
 import "./global.css";
+import { setupGlobalErrorCatching } from './utils/globalErrorHandler';
+
+// Initialize global error catching to prevent "[object Object]" errors
+setupGlobalErrorCatching();
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
@@ -52,6 +56,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import ErrorBoundary from "./components/ErrorBoundary";
+import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
 import { initializeAllSampleData } from "./utils/initializeSampleBookings";
@@ -332,6 +337,16 @@ const App = () => {
                 <div className="min-h-screen bg-background p-4">
                   <DatabaseConnectionTest />
                 </div>
+              }
+            />
+            <Route
+              path="/diagnostics"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ErrorBoundary>
+                    <DiagnosticsPage />
+                  </ErrorBoundary>
+                </ProtectedRoute>
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
