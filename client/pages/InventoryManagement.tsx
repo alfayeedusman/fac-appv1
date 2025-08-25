@@ -1035,8 +1035,5 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-        </div>
-      </div>
-    </div>
   );
 }
