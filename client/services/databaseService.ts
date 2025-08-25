@@ -296,7 +296,7 @@ export class DatabaseService {
       
       return { migrated, errors };
     } catch (error) {
-      return { migrated: 0, errors: [`Migration failed: ${error}`] };
+      return { migrated: 0, errors: [`Migration failed: ${formatError(error)}`] };
     }
   }
 
