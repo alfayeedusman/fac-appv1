@@ -301,25 +301,7 @@ export default function AdminSidebar({
                     isCollapsed ? "px-2" : "px-3",
                   )}
                   onClick={() => {
-                    if (item.id === "cms") {
-                      navigate("/admin-cms");
-                    } else if (item.id === "booking") {
-                      navigate("/admin-booking-settings");
-                    } else if (item.id === "push-notifications") {
-                      navigate("/admin-push-notifications");
-                    } else if (item.id === "gamification") {
-                      navigate("/admin-gamification");
-                    } else if (item.id === "subscription-approval") {
-                      navigate("/admin-subscription-approval");
-                    } else if (item.id === "pos") {
-                      navigate("/pos");
-                    } else if (item.id === "inventory") {
-                      navigate("/inventory-management");
-                    } else if (item.id === "user-management") {
-                      navigate("/admin-user-management");
-                    } else {
-                      onTabChange(item.id);
-                    }
+                    onTabChange(item.id);
                     setIsMobileOpen(false);
                   }}
                   title={isCollapsed ? item.label : undefined}
