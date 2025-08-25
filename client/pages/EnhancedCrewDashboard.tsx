@@ -675,7 +675,7 @@ export default function EnhancedCrewDashboard() {
   };
 
   const refreshLocation = () => {
-    if (!navigator.geolocation) {
+    if (!isGeolocationSupported()) {
       toast({
         title: "Location Not Supported",
         description: "Your browser doesn't support location services",
