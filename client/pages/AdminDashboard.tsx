@@ -1446,31 +1446,31 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "cms" && (
-            <div className="animate-fade-in-scale space-y-6">
+            <div className="space-y-6">
               <AdminCMS />
             </div>
           )}
 
           {activeTab === "push-notifications" && (
-            <div className="animate-fade-in-scale space-y-6">
+            <div className="space-y-6">
               <AdminPushNotifications />
             </div>
           )}
 
           {activeTab === "gamification" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <AdminGamification />
             </div>
           )}
 
           {activeTab === "subscription-approval" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <AdminSubscriptionApproval />
             </div>
           )}
 
           {activeTab === "booking" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <AdminBookingSettings />
             </div>
           )}
