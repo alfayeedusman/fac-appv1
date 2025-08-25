@@ -367,7 +367,7 @@ export default function QRScanner({
 
                       {/* Scanning line animation */}
                       {isScanning && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-fac-orange-500 to-transparent animate-pulse shadow-lg"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-fac-orange-500 to-transparent shadow-lg"></div>
                       )}
                     </div>
 
@@ -415,7 +415,7 @@ export default function QRScanner({
                 {/* Camera Status Indicator */}
                 <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-white text-xs font-medium">LIVE</span>
                   </div>
                 </div>
