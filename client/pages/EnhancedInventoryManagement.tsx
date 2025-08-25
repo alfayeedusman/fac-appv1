@@ -630,30 +630,7 @@ export default function EnhancedInventoryManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="Enhanced Inventory" />
-
-      {/* Admin Sidebar */}
-      <AdminSidebar
-        activeTab="inventory"
-        onTabChange={(tab) => {
-          if (tab === "overview") navigate("/admin-dashboard");
-          else if (tab === "cms") navigate("/admin-cms");
-          else if (tab === "push-notifications")
-            navigate("/admin-push-notifications");
-          else if (tab === "gamification") navigate("/admin-gamification");
-          else if (tab === "subscription-approval")
-            navigate("/admin-subscription-approval");
-          else if (tab === "pos") navigate("/pos");
-          else if (tab === "user-management")
-            navigate("/admin-user-management");
-        }}
-        userRole={localStorage.getItem("userRole") || "admin"}
-        notificationCount={0}
-      />
-
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 mt-16">
+    <div className="space-y-6">
           <Tabs defaultValue="products" className="space-y-6">
             <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="products">Products</TabsTrigger>
@@ -1096,9 +1073,6 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
-
       {/* Add Category Modal */}
       <Dialog
         open={showAddCategoryModal}
