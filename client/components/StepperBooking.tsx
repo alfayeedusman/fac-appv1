@@ -253,18 +253,21 @@ const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
     icon: Car,
+    iconText: "🚗", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
   },
   auto_detailing: {
     name: "Auto Detailing",
     icon: Star,
+    iconText: "⭐", // Safe for SelectItem
     gradient: "from-purple-500 to-pink-500",
     description: "Professional interior and exterior detailing",
   },
   graphene_coating: {
     name: "Graphene Coating",
     icon: Shield,
+    iconText: "🛡️", // Safe for SelectItem
     gradient: "from-orange-500 to-red-500",
     description: "Advanced protection coating",
   },
@@ -1133,7 +1136,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                 <SelectContent>
                   {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
                     <SelectItem key={branch.id} value={branch.name}>
-                      {branch.name} - {branch.address}
+                      {String(branch.name)} - {String(branch.address)}
                     </SelectItem>
                   ))}
                 </SelectContent>

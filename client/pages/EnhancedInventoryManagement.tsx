@@ -61,6 +61,7 @@ import {
   StockMovement,
   Supplier,
 } from "@/utils/inventoryData";
+import SafeSelectItem from "@/components/SafeSelectItem";
 import {
   getCarWashServices,
   addCarWashService,
@@ -728,9 +729,9 @@ export default function EnhancedInventoryManagement() {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
+                      <SafeSelectItem key={category.id} value={category.id}>
+                        {typeof category.icon === 'string' ? category.icon : '📦'} {category.name}
+                      </SafeSelectItem>
                     ))}
                   </SelectContent>
                 </Select>
