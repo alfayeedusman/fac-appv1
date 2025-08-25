@@ -251,7 +251,7 @@ export default function EnhancedCrewDashboard() {
     const handleLocationError = (error: GeolocationPositionError) => {
       // Log proper error details for debugging
       const errorDetails = getGeolocationErrorDetails(error);
-      console.error('Geolocation error:', errorDetails);
+      console.error('Geolocation error:', JSON.stringify(errorDetails));
 
       setIsTrackingLocation(false);
 
@@ -294,7 +294,7 @@ export default function EnhancedCrewDashboard() {
       handleLocationSuccess,
       (error) => {
         const errorDetails = getGeolocationErrorDetails(error);
-        console.warn('Initial location fetch failed, starting watch anyway:', errorDetails);
+        console.warn('Initial location fetch failed, starting watch anyway:', JSON.stringify(errorDetails));
         // Continue to watchPosition even if getCurrentPosition fails
       },
       {
@@ -690,7 +690,7 @@ export default function EnhancedCrewDashboard() {
 
         // Log error details for debugging
         const errorDetails = getGeolocationErrorDetails(error);
-        console.error('Refresh location error:', errorDetails);
+        console.error('Refresh location error:', JSON.stringify(errorDetails));
 
         // Get user-friendly error information
         const errorHelp = getGeolocationErrorHelp(error);
