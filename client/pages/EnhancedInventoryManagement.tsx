@@ -640,7 +640,7 @@ export default function EnhancedInventoryManagement() {
         {/* Products Tab */}
         <TabsContent value="products" className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2">
@@ -708,7 +708,7 @@ export default function EnhancedInventoryManagement() {
               </div>
 
               {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -722,7 +722,7 @@ export default function EnhancedInventoryManagement() {
                   value={selectedCategory}
                   onValueChange={setSelectedCategory}
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -734,7 +734,7 @@ export default function EnhancedInventoryManagement() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button onClick={() => setShowAddProductModal(true)}>
+                <Button onClick={() => setShowAddProductModal(true)} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
@@ -745,8 +745,9 @@ export default function EnhancedInventoryManagement() {
                 <CardHeader>
                   <CardTitle>Products Inventory</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Table>
+                <CardContent className="overflow-x-auto">
+                  <div className="min-w-full">
+                    <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Product</TableHead>
@@ -836,6 +837,7 @@ export default function EnhancedInventoryManagement() {
                       })}
                     </TableBody>
                   </Table>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
