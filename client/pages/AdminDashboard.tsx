@@ -1096,8 +1096,7 @@ export default function AdminDashboard() {
                   {customers.map((customer, index) => (
                     <div
                       key={customer.id}
-                      className={`glass rounded-2xl p-6 hover-lift transition-all duration-300 animate-fade-in-up`}
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex-1 min-w-0">
