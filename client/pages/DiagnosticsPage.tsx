@@ -213,16 +213,25 @@ export default function DiagnosticsPage() {
               Debug and troubleshoot geolocation and network issues
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button 
+          <div className="flex gap-3 flex-wrap">
+            <Button
               onClick={testGeolocationError}
               variant="outline"
               className="flex items-center gap-2"
             >
               <MapPin className="h-4 w-4" />
-              Test Geolocation Error
+              Test Error Format
             </Button>
-            <Button 
+            <Button
+              onClick={testTimeoutScenario}
+              variant="outline"
+              disabled={isRunning}
+              className="flex items-center gap-2"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              Test Timeout Handling
+            </Button>
+            <Button
               onClick={runAllDiagnostics}
               disabled={isRunning}
               className="flex items-center gap-2"
