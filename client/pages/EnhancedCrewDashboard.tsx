@@ -231,20 +231,45 @@ export default function EnhancedCrewDashboard() {
 
       // Check location accuracy and provide guidance
       const accuracy = position.coords.accuracy;
-      if (accuracy > 100) {
-        toast({
-          title: "⚠��� Poor GPS Signal",
-          description: `Location accuracy is ${Math.round(accuracy)}m. For better accuracy, try moving outdoors or near a window.`,
-          variant: "destructive",
-          duration: 4000,
-        });
-      } else if (!currentLocation) {
-        // Show success toast only on first successful location
-        toast({
-          title: "📍 Location Tracking Active",
-          description: `GPS coordinates acquired (±${Math.round(accuracy)}m accuracy)`,
-          duration: 3000,
-        });
+      const isFirstLocation = !currentLocation;
+
+      if (accuracy > 1000) {
+        // Very poor accuracy (>1km)
+        if (isFirstLocation) {
+          toast({
+            title: "⚠️ Very Approximate Location",
+            description: `Location accuracy is ${(accuracy/1000).toFixed(1)}km. This is normal indoors or in areas with poor GPS signal.`,
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      } else if (accuracy > 100) {
+        // Poor accuracy (100m-1km)
+        if (isFirstLocation) {
+          toast({
+            title: "📍 Location Found (Approximate)",
+            description: `GPS active with ±${Math.round(accuracy)}m accuracy. For better precision, try moving outdoors.`,
+            duration: 4000,
+          });
+        }
+      } else if (accuracy > 50) {
+        // Moderate accuracy (50-100m)
+        if (isFirstLocation) {
+          toast({
+            title: "📍 Location Tracking Active",
+            description: `GPS coordinates acquired (±${Math.round(accuracy)}m accuracy)`,
+            duration: 3000,
+          });
+        }
+      } else {
+        // Good accuracy (<50m)
+        if (isFirstLocation) {
+          toast({
+            title: "🎯 High-Precision GPS Active",
+            description: `Excellent location accuracy (±${Math.round(accuracy)}m)`,
+            duration: 3000,
+          });
+        }
       }
     };
 
