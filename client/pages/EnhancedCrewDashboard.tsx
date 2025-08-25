@@ -1223,7 +1223,7 @@ export default function EnhancedCrewDashboard() {
                               <div className="flex items-center gap-3">
                                 <span className="text-2xl">💰</span>
                                 <div>
-                                  <p className="font-bold text-xl text-fac-orange-600">��{booking.totalPrice.toLocaleString()}</p>
+                                  <p className="font-bold text-xl text-fac-orange-600">₱{booking.totalPrice.toLocaleString()}</p>
                                   <p className="text-sm text-gray-500">Total Amount</p>
                                 </div>
                               </div>
