@@ -42,7 +42,6 @@ import {
   Target,
   Megaphone,
 } from "lucide-react";
-import StickyHeader from "@/components/StickyHeader";
 import {
   PushNotification,
   getAllNotifications,
@@ -179,14 +178,7 @@ export default function AdminPushNotifications() {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <StickyHeader
-        showBack={true}
-        title="Push Notifications"
-        backTo="/admin-dashboard"
-      />
-
-      <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
@@ -710,7 +702,6 @@ export default function AdminPushNotifications() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }
