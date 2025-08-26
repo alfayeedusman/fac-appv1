@@ -1136,13 +1136,26 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label className="text-foreground font-semibold">Select Date</Label>
-            <Input
-              type="date"
-              min={new Date().toISOString().split("T")[0]}
-              value={bookingData.date}
-              onChange={(e) => updateBookingData("date", e.target.value)}
-              className="mt-2"
-            />
+            <div className="relative mt-2">
+              <Input
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                value={bookingData.date}
+                onChange={(e) => updateBookingData("date", e.target.value)}
+                className="pr-10 cursor-pointer"
+                placeholder="Choose service date"
+                onFocus={(e) => {
+                  // Prevent auto-opening on mobile
+                  if (window.innerWidth < 768) {
+                    e.target.blur();
+                    setTimeout(() => e.target.focus(), 50);
+                  }
+                }}
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
           </div>
 
           {bookingData.serviceType === 'branch' && (
