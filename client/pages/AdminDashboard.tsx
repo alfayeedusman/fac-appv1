@@ -685,16 +685,20 @@ export default function AdminDashboard() {
                               size="sm"
                               className="text-xs h-7"
                               onClick={() => {
-                                const userEmail = localStorage.getItem("userEmail") || "";
-                                // Mark all unread notifications as read
-                                if (Array.isArray(notifications)) {
-                                  notifications.forEach(notification => {
-                                    if (!notification.read) {
-                                      markSystemNotificationAsRead(notification.id, userEmail);
-                                    }
-                                  });
+                                try {
+                                  const userEmail = localStorage.getItem("userEmail") || "";
+                                  // Mark all unread notifications as read with safety checks
+                                  if (Array.isArray(notifications) && notifications.length > 0) {
+                                    notifications.forEach(notification => {
+                                      if (notification && !notification.read && notification.id && userEmail) {
+                                        markSystemNotificationAsRead(notification.id, userEmail);
+                                      }
+                                    });
+                                  }
+                                  loadSystemNotifications(); // Refresh notifications
+                                } catch (error) {
+                                  console.error('Error marking all notifications as read:', error);
                                 }
-                                loadSystemNotifications(); // Refresh notifications
                               }}
                             >
                               Mark all read
@@ -741,16 +745,22 @@ export default function AdminDashboard() {
                                   : "bg-card"
                               }`}
                               onClick={() => {
-                                if (!notification.read) {
-                                  const userEmail = localStorage.getItem("userEmail") || "";
-                                  markSystemNotificationAsRead(notification.id, userEmail);
-                                  loadSystemNotifications(); // Refresh notifications
+                                try {
+                                  if (notification && !notification.read && notification.id) {
+                                    const userEmail = localStorage.getItem("userEmail") || "";
+                                    if (userEmail) {
+                                      markSystemNotificationAsRead(notification.id, userEmail);
+                                      loadSystemNotifications(); // Refresh notifications
 
-                                  // If it's a booking notification, navigate to bookings tab
-                                  if (notification.type === 'new_booking') {
-                                    setActiveTab('bookings');
-                                    setIsNotificationDropdownOpen(false);
+                                      // If it's a booking notification, navigate to bookings tab
+                                      if (notification.type === 'new_booking') {
+                                        setActiveTab('bookings');
+                                        setIsNotificationDropdownOpen(false);
+                                      }
+                                    }
                                   }
+                                } catch (error) {
+                                  console.error('Error marking notification as read:', error);
                                 }
                               }}
                             >
