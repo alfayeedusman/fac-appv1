@@ -120,7 +120,13 @@ if (typeof window !== 'undefined') {
   (window as any).clearBadData = clearBadData;
   (window as any).forceRefresh = forceRefresh;
   (window as any).fixEverything = fixEverything;
-  
+
+  // Auto-run data cleaning on load
+  setTimeout(() => {
+    console.log('🧹 Auto-cleaning problematic data...');
+    clearBadData();
+  }, 500);
+
   console.log('🛠️ Debug commands loaded!');
   console.log('Available commands:');
   console.log('  fixSelectItems() - Fix SelectItem rendering issues');
