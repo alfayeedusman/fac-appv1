@@ -56,6 +56,16 @@ export default function SubscriptionSubmission({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const receiptObjectUrlRef = React.useRef<string | null>(null);
 
+  // Cleanup object URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+        receiptObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   const packages = [
     {
       id: "classic",
