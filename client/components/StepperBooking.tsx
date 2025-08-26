@@ -1026,7 +1026,7 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
           </div>
           
           {bookingData.unitType === typeKey && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-0 sm:ml-4">
               {Object.entries(type.sizes).map(([sizeKey, sizeName]) => {
                 const getPrice = () => {
                   if (bookingData.category === "auto_detailing") {
@@ -1036,20 +1036,22 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
                   }
                   return 0;
                 };
-                
+
                 return (
                   <div
                     key={sizeKey}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all text-center ${
+                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center active:scale-95 min-h-[80px] flex flex-col justify-center ${
                       bookingData.unitSize === sizeKey
-                        ? 'border-fac-orange-500 bg-fac-orange-500 text-white'
-                        : 'border-border hover:border-fac-orange-300'
+                        ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white shadow-xl'
+                        : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950/50'
                     }`}
                     onClick={() => updateBookingData("unitSize", sizeKey)}
                   >
-                    <p className="font-semibold text-sm">{sizeName}</p>
+                    <p className="font-bold text-base mb-1">{sizeName}</p>
                     {bookingData.category !== "carwash" && (
-                      <p className="text-xs opacity-75">₱{getPrice().toLocaleString()}</p>
+                      <p className={`text-sm ${bookingData.unitSize === sizeKey ? 'text-white/90' : 'text-muted-foreground'}`}>
+                        ₱{getPrice().toLocaleString()}
+                      </p>
                     )}
                   </div>
                 );
