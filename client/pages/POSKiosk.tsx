@@ -297,6 +297,18 @@ export default function POSKiosk() {
     navigate("/admin-dashboard");
   };
 
+  // Safety check - ensure required data is available
+  if (!categories || !Array.isArray(filteredProducts)) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="text-lg font-semibold">Loading POS...</div>
+          <div className="text-sm text-muted-foreground">Please wait</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Kiosk Header */}
