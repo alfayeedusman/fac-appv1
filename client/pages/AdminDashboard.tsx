@@ -363,10 +363,12 @@ export default function AdminDashboard() {
           actionRequired: notification.type === 'new_booking',
         }));
 
-        setNotifications(formattedNotifications);
+        setNotifications(formattedNotifications || []);
       }
     } catch (error) {
       console.error('Error loading system notifications:', error);
+      // Ensure notifications is always an array even on error
+      setNotifications([]);
     }
   };
 
@@ -679,11 +681,13 @@ export default function AdminDashboard() {
                               onClick={() => {
                                 const userEmail = localStorage.getItem("userEmail") || "";
                                 // Mark all unread notifications as read
-                                notifications.forEach(notification => {
-                                  if (!notification.read) {
-                                    markSystemNotificationAsRead(notification.id, userEmail);
-                                  }
-                                });
+                                if (Array.isArray(notifications)) {
+                                  notifications.forEach(notification => {
+                                    if (!notification.read) {
+                                      markSystemNotificationAsRead(notification.id, userEmail);
+                                    }
+                                  });
+                                }
                                 loadSystemNotifications(); // Refresh notifications
                               }}
                             >
