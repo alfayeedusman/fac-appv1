@@ -955,7 +955,7 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
-              {/* Heat Map Overview */}
+              {/* Location Summary */}
               <Card className="glass border-border shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -964,41 +964,51 @@ export default function AdminDashboard() {
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">Live Location Heat Map</h3>
-                        <p className="text-sm text-muted-foreground">Real-time crew and customer tracking</p>
+                        <h3 className="text-xl font-bold text-foreground">Location Summary</h3>
+                        <p className="text-sm text-muted-foreground">Crew and customer overview</p>
                       </div>
                     </div>
                     <Button
-                      variant="outline"
-                      onClick={() => navigate("/admin-crew-management")}
-                      className="font-semibold"
+                      onClick={() => navigate("/admin-fac-map")}
+                      className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-semibold"
                     >
-                      <Activity className="h-4 w-4 mr-2" />
-                      Manage Crew
+                      <MapPin className="h-4 w-4 mr-2" />
+                      View FAC MAP
                     </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
-                    <AdminHeatMap height="300px" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <div className="text-3xl font-bold text-green-600">18</div>
+                      <div className="text-sm text-muted-foreground">Online Crew</div>
+                      <div className="text-xs text-green-600 mt-1">Real-time tracking</div>
+                    </div>
+                    <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                      <div className="text-3xl font-bold text-orange-600">12</div>
+                      <div className="text-sm text-muted-foreground">Busy Crew</div>
+                      <div className="text-xs text-orange-600 mt-1">Currently working</div>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-600">47</div>
+                      <div className="text-sm text-muted-foreground">Active Customers</div>
+                      <div className="text-xs text-purple-600 mt-1">Online now</div>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-600">5</div>
+                      <div className="text-sm text-muted-foreground">Active Groups</div>
+                      <div className="text-xs text-blue-600 mt-1">Crew teams</div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t border-border">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">18</div>
-                      <div className="text-xs text-muted-foreground">Online Crew</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">12</div>
-                      <div className="text-xs text-muted-foreground">Busy Crew</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">47</div>
-                      <div className="text-xs text-muted-foreground">Active Customers</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">5</div>
-                      <div className="text-xs text-muted-foreground">Active Groups</div>
-                    </div>
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={() => navigate("/admin-fac-map")}
+                      variant="outline"
+                      className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950"
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      View Full Heat Map
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
