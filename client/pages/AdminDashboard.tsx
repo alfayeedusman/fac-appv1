@@ -716,7 +716,7 @@ export default function AdminDashboard() {
                     </div>
                     <ScrollArea className="h-96">
                       <div className="p-4">
-                        {notifications.slice(0, 5).length === 0 ? (
+                        {!Array.isArray(notifications) || notifications.slice(0, 5).length === 0 ? (
                           <div className="text-center py-12 text-muted-foreground">
                             <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p className="text-base">No notifications</p>
