@@ -524,6 +524,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         unitType: bookingData.unitType as any,
         unitSize: bookingData.unitSize,
         plateNumber: bookingData.plateNo,
+        vehicleModel: bookingData.carModel,
 
         // Schedule Details
         date: bookingData.date,
