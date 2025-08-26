@@ -720,8 +720,12 @@ export default function AdminDashboard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setActiveTab("notifications");
-                              setIsNotificationDropdownOpen(false);
+                              try {
+                                setActiveTab("notifications");
+                                setIsNotificationDropdownOpen(false);
+                              } catch (error) {
+                                console.error('Error updating tab state:', error);
+                              }
                             }}
                             className="text-xs h-7"
                           >
