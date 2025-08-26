@@ -587,7 +587,13 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          if (tab === "fac-map") {
+            navigate("/admin-fac-map");
+            return;
+          }
+          setActiveTab(tab);
+        }}
         userRole={userRole}
         notificationCount={unreadNotificationCount}
       />
