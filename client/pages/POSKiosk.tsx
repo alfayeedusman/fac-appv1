@@ -554,140 +554,17 @@ export default function POSKiosk() {
       </div>
 
       {/* Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Process Payment</DialogTitle>
-            <DialogDescription>
-              Complete the transaction details
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="customer-id" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Customer ID/Phone *
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="customer-id"
-                  placeholder="Enter customer ID or phone number"
-                  value={customerInfo.uniqueId || ""}
-                  onChange={(e) => {
-                    try {
-                      setCustomerInfo(prev => ({ ...prev, uniqueId: e.target.value }))
-                    } catch (error) {
-                      console.error('Error updating customer ID:', error)
-                    }
-                  }}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="customer-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Customer Name (Optional)
-              </label>
-              <Input
-                id="customer-name"
-                placeholder="Enter customer name"
-                value={customerInfo.name || ""}
-                onChange={(e) => {
-                  try {
-                    setCustomerInfo(prev => ({ ...prev, name: e.target.value }))
-                  } catch (error) {
-                    console.error('Error updating customer name:', error)
-                  }
-                }}
-              />
-            </div>
-
-            {/* Payment Method */}
-            <div className="space-y-2">
-              <Label>Payment Method</Label>
-              <Select
-                value={paymentInfo.method}
-                onValueChange={(value: "cash" | "gcash" | "card") =>
-                  setPaymentInfo({ ...paymentInfo, method: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="gcash">GCash</SelectItem>
-                  <SelectItem value="card">Credit/Debit Card</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Amount Paid (for cash) */}
-            {paymentInfo.method === "cash" && (
-              <div className="space-y-2">
-                <Label htmlFor="amount-paid">Amount Paid</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="amount-paid"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={paymentInfo.amountPaid}
-                    onChange={(e) =>
-                      setPaymentInfo({ ...paymentInfo, amountPaid: e.target.value })
-                    }
-                    className="pl-10"
-                  />
-                </div>
-                {change > 0 && (
-                  <div className="text-sm text-green-600 font-medium">
-                    Change: ₱{change.toFixed(2)}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Reference Number (for digital payments) */}
-            {(paymentInfo.method === "gcash" || paymentInfo.method === "card") && (
-              <div className="space-y-2">
-                <Label htmlFor="reference-number">Reference Number *</Label>
-                <Input
-                  id="reference-number"
-                  placeholder="Enter reference/confirmation number"
-                  value={paymentInfo.referenceNumber}
-                  onChange={(e) =>
-                    setPaymentInfo({ ...paymentInfo, referenceNumber: e.target.value })
-                  }
-                />
-              </div>
-            )}
-
-            {/* Total Display */}
-            <div className="bg-muted p-4 rounded-lg">
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total Amount:</span>
-                <span className="text-orange-600">₱{total.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowPaymentModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handlePayment}>
-              <DollarSign className="h-4 w-4 mr-2" />
-              Complete Payment
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SimplePaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        customerInfo={customerInfo}
+        setCustomerInfo={setCustomerInfo}
+        paymentInfo={paymentInfo}
+        setPaymentInfo={setPaymentInfo}
+        total={total}
+        change={change}
+        onPayment={handlePayment}
+      />
 
       {/* Car Wash Service Selector Modal */}
       <Dialog open={showServiceSelector} onOpenChange={setShowServiceSelector}>
