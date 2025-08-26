@@ -26,11 +26,20 @@ import {
 import { notificationManager } from "@/components/NotificationModal";
 import { SimplePaymentModal } from "@/components/SimplePaymentModal";
 
+// Create a proper cart item interface that matches what we need
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  sku: string;
+}
+
 export default function POSKiosk() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [cartItems, setCartItems] = useState<POSItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -52,7 +61,7 @@ export default function POSKiosk() {
     const loadData = async () => {
       try {
         const productsData = await getProducts();
-        setProducts(productsData);
+        setProducts(productsData || []);
       } catch (error) {
         console.error("Error loading products:", error);
         setProducts([]);
@@ -62,73 +71,100 @@ export default function POSKiosk() {
   }, []);
 
   useEffect(() => {
-    let filtered = products;
+    try {
+      let filtered = products || [];
 
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((product) => product.category === selectedCategory);
+      if (selectedCategory !== "all") {
+        filtered = filtered.filter((product) => product?.category === selectedCategory);
+      }
+
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (product) =>
+            product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product?.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredProducts(filtered);
+    } catch (error) {
+      console.error("Error filtering products:", error);
+      setFilteredProducts([]);
     }
-
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredProducts(filtered);
   }, [products, selectedCategory, searchQuery]);
 
   const addToCart = (product: Product) => {
-    const existingItem = cartItems.find((item) => item.id === product.id);
-    if (existingItem) {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+    try {
+      if (!product || !product.id) {
+        console.error("Invalid product:", product);
+        return;
+      }
+
+      const existingItem = cartItems.find((item) => item.id === product.id);
+      if (existingItem) {
+        setCartItems(
+          cartItems.map((item) =>
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+      } else {
+        setCartItems([
+          ...cartItems,
+          {
+            id: product.id,
+            name: product.name || "",
+            price: product.unitPrice || 0,
+            quantity: 1,
+            sku: product.sku || "",
+          },
+        ]);
+      }
+      notificationManager.showNotification(
+        `${product.name} added to cart`,
+        "success"
       );
-    } else {
-      setCartItems([
-        ...cartItems,
-        {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: 1,
-          type: "product",
-        },
-      ]);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      notificationManager.showNotification("Failed to add item to cart", "error");
     }
-    notificationManager.showNotification(
-      `${product.name} added to cart`,
-      "success"
-    );
   };
 
   const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeFromCart(id);
-      return;
+    try {
+      if (newQuantity === 0) {
+        removeFromCart(id);
+        return;
+      }
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error updating quantity:", error);
     }
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
   };
 
   const removeFromCart = (id: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    try {
+      setCartItems(cartItems.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+    }
   };
 
   const clearCart = () => {
-    setCartItems([]);
+    try {
+      setCartItems([]);
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
   };
 
   const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
     0
   );
 
@@ -137,43 +173,57 @@ export default function POSKiosk() {
     : 0;
 
   const handlePayment = async () => {
-    if (cartItems.length === 0) {
-      notificationManager.showNotification("Cart is empty", "error");
-      return;
-    }
-
-    if (!customerInfo.uniqueId.trim()) {
-      notificationManager.showNotification("Customer ID is required", "error");
-      return;
-    }
-
-    if (paymentInfo.method === "cash") {
-      const amountPaid = parseFloat(paymentInfo.amountPaid);
-      if (isNaN(amountPaid) || amountPaid < total) {
-        notificationManager.showNotification("Insufficient payment amount", "error");
+    try {
+      if (cartItems.length === 0) {
+        notificationManager.showNotification("Cart is empty", "error");
         return;
       }
-    }
 
-    if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") && 
-        !paymentInfo.referenceNumber.trim()) {
-      notificationManager.showNotification("Reference number is required", "error");
-      return;
-    }
+      if (!customerInfo.uniqueId.trim()) {
+        notificationManager.showNotification("Customer ID is required", "error");
+        return;
+      }
 
-    try {
-      const transactionData = {
-        items: cartItems,
-        customerInfo,
-        paymentInfo,
-        total,
-        change,
-        cashier: cashierName,
-        timestamp: new Date().toISOString(),
-      };
+      if (paymentInfo.method === "cash") {
+        const amountPaid = parseFloat(paymentInfo.amountPaid);
+        if (isNaN(amountPaid) || amountPaid < total) {
+          notificationManager.showNotification("Insufficient payment amount", "error");
+          return;
+        }
+      }
 
-      await createPOSTransaction(transactionData);
-      
+      if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") && 
+          !paymentInfo.referenceNumber.trim()) {
+        notificationManager.showNotification("Reference number is required", "error");
+        return;
+      }
+
+      // Convert cart items to POS items
+      const posItems: POSItem[] = cartItems.map(item => ({
+        productId: item.id,
+        productName: item.name,
+        sku: item.sku,
+        unitPrice: item.price,
+        quantity: item.quantity,
+        subtotal: item.price * item.quantity,
+        discount: 0
+      }));
+
+      const transaction = createPOSTransaction(
+        "cashier_001", // cashier ID
+        cashierName,
+        posItems,
+        {
+          name: customerInfo.name,
+          phone: customerInfo.uniqueId
+        },
+        {
+          method: paymentInfo.method,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+          referenceNumber: paymentInfo.referenceNumber
+        }
+      );
+
       notificationManager.showNotification("Payment successful!", "success");
       
       // Reset form
@@ -242,8 +292,8 @@ export default function POSKiosk() {
                   >
                     <option value="all">All Categories</option>
                     {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      <option key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
@@ -252,27 +302,33 @@ export default function POSKiosk() {
 
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <h3 className="font-medium text-gray-900">{product.name}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{product.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-orange-600">
-                          ₱{product.price.toFixed(2)}
-                        </span>
-                        <Button
-                          size="sm"
-                          onClick={() => addToCart(product)}
-                          className="bg-orange-500 hover:bg-orange-600"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                      >
+                        <h3 className="font-medium text-gray-900">{product.name || "Unnamed Product"}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{product.description || "No description"}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-orange-600">
+                            ₱{(product.unitPrice || 0).toFixed(2)}
+                          </span>
+                          <Button
+                            size="sm"
+                            onClick={() => addToCart(product)}
+                            className="bg-orange-500 hover:bg-orange-600"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      No products found
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -301,7 +357,7 @@ export default function POSKiosk() {
                         <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{item.name}</h4>
-                            <p className="text-orange-600 font-bold">₱{item.price.toFixed(2)}</p>
+                            <p className="text-orange-600 font-bold">₱{(item.price || 0).toFixed(2)}</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Button
