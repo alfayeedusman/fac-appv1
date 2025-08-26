@@ -739,6 +739,7 @@ export default function AdminDashboard() {
                           </div>
                         ) : (
                           notifications.slice(0, 5).map((notification) => {
+                            try {
                             // Add safety checks for notification properties
                             if (!notification || typeof notification !== 'object') {
                               return null;
@@ -748,8 +749,8 @@ export default function AdminDashboard() {
                             const isRead = Boolean(notification.read);
                             const notificationId = notification.id || Math.random().toString();
 
-                            return (
-                              <div
+                              return (
+                                <div
                                 key={notificationId}
                                 className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
                                   notificationType === "new_customer"
@@ -776,8 +777,12 @@ export default function AdminDashboard() {
 
                                         // If it's a booking notification, navigate to bookings tab
                                         if (notificationType === 'new_booking') {
-                                          setActiveTab('bookings');
-                                          setIsNotificationDropdownOpen(false);
+                                          try {
+                                            setActiveTab('bookings');
+                                            setIsNotificationDropdownOpen(false);
+                                          } catch (error) {
+                                            console.error('Error navigating to bookings tab:', error);
+                                          }
                                         }
                                       }
                                     }
@@ -873,8 +878,12 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                               </div>
-                              </div>
-                            );
+                                </div>
+                              );
+                            } catch (error) {
+                              console.error('Error rendering notification:', error);
+                              return null;
+                            }
                           })
                         )}
                       </div>
