@@ -108,10 +108,7 @@ export default function AdminFACMap() {
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
-                <AdminNotificationDropdown 
-                  userRole={userRole}
-                  notificationCount={0}
-                />
+                <AdminNotificationDropdown />
                 <Button
                   onClick={() => navigate("/admin-crew-management")}
                   className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold"
