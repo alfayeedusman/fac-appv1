@@ -10,16 +10,8 @@ import QRScanner from "@/components/QRScanner";
 import StepperBooking from "@/components/StepperBooking";
 
 export default function Booking() {
-  const [showQRScanner, setShowQRScanner] = useState(false);
-
-  const handleQRScan = () => {
-    setShowQRScanner(true);
-  };
-
-  const handleScanSuccess = (result: any) => {
-    // QR scan functionality can be integrated with stepper if needed
-    console.log("QR scan result:", result);
-  };
+  // QR Scanner is now optional and handled by BottomNavigation itself
+  // No automatic popup in booking flow
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
