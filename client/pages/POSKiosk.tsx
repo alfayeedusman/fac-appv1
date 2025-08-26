@@ -563,7 +563,6 @@ export default function POSKiosk() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Customer Information */}
             <div className="space-y-2">
               <Label htmlFor="customer-id">Customer ID/Phone *</Label>
               <div className="relative">
