@@ -559,12 +559,12 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
               </SelectContent>
             </Select>
 
-            <Select value={filters.groupId || ''} onValueChange={(value) => setFilters({...filters, groupId: value || undefined})}>
+            <Select value={filters.groupId || 'all_groups'} onValueChange={(value) => setFilters({...filters, groupId: value === 'all_groups' ? undefined : value})}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="All Groups" />
               </SelectTrigger>
               <SelectContent>
-                <SafeSelectItem value="">All Groups</SafeSelectItem>
+                <SafeSelectItem value="all_groups">All Groups</SafeSelectItem>
                 {crewGroups.map(group => (
                   <SafeSelectItem
                     key={group.id}
