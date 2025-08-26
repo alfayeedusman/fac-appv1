@@ -80,14 +80,27 @@ export default function AdBanner({
         </Button>
 
         <CardContent className="p-0">
-          {ad.imageUrl && (
+          {ad.imageUrl && ad.imageUrl.trim() !== "" && (
             <div className="relative h-32 sm:h-40 overflow-hidden">
               <img
                 src={ad.imageUrl}
-                alt={ad.title}
+                alt={ad.title || "Advertisement"}
                 className="w-full h-full object-cover"
                 onError={(e) => {
+                  console.warn(`Failed to load ad image: ${ad.imageUrl}`);
                   e.currentTarget.style.display = "none";
+                  // Show fallback content
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.innerHTML = `
+                      <div class="flex items-center justify-center h-full bg-muted">
+                        <p class="text-muted-foreground text-sm">Image unavailable</p>
+                      </div>
+                    `;
+                  }
+                }}
+                onLoad={() => {
+                  console.log(`Successfully loaded ad image: ${ad.imageUrl}`);
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
