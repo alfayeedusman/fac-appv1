@@ -112,24 +112,84 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName;
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
+>(({ className, children, ...props }, ref) => {
+  try {
+    // Ensure all props are safe
+    const safeProps = { ...props };
 
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-));
+    // Ensure value is always a string if provided
+    if (safeProps.value !== undefined) {
+      safeProps.value = String(safeProps.value || '');
+    }
+
+    // Ensure children is safe text content
+    let safeChildren: string;
+
+    if (typeof children === 'string') {
+      safeChildren = children;
+    } else if (typeof children === 'number') {
+      safeChildren = String(children);
+    } else if (React.isValidElement(children)) {
+      // If it's a React element, extract text content safely
+      safeChildren = String(safeProps.value || 'Item');
+    } else if (children === null || children === undefined) {
+      safeChildren = String(safeProps.value || 'Item');
+    } else {
+      safeChildren = String(children || 'Item');
+    }
+
+    // Clean up any problematic characters (but preserve basic punctuation)
+    safeChildren = safeChildren.replace(/[^\w\s\-\(\)\.\,\:\+]/g, '').trim();
+
+    // Ensure we have some content
+    if (!safeChildren) {
+      safeChildren = String(safeProps.value || 'Item');
+    }
+
+    return (
+      <SelectPrimitive.Item
+        ref={ref}
+        className={cn(
+          "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          className,
+        )}
+        {...safeProps}
+      >
+        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+          <SelectPrimitive.ItemIndicator>
+            <Check className="h-4 w-4" />
+          </SelectPrimitive.ItemIndicator>
+        </span>
+
+        <SelectPrimitive.ItemText>{safeChildren}</SelectPrimitive.ItemText>
+      </SelectPrimitive.Item>
+    );
+  } catch (error) {
+    // Fallback rendering for any errors
+    console.warn('SelectItem rendering error (fallback applied):', error);
+    return (
+      <SelectPrimitive.Item
+        ref={ref}
+        className={cn(
+          "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          className,
+        )}
+        value={String(props.value || 'error')}
+        disabled
+      >
+        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+          <SelectPrimitive.ItemIndicator>
+            <Check className="h-4 w-4" />
+          </SelectPrimitive.ItemIndicator>
+        </span>
+
+        <SelectPrimitive.ItemText>
+          Error: {String(props.value || 'Unknown')}
+        </SelectPrimitive.ItemText>
+      </SelectPrimitive.Item>
+    );
+  }
+});
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 const SelectSeparator = React.forwardRef<
