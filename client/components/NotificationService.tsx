@@ -67,19 +67,19 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings[] = [
     description: 'Alert when a new booking is created',
     enabled: true,
     soundEnabled: true,
-    soundFile: '/sounds/new-booking.mp3',
+    soundFile: 'synthesized', // Web Audio API synthesis
     volume: 70,
     priority: 'high',
     targetRoles: ['admin', 'superadmin', 'manager']
   },
   {
     id: 'status_update',
-    type: 'status_update', 
+    type: 'status_update',
     name: 'Status Update Alert',
     description: 'Alert when booking status changes',
     enabled: true,
     soundEnabled: true,
-    soundFile: '/sounds/status-update.mp3',
+    soundFile: 'synthesized', // Web Audio API synthesis
     volume: 50,
     priority: 'medium',
     targetRoles: ['admin', 'superadmin', 'manager']
