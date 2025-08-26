@@ -18,6 +18,7 @@ import CredentialSetup from "./pages/CredentialSetup";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminFACMap from "./pages/AdminFACMap";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import GuestBooking from "./pages/GuestBooking";
