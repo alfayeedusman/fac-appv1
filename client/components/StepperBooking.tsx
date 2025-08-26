@@ -922,14 +922,14 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
                 <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
                 <p className="text-sm md:text-base font-semibold text-foreground">Select wash type:</p>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {Object.entries(category.services).map(([serviceKey, service]) => (
                   <div
                     key={serviceKey}
-                    className={`relative p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                    className={`relative p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
                       bookingData.service === serviceKey
-                        ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950 shadow-lg shadow-fac-orange-500/20'
-                        : 'border-border hover:border-fac-orange-300 hover:shadow-md'
+                        ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-xl shadow-fac-orange-500/30'
+                        : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/50 dark:hover:bg-fac-orange-950/50'
                     }`}
                     onClick={async (e) => {
                       e.stopPropagation();
