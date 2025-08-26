@@ -425,25 +425,37 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   };
 
   const validateStep = (step: number): boolean => {
+    console.log(`Validating step ${step}:`, bookingData);
+
     switch (step) {
       case 1: // Service
-        return !!(bookingData.category && bookingData.service);
+        const step1Valid = !!(bookingData.category && bookingData.service);
+        console.log(`Step 1 validation - category: ${bookingData.category}, service: ${bookingData.service}, valid: ${step1Valid}`);
+        return step1Valid;
       case 2: // Unit
-        return !!(bookingData.unitType && bookingData.unitSize);
+        const step2Valid = !!(bookingData.unitType && bookingData.unitSize);
+        console.log(`Step 2 validation - unitType: ${bookingData.unitType}, unitSize: ${bookingData.unitSize}, valid: ${step2Valid}`);
+        return step2Valid;
       case 3: // Schedule
         const serviceTypeValid = !!bookingData.serviceType;
         const scheduleValid = !!(bookingData.date && bookingData.timeSlot);
         const locationValid = bookingData.serviceType === 'home' || !!bookingData.branch;
-        return serviceTypeValid && scheduleValid && locationValid;
+        const step3Valid = serviceTypeValid && scheduleValid && locationValid;
+        console.log(`Step 3 validation - serviceType: ${bookingData.serviceType}, date: ${bookingData.date}, timeSlot: ${bookingData.timeSlot}, branch: ${bookingData.branch}, valid: ${step3Valid}`);
+        return step3Valid;
       case 4: // Payment
         const paymentValid = !!bookingData.paymentMethod;
         const receiptValid = bookingData.paymentMethod === "branch" || !!bookingData.receiptFile;
-        return paymentValid && receiptValid;
+        const step4Valid = paymentValid && receiptValid;
+        console.log(`Step 4 validation - paymentMethod: ${bookingData.paymentMethod}, receiptFile: ${!!bookingData.receiptFile}, valid: ${step4Valid}`);
+        return step4Valid;
       case 5: // Review
         const basicCustomerValid = !!(bookingData.fullName && bookingData.mobile);
         const homeServiceAddressValid = bookingData.serviceType !== 'home' || !!bookingData.address;
         const emailValid = !isGuest || !!bookingData.email; // Email required for guests
-        return basicCustomerValid && homeServiceAddressValid && emailValid && bookingData.acceptTerms;
+        const step5Valid = basicCustomerValid && homeServiceAddressValid && emailValid && bookingData.acceptTerms;
+        console.log(`Step 5 validation - fullName: ${bookingData.fullName}, mobile: ${bookingData.mobile}, address: ${bookingData.address}, email: ${bookingData.email}, acceptTerms: ${bookingData.acceptTerms}, valid: ${step5Valid}`);
+        return step5Valid;
       default:
         return false;
     }
