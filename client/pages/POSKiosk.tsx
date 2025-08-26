@@ -584,7 +584,7 @@ export default function POSKiosk() {
               <Input
                 id="customer-name"
                 placeholder="Enter customer name"
-                value={customerInfo.name}
+                value={customerInfo?.name || ""}
                 onChange={(e) =>
                   setCustomerInfo({ ...customerInfo, name: e.target.value })
                 }
