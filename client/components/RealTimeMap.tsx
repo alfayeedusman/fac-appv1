@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Map, { Marker, Popup, NavigationControl, FullscreenControl, ScaleControl } from 'react-map-gl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import realtimeService, { CrewLocation, ActiveJob } from '@/services/realtimeService';
-import { 
-  MapPin, 
-  Users, 
-  Car, 
-  Navigation, 
-  Activity, 
-  Clock, 
-  Star, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  MapPin,
+  Users,
+  Car,
+  Navigation,
+  Activity,
+  Clock,
+  Star,
+  CheckCircle,
+  AlertCircle,
   Truck,
   Phone,
   Wrench,
@@ -22,11 +20,52 @@ import {
   Shield,
   Crown,
   UserX,
-  MapPinned
+  MapPinned,
+  WifiOff,
+  RefreshCw
 } from 'lucide-react';
 
-// Mapbox CSS
-import 'mapbox-gl/dist/mapbox-gl.css';
+// Dynamic import for Map components to handle potential loading issues
+let Map: any = null;
+let Marker: any = null;
+let Popup: any = null;
+let NavigationControl: any = null;
+let FullscreenControl: any = null;
+let ScaleControl: any = null;
+
+// Lazy load map components
+const loadMapComponents = async () => {
+  try {
+    const mapModule = await import('react-map-gl');
+    Map = mapModule.default;
+    Marker = mapModule.Marker;
+    Popup = mapModule.Popup;
+    NavigationControl = mapModule.NavigationControl;
+    FullscreenControl = mapModule.FullscreenControl;
+    ScaleControl = mapModule.ScaleControl;
+
+    // Also load Mapbox CSS
+    await import('mapbox-gl/dist/mapbox-gl.css');
+
+    return true;
+  } catch (error) {
+    console.error('Failed to load map components:', error);
+    return false;
+  }
+};
+
+// Dynamic import for realtime service
+let realtimeService: any = null;
+const loadRealtimeService = async () => {
+  try {
+    const serviceModule = await import('@/services/realtimeService');
+    realtimeService = serviceModule.default;
+    return true;
+  } catch (error) {
+    console.error('Failed to load realtime service:', error);
+    return false;
+  }
+};
 
 // Philippines coordinates (Manila center)
 const MANILA_COORDINATES = {
