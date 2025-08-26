@@ -182,6 +182,15 @@ export default function ImageUploadManager({
       });
     };
 
+    reader.onerror = () => {
+      toast({
+        title: "File Read Error",
+        description: "Failed to read the selected file. Please try again.",
+        variant: "destructive",
+      });
+      setIsUploading(false);
+    };
+
     reader.readAsDataURL(file);
   };
 
