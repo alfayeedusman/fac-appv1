@@ -3,6 +3,7 @@ import Map, { Marker, Popup, NavigationControl, FullscreenControl, ScaleControl 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import realtimeService, { CrewLocation, ActiveJob } from '@/services/realtimeService';
 import { 
   MapPin, 
   Users, 
