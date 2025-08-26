@@ -449,8 +449,13 @@ export default function ImageUploadManager({
               <div className="flex justify-center">
                 <img
                   src={selectedImage.base64Data}
-                  alt={selectedImage.description || selectedImage.originalName}
+                  alt={selectedImage.description || selectedImage.originalName || "Selected image"}
                   className="max-w-full max-h-96 object-contain"
+                  onError={(e) => {
+                    console.warn(`Failed to load selected image: ${selectedImage.originalName || selectedImage.id}`);
+                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDNIOGEyIDIgMCAwIDAtMiAydjEyYTIgMiAwIDAgMCAyIDJoMTNhMiAyIDAgMCAwIDItMlY1YTIgMiAwIDAgMC0yLTJ6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Im0yMSAxNS00LTQtNC41IDQuNS0zLTMiIHN0cm9rZT0iIzljYTdiMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
+                    e.currentTarget.className = "max-w-full max-h-96 object-contain opacity-50";
+                  }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
