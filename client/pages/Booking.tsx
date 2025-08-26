@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -6,7 +5,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import UpgradeNotificationBanner from "@/components/UpgradeNotificationBanner";
-import QRScanner from "@/components/QRScanner";
 import StepperBooking from "@/components/StepperBooking";
 
 export default function Booking() {
