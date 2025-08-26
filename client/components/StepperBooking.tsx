@@ -817,11 +817,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   <Button
                     onClick={nextStep}
                     disabled={!canProceed()}
-                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                    className={`font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg transition-all duration-300 relative overflow-hidden ${
+                      !canProceed()
+                        ? 'bg-gray-400 hover:bg-gray-400 text-gray-600 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white hover:shadow-xl'
+                    }`}
                     style={{ display: 'flex !important', visibility: 'visible !important' }}
+                    title={!canProceed() ? `Complete all fields in step ${currentStep} to continue` : 'Continue to next step'}
                   >
                     <span className="flex items-center">
-                      Next
+                      {!canProceed() ? 'Complete Step' : 'Next'}
                       <ChevronRight className="h-4 w-4 ml-2" />
                     </span>
                   </Button>
