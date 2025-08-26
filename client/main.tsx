@@ -1,6 +1,4 @@
 import "./global.css";
-import "./utils/consoleCommands";
-import "./utils/emergencySelectItemPatch";
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
