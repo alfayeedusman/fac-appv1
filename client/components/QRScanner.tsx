@@ -91,27 +91,47 @@ export default function QRScanner({
       streamRef.current = stream;
 
       if (videoRef.current) {
+        // Clear any existing srcObject to prevent "not suitable" errors
+        if (videoRef.current.srcObject) {
+          const oldStream = videoRef.current.srcObject as MediaStream;
+          oldStream.getTracks().forEach(track => track.stop());
+        }
+
         videoRef.current.srcObject = stream;
 
         // Wait for video to load before starting detection
         videoRef.current.onloadedmetadata = () => {
           console.log("Video metadata loaded");
-          videoRef.current
-            ?.play()
-            .then(() => {
-              console.log("Video playing");
-              setIsScanning(true);
-              startQRDetection();
-            })
-            .catch((err) => {
-              console.error("Video play error:", err);
-              setError("Failed to start video playback");
-            });
+          if (videoRef.current && videoRef.current.readyState >= 3) { // HAVE_FUTURE_DATA
+            videoRef.current
+              ?.play()
+              .then(() => {
+                console.log("Video playing");
+                setIsScanning(true);
+                startQRDetection();
+              })
+              .catch((err) => {
+                console.error("Video play error:", err);
+                setError("Failed to start video playback. Please check camera permissions.");
+                stopCamera();
+              });
+          }
         };
 
         videoRef.current.onerror = (err) => {
           console.error("Video error:", err);
-          setError("Video playback error");
+          setError("Video stream error. The media resource may not be suitable for this device.");
+          stopCamera();
+        };
+
+        videoRef.current.onabort = () => {
+          console.warn("Video loading aborted");
+          setError("Video loading was interrupted");
+          stopCamera();
+        };
+
+        videoRef.current.onemptied = () => {
+          console.warn("Video element emptied");
         };
       }
     } catch (err) {
