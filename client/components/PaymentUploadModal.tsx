@@ -51,6 +51,24 @@ export default function PaymentUploadModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const receiptObjectUrlRef = React.useRef<string | null>(null);
 
+  // Cleanup object URLs when component unmounts or modal closes
+  React.useEffect(() => {
+    return () => {
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+        receiptObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  // Cleanup when modal closes
+  React.useEffect(() => {
+    if (!isOpen && receiptObjectUrlRef.current) {
+      URL.revokeObjectURL(receiptObjectUrlRef.current);
+      receiptObjectUrlRef.current = null;
+    }
+  }, [isOpen]);
+
   const paymentMethods = [
     { value: "gcash", label: "GCash" },
     { value: "paymaya", label: "PayMaya" },
@@ -100,9 +118,18 @@ export default function PaymentUploadModal({
       });
 
       // Create subscription request using the approval system
+      // Clean up any existing object URL first
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+      }
+
+      // Create new object URL and store reference for cleanup
+      const objectUrl = URL.createObjectURL(receiptFile);
+      receiptObjectUrlRef.current = objectUrl;
+
       const receipt = {
         id: `RCP${Date.now()}`,
-        imageUrl: URL.createObjectURL(receiptFile),
+        imageUrl: objectUrl,
         fileName: receiptFile.name,
         uploadDate: new Date().toISOString(),
         fileSize: receiptFile.size,
