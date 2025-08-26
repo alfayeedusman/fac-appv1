@@ -213,6 +213,21 @@ export default function DebugPanel({ className = "" }: DebugPanelProps) {
               <Database className="h-4 w-4 mr-2" />
               Clear All Sample Data
             </Button>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (window.confirm("🧹 This will clear ALL data except admin accounts. Are you sure?")) {
+                  showDataState();
+                  clearAllDataExceptAdmins();
+                }
+              }}
+              className="w-full justify-start bg-orange-600 hover:bg-orange-700"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All Data (Keep Admins)
+            </Button>
           </div>
 
           {/* Quick Navigation */}
