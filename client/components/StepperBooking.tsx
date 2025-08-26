@@ -1333,8 +1333,15 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
               value={bookingData.fullName}
               onChange={(e) => updateBookingData("fullName", e.target.value)}
               placeholder="Enter your full name"
-              className="mt-1"
+              className={`mt-1 ${!bookingData.fullName.trim() ? 'border-red-500 focus:border-red-500' : ''}`}
+              required
             />
+            {!bookingData.fullName.trim() && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Full name is required
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-foreground font-semibold">Mobile Number *</Label>
