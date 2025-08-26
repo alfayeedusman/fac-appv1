@@ -504,6 +504,7 @@ export default function AdminDashboard() {
 
   const handleApproveCustomer = (notificationId: string) => {
     // Find the notification and extract customer info
+    if (!Array.isArray(notifications)) return;
     const notification = notifications.find((n) => n.id === notificationId);
     if (!notification) return;
 
@@ -543,6 +544,7 @@ export default function AdminDashboard() {
 
   const handleRejectCustomer = (notificationId: string) => {
     // Find the notification and extract customer info
+    if (!Array.isArray(notifications)) return;
     const notification = notifications.find((n) => n.id === notificationId);
     if (!notification) return;
 
