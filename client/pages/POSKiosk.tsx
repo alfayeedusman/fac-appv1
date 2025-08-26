@@ -57,6 +57,7 @@ import {
 } from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
 import { getPrintingService, ReceiptData } from "@/utils/printingService";
+import { SimplePaymentModal } from "@/components/SimplePaymentModal";
 
 export default function POSKiosk() {
   const navigate = useNavigate();
