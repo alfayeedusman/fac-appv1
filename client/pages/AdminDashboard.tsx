@@ -809,24 +809,24 @@ export default function AdminDashboard() {
                                   {notificationType === "payment_received" && (
                                     <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
-                                  {notification.type === "system_alert" && (
+                                  {notificationType === "system_alert" && (
                                     <AlertCircle className="h-5 w-5 text-red-500" />
                                   )}
-                                  {notification.type === "payment" && (
+                                  {notificationType === "payment" && (
                                     <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <h4 className="text-base font-bold text-foreground truncate">
-                                      {notification.title}
+                                      {notification?.title || 'Notification'}
                                     </h4>
-                                    {!notification.read && (
+                                    {!isRead && (
                                       <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
                                     )}
                                   </div>
                                   <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {notification.message}
+                                    {notification?.message || ''}
                                   </p>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-muted-foreground">
