@@ -793,58 +793,15 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 <div className="w-full overflow-hidden">
                   {renderStepContent()}
                 </div>
-
-                {/* Debug Section - Remove in production */}
-                <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg border">
-                  <p className="text-sm font-semibold mb-2">Step {currentStep} Validation Status:</p>
-                  <div className="text-xs space-y-1">
-                    {currentStep === 1 && (
-                      <>
-                        <p>Category: {bookingData.category || '❌ Missing'}</p>
-                        <p>Service: {bookingData.service || '❌ Missing'}</p>
-                      </>
-                    )}
-                    {currentStep === 2 && (
-                      <>
-                        <p>Unit Type: {bookingData.unitType || '❌ Missing'}</p>
-                        <p>Unit Size: {bookingData.unitSize || '❌ Missing'}</p>
-                      </>
-                    )}
-                    {currentStep === 3 && (
-                      <>
-                        <p>Service Type: {bookingData.serviceType || '❌ Missing'}</p>
-                        <p>Date: {bookingData.date || '❌ Missing'}</p>
-                        <p>Time Slot: {bookingData.timeSlot || '❌ Missing'}</p>
-                        <p>Branch: {bookingData.branch || '❌ Missing'}</p>
-                      </>
-                    )}
-                    {currentStep === 4 && (
-                      <>
-                        <p>Payment Method: {bookingData.paymentMethod || '❌ Missing'}</p>
-                        <p>Receipt: {bookingData.receiptFile ? '✅ Uploaded' : (bookingData.paymentMethod === 'branch' ? '✅ Not Required' : '❌ Missing')}</p>
-                      </>
-                    )}
-                    {currentStep === 5 && (
-                      <>
-                        <p>Full Name: {bookingData.fullName || '❌ Missing'}</p>
-                        <p>Mobile: {bookingData.mobile || '❌ Missing'}</p>
-                        <p>Address: {bookingData.address || (bookingData.serviceType === 'home' ? '❌ Missing' : '✅ Not Required')}</p>
-                        <p>Email: {bookingData.email || (isGuest ? '❌ Missing' : '✅ Not Required')}</p>
-                        <p>Terms: {bookingData.acceptTerms ? '✅ Accepted' : '❌ Not Accepted'}</p>
-                      </>
-                    )}
-                    <p className="font-semibold mt-2">Can Proceed: {canProceed() ? '✅ Yes' : '❌ No'}</p>
-                  </div>
-                </div>
               </div>
 
               {/* Navigation */}
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6 md:mt-8 max-w-4xl">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 max-w-4xl">
                 <Button
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="flex items-center justify-center w-full sm:w-auto order-2 sm:order-1 bg-background hover:bg-muted border-border"
+                  className="flex items-center justify-center min-w-[120px] h-12 px-6 py-3 bg-background hover:bg-muted border-border transition-all duration-200"
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Back
@@ -854,7 +811,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   <Button
                     onClick={submitBooking}
                     disabled={!canProceed() || isLoading}
-                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center min-w-[160px] h-12 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     {isLoading ? (
                       <>
@@ -872,12 +829,11 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   <Button
                     onClick={nextStep}
                     disabled={!canProceed()}
-                    className={`font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg transition-all duration-300 relative overflow-hidden ${
+                    className={`font-semibold flex items-center justify-center min-w-[120px] h-12 px-6 py-3 shadow-lg transition-all duration-200 ${
                       !canProceed()
                         ? 'bg-gray-400 hover:bg-gray-400 text-gray-600 cursor-not-allowed'
                         : 'bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white hover:shadow-xl'
                     }`}
-                    style={{ display: 'flex !important', visibility: 'visible !important' }}
                     title={!canProceed() ? `Complete all fields in step ${currentStep} to continue` : 'Continue to next step'}
                   >
                     <span className="flex items-center">
