@@ -336,6 +336,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     totalPrice: 0,
   });
 
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+        receiptObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   // Memoize price calculation to prevent infinite loops
   const { basePrice, totalPrice } = useMemo(() => {
     let price = 0;
