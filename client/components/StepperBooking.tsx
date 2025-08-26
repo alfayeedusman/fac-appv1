@@ -323,6 +323,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     mobile: "",
     email: "",
     plateNo: "",
+    carModel: "",
     address: "",
     date: "",
     timeSlot: "",
