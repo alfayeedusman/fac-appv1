@@ -134,9 +134,23 @@ export default function QRScanner({
           console.warn("Video element emptied");
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera access error:", err);
       setHasPermission(false);
+
+      let errorMessage = "Camera access failed";
+      if (err.name === 'NotAllowedError') {
+        errorMessage = "Camera permission denied. Please allow camera access and try again.";
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = "Camera is already in use or hardware error occurred.";
+      } else if (err.name === 'OverconstrainedError') {
+        errorMessage = "Camera doesn't support the requested constraints.";
+      } else if (err.name === 'SecurityError') {
+        errorMessage = "Camera access blocked due to security restrictions.";
+      }
+
       setError(
         err instanceof Error
           ? err.message
