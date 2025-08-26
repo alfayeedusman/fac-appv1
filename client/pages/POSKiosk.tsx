@@ -435,86 +435,142 @@ export default function POSKiosk() {
             </Card>
           </div>
 
-          {/* Cart Section */}
+          {/* Enhanced Cart Section */}
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm sticky top-4">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Cart
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-2 rounded-lg mr-3">
+                      <ShoppingCart className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-xl">Shopping Cart</span>
                   </div>
-                  <Badge variant="secondary">{cartItems.length} items</Badge>
+                  <Badge variant="secondary" className="bg-green-50 text-green-700 px-3 py-1">
+                    {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {cartItems.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">Cart is empty</p>
+                  <div className="text-center py-12">
+                    <div className="relative">
+                      <ShoppingCart className="h-20 w-20 text-gray-200 mx-auto mb-4" />
+                      <div className="absolute -top-2 -right-8">
+                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                          <Plus className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">Your cart is empty</h3>
+                    <p className="text-gray-400 text-sm">Add some products to get started</p>
+                  </div>
                 ) : (
                   <>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {cartItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-sm">{item.name}</h4>
-                            <p className="text-orange-600 font-bold">₱{(item.price || 0).toFixed(2)}</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
+                    {/* Cart Items */}
+                    <div className="space-y-4 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      {cartItems.map((item, index) => (
+                        <div key={item.id} className="group bg-gradient-to-r from-white to-gray-50/50 border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-start space-x-3">
+                            {/* Item Image Placeholder */}
+                            <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Package className="h-6 w-6 text-gray-400" />
+                            </div>
+
+                            {/* Item Details */}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-900 text-sm leading-tight truncate">{item.name}</h4>
+                              <p className="text-orange-600 font-bold text-lg mt-1">₱{(item.price || 0).toFixed(2)}</p>
+                              <p className="text-xs text-gray-500 mt-1">SKU: {item.sku}</p>
+                            </div>
+
+                            {/* Remove Button */}
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-8 text-center">{item.quantity}</span>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
+                              variant="ghost"
                               onClick={() => removeFromCart(item.id)}
-                              className="text-red-600"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
+                          </div>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center space-x-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                className="h-8 w-8 p-0 rounded-lg border-gray-200 hover:bg-gray-50"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <div className="w-12 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                                <span className="text-sm font-semibold">{item.quantity}</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="h-8 w-8 p-0 rounded-lg border-gray-200 hover:bg-gray-50"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-gray-900">
+                                ₱{((item.price || 0) * item.quantity).toFixed(2)}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <Separator />
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-lg font-bold">
-                        <span>Total:</span>
-                        <span className="text-orange-600">₱{total.toFixed(2)}</span>
+                    <Separator className="my-6" />
+
+                    {/* Cart Summary */}
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-xl p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-600">Subtotal ({cartItems.length} items)</span>
+                          <span className="font-semibold">₱{total.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-600">Tax (12%)</span>
+                          <span className="font-semibold">₱{(total * 0.12).toFixed(2)}</span>
+                        </div>
+                        <Separator className="my-3" />
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-bold text-gray-900">Total:</span>
+                          <span className="text-2xl font-bold text-orange-600">₱{(total * 1.12).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Action Buttons */}
+                    <div className="space-y-3 pt-2">
                       <Button
                         variant="outline"
                         onClick={clearCart}
-                        className="w-full text-red-600 border-red-600 hover:bg-red-50"
+                        className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 rounded-xl py-3"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Clear Cart
                       </Button>
-                      
+
                       <Button
                         onClick={() => setShowPaymentModal(true)}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
+                        className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl text-lg"
                         size="lg"
                       >
                         <CreditCard className="h-5 w-5 mr-2" />
                         Process Payment
+                        <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-sm">
+                          ₱{(total * 1.12).toFixed(2)}
+                        </div>
                       </Button>
                     </div>
                   </>
