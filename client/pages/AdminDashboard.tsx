@@ -579,7 +579,7 @@ export default function AdminDashboard() {
     alert(`Customer registration rejected.`);
   };
 
-  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
+  const unreadNotificationCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
 
   if (!userRole) return null;
 
