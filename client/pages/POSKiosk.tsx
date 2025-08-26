@@ -580,14 +580,15 @@ export default function POSKiosk() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customer-name">Customer Name (Optional)</Label>
-              <Input
+              <label htmlFor="customer-name">Customer Name (Optional)</label>
+              <input
                 id="customer-name"
                 placeholder="Enter customer name"
-                value={customerInfo?.name || ""}
+                value={customerInfo.name}
                 onChange={(e) => {
                   setCustomerInfo(prev => ({ ...prev, name: e.target.value }))
                 }}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
