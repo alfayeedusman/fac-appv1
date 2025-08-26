@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import "@/styles/pos-animations.css";
 import {
   ShoppingCart,
   Plus,
@@ -273,17 +274,17 @@ export default function POSKiosk() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-4 font-display">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 mb-8">
+        <div className="glass rounded-2xl shadow-xl border border-white/50 p-6 mb-8 hover-lift">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-xl shadow-lg">
                 <ShoppingBag className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-black bg-gradient-to-r from-gray-900 via-slate-800 to-gray-700 bg-clip-text text-transparent text-shadow-sm animate-gradient">
                   POS Kiosk
                 </h1>
                 <div className="flex items-center space-x-2 mt-1">
@@ -305,9 +306,9 @@ export default function POSKiosk() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl">
-                <Sparkles className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium text-gray-700">Today's Sales: ₱{total.toFixed(2)}</span>
+              <div className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
+                <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
+                <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Today's Sales: ₱{(total * 1.12).toFixed(2)}</span>
               </div>
               <Button
                 variant="outline"
@@ -324,15 +325,15 @@ export default function POSKiosk() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Enhanced Products Section */}
           <div className="lg:col-span-2">
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl glass hover-lift">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center text-xl">
+                  <CardTitle className="flex items-center text-xl font-bold text-shadow-sm">
                     <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-lg mr-3">
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     Products
-                    <Badge variant="secondary" className="ml-3 bg-blue-50 text-blue-700">
+                    <Badge variant="secondary" className="ml-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 font-semibold">
                       {filteredProducts.length} items
                     </Badge>
                   </CardTitle>
@@ -489,16 +490,16 @@ export default function POSKiosk() {
 
           {/* Enhanced Cart Section */}
           <div className="lg:col-span-1">
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm sticky top-4">
+            <Card className="border-0 shadow-xl glass sticky top-4 hover-lift">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-2 rounded-lg mr-3">
                       <ShoppingCart className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xl">Shopping Cart</span>
+                    <span className="text-xl font-bold text-shadow-sm">Shopping Cart</span>
                   </div>
-                  <Badge variant="secondary" className="bg-green-50 text-green-700 px-3 py-1">
+                  <Badge variant="secondary" className="bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-100 px-3 py-1 font-semibold">
                     {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
                   </Badge>
                 </CardTitle>
@@ -515,7 +516,7 @@ export default function POSKiosk() {
                         </div>
                       </div>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-600 mb-2">Your cart is empty</h3>
+                    <h3 className="text-lg font-bold text-gray-700 mb-2 text-shadow-sm">Your cart is empty</h3>
                     <p className="text-gray-400 text-sm">Add some products to get started</p>
                   </div>
                 ) : (
@@ -585,7 +586,7 @@ export default function POSKiosk() {
 
                     {/* Cart Summary */}
                     <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-xl p-4">
+                      <div className="bg-gradient-to-r from-gray-50 via-blue-50/30 to-indigo-50/20 border border-gray-100 rounded-xl p-4 shadow-sm">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-gray-600">Subtotal ({cartItems.length} items)</span>
                           <span className="font-semibold">₱{total.toFixed(2)}</span>
@@ -596,8 +597,8 @@ export default function POSKiosk() {
                         </div>
                         <Separator className="my-3" />
                         <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-gray-900">Total:</span>
-                          <span className="text-2xl font-bold text-orange-600">₱{(total * 1.12).toFixed(2)}</span>
+                          <span className="text-lg font-black text-gray-900 text-shadow-sm">Total:</span>
+                          <span className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-shadow animate-gradient">₱{(total * 1.12).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
