@@ -698,15 +698,15 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
               </div>
 
               {/* Stepper Header */}
-              <div className="mb-6 md:mb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
+              <div className="mb-4 md:mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
                     {isGuest ? "Guest " : ""}
                     <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
                       Booking
                     </span>
                   </h1>
-                  <Badge variant="outline" className="text-xs md:text-sm w-fit">
+                  <Badge variant="outline" className="text-sm md:text-sm w-fit px-3 py-1 rounded-full">
                     Step {currentStep} of 5
                   </Badge>
                 </div>
