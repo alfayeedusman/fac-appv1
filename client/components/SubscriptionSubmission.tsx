@@ -146,9 +146,18 @@ export default function SubscriptionSubmission({
 
     try {
       // Simulate file upload and create receipt data
+      // Clean up any existing object URL first
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+      }
+
+      // Create new object URL and store reference for cleanup
+      const objectUrl = URL.createObjectURL(receiptFile);
+      receiptObjectUrlRef.current = objectUrl;
+
       const receipt = {
         id: `RCP${Date.now()}`,
-        imageUrl: URL.createObjectURL(receiptFile),
+        imageUrl: objectUrl,
         fileName: receiptFile.name,
         uploadDate: new Date().toISOString(),
         fileSize: receiptFile.size,
