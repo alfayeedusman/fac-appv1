@@ -230,9 +230,9 @@ const generateMockCustomerData = (): Customer[] => {
   return customers;
 };
 
-export default function RealTimeMap({ 
-  height = '600px', 
-  onCrewSelect, 
+export default function RealTimeMap({
+  height = '600px',
+  onCrewSelect,
   onCustomerSelect,
   showCustomers = true,
   showCrew = true,
@@ -248,15 +248,25 @@ export default function RealTimeMap({
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [crewData, setCrewData] = useState<CrewMember[]>([]);
   const [customerData, setCustomerData] = useState<Customer[]>([]);
-  const [realTimeCrews, setRealTimeCrews] = useState<CrewLocation[]>([]);
-  const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
+  const [realTimeCrews, setRealTimeCrews] = useState<any[]>([]);
+  const [activeJobs, setActiveJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected');
+  const [mapComponentsLoaded, setMapComponentsLoaded] = useState(false);
+  const [serviceLoaded, setServiceLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Mapbox access token - You'll need to set this up
-  const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN ||
-                      import.meta.env.VITE_MAPBOX_TOKEN ||
-                      'pk.eyJ1IjoiZmF5ZWVkYXV0b2NhcmUiLCJhIjoiY2x1dzBmb3VqMGI5aTJrcGZuaXB2bzNkZiJ9.demo-token-replace-with-real';
+  const MAPBOX_TOKEN = (() => {
+    try {
+      return process.env.REACT_APP_MAPBOX_TOKEN ||
+             import.meta.env.VITE_MAPBOX_TOKEN ||
+             'pk.eyJ1IjoiZmF5ZWVkYXV0b2NhcmUiLCJhIjoiY2x1dzBmb3VqMGI5aTJrcGZuaXB2bzNkZiJ9.demo-token-replace-with-real';
+    } catch (error) {
+      console.warn('Failed to get Mapbox token:', error);
+      return 'pk.demo-token-fallback';
+    }
+  })();
 
   // Load initial data and set up real-time updates
   useEffect(() => {
