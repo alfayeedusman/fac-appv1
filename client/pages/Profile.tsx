@@ -135,11 +135,19 @@ export default function Profile() {
                 {/* Profile Picture */}
                 <div className="relative">
                   <div className="w-20 h-20 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
-                    {profile.profilePicture ? (
+                    {profile.profilePicture && profile.profilePicture.trim() !== "" ? (
                       <img
                         src={profile.profilePicture}
-                        alt="Profile"
+                        alt="Profile picture"
                         className="w-full h-full rounded-2xl object-cover"
+                        onError={(e) => {
+                          console.warn(`Failed to load profile picture: ${profile.profilePicture}`);
+                          // Replace with User icon
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                          }
+                        }}
                       />
                     ) : (
                       <User className="h-10 w-10 text-white" />
