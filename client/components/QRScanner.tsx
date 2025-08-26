@@ -223,34 +223,39 @@ export default function QRScanner({
         videoRef.current &&
         videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA
       ) {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
+        try {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
-        if (context) {
-          canvas.width = videoRef.current.videoWidth;
-          canvas.height = videoRef.current.videoHeight;
+          if (context && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
 
-          context.drawImage(
-            videoRef.current,
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-          );
+            context.drawImage(
+              videoRef.current,
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+            );
 
-          const imageData = context.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-          );
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
-          });
+            const imageData = context.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+            );
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
 
-          if (code) {
-            handleQRDetected(code.data);
+            if (code) {
+              handleQRDetected(code.data);
+            }
           }
+        } catch (err) {
+          console.warn("Error during QR code detection:", err);
+          // Continue scanning - this is likely a temporary issue
         }
       }
     }, 100); // Scan every 100ms for better performance
