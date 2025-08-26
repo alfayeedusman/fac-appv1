@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ErrorBoundary } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -580,13 +580,19 @@ export default function POSKiosk() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customer-name">Customer Name (Optional)</Label>
+              <label htmlFor="customer-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Customer Name (Optional)
+              </label>
               <Input
                 id="customer-name"
                 placeholder="Enter customer name"
-                value={customerInfo.name}
+                value={customerInfo.name || ""}
                 onChange={(e) => {
-                  setCustomerInfo(prev => ({ ...prev, name: e.target.value }))
+                  try {
+                    setCustomerInfo(prev => ({ ...prev, name: e.target.value }))
+                  } catch (error) {
+                    console.error('Error updating customer name:', error)
+                  }
                 }}
               />
             </div>
