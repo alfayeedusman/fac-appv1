@@ -746,35 +746,37 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   ))}
                 </div>
 
-                {/* Mobile Stepper - More Compact Version */}
+                {/* Mobile Stepper - App-like Design */}
                 <div className="md:hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-foreground">Progress:</span>
-                    <span className="text-xs text-muted-foreground">{currentStep} of {STEPS.length}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-foreground">Progress</span>
+                    <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      {currentStep} of {STEPS.length}
+                    </span>
                   </div>
 
-                  {/* Progress Bar for Mobile */}
-                  <div className="w-full bg-border rounded-full h-2 mb-3">
+                  {/* Enhanced Progress Bar for Mobile */}
+                  <div className="w-full bg-muted rounded-full h-3 mb-4 shadow-inner">
                     <div
-                      className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all"
+                      className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
                       style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
                     ></div>
                   </div>
 
-                  {/* Current Step Indicator */}
-                  <div className="flex items-center justify-center p-3 rounded-lg border border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-fac-orange-500 text-white">
+                  {/* Enhanced Current Step Indicator */}
+                  <div className="p-4 rounded-2xl border-2 border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
                         {(() => {
                           const CurrentIcon = STEPS[currentStep - 1].icon;
-                          return <CurrentIcon className="h-3 w-3" />;
+                          return <CurrentIcon className="h-5 w-5" />;
                         })()}
                       </div>
-                      <div>
-                        <span className="text-sm font-semibold text-fac-orange-500">
+                      <div className="flex-1">
+                        <span className="text-base font-bold text-fac-orange-600 dark:text-fac-orange-400">
                           {STEPS[currentStep - 1].title}
                         </span>
-                        <p className="text-xs text-muted-foreground">{STEPS[currentStep - 1].description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{STEPS[currentStep - 1].description}</p>
                       </div>
                     </div>
                   </div>
