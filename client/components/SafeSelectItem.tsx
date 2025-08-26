@@ -4,58 +4,45 @@ import { SelectItem } from '@/components/ui/select';
 interface SafeSelectItemProps {
   value: string;
   children: React.ReactNode;
-  className?: string;
+  disabled?: boolean;
 }
 
 /**
- * Safe wrapper for SelectItem that handles rendering errors gracefully
+ * Simple wrapper for SelectItem that ensures safe rendering
  */
-export default function SafeSelectItem({ value, children, className }: SafeSelectItemProps) {
+export default function SafeSelectItem({ value, children, disabled }: SafeSelectItemProps) {
   try {
-    // Validate props
-    if (!value || typeof value !== 'string') {
-      console.warn('SafeSelectItem: Invalid value prop:', value);
-      return null;
+    // Ensure value is always a string
+    const safeValue = String(value || '');
+    
+    // Ensure children is safe text content
+    let safeChildren: string;
+    
+    if (typeof children === 'string') {
+      safeChildren = children;
+    } else if (typeof children === 'number') {
+      safeChildren = String(children);
+    } else if (React.isValidElement(children)) {
+      // If it's a React element, extract text content
+      safeChildren = String(value || 'Item');
+    } else {
+      safeChildren = String(children || 'Item');
     }
-
-    if (!children) {
-      console.warn('SafeSelectItem: Missing children prop for value:', value);
-      return null;
-    }
-
+    
+    // Clean up any problematic characters
+    safeChildren = safeChildren.replace(/[^\w\s\-\(\)\.\,]/g, '');
+    
     return (
-      <SelectItem value={value} className={className}>
-        {children}
+      <SelectItem value={safeValue} disabled={disabled}>
+        {safeChildren}
       </SelectItem>
     );
   } catch (error) {
-    console.error('SafeSelectItem: Rendering error for value:', value, error);
-    
-    // Return a fallback SelectItem with safe content
+    // Fallback rendering
     return (
-      <SelectItem value={value || 'error'} className={className}>
-        {typeof children === 'string' ? children : value || 'Error'}
+      <SelectItem value={String(value || 'error')} disabled>
+        Error: {String(value || 'Unknown')}
       </SelectItem>
     );
   }
-}
-
-/**
- * Higher-order component that wraps SelectItem usage with error boundary
- */
-export function withSafeSelectItem<P extends object>(
-  Component: React.ComponentType<P>
-): React.ComponentType<P> {
-  return function SafeSelectItemWrapper(props: P) {
-    try {
-      return <Component {...props} />;
-    } catch (error) {
-      console.error('SelectItem wrapper error:', error);
-      return (
-        <SelectItem value="error">
-          Error loading option
-        </SelectItem>
-      );
-    }
-  };
 }
