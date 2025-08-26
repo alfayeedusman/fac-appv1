@@ -546,7 +546,7 @@ export default function POSKiosk() {
           <DialogHeader>
             <DialogTitle>Process Payment</DialogTitle>
             <DialogDescription>
-              Complete the transaction with customer and payment details
+              Complete the transaction details
             </DialogDescription>
           </DialogHeader>
 
