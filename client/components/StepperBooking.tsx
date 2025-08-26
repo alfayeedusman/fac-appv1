@@ -793,6 +793,49 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 <div className="w-full overflow-hidden">
                   {renderStepContent()}
                 </div>
+
+                {/* Debug Section - Remove in production */}
+                <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg border">
+                  <p className="text-sm font-semibold mb-2">Step {currentStep} Validation Status:</p>
+                  <div className="text-xs space-y-1">
+                    {currentStep === 1 && (
+                      <>
+                        <p>Category: {bookingData.category || '❌ Missing'}</p>
+                        <p>Service: {bookingData.service || '❌ Missing'}</p>
+                      </>
+                    )}
+                    {currentStep === 2 && (
+                      <>
+                        <p>Unit Type: {bookingData.unitType || '❌ Missing'}</p>
+                        <p>Unit Size: {bookingData.unitSize || '❌ Missing'}</p>
+                      </>
+                    )}
+                    {currentStep === 3 && (
+                      <>
+                        <p>Service Type: {bookingData.serviceType || '❌ Missing'}</p>
+                        <p>Date: {bookingData.date || '❌ Missing'}</p>
+                        <p>Time Slot: {bookingData.timeSlot || '❌ Missing'}</p>
+                        <p>Branch: {bookingData.branch || '❌ Missing'}</p>
+                      </>
+                    )}
+                    {currentStep === 4 && (
+                      <>
+                        <p>Payment Method: {bookingData.paymentMethod || '❌ Missing'}</p>
+                        <p>Receipt: {bookingData.receiptFile ? '✅ Uploaded' : (bookingData.paymentMethod === 'branch' ? '✅ Not Required' : '❌ Missing')}</p>
+                      </>
+                    )}
+                    {currentStep === 5 && (
+                      <>
+                        <p>Full Name: {bookingData.fullName || '❌ Missing'}</p>
+                        <p>Mobile: {bookingData.mobile || '❌ Missing'}</p>
+                        <p>Address: {bookingData.address || (bookingData.serviceType === 'home' ? '❌ Missing' : '✅ Not Required')}</p>
+                        <p>Email: {bookingData.email || (isGuest ? '❌ Missing' : '✅ Not Required')}</p>
+                        <p>Terms: {bookingData.acceptTerms ? '✅ Accepted' : '❌ Not Accepted'}</p>
+                      </>
+                    )}
+                    <p className="font-semibold mt-2">Can Proceed: {canProceed() ? '✅ Yes' : '❌ No'}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Navigation */}
