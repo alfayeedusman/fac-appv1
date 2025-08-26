@@ -2055,6 +2055,9 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Debug Panel for Development/Testing */}
+      <DebugPanel className="mt-8" />
     </div>
   );
 }
