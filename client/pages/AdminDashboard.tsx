@@ -919,7 +919,13 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => setActiveTab("customers")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("customers");
+                    } catch (error) {
+                      console.error('Error setting tab to customers:', error);
+                    }
+                  }}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -940,7 +946,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => setActiveTab("sales")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("sales");
+                    } catch (error) {
+                      console.error('Error setting tab to sales:', error);
+                    }
+                  }}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -961,7 +973,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => setActiveTab("analytics")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("analytics");
+                    } catch (error) {
+                      console.error('Error setting tab to analytics:', error);
+                    }
+                  }}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -982,7 +1000,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => setActiveTab("packages")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("packages");
+                    } catch (error) {
+                      console.error('Error setting tab to packages:', error);
+                    }
+                  }}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -1088,7 +1112,13 @@ export default function AdminDashboard() {
                 {userRole === "superadmin" && (
                   <Card
                     className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                    onClick={() => setActiveTab("roles")}
+                    onClick={() => {
+                      try {
+                        setActiveTab("roles");
+                      } catch (error) {
+                        console.error('Error setting tab to roles:', error);
+                      }
+                    }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
@@ -1112,7 +1142,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => setActiveTab("packages")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("packages");
+                    } catch (error) {
+                      console.error('Error setting tab to packages:', error);
+                    }
+                  }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1135,7 +1171,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => setActiveTab("analytics")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("analytics");
+                    } catch (error) {
+                      console.error('Error setting tab to analytics:', error);
+                    }
+                  }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1158,7 +1200,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => setActiveTab("ads")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("ads");
+                    } catch (error) {
+                      console.error('Error setting tab to ads:', error);
+                    }
+                  }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1181,7 +1229,13 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => setActiveTab("branches")}
+                  onClick={() => {
+                    try {
+                      setActiveTab("branches");
+                    } catch (error) {
+                      console.error('Error setting tab to branches:', error);
+                    }
+                  }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
