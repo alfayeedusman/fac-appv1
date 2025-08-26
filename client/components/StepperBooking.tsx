@@ -310,6 +310,7 @@ const getTimeSlots = (date: string) => {
 export default function StepperBooking({ isGuest = false }: StepperBookingProps) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const receiptObjectUrlRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   
