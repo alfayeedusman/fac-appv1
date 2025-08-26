@@ -62,9 +62,13 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     // Initialize admin accounts and sample data on app startup
-    initializeAdminAccounts();
-    initializeSampleAds();
-    initializeAllSampleData();
+    try {
+      initializeAdminAccounts();
+      initializeSampleAds();
+      initializeAllSampleData();
+    } catch (error) {
+      console.warn('Error during initialization:', error);
+    }
   }, []);
 
   return (
@@ -356,4 +360,8 @@ const App = () => {
   );
 };
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
