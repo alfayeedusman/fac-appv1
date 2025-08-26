@@ -1012,17 +1012,24 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
       {Object.entries(UNIT_TYPES).map(([typeKey, type]) => (
         <div key={typeKey} className="space-y-4">
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
               bookingData.unitType === typeKey
-                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
-                : 'border-border hover:border-fac-orange-300'
+                ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl'
+                : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
             }`}
             onClick={() => {
               updateBookingData("unitType", typeKey);
               updateBookingData("unitSize", ""); // Reset size when type changes
             }}
           >
-            <h3 className="font-bold text-foreground text-lg">{type.name}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-foreground text-xl">{type.name}</h3>
+              {bookingData.unitType === typeKey && (
+                <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  ✓ Selected
+                </Badge>
+              )}
+            </div>
           </div>
           
           {bookingData.unitType === typeKey && (
