@@ -54,6 +54,9 @@ export default function POSKiosk() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [customerInfo, setCustomerInfo] = useState<{uniqueId: string; name: string}>({
     uniqueId: "",
     name: "",
@@ -70,11 +73,16 @@ export default function POSKiosk() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setIsLoading(true);
+        // Simulate loading delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const productsData = await getProducts();
         setProducts(productsData || []);
       } catch (error) {
         console.error("Error loading products:", error);
         setProducts([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadData();
@@ -103,12 +111,16 @@ export default function POSKiosk() {
     }
   }, [products, selectedCategory, searchQuery]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = async (product: Product) => {
     try {
       if (!product || !product.id) {
         console.error("Invalid product:", product);
         return;
       }
+
+      setAddingToCart(product.id);
+      // Simulate processing delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const existingItem = cartItems.find((item) => item.id === product.id);
       if (existingItem) {
@@ -138,6 +150,8 @@ export default function POSKiosk() {
     } catch (error) {
       console.error("Error adding to cart:", error);
       notificationManager.showNotification("Failed to add item to cart", "error");
+    } finally {
+      setAddingToCart(null);
     }
   };
 
@@ -184,6 +198,8 @@ export default function POSKiosk() {
 
   const handlePayment = async () => {
     try {
+      setIsProcessingPayment(true);
+
       if (cartItems.length === 0) {
         notificationManager.showNotification("Cart is empty", "error");
         return;
@@ -196,17 +212,20 @@ export default function POSKiosk() {
 
       if (paymentInfo.method === "cash") {
         const amountPaid = parseFloat(paymentInfo.amountPaid);
-        if (isNaN(amountPaid) || amountPaid < total) {
+        if (isNaN(amountPaid) || amountPaid < total * 1.12) {
           notificationManager.showNotification("Insufficient payment amount", "error");
           return;
         }
       }
 
-      if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") && 
+      if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") &&
           !paymentInfo.referenceNumber.trim()) {
         notificationManager.showNotification("Reference number is required", "error");
         return;
       }
+
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Convert cart items to POS items
       const posItems: POSItem[] = cartItems.map(item => ({
@@ -229,13 +248,13 @@ export default function POSKiosk() {
         },
         {
           method: paymentInfo.method,
-          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total * 1.12,
           referenceNumber: paymentInfo.referenceNumber
         }
       );
 
-      notificationManager.showNotification("Payment successful!", "success");
-      
+      notificationManager.showNotification("Payment processed successfully!", "success");
+
       // Reset form
       clearCart();
       setCustomerInfo({ uniqueId: "", name: "" });
@@ -248,6 +267,8 @@ export default function POSKiosk() {
     } catch (error) {
       console.error("Payment error:", error);
       notificationManager.showNotification("Payment failed. Please try again.", "error");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -354,8 +375,26 @@ export default function POSKiosk() {
               </CardHeader>
 
               <CardContent className="pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  {filteredProducts.length > 0 ? (
+                {isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 animate-pulse">
+                        <div className="w-full h-32 bg-gray-200 rounded-xl mb-4"></div>
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-full"></div>
+                          <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                          <div className="flex justify-between items-center pt-2">
+                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                            <div className="h-8 bg-gray-200 rounded-xl w-16"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => (
                       <div
                         key={product.id}
@@ -411,10 +450,22 @@ export default function POSKiosk() {
                                 e.stopPropagation();
                                 addToCart(product);
                               }}
-                              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl px-4"
+                              disabled={addingToCart === product.id || product.currentStock === 0}
+                              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Add
+                              {addingToCart === product.id ? (
+                                <div className="flex items-center">
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                  Adding...
+                                </div>
+                              ) : product.currentStock === 0 ? (
+                                <span className="text-xs">Out of Stock</span>
+                              ) : (
+                                <>
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -429,8 +480,9 @@ export default function POSKiosk() {
                       <h3 className="text-lg font-medium text-gray-600 mb-2">No products found</h3>
                       <p className="text-gray-400">Try adjusting your search or filter criteria</p>
                     </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -563,14 +615,24 @@ export default function POSKiosk() {
 
                       <Button
                         onClick={() => setShowPaymentModal(true)}
-                        className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl text-lg"
+                        disabled={isProcessingPayment}
+                        className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl text-lg disabled:opacity-50"
                         size="lg"
                       >
-                        <CreditCard className="h-5 w-5 mr-2" />
-                        Process Payment
-                        <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-sm">
-                          ₱{(total * 1.12).toFixed(2)}
-                        </div>
+                        {isProcessingPayment ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Processing...
+                          </div>
+                        ) : (
+                          <>
+                            <CreditCard className="h-5 w-5 mr-2" />
+                            Process Payment
+                            <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-sm">
+                              ₱{(total * 1.12).toFixed(2)}
+                            </div>
+                          </>
+                        )}
                       </Button>
                     </div>
                   </>
