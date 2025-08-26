@@ -52,13 +52,7 @@ export default function Booking() {
       {/* Stepper Booking Component */}
       <StepperBooking isGuest={false} />
 
-      <BottomNavigation onQRScan={handleQRScan} />
-
-      <QRScanner
-        isOpen={showQRScanner}
-        onClose={() => setShowQRScanner(false)}
-        onScanSuccess={handleScanSuccess}
-      />
+      <BottomNavigation />
     </div>
   );
 }
