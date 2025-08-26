@@ -345,11 +345,19 @@ export default function ImageUploadManager({
                       <div className="aspect-video relative">
                         <img
                           src={image.base64Data}
-                          alt={image.description || image.originalName}
+                          alt={image.description || image.originalName || "Uploaded image"}
                           className="w-full h-full object-cover cursor-pointer"
                           onClick={() => {
                             setSelectedImage(image);
                             setIsViewerOpen(true);
+                          }}
+                          onError={(e) => {
+                            console.warn(`Failed to load image: ${image.originalName || image.id}`);
+                            e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDNIOGEyIDIgMCAwIDAtMiAydjEyYTIgMiAwIDAgMCAyIDJoMTNhMiAyIDAgMCAwIDItMlY1YTIgMiAwIDAgMC0yLTJ6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Im0yMSAxNS00LTQtNC41IDQuNS0zLTMiIHN0cm9rZT0iIzljYTdiMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
+                            e.currentTarget.className = "w-full h-full object-contain cursor-not-allowed opacity-50";
+                          }}
+                          onLoad={() => {
+                            console.log(`Successfully loaded image: ${image.originalName || image.id}`);
                           }}
                         />
                         <div className="absolute top-2 right-2 flex gap-1">
