@@ -876,10 +876,10 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
       {Object.entries(availableServices).map(([categoryKey, category]) => (
         <div
           key={categoryKey}
-          className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+          className={`p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
             bookingData.category === categoryKey
-              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg shadow-fac-orange-500/10'
-              : 'border-border glass hover:border-fac-orange-300 hover:shadow-lg'
+              ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50/80 to-orange-50/80 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl shadow-fac-orange-500/20'
+              : 'border-border/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-fac-orange-300 hover:shadow-xl hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
           }`}
           onClick={async () => {
             // Check if this category is available for current service type
@@ -896,20 +896,22 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
           }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-            <div className="flex items-center space-x-3 md:space-x-4">
-              <div className={`bg-gradient-to-r ${category.gradient} p-2 md:p-3 rounded-xl`}>
-                <category.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            <div className="flex items-center space-x-4">
+              <div className={`bg-gradient-to-r ${category.gradient} p-3 md:p-4 rounded-2xl shadow-lg`}>
+                <category.icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-black text-foreground text-base md:text-lg">{category.name}</h3>
+                <h3 className="font-black text-foreground text-lg md:text-xl">{category.name}</h3>
                 {category.description && (
-                  <p className="text-muted-foreground text-xs md:text-sm mt-1">{category.description}</p>
+                  <p className="text-muted-foreground text-sm md:text-base mt-1">{category.description}</p>
                 )}
               </div>
             </div>
             {bookingData.category === categoryKey && (
-              <div className="mt-2 sm:mt-0 flex-shrink-0">
-                <Badge className="bg-fac-orange-500 text-white text-xs">Selected</Badge>
+              <div className="mt-3 sm:mt-0 flex-shrink-0">
+                <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  ✓ Selected
+                </Badge>
               </div>
             )}
           </div>
