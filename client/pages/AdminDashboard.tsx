@@ -780,8 +780,12 @@ export default function AdminDashboard() {
 
                                         // If it's a booking notification, navigate to bookings tab
                                         if (notificationType === 'new_booking') {
-                                          setActiveTab('bookings');
-                                          setIsNotificationDropdownOpen(false);
+                                          try {
+                                            setActiveTab('bookings');
+                                            setIsNotificationDropdownOpen(false);
+                                          } catch (error) {
+                                            console.error('Error navigating to bookings tab:', error);
+                                          }
                                         }
                                       }
                                     }
