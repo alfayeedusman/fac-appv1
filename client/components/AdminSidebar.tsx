@@ -75,6 +75,13 @@ const sidebarItems = [
     gradient: "from-purple-500 to-pink-500",
   },
   {
+    id: "fac-map",
+    label: "FAC MAP",
+    icon: MapPin,
+    description: "Live Location Heat Map",
+    gradient: "from-orange-500 to-red-500",
+  },
+  {
     id: "branches",
     label: "Branch Network",
     icon: MapPin,
