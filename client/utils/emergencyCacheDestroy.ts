@@ -36,35 +36,6 @@ export async function nukeCaches() {
     console.warn('⚠️ sessionStorage clearing failed:', error);
   }
   
-  // 4. Clear IndexedDB databases
-  if ('indexedDB' in window) {
-    try {
-      // Common database names to clear
-      const dbsToDelete = ['fac_cache', 'workbox-backgroundsync', 'keyval-store'];
-      
-      for (const dbName of dbsToDelete) {
-        const deleteRequest = indexedDB.deleteDatabase(dbName);
-        deleteRequest.onerror = () => console.warn(`⚠️ Could not delete ${dbName}`);
-        deleteRequest.onsuccess = () => console.log(`✅ Deleted ${dbName}`);
-      }
-    } catch (error) {
-      console.warn('⚠️ IndexedDB clearing failed:', error);
-    }
-  }
-  
-  // 5. Clear browser cache headers if possible
-  if ('navigator' in window && 'serviceWorker' in navigator) {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-        console.log('✅ Service worker unregistered');
-      }
-    } catch (error) {
-      console.warn('⚠️ Service worker unregistration failed:', error);
-    }
-  }
-  
   console.log('💥 Nuclear cache destruction complete!');
 }
 
@@ -106,62 +77,11 @@ export async function emergencyReset() {
   }
 }
 
-/**
- * Install emergency reset trigger
- */
-export function installEmergencyResetTrigger() {
-  let errorCount = 0;
-  const MAX_ERRORS = 3;
-  
-  // Monitor for SelectItem errors
-  const originalError = console.error;
-  console.error = (...args) => {
-    const message = args.join(' ');
-    
-    if (message.includes('SelectItem') || 
-        message.includes('react-select') ||
-        message.includes('radix-ui')) {
-      
-      errorCount++;
-      console.warn(`🚨 SelectItem error #${errorCount} detected`);
-      
-      if (errorCount >= MAX_ERRORS) {
-        console.error('💣 Too many SelectItem errors - triggering emergency reset!');
-        emergencyReset();
-        return;
-      }
-    }
-    
-    originalError.apply(console, args);
-  };
-  
-  // Global error listener
-  window.addEventListener('error', (event) => {
-    if (event.error && event.error.stack && 
-        (event.error.stack.includes('SelectItem') || 
-         event.error.stack.includes('AdminHeatMap'))) {
-      
-      errorCount++;
-      console.warn(`🚨 Global SelectItem error #${errorCount} detected`);
-      
-      if (errorCount >= MAX_ERRORS) {
-        console.error('💣 Too many global errors - triggering emergency reset!');
-        emergencyReset();
-      }
-    }
-  });
-  
-  console.log('🛡️ Emergency reset trigger installed');
-}
-
-// Make available globally
+// Make available globally (NO ERROR HANDLERS TO PREVENT LOOPS)
 if (typeof window !== 'undefined') {
   (window as any).nukeCaches = nukeCaches;
   (window as any).emergencyReset = emergencyReset;
   (window as any).forceRefreshWithCacheBypass = forceRefreshWithCacheBypass;
-  
-  // Auto-install the trigger
-  installEmergencyResetTrigger();
   
   console.log('💣 Emergency cache destruction utilities loaded!');
   console.log('💡 Run emergencyReset() in console for nuclear option');
@@ -170,6 +90,5 @@ if (typeof window !== 'undefined') {
 export default {
   nukeCaches,
   emergencyReset,
-  forceRefreshWithCacheBypass,
-  installEmergencyResetTrigger
+  forceRefreshWithCacheBypass
 };
