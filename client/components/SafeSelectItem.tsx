@@ -12,13 +12,14 @@ interface SafeSelectItemProps {
  */
 export default function SafeSelectItem({ value, children, disabled }: SafeSelectItemProps) {
   try {
-    // Ultra-safe value handling
+    // Ultra-safe value handling - NEVER allow empty strings
     let safeValue: string;
 
     if (value === null || value === undefined) {
-      safeValue = 'undefined';
+      safeValue = 'undefined_value';
     } else if (typeof value === 'string') {
-      safeValue = value;
+      // Critical: Never allow empty strings - this causes the SelectItem error
+      safeValue = value.trim() || 'empty_string';
     } else if (typeof value === 'number') {
       safeValue = String(value);
     } else if (typeof value === 'boolean') {
@@ -26,16 +27,21 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
     } else if (typeof value === 'object') {
       // Handle objects, arrays, React elements
       if (Array.isArray(value)) {
-        safeValue = value.join(',');
+        safeValue = value.length > 0 ? value.join(',') : 'empty_array';
       } else if (React.isValidElement(value)) {
-        safeValue = 'react-element';
+        safeValue = 'react_element';
       } else {
-        safeValue = 'object';
+        safeValue = 'object_value';
       }
     } else if (typeof value === 'function') {
-      safeValue = 'function';
+      safeValue = 'function_value';
     } else {
-      safeValue = String(value);
+      safeValue = String(value) || 'unknown_value';
+    }
+
+    // Ensure the value is never an empty string
+    if (safeValue === '' || safeValue === ' ') {
+      safeValue = 'empty_value';
     }
 
     // Ultra-safe children handling
@@ -44,7 +50,7 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
     if (children === null || children === undefined) {
       safeChildren = safeValue || 'Item';
     } else if (typeof children === 'string') {
-      safeChildren = children;
+      safeChildren = children.trim() || safeValue || 'Empty Text';
     } else if (typeof children === 'number') {
       safeChildren = String(children);
     } else if (typeof children === 'boolean') {
@@ -53,13 +59,13 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
       // Extract text from React element
       safeChildren = safeValue || 'React Element';
     } else if (Array.isArray(children)) {
-      safeChildren = children.join(' ');
+      safeChildren = children.length > 0 ? children.join(' ') : safeValue || 'Empty Array';
     } else if (typeof children === 'object') {
       safeChildren = safeValue || 'Object';
     } else if (typeof children === 'function') {
       safeChildren = safeValue || 'Function';
     } else {
-      safeChildren = String(children);
+      safeChildren = String(children) || safeValue || 'Unknown';
     }
 
     // Aggressive text cleaning
@@ -67,7 +73,8 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
       .replace(/\[object Object\]/g, 'Object')
       .replace(/\[object.*?\]/g, 'Item')
       .replace(/function.*?\{.*?\}/g, 'Function')
-      .replace(/[^\w\s\-\(\)\.\,\:]/g, '')
+      .replace(/[^\w\s\-\(\)\.\,\:\+\%\$\#]/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim();
 
     // Ensure we have some content
@@ -77,6 +84,15 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
 
     // Final safety check
     if (safeChildren.includes('[object') || safeChildren.includes('function')) {
+      safeChildren = 'Safe Item';
+    }
+
+    // Final validation - ensure both value and children are safe
+    if (!safeValue || safeValue === '') {
+      safeValue = 'safe_fallback';
+    }
+
+    if (!safeChildren || safeChildren === '') {
       safeChildren = 'Safe Item';
     }
 
@@ -90,8 +106,8 @@ export default function SafeSelectItem({ value, children, disabled }: SafeSelect
     console.warn('SafeSelectItem error:', error);
 
     return (
-      <SelectItem value="fallback" disabled>
-        Safe Item
+      <SelectItem value="error_fallback" disabled>
+        Error: Safe Item
       </SelectItem>
     );
   }
