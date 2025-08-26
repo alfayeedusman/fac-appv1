@@ -684,6 +684,7 @@ export default function AdminDashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
+                    <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Error loading notifications</div>}>
                     <div className="p-6 border-b border-border">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-foreground">
@@ -867,6 +868,7 @@ export default function AdminDashboard() {
                         )}
                       </div>
                     </ScrollArea>
+                    </ErrorBoundary>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
