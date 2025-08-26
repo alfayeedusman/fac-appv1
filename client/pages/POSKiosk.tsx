@@ -15,6 +15,16 @@ import {
   Package,
   X,
   Users,
+  Star,
+  Clock,
+  Filter,
+  Grid3x3,
+  ShoppingBag,
+  Sparkles,
+  User,
+  ChevronDown,
+  Heart,
+  Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProducts, Product } from "@/utils/inventoryData";
@@ -242,20 +252,46 @@ export default function POSKiosk() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        {/* Enhanced Header */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">POS Kiosk</h1>
-              <p className="text-gray-600">Cashier: {cashierName}</p>
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-xl shadow-lg">
+                <ShoppingBag className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  POS Kiosk
+                </h1>
+                <div className="flex items-center space-x-2 mt-1">
+                  <div className="flex items-center space-x-1">
+                    <User className="h-4 w-4 text-emerald-600" />
+                    <span className="text-sm font-medium text-gray-700">{cashierName}</span>
+                  </div>
+                  <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-emerald-600 font-medium">Online</span>
+                  </div>
+                  <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  <div className="flex items-center space-x-1">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm text-gray-500">{new Date().toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl">
+                <Sparkles className="h-4 w-4 text-orange-500" />
+                <span className="text-sm font-medium text-gray-700">Today's Sales: ₱{total.toFixed(2)}</span>
+              </div>
               <Button
                 variant="outline"
                 onClick={() => setShowExitModal(true)}
-                className="text-red-600 border-red-600 hover:bg-red-50"
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6"
               >
                 <X className="h-4 w-4 mr-2" />
                 Exit Kiosk
@@ -264,69 +300,134 @@ export default function POSKiosk() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Products Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Enhanced Products Section */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Package className="h-5 w-5 mr-2" />
-                  Products
-                </CardTitle>
-                
-                {/* Search and Filters */}
-                <div className="flex flex-col sm:flex-row gap-4">
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center text-xl">
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-lg mr-3">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    Products
+                    <Badge variant="secondary" className="ml-3 bg-blue-50 text-blue-700">
+                      {filteredProducts.length} items
+                    </Badge>
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" className="hidden sm:flex">
+                      <Grid3x3 className="h-4 w-4 mr-1" />
+                      Grid
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Enhanced Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
-                      placeholder="Search products..."
+                      placeholder="Search products, SKU, or description..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-12 pr-4 py-3 border-0 bg-gray-50 focus:bg-white transition-colors duration-200 rounded-xl text-base"
                     />
                   </div>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="pl-10 pr-8 py-3 border-0 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 appearance-none cursor-pointer min-w-48"
+                    >
+                      <option value="all">All Categories</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                  </div>
                 </div>
               </CardHeader>
 
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+              <CardContent className="pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                        className="group bg-gradient-to-br from-white to-gray-50/50 border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden"
+                        onClick={() => addToCart(product)}
                       >
-                        <h3 className="font-medium text-gray-900">{product.name || "Unnamed Product"}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{product.description || "No description"}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-orange-600">
-                            ₱{(product.unitPrice || 0).toFixed(2)}
-                          </span>
-                          <Button
-                            size="sm"
-                            onClick={() => addToCart(product)}
-                            className="bg-orange-500 hover:bg-orange-600"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                        {/* Product Image Placeholder */}
+                        <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+                          <Package className="h-12 w-12 text-gray-400" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          {/* Stock indicator */}
+                          <div className="absolute top-2 right-2">
+                            <div className={`w-3 h-3 rounded-full ${product.currentStock > product.minStockLevel ? 'bg-green-500' : product.currentStock > 0 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                          </div>
                         </div>
+
+                        {/* Product Info */}
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-base leading-tight group-hover:text-orange-600 transition-colors duration-200">
+                              {product.name || "Unnamed Product"}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                              {product.description || "No description available"}
+                            </p>
+                          </div>
+
+                          {/* SKU and Stock */}
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-mono">
+                              {product.sku}
+                            </span>
+                            <span className={`font-medium ${product.currentStock > product.minStockLevel ? 'text-green-600' : product.currentStock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              {product.currentStock} in stock
+                            </span>
+                          </div>
+
+                          {/* Price and Action */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex flex-col">
+                              <span className="text-2xl font-bold text-orange-600">
+                                ₱{(product.unitPrice || 0).toFixed(2)}
+                              </span>
+                              {product.costPrice && (
+                                <span className="text-xs text-gray-400 line-through">
+                                  ₱{product.costPrice.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(product);
+                              }}
+                              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl px-4"
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"></div>
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-full text-center py-8 text-gray-500">
-                      No products found
+                    <div className="col-span-full text-center py-12">
+                      <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-2">No products found</h3>
+                      <p className="text-gray-400">Try adjusting your search or filter criteria</p>
                     </div>
                   )}
                 </div>
