@@ -396,6 +396,14 @@ export default function SubscriptionRequestCard({
                 src={request.receipt.imageUrl}
                 alt="Payment Receipt"
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.warn(`Failed to load receipt image: ${request.receipt.imageUrl}`);
+                  e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcgOGgxME0xMCAyMGwxLTJoMi00bC0xIDJIMTB6bTQgMGgybC0xIDJIMTR6bTMtM2gtMWwtMi4yOTMtMi4yOTNhMSAxIDAgMCAwLTEuNDE0IDBMOC41ODYgMTMuMTcxYTEgMSAwIDAgMC0uMjA3LjIyOUw3IDEwaDEwbC0xIDNoLTF6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik03IDhWNmEyIDIgMCAwIDEgMi0yaDZhMiAyIDAgMCAxIDIgMnYyIiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+";
+                  e.currentTarget.className = "w-full h-full object-contain opacity-50";
+                }}
+                onLoad={() => {
+                  console.log(`Successfully loaded receipt image`);
+                }}
               />
             </div>
             <div className="text-sm text-muted-foreground">
