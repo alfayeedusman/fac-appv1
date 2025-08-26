@@ -781,14 +781,59 @@ export class BookingDatabase {
     const soundSettings = this.getNotificationSoundSettings();
     const sound = soundSettings.find(s => s.type === soundType && s.enabled);
 
-    if (sound && typeof Audio !== 'undefined') {
+    if (sound) {
       try {
-        const audio = new Audio(sound.soundFile);
-        audio.volume = sound.volume / 100;
-        audio.play().catch(console.error);
+        // Use Web Audio API to synthesize sound instead of loading external files
+        // This prevents "media resource not suitable" errors from missing files
+        this.playSynthesizedSound(soundType, sound.volume / 100);
       } catch (error) {
         console.error('Error playing notification sound:', error);
       }
+    }
+  }
+
+  private playSynthesizedSound(soundType: NotificationSound['type'], volume: number): void {
+    try {
+      // Create audio context (fallback for older browsers)
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) {
+        console.warn('Web Audio API not supported');
+        return;
+      }
+
+      const audioContext = new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      // Connect nodes
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Different frequencies for different notification types
+      const frequencies = {
+        'new_booking': 800,
+        'status_update': 600,
+        'crew_update': 700,
+        'payment': 900,
+        'system_alert': 1000,
+      };
+
+      // Set frequency and volume
+      oscillator.frequency.setValueAtTime(
+        frequencies[soundType] || 800,
+        audioContext.currentTime
+      );
+
+      gainNode.gain.setValueAtTime(volume * 0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+      // Play the sound for 300ms
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+
+      console.log(`Played synthesized notification sound: ${soundType}`);
+    } catch (error) {
+      console.error('Error creating synthesized sound:', error);
     }
   }
 
