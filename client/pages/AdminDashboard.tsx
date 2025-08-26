@@ -606,15 +606,11 @@ export default function AdminDashboard() {
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={(tab) => {
-          try {
-            if (tab === "fac-map") {
-              navigate("/admin-fac-map");
-              return;
-            }
-            setActiveTab(tab);
-          } catch (error) {
-            console.error('Error changing tab:', error);
+          if (tab === "fac-map") {
+            navigate("/admin-fac-map");
+            return;
           }
+          setActiveTab(tab);
         }}
         userRole={userRole}
         notificationCount={unreadNotificationCount}
@@ -724,12 +720,8 @@ export default function AdminDashboard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              try {
-                                setActiveTab("notifications");
-                                setIsNotificationDropdownOpen(false);
-                              } catch (error) {
-                                console.error('Error updating tab state:', error);
-                              }
+                              setActiveTab("notifications");
+                              setIsNotificationDropdownOpen(false);
                             }}
                             className="text-xs h-7"
                           >
@@ -784,12 +776,8 @@ export default function AdminDashboard() {
 
                                         // If it's a booking notification, navigate to bookings tab
                                         if (notificationType === 'new_booking') {
-                                          try {
-                                            setActiveTab('bookings');
-                                            setIsNotificationDropdownOpen(false);
-                                          } catch (error) {
-                                            console.error('Error navigating to bookings tab:', error);
-                                          }
+                                          setActiveTab('bookings');
+                                          setIsNotificationDropdownOpen(false);
                                         }
                                       }
                                     }
@@ -927,13 +915,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    try {
-                      setActiveTab("customers");
-                    } catch (error) {
-                      console.error('Error setting tab to customers:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("customers")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -954,13 +936,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    try {
-                      setActiveTab("sales");
-                    } catch (error) {
-                      console.error('Error setting tab to sales:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("sales")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -981,13 +957,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    try {
-                      setActiveTab("analytics");
-                    } catch (error) {
-                      console.error('Error setting tab to analytics:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("analytics")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -1008,13 +978,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    try {
-                      setActiveTab("packages");
-                    } catch (error) {
-                      console.error('Error setting tab to packages:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("packages")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -1120,13 +1084,7 @@ export default function AdminDashboard() {
                 {userRole === "superadmin" && (
                   <Card
                     className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                    onClick={() => {
-                      try {
-                        setActiveTab("roles");
-                      } catch (error) {
-                        console.error('Error setting tab to roles:', error);
-                      }
-                    }}
+                    onClick={() => setActiveTab("roles")}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
@@ -1150,13 +1108,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => {
-                    try {
-                      setActiveTab("packages");
-                    } catch (error) {
-                      console.error('Error setting tab to packages:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("packages")}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1179,13 +1131,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => {
-                    try {
-                      setActiveTab("analytics");
-                    } catch (error) {
-                      console.error('Error setting tab to analytics:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("analytics")}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1208,13 +1154,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => {
-                    try {
-                      setActiveTab("ads");
-                    } catch (error) {
-                      console.error('Error setting tab to ads:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("ads")}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
@@ -1237,13 +1177,7 @@ export default function AdminDashboard() {
 
                 <Card
                   className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
-                  onClick={() => {
-                    try {
-                      setActiveTab("branches");
-                    } catch (error) {
-                      console.error('Error setting tab to branches:', error);
-                    }
-                  }}
+                  onClick={() => setActiveTab("branches")}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
