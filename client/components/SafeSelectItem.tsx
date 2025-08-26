@@ -2,46 +2,96 @@ import React from 'react';
 import { SelectItem } from '@/components/ui/select';
 
 interface SafeSelectItemProps {
-  value: string;
-  children: React.ReactNode;
+  value?: any;
+  children?: React.ReactNode;
   disabled?: boolean;
 }
 
 /**
- * Simple wrapper for SelectItem that ensures safe rendering
+ * Bulletproof wrapper for SelectItem that prevents all rendering errors
  */
 export default function SafeSelectItem({ value, children, disabled }: SafeSelectItemProps) {
   try {
-    // Ensure value is always a string
-    const safeValue = String(value || '');
-    
-    // Ensure children is safe text content
+    // Ultra-safe value handling
+    let safeValue: string;
+
+    if (value === null || value === undefined) {
+      safeValue = 'undefined';
+    } else if (typeof value === 'string') {
+      safeValue = value;
+    } else if (typeof value === 'number') {
+      safeValue = String(value);
+    } else if (typeof value === 'boolean') {
+      safeValue = String(value);
+    } else if (typeof value === 'object') {
+      // Handle objects, arrays, React elements
+      if (Array.isArray(value)) {
+        safeValue = value.join(',');
+      } else if (React.isValidElement(value)) {
+        safeValue = 'react-element';
+      } else {
+        safeValue = 'object';
+      }
+    } else if (typeof value === 'function') {
+      safeValue = 'function';
+    } else {
+      safeValue = String(value);
+    }
+
+    // Ultra-safe children handling
     let safeChildren: string;
-    
-    if (typeof children === 'string') {
+
+    if (children === null || children === undefined) {
+      safeChildren = safeValue || 'Item';
+    } else if (typeof children === 'string') {
       safeChildren = children;
     } else if (typeof children === 'number') {
       safeChildren = String(children);
+    } else if (typeof children === 'boolean') {
+      safeChildren = String(children);
     } else if (React.isValidElement(children)) {
-      // If it's a React element, extract text content
-      safeChildren = String(value || 'Item');
+      // Extract text from React element
+      safeChildren = safeValue || 'React Element';
+    } else if (Array.isArray(children)) {
+      safeChildren = children.join(' ');
+    } else if (typeof children === 'object') {
+      safeChildren = safeValue || 'Object';
+    } else if (typeof children === 'function') {
+      safeChildren = safeValue || 'Function';
     } else {
-      safeChildren = String(children || 'Item');
+      safeChildren = String(children);
     }
-    
-    // Clean up any problematic characters
-    safeChildren = safeChildren.replace(/[^\w\s\-\(\)\.\,]/g, '');
-    
+
+    // Aggressive text cleaning
+    safeChildren = safeChildren
+      .replace(/\[object Object\]/g, 'Object')
+      .replace(/\[object.*?\]/g, 'Item')
+      .replace(/function.*?\{.*?\}/g, 'Function')
+      .replace(/[^\w\s\-\(\)\.\,\:]/g, '')
+      .trim();
+
+    // Ensure we have some content
+    if (!safeChildren || safeChildren.length === 0) {
+      safeChildren = safeValue || 'Item';
+    }
+
+    // Final safety check
+    if (safeChildren.includes('[object') || safeChildren.includes('function')) {
+      safeChildren = 'Safe Item';
+    }
+
     return (
       <SelectItem value={safeValue} disabled={disabled}>
         {safeChildren}
       </SelectItem>
     );
   } catch (error) {
-    // Fallback rendering
+    // Ultra-safe fallback
+    console.warn('SafeSelectItem error:', error);
+
     return (
-      <SelectItem value={String(value || 'error')} disabled>
-        Error: {String(value || 'Unknown')}
+      <SelectItem value="fallback" disabled>
+        Safe Item
       </SelectItem>
     );
   }
