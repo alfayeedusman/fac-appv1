@@ -107,6 +107,19 @@ export default function ImageUploadManager({
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
+        const base64Result = e.target?.result as string;
+
+        // Validate the base64 data
+        if (!base64Result || typeof base64Result !== 'string' || !base64Result.startsWith('data:image/')) {
+          toast({
+            title: "Invalid Image Data",
+            description: "The selected file could not be processed as an image",
+            variant: "destructive",
+          });
+          setIsUploading(false);
+          return;
+        }
+
         const imageData: ImageAttachment = {
           id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           bookingId: bookingId || '',
@@ -115,7 +128,7 @@ export default function ImageUploadManager({
           originalName: file.name,
           mimeType: file.type,
           size: file.size,
-          base64Data: e.target?.result as string,
+          base64Data: base64Result,
           uploadedBy: currentUser?.id || 'unknown',
           uploadedAt: new Date().toISOString(),
           description: description.trim(),
