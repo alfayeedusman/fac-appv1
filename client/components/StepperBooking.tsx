@@ -785,7 +785,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
               {/* Step Content */}
               <div className="w-full max-w-4xl">
-                <div className="w-full overflow-hidden">
+                <div className="w-full overflow-hidden pb-4">
                   {renderStepContent()}
                 </div>
               </div>
