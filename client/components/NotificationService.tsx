@@ -91,7 +91,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings[] = [
     description: 'Alert for crew assignments and updates',
     enabled: true,
     soundEnabled: true,
-    soundFile: '/sounds/crew-update.mp3',
+    soundFile: 'synthesized', // Web Audio API synthesis
     volume: 60,
     priority: 'medium',
     targetRoles: ['admin', 'superadmin', 'manager']
@@ -103,7 +103,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings[] = [
     description: 'Alert when payment is received',
     enabled: true,
     soundEnabled: true,
-    soundFile: '/sounds/payment.mp3',
+    soundFile: 'synthesized', // Web Audio API synthesis
     volume: 80,
     priority: 'high',
     targetRoles: ['admin', 'superadmin', 'manager', 'cashier']
@@ -115,7 +115,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings[] = [
     description: 'Critical system notifications',
     enabled: true,
     soundEnabled: true,
-    soundFile: '/sounds/system-alert.mp3',
+    soundFile: 'synthesized', // Web Audio API synthesis
     volume: 90,
     priority: 'urgent',
     targetRoles: ['admin', 'superadmin']
