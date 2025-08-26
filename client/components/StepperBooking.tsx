@@ -684,15 +684,15 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-4 md:p-6 lg:p-8">
+            <div className="p-3 sm:p-4 md:p-6 lg:p-8">
               {/* Mobile Sidebar Toggle */}
-              <div className="lg:hidden mb-4 md:mb-6">
+              <div className="lg:hidden mb-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowSidebar(true)}
-                  className="w-full sm:w-auto glass border-fac-orange-200 hover:bg-fac-orange-50"
+                  className="w-full h-12 text-base font-medium glass border-fac-orange-200 hover:bg-fac-orange-50 rounded-xl active:scale-95 transition-all duration-200"
                 >
-                  <Menu className="h-4 w-4 mr-2" />
+                  <Menu className="h-5 w-5 mr-2" />
                   View Booking Summary
                 </Button>
               </div>
