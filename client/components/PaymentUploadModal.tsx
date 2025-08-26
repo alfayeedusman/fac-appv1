@@ -49,6 +49,7 @@ export default function PaymentUploadModal({
   });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const receiptObjectUrlRef = React.useRef<string | null>(null);
 
   const paymentMethods = [
     { value: "gcash", label: "GCash" },
