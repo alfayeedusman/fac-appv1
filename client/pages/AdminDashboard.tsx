@@ -861,7 +861,7 @@ export default function AdminDashboard() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleRejectCustomer(
-                                              notification.id,
+                                              notificationId,
                                             );
                                           }}
                                         >
