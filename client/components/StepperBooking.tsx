@@ -1396,11 +1396,81 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
         </div>
         <div>
           <Label className="text-foreground font-semibold">Address *</Label>
+
+          {/* Address Options */}
+          <div className="mt-2 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const defaultAddress = "123 Sample Street, Barangay Example, Manila City, Metro Manila";
+                updateBookingData("address", defaultAddress);
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Use Default
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      // In a real app, you'd reverse geocode these coordinates
+                      const { latitude, longitude } = position.coords;
+                      const locationAddress = `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                      updateBookingData("address", locationAddress);
+                      toast({
+                        title: "Location Retrieved",
+                        description: "Your current location has been set as the address.",
+                      });
+                    },
+                    (error) => {
+                      toast({
+                        title: "Location Error",
+                        description: "Unable to get your current location. Please enter manually.",
+                        variant: "destructive",
+                      });
+                    }
+                  );
+                } else {
+                  toast({
+                    title: "Not Supported",
+                    description: "Geolocation is not supported by this browser.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Current Location
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                updateBookingData("address", "");
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <User className="h-3 w-3 mr-1" />
+              Custom Address
+            </Button>
+          </div>
+
           <Textarea
             value={bookingData.address}
             onChange={(e) => updateBookingData("address", e.target.value)}
             placeholder="Enter your complete address (street, barangay, city, province)"
-            className={`mt-1 ${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+            className={`${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
             rows={3}
             required
           />
@@ -1410,6 +1480,9 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
               {!bookingData.address.trim() ? 'Address is required' : 'Please provide a complete address'}
             </p>
           )}
+          <p className="text-xs text-muted-foreground mt-1">
+            💡 Use the buttons above for quick address entry, or type your custom address
+          </p>
         </div>
       </CardContent>
     </Card>
