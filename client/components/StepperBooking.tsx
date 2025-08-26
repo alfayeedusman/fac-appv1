@@ -1365,14 +1365,23 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
             )}
           </div>
           <div>
-            <Label className="text-foreground font-semibold">Email</Label>
+            <Label className="text-foreground font-semibold">
+              Email {isGuest && <span className="text-red-500">*</span>}
+            </Label>
             <Input
               type="email"
               value={bookingData.email}
               onChange={(e) => updateBookingData("email", e.target.value)}
               placeholder="your.email@example.com"
-              className="mt-1"
+              className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? 'border-red-500 focus:border-red-500' : ''}`}
+              required={isGuest}
             />
+            {((isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {isGuest && !bookingData.email.trim() ? 'Email is required for guest bookings' : 'Please enter a valid email address'}
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-foreground font-semibold">Plate Number</Label>
