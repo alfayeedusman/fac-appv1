@@ -830,15 +830,15 @@ export default function AdminDashboard() {
                                   </p>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-muted-foreground">
-                                      {formatDistanceToNow(
+                                      {notification?.timestamp ? formatDistanceToNow(
                                         notification.timestamp,
                                         {
                                           addSuffix: true,
                                         },
-                                      )}
+                                      ) : 'Unknown time'}
                                     </span>
-                                    {(notification.type === "new_customer" ||
-                                      notification.type ===
+                                    {(notificationType === "new_customer" ||
+                                      notificationType ===
                                         "approval_request") && (
                                       <div className="flex gap-2">
                                         <Button
@@ -847,7 +847,7 @@ export default function AdminDashboard() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleApproveCustomer(
-                                              notification.id,
+                                              notificationId,
                                             );
                                           }}
                                         >
