@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,13 +30,16 @@ import {
   Search,
   Package,
   User,
+  Phone,
   Calculator,
   Receipt,
   Scan,
+  Star,
+  Car,
+  Bike,
   X,
   Maximize,
   Users,
-  Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProducts, Product } from "@/utils/inventoryData";
@@ -45,12 +48,26 @@ import {
   createPOSTransaction,
   getPOSCategories,
 } from "@/utils/posData";
+import {
+  getCarWashServices,
+  vehicleTypes,
+  motorcycleSubtypes,
+  calculateServicePrice,
+  CarWashService,
+} from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
+import { getPrintingService, ReceiptData } from "@/utils/printingService";
 
 export default function POSKiosk() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
+  const [showServiceSelector, setShowServiceSelector] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState({
+    type: "",
+    motorcycleSubtype: "",
+  });
   const [cartItems, setCartItems] = useState<POSItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -67,200 +84,200 @@ export default function POSKiosk() {
   });
 
   const categories = getPOSCategories();
-  const cashierName = localStorage.getItem("userName") || "Cashier";
-  const cashierId = localStorage.getItem("userEmail") || "cashier@fac.com";
-
-  // Keyboard shortcut to exit kiosk mode
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if (event.ctrlKey && event.shiftKey && event.key === "Q") {
-      setShowExitModal(true);
-    }
-  }, []);
+  const cashierName = localStorage.getItem("userEmail") || "Cashier";
 
   useEffect(() => {
-    // Enter fullscreen mode
-    document.documentElement.requestFullscreen?.();
-
-    // Add keyboard event listener
-    document.addEventListener("keydown", handleKeyPress);
-
-    // Load products
-    const allProducts = getProducts().filter((p) => p.status === "active");
-    setProducts(allProducts);
-    setFilteredProducts(allProducts);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-      // Exit fullscreen when component unmounts
-      if (document.fullscreenElement) {
-        document.exitFullscreen?.();
-      }
+    const loadData = async () => {
+      const productsData = await getProducts();
+      const servicesData = await getCarWashServices();
+      setProducts(productsData);
+      setCarWashServices(servicesData);
     };
-  }, [handleKeyPress]);
+    loadData();
+  }, []);
 
   useEffect(() => {
     let filtered = products;
 
+    if (selectedCategory !== "all") {
+      filtered = products.filter((product) => product.category === selectedCategory);
+    }
+
     if (searchQuery) {
       filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.barcode?.includes(searchQuery),
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-
     setFilteredProducts(filtered);
-  }, [searchQuery, selectedCategory, products]);
+  }, [products, selectedCategory, searchQuery]);
 
-  const exitKioskMode = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen?.();
-    }
-    navigate("/admin-dashboard");
-  };
+  // Exit kiosk keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'Q') {
+        event.preventDefault();
+        setShowExitModal(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const addToCart = (product: Product) => {
-    const existingItem = cartItems.find(
-      (item) => item.productId === product.id,
-    );
-
+    const existingItem = cartItems.find((item) => item.productId === product.id);
     if (existingItem) {
-      if (existingItem.quantity >= product.currentStock) {
-        notificationManager.error(
-          "Insufficient Stock",
-          `Only ${product.currentStock} units available`,
-        );
-        return;
-      }
-      updateCartItemQuantity(product.id, existingItem.quantity + 1);
+      updateQuantity(existingItem.productId, existingItem.quantity + 1);
     } else {
-      if (product.currentStock === 0) {
-        notificationManager.error(
-          "Out of Stock",
-          "This product is unavailable",
-        );
-        return;
-      }
-
       const newItem: POSItem = {
         productId: product.id,
         productName: product.name,
-        sku: product.sku,
-        unitPrice: product.unitPrice,
         quantity: 1,
-        subtotal: product.unitPrice,
+        unitPrice: product.price,
+        subtotal: product.price,
+        category: product.category,
+        sku: product.sku,
       };
       setCartItems([...cartItems, newItem]);
     }
   };
 
-  const updateCartItemQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity === 0) {
+  const addServiceToCart = (service: CarWashService) => {
+    if (!selectedVehicle.type) {
+      notificationManager.error("Please select a vehicle type first");
+      return;
+    }
+
+    const price = calculateServicePrice(service, selectedVehicle);
+    const serviceDisplayName = `${service.name} - ${
+      vehicleTypes.find((v) => v.id === selectedVehicle.type)?.name || selectedVehicle.type
+    }`;
+
+    const newItem: POSItem = {
+      productId: `service_${service.id}_${selectedVehicle.type}`,
+      productName: serviceDisplayName,
+      quantity: 1,
+      unitPrice: price,
+      subtotal: price,
+      category: "car_wash_services",
+      sku: `SVC-${service.id.toUpperCase()}`,
+    };
+
+    setCartItems([...cartItems, newItem]);
+    setShowServiceSelector(false);
+    setSelectedVehicle({ type: "", motorcycleSubtype: "" });
+  };
+
+  const updateQuantity = (productId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
 
-    const product = products.find((p) => p.id === productId);
-    if (!product) return;
-
-    if (newQuantity > product.currentStock) {
-      notificationManager.error(
-        "Insufficient Stock",
-        `Only ${product.currentStock} units available`,
-      );
-      return;
-    }
-
-    setCartItems((items) =>
-      items.map((item) =>
+    setCartItems(
+      cartItems.map((item) =>
         item.productId === productId
           ? {
               ...item,
               quantity: newQuantity,
               subtotal: item.unitPrice * newQuantity,
             }
-          : item,
-      ),
+          : item
+      )
     );
   };
 
   const removeFromCart = (productId: string) => {
-    setCartItems((items) =>
-      items.filter((item) => item.productId !== productId),
-    );
+    setCartItems(cartItems.filter((item) => item.productId !== productId));
   };
 
   const clearCart = () => {
     setCartItems([]);
   };
 
-  const getCartTotal = () => {
-    const subtotal = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
-    const tax = subtotal * 0.12; // 12% VAT
-    return {
-      subtotal,
-      tax,
-      total: subtotal + tax,
-    };
-  };
+  const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const amountPaid = parseFloat(paymentInfo.amountPaid) || 0;
+  const change = paymentInfo.method === "cash" ? Math.max(0, amountPaid - total) : 0;
 
   const handlePayment = async () => {
-    if (cartItems.length === 0) {
-      notificationManager.error("Empty Cart", "Please add items to cart");
+    if (!customerInfo.uniqueId.trim()) {
+      notificationManager.error("Customer ID is required");
       return;
     }
-
-    if (paymentInfo.method === "cash" && !paymentInfo.amountPaid) {
-      notificationManager.error(
-        "Amount Required",
-        "Please enter amount paid for cash payment",
-      );
-      return;
-    }
-
-    const amountPaid = parseFloat(paymentInfo.amountPaid);
-    const total = getCartTotal().total;
 
     if (paymentInfo.method === "cash" && amountPaid < total) {
-      notificationManager.error(
-        "Insufficient Payment",
-        "Amount paid is less than total",
-      );
+      notificationManager.error("Insufficient payment amount");
+      return;
+    }
+
+    if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") && !paymentInfo.referenceNumber.trim()) {
+      notificationManager.error("Reference number is required for this payment method");
       return;
     }
 
     try {
-      const transaction = createPOSTransaction(
-        cashierId,
-        cashierName,
-        cartItems,
-        customerInfo.uniqueId || customerInfo.name
-          ? {
-              name: customerInfo.name,
-              phone: customerInfo.uniqueId, // Using uniqueId in phone field for tracking
-            }
-          : undefined,
-        {
-          method: paymentInfo.method,
-          amountPaid: paymentInfo.method === "cash" ? amountPaid : undefined,
-          referenceNumber: paymentInfo.referenceNumber || undefined,
-        },
-      );
+      const transaction = createPOSTransaction({
+        items: cartItems,
+        total,
+        paymentMethod: paymentInfo.method,
+        amountPaid: paymentInfo.method === "cash" ? amountPaid : total,
+        changeGiven: change,
+        customerId: customerInfo.uniqueId,
+        customerName: customerInfo.name,
+        cashierId: localStorage.getItem("userEmail") || "unknown",
+        cashierName: cashierName,
+        referenceNumber: paymentInfo.referenceNumber || undefined,
+      });
 
       notificationManager.success(
-        "Transaction Completed! 🎉",
-        `Transaction ${transaction.transactionNumber} completed successfully.\n\nTotal: ₱${total.toFixed(2)}\n${
-          paymentInfo.method === "cash"
-            ? `Amount Paid: ₱${amountPaid.toFixed(2)}\nChange: ₱${(amountPaid - total).toFixed(2)}`
-            : `Payment Method: ${paymentInfo.method.toUpperCase()}`
-        }${customerInfo.uniqueId ? `\nCustomer ID: ${customerInfo.uniqueId}` : ""}`,
-        { autoClose: 6000 },
+        "Payment Processed",
+        `Transaction #${transaction.transactionNumber} completed successfully`
       );
+
+      // Print receipt (same as POS page)
+      try {
+        const receiptData: ReceiptData = {
+          transactionNumber: transaction.transactionNumber,
+          cashierName: cashierName,
+          customerName: customerInfo.name || undefined,
+          customerPhone: customerInfo.uniqueId || undefined,
+          timestamp: transaction.timestamp,
+          items: cartItems.map((item) => ({
+            name: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+          })),
+          subtotal: total - total * 0.12,
+          discountAmount: 0,
+          taxAmount: total * 0.12,
+          totalAmount: total,
+          paymentMethod: paymentInfo.method,
+          amountPaid: paymentInfo.method === "cash" ? amountPaid : undefined,
+          changeGiven: paymentInfo.method === "cash" ? amountPaid - total : undefined,
+          referenceNumber: paymentInfo.referenceNumber || undefined,
+        };
+
+        const printingService = getPrintingService();
+        await printingService.printReceipt(receiptData);
+
+        notificationManager.success(
+          "Receipt Printed",
+          "Receipt has been sent to printer",
+          { autoClose: 3000 }
+        );
+      } catch (printError) {
+        console.error("Print failed:", printError);
+        notificationManager.error(
+          "Print Failed",
+          "Receipt could not be printed. Transaction was still completed successfully.",
+          { autoClose: 5000 }
+        );
+      }
 
       // Reset form
       clearCart();
@@ -276,33 +293,32 @@ export default function POSKiosk() {
     }
   };
 
+  const exitKiosk = () => {
+    navigate("/admin-dashboard");
+  };
+
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
-      {/* Header */}
-      <div className="bg-black/20 backdrop-blur-md border-b border-white/10 px-8 py-4">
+    <div className="space-y-6">
+      {/* Kiosk Header */}
+      <div className="bg-card border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-xl">
               <CreditCard className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white">FAC KIOSK POS</h1>
-              <p className="text-orange-300 font-medium">
-                Cashier: {cashierName}
-              </p>
+              <h1 className="text-2xl font-black text-foreground">FAC KIOSK POS</h1>
+              <p className="text-orange-500 font-medium">Cashier: {cashierName}</p>
             </div>
           </div>
-
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <div className="text-xs text-gray-300">
-                Press Ctrl+Shift+Q to exit
-              </div>
+              <div className="text-xs text-muted-foreground">Press Ctrl+Shift+Q to exit</div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowExitModal(true)}
-                className="border-red-500 text-red-400 hover:bg-red-500 hover:text-white"
+                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
               >
                 <X className="h-4 w-4 mr-2" />
                 Exit Kiosk
@@ -312,55 +328,60 @@ export default function POSKiosk() {
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-88px)]">
+      <div className="flex flex-col lg:flex-row min-h-[500px]">
         {/* Products Section */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
           {/* Search and Filters */}
-          <div className="mb-6 space-y-4">
-            <div className="flex gap-4">
+          <div className="mb-4 lg:mb-6 space-y-3 lg:space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search products by name, SKU, or barcode..."
+                  placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  className="pl-10 text-sm lg:text-base"
                 />
               </div>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <Scan className="h-5 w-5" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowServiceSelector(true)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm px-2 sm:px-4 lg:px-6"
+                  size="sm"
+                >
+                  <Car className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Car Wash</span>
+                  <span className="sm:hidden">Services</span>
+                </Button>
+                <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                  <Scan className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Category Filter */}
-            <div className="flex gap-3 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto">
               <Button
                 variant={selectedCategory === "all" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("all")}
-                className={`whitespace-nowrap h-12 ${
-                  selectedCategory === "all"
-                    ? "bg-orange-500 hover:bg-orange-600"
-                    : "border-white/20 text-white hover:bg-white/10"
-                }`}
+                className="whitespace-nowrap"
               >
                 All Products
+              </Button>
+              <Button
+                variant={selectedCategory === "car_wash_services" ? "default" : "outline"}
+                onClick={() => setSelectedCategory("car_wash_services")}
+                className="whitespace-nowrap"
+              >
+                <Car className="h-4 w-4 mr-2" />
+                Car Wash Services
               </Button>
               {categories.map((category) => (
                 <Button
                   key={category.id}
-                  variant={
-                    selectedCategory === category.id ? "default" : "outline"
-                  }
+                  variant={selectedCategory === category.id ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`whitespace-nowrap h-12 ${
-                    selectedCategory === category.id
-                      ? "bg-orange-500 hover:bg-orange-600"
-                      : "border-white/20 text-white hover:bg-white/10"
-                  }`}
+                  className="whitespace-nowrap"
                 >
                   {category.icon} {category.name}
                 </Button>
@@ -369,329 +390,262 @@ export default function POSKiosk() {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
             {filteredProducts.map((product) => (
               <Card
                 key={product.id}
-                className="cursor-pointer hover:shadow-xl transition-all duration-300 bg-white/10 border-white/20 hover:bg-white/20 backdrop-blur-md"
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 group"
                 onClick={() => addToCart(product)}
               >
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-white/20 rounded-lg mb-3 flex items-center justify-center">
-                    <Package className="h-12 w-12 text-orange-300" />
+                <CardContent className="p-3 lg:p-4">
+                  <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                    <Package className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
                   </div>
-                  <h3 className="font-bold text-white mb-1 line-clamp-2 text-sm">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-gray-300 mb-2">{product.sku}</p>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-black text-orange-400 text-lg">
-                      ₱{product.unitPrice.toFixed(2)}
-                    </span>
-                    <Badge
-                      variant={
-                        product.currentStock <= product.minStockLevel
-                          ? "destructive"
-                          : "secondary"
-                      }
-                      className="text-xs"
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-xs sm:text-sm line-clamp-2 group-hover:text-orange-600 transition-colors">
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-orange-600">
+                        ₱{product.price.toFixed(2)}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {product.stock}
+                      </Badge>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product);
+                      }}
                     >
-                      {product.currentStock}
-                    </Badge>
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                    disabled={product.currentStock === 0}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
-
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-20">
-              <Package className="h-20 w-20 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400 text-xl">No products found</p>
-            </div>
-          )}
         </div>
 
         {/* Cart Section */}
-        <div className="w-96 border-l border-white/20 bg-black/20 backdrop-blur-md p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold flex items-center text-white">
-              <ShoppingCart className="h-6 w-6 mr-2" />
-              Cart ({cartItems.length})
-            </h2>
-            {cartItems.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearCart}
-                className="border-red-500 text-red-400 hover:bg-red-500 hover:text-white"
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Clear
-              </Button>
-            )}
-          </div>
+        <div className="w-full lg:w-96 border-l border-border bg-muted/50 p-4 lg:p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold flex items-center">
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Cart ({cartItems.length})
+              </h2>
+              {cartItems.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearCart}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
 
-          {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto mb-6">
+            <Separator />
+
             {cartItems.length === 0 ? (
-              <div className="text-center py-20">
-                <ShoppingCart className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400">Cart is empty</p>
+              <div className="text-center py-8 text-muted-foreground">
+                <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Your cart is empty</p>
+                <p className="text-sm">Add products to start</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-64 overflow-y-auto">
                 {cartItems.map((item) => (
-                  <Card
-                    key={item.productId}
-                    className="bg-white/10 border-white/20"
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-white text-sm line-clamp-2">
-                            {item.productName}
-                          </h4>
-                          <p className="text-xs text-gray-300">{item.sku}</p>
-                        </div>
+                  <Card key={item.productId} className="p-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-sm line-clamp-2">
+                          {item.productName}
+                        </h4>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFromCart(item.productId)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                          className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
+                      
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              updateCartItemQuantity(
-                                item.productId,
-                                item.quantity - 1,
-                              )
-                            }
-                            className="h-8 w-8 p-0 border-white/20 text-white hover:bg-white/10"
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                            className="h-6 w-6 p-0"
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="w-8 text-center text-white font-bold">
+                          <span className="text-sm font-medium w-8 text-center">
                             {item.quantity}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              updateCartItemQuantity(
-                                item.productId,
-                                item.quantity + 1,
-                              )
-                            }
-                            className="h-8 w-8 p-0 border-white/20 text-white hover:bg-white/10"
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            className="h-6 w-6 p-0"
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
+                        
                         <div className="text-right">
-                          <p className="text-xs text-gray-300">
+                          <div className="text-sm text-muted-foreground">
                             ₱{item.unitPrice.toFixed(2)} each
-                          </p>
-                          <p className="font-bold text-orange-400">
+                          </div>
+                          <div className="font-bold text-orange-600">
                             ₱{item.subtotal.toFixed(2)}
-                          </p>
+                          </div>
                         </div>
                       </div>
-                    </CardContent>
+                    </div>
                   </Card>
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Cart Summary */}
-          {cartItems.length > 0 && (
-            <div className="space-y-4">
-              <Separator className="bg-white/20" />
-              <div className="space-y-2">
-                <div className="flex justify-between text-white">
-                  <span>Subtotal:</span>
-                  <span>₱{getCartTotal().subtotal.toFixed(2)}</span>
+            {cartItems.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total:</span>
+                    <span className="text-orange-600">₱{total.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-white">
-                  <span>VAT (12%):</span>
-                  <span>₱{getCartTotal().tax.toFixed(2)}</span>
-                </div>
-                <Separator className="bg-white/20" />
-                <div className="flex justify-between font-bold text-xl">
-                  <span className="text-white">Total:</span>
-                  <span className="text-orange-400">
-                    ₱{getCartTotal().total.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-              <Button
-                className="w-full h-16 text-xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                onClick={() => setShowPaymentModal(true)}
-              >
-                <CreditCard className="h-6 w-6 mr-3" />
-                PROCESS PAYMENT
-              </Button>
-            </div>
-          )}
+                
+                <Button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
+                  size="lg"
+                >
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  Process Payment
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="sm:max-w-lg bg-slate-900 border-white/20 text-white">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center text-xl">
-              <Receipt className="h-6 w-6 mr-2 text-orange-500" />
-              Process Payment
-            </DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Complete the transaction details
+            <DialogTitle>Process Payment</DialogTitle>
+            <DialogDescription>
+              Complete the transaction with customer and payment details
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Customer Information */}
-            <div className="space-y-4">
-              <h4 className="font-medium flex items-center text-white">
-                <Users className="h-5 w-5 mr-2 text-orange-500" />
-                Customer Information (Optional)
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="customerId" className="text-white">
-                    Unique Customer ID
-                  </Label>
-                  <Input
-                    id="customerId"
-                    placeholder="C001234"
-                    value={customerInfo.uniqueId}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        uniqueId: e.target.value,
-                      })
-                    }
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="customerName" className="text-white">
-                    Customer Name
-                  </Label>
-                  <Input
-                    id="customerName"
-                    placeholder="John Doe"
-                    value={customerInfo.name}
-                    onChange={(e) =>
-                      setCustomerInfo({ ...customerInfo, name: e.target.value })
-                    }
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="customer-id">Customer ID/Phone *</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="customer-id"
+                  placeholder="Enter customer ID or phone number"
+                  value={customerInfo.uniqueId}
+                  onChange={(e) =>
+                    setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })
+                  }
+                  className="pl-10"
+                />
               </div>
-              {customerInfo.uniqueId && (
-                <div className="flex items-center text-sm text-orange-300">
-                  <Star className="h-4 w-4 mr-1" />
-                  Points will be tracked for this customer
-                </div>
-              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer-name">Customer Name (Optional)</Label>
+              <Input
+                id="customer-name"
+                placeholder="Enter customer name"
+                value={customerInfo.name}
+                onChange={(e) =>
+                  setCustomerInfo({ ...customerInfo, name: e.target.value })
+                }
+              />
             </div>
 
             {/* Payment Method */}
-            <div className="space-y-4">
-              <h4 className="font-medium text-white">Payment Method</h4>
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
               <Select
                 value={paymentInfo.method}
-                onValueChange={(value: any) =>
+                onValueChange={(value: "cash" | "gcash" | "card") =>
                   setPaymentInfo({ ...paymentInfo, method: value })
                 }
               >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-white/20">
+                <SelectContent>
                   <SelectItem value="cash">Cash</SelectItem>
                   <SelectItem value="gcash">GCash</SelectItem>
                   <SelectItem value="card">Credit/Debit Card</SelectItem>
-                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
 
-              {paymentInfo.method === "cash" && (
-                <div>
-                  <Label htmlFor="amountPaid" className="text-white">
-                    Amount Paid
-                  </Label>
+            {/* Amount Paid (for cash) */}
+            {paymentInfo.method === "cash" && (
+              <div className="space-y-2">
+                <Label htmlFor="amount-paid">Amount Paid</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="amountPaid"
+                    id="amount-paid"
                     type="number"
+                    step="0.01"
                     placeholder="0.00"
                     value={paymentInfo.amountPaid}
                     onChange={(e) =>
-                      setPaymentInfo({
-                        ...paymentInfo,
-                        amountPaid: e.target.value,
-                      })
+                      setPaymentInfo({ ...paymentInfo, amountPaid: e.target.value })
                     }
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                  {paymentInfo.amountPaid && (
-                    <p className="text-sm text-orange-300 mt-1">
-                      Change: ₱
-                      {Math.max(
-                        0,
-                        parseFloat(paymentInfo.amountPaid) -
-                          getCartTotal().total,
-                      ).toFixed(2)}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {paymentInfo.method !== "cash" && (
-                <div>
-                  <Label htmlFor="referenceNumber" className="text-white">
-                    Reference Number
-                  </Label>
-                  <Input
-                    id="referenceNumber"
-                    placeholder="Transaction reference"
-                    value={paymentInfo.referenceNumber}
-                    onChange={(e) =>
-                      setPaymentInfo({
-                        ...paymentInfo,
-                        referenceNumber: e.target.value,
-                      })
-                    }
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                    className="pl-10"
                   />
                 </div>
-              )}
-            </div>
+                {change > 0 && (
+                  <div className="text-sm text-green-600 font-medium">
+                    Change: ₱{change.toFixed(2)}
+                  </div>
+                )}
+              </div>
+            )}
 
-            {/* Order Summary */}
-            <div className="bg-orange-500/20 p-4 rounded-lg border border-orange-500/30">
-              <div className="flex justify-between items-center font-bold text-2xl">
-                <span className="text-white">Total Amount:</span>
-                <span className="text-orange-400">
-                  ₱{getCartTotal().total.toFixed(2)}
-                </span>
+            {/* Reference Number (for digital payments) */}
+            {(paymentInfo.method === "gcash" || paymentInfo.method === "card") && (
+              <div className="space-y-2">
+                <Label htmlFor="reference-number">Reference Number *</Label>
+                <Input
+                  id="reference-number"
+                  placeholder="Enter reference/confirmation number"
+                  value={paymentInfo.referenceNumber}
+                  onChange={(e) =>
+                    setPaymentInfo({ ...paymentInfo, referenceNumber: e.target.value })
+                  }
+                />
+              </div>
+            )}
+
+            {/* Total Display */}
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="flex justify-between items-center text-lg font-bold">
+                <span>Total Amount:</span>
+                <span className="text-orange-600">₱{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -700,45 +654,182 @@ export default function POSKiosk() {
             <Button
               variant="outline"
               onClick={() => setShowPaymentModal(false)}
-              className="border-white/20 text-white hover:bg-white/10"
             >
               Cancel
             </Button>
-            <Button
-              onClick={handlePayment}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-            >
-              <DollarSign className="h-5 w-5 mr-2" />
+            <Button onClick={handlePayment}>
+              <DollarSign className="h-4 w-4 mr-2" />
               Complete Payment
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Exit Confirmation Modal */}
-      <Dialog open={showExitModal} onOpenChange={setShowExitModal}>
-        <DialogContent className="sm:max-w-md bg-slate-900 border-white/20 text-white">
+      {/* Car Wash Service Selector Modal */}
+      <Dialog open={showServiceSelector} onOpenChange={setShowServiceSelector}>
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="text-xl text-red-400">
-              Exit Kiosk Mode?
+            <DialogTitle className="text-xl">
+              Select Car Wash Service
             </DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Are you sure you want to exit kiosk mode? Any pending transactions
-              will be lost.
+            <DialogDescription>
+              Choose a service and vehicle type for accurate pricing
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Vehicle Type Selection */}
+            <div className="space-y-4">
+              <h4 className="font-medium">Select Vehicle Type</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {vehicleTypes.map((vehicleType) => (
+                  <Button
+                    key={vehicleType.id}
+                    variant={
+                      selectedVehicle.type === vehicleType.id
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() =>
+                      setSelectedVehicle({
+                        ...selectedVehicle,
+                        type: vehicleType.id,
+                        motorcycleSubtype:
+                          vehicleType.category === "motorcycle" ? "small" : "",
+                      })
+                    }
+                    className={`h-12 ${
+                      selectedVehicle.type === vehicleType.id
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : ""
+                    }`}
+                  >
+                    {vehicleType.category === "car" ? (
+                      <Car className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Bike className="h-4 w-4 mr-2" />
+                    )}
+                    {vehicleType.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Motorcycle Subtype (if motorcycle selected) */}
+            {selectedVehicle.type &&
+              vehicleTypes.find((v) => v.id === selectedVehicle.type)?.category === "motorcycle" && (
+                <div className="space-y-4">
+                  <h4 className="font-medium">Select Motorcycle Size</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {motorcycleSubtypes.map((subtype) => (
+                      <Button
+                        key={subtype.id}
+                        variant={
+                          selectedVehicle.motorcycleSubtype === subtype.id
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={() =>
+                          setSelectedVehicle({
+                            ...selectedVehicle,
+                            motorcycleSubtype: subtype.id,
+                          })
+                        }
+                        className={`h-12 ${
+                          selectedVehicle.motorcycleSubtype === subtype.id
+                            ? "bg-orange-500 hover:bg-orange-600"
+                            : ""
+                        }`}
+                      >
+                        {subtype.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* Services List */}
+            {selectedVehicle.type && (
+              <div className="space-y-4">
+                <h4 className="font-medium">Available Services</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                  {carWashServices.map((service) => {
+                    const price = calculateServicePrice(service, selectedVehicle);
+                    return (
+                      <Card
+                        key={service.id}
+                        className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                        onClick={() => addServiceToCart(service)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <h5 className="font-medium">{service.name}</h5>
+                              <Badge variant="secondary">
+                                {service.estimatedTime} min
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {service.description}
+                            </p>
+                            <div className="flex justify-between items-center">
+                              <span className="text-lg font-bold text-orange-600">
+                                ₱{price.toFixed(2)}
+                              </span>
+                              <Button
+                                size="sm"
+                                className="bg-orange-500 hover:bg-orange-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addServiceToCart(service);
+                                }}
+                              >
+                                Add Service
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowServiceSelector(false);
+                setSelectedVehicle({ type: "", motorcycleSubtype: "" });
+              }}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exit Kiosk Confirmation Modal */}
+      <Dialog open={showExitModal} onOpenChange={setShowExitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Exit Kiosk Mode</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to exit kiosk mode and return to the admin dashboard?
+            </DialogDescription>
+          </DialogHeader>
+
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowExitModal(false)}
-              className="border-white/20 text-white hover:bg-white/10"
             >
               Cancel
             </Button>
-            <Button
-              onClick={exitKioskMode}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <Button onClick={exitKiosk} className="bg-red-500 hover:bg-red-600">
+              <X className="h-4 w-4 mr-2" />
               Exit Kiosk
             </Button>
           </DialogFooter>
