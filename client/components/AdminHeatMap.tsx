@@ -540,9 +540,9 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="crew">Crew Only</SelectItem>
-                <SelectItem value="customers">Customers Only</SelectItem>
+                <SafeSelectItem value="all">All Types</SafeSelectItem>
+                <SafeSelectItem value="crew">Crew Only</SafeSelectItem>
+                <SafeSelectItem value="customers">Customers Only</SafeSelectItem>
               </SelectContent>
             </Select>
 
@@ -551,11 +551,11 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="offline">Offline</SelectItem>
-                <SelectItem value="busy">Busy</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
+                <SafeSelectItem value="all">All Status</SafeSelectItem>
+                <SafeSelectItem value="online">Online</SafeSelectItem>
+                <SafeSelectItem value="offline">Offline</SafeSelectItem>
+                <SafeSelectItem value="busy">Busy</SafeSelectItem>
+                <SafeSelectItem value="available">Available</SafeSelectItem>
               </SelectContent>
             </Select>
 
@@ -564,7 +564,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                 <SelectValue placeholder="All Groups" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Groups</SelectItem>
+                <SafeSelectItem value="">All Groups</SafeSelectItem>
                 {crewGroups.map(group => (
                   <SafeSelectItem
                     key={group.id}
@@ -583,12 +583,12 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectValue placeholder="All Ranks" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Ranks</SelectItem>
-                    <SelectItem value="champion">🏆 Champions</SelectItem>
-                    <SelectItem value="vip">👑 VIP</SelectItem>
-                    <SelectItem value="loyal">💎 Loyal</SelectItem>
-                    <SelectItem value="regular">⭐ Regular</SelectItem>
-                    <SelectItem value="new">🆕 New</SelectItem>
+                    <SafeSelectItem value="all">All Ranks</SafeSelectItem>
+                    <SafeSelectItem value="champion">Champions</SafeSelectItem>
+                    <SafeSelectItem value="vip">VIP</SafeSelectItem>
+                    <SafeSelectItem value="loyal">Loyal</SafeSelectItem>
+                    <SafeSelectItem value="regular">Regular</SafeSelectItem>
+                    <SafeSelectItem value="new">New</SafeSelectItem>
                   </SelectContent>
                 </Select>
 
@@ -597,11 +597,11 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectValue placeholder="All Tiers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Tiers</SelectItem>
-                    <SelectItem value="platinum">🥇 Platinum</SelectItem>
-                    <SelectItem value="gold">🥇 Gold</SelectItem>
-                    <SelectItem value="silver">🥉 Silver</SelectItem>
-                    <SelectItem value="bronze">🎖️ Bronze</SelectItem>
+                    <SafeSelectItem value="all">All Tiers</SafeSelectItem>
+                    <SafeSelectItem value="platinum">Platinum</SafeSelectItem>
+                    <SafeSelectItem value="gold">Gold</SafeSelectItem>
+                    <SafeSelectItem value="silver">Silver</SafeSelectItem>
+                    <SafeSelectItem value="bronze">Bronze</SafeSelectItem>
                   </SelectContent>
                 </Select>
 
@@ -610,11 +610,11 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                     <SelectValue placeholder="Frequency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Frequency</SelectItem>
-                    <SelectItem value="vip">🔥 VIP (50+ visits)</SelectItem>
-                    <SelectItem value="high">📈 High (25+ visits)</SelectItem>
-                    <SelectItem value="medium">📊 Medium (10+ visits)</SelectItem>
-                    <SelectItem value="low">📉 Low (under 10 visits)</SelectItem>
+                    <SafeSelectItem value="all">All Frequency</SafeSelectItem>
+                    <SafeSelectItem value="vip">VIP (50+ visits)</SafeSelectItem>
+                    <SafeSelectItem value="high">High (25+ visits)</SafeSelectItem>
+                    <SafeSelectItem value="medium">Medium (10+ visits)</SafeSelectItem>
+                    <SafeSelectItem value="low">Low (under 10 visits)</SafeSelectItem>
                   </SelectContent>
                 </Select>
               </>
@@ -834,7 +834,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                             }`}
                           >
                             {selectedLocation.metadata.rankCategory === 'champion' ? '👑 Champion' :
-                             selectedLocation.metadata.rankCategory === 'vip' ? '💎 VIP' :
+                             selectedLocation.metadata.rankCategory === 'vip' ? '�� VIP' :
                              selectedLocation.metadata.rankCategory === 'loyal' ? '⭐ Loyal' :
                              selectedLocation.metadata.rankCategory === 'regular' ? '📈 Regular' : '🆕 New'}
                           </Badge>
