@@ -570,7 +570,7 @@ export default function POSKiosk() {
                 <Input
                   id="customer-id"
                   placeholder="Enter customer ID or phone number"
-                  value={customerInfo.uniqueId}
+                  value={customerInfo?.uniqueId || ""}
                   onChange={(e) =>
                     setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })
                   }
