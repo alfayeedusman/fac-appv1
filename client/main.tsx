@@ -1,16 +1,4 @@
 import "./global.css";
-import { setupGlobalErrorCatching } from './utils/globalErrorHandler';
-import './utils/emergencyFix';
-import './utils/immediateGeolocationFix'; // Load immediate GPS fix tools
-import './utils/validateTimeoutFix'; // Load validation tools
-import './utils/testSelectItemFix'; // Load SelectItem test tools
-// Cache breaking utility for persistent errors
-import './utils/cacheBreaker';
-// Emergency runtime fix for persistent SelectItem errors
-import './utils/runtimeSelectItemFix';
-
-// Initialize global error catching to prevent "[object Object]" errors
-setupGlobalErrorCatching();
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
