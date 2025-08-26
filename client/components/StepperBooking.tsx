@@ -789,17 +789,17 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="flex items-center justify-center w-full sm:w-auto order-2 sm:order-1"
+                  className="flex items-center justify-center w-full sm:w-auto order-2 sm:order-1 bg-background hover:bg-muted border-border"
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
-              
+
                 {currentStep === 5 ? (
                   <Button
                     onClick={submitBooking}
                     disabled={!canProceed() || isLoading}
-                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
+                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     {isLoading ? (
                       <>
@@ -817,10 +817,13 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   <Button
                     onClick={nextStep}
                     disabled={!canProceed()}
-                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
+                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center w-full sm:w-auto order-1 sm:order-2 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                    style={{ display: 'flex !important', visibility: 'visible !important' }}
                   >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    <span className="flex items-center">
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </span>
                   </Button>
                 )}
               </div>
