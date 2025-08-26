@@ -1347,10 +1347,22 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
             <Label className="text-foreground font-semibold">Mobile Number *</Label>
             <Input
               value={bookingData.mobile}
-              onChange={(e) => updateBookingData("mobile", e.target.value)}
+              onChange={(e) => {
+                // Auto-format mobile number
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.startsWith('0')) value = '63' + value.substring(1);
+                updateBookingData("mobile", value);
+              }}
               placeholder="+63 912 345 6789"
-              className="mt-1"
+              className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+              required
             />
+            {(!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10) && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {!bookingData.mobile.trim() ? 'Mobile number is required' : 'Please enter a valid mobile number'}
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-foreground font-semibold">Email</Label>
