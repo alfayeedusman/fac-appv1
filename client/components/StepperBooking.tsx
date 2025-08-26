@@ -1395,6 +1395,18 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
             />
             <p className="text-xs text-muted-foreground mt-1">Optional - helps us identify your vehicle</p>
           </div>
+          <div className="md:col-span-2">
+            <Label className="text-foreground font-semibold">Car Model & Year</Label>
+            <Input
+              value={bookingData.carModel}
+              onChange={(e) => updateBookingData("carModel", e.target.value)}
+              placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R 2023"
+            </p>
+          </div>
         </div>
         <div>
           <Label className="text-foreground font-semibold">Address *</Label>
