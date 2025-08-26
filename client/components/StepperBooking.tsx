@@ -788,53 +788,59 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 </div>
               </div>
 
-              {/* Navigation */}
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 max-w-4xl">
-                <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex items-center justify-center min-w-[120px] h-12 px-6 py-3 bg-background hover:bg-muted border-border transition-all duration-200"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
+              {/* Navigation - Mobile App Style */}
+              <div className="flex flex-col sm:flex-row justify-between items-stretch gap-3 mt-6 max-w-4xl">
+                {/* Primary Action Button (Next/Submit) - First on mobile for better UX */}
+                <div className="order-1 sm:order-2">
+                  {currentStep === 5 ? (
+                    <Button
+                      onClick={submitBooking}
+                      disabled={!canProceed() || isLoading}
+                      className="w-full sm:min-w-[180px] h-14 sm:h-12 text-lg sm:text-base font-bold bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl sm:rounded-lg active:scale-95"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="spinner mr-2" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Confirm Booking
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={nextStep}
+                      disabled={!canProceed()}
+                      className={`w-full sm:min-w-[140px] h-14 sm:h-12 text-lg sm:text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl sm:rounded-lg active:scale-95 ${
+                        !canProceed()
+                          ? 'bg-gray-400 hover:bg-gray-400 text-gray-600 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white'
+                      }`}
+                      title={!canProceed() ? `Complete all fields in step ${currentStep} to continue` : 'Continue to next step'}
+                    >
+                      <span className="flex items-center">
+                        {!canProceed() ? 'Complete Step' : 'Next'}
+                        <ChevronRight className="h-5 w-5 ml-2" />
+                      </span>
+                    </Button>
+                  )}
+                </div>
 
-                {currentStep === 5 ? (
+                {/* Secondary Action Button (Back) - Second on mobile */}
+                <div className="order-2 sm:order-1">
                   <Button
-                    onClick={submitBooking}
-                    disabled={!canProceed() || isLoading}
-                    className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white font-semibold flex items-center justify-center min-w-[160px] h-12 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
+                    variant="ghost"
+                    onClick={prevStep}
+                    disabled={currentStep === 1}
+                    className="w-full sm:min-w-[120px] h-12 sm:h-12 text-base font-medium border border-border hover:bg-muted/50 transition-all duration-200 rounded-xl sm:rounded-lg active:scale-95 disabled:opacity-50"
                   >
-                    {isLoading ? (
-                      <>
-                        <div className="spinner mr-2" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        Confirm Booking
-                        <CheckCircle className="h-4 w-4 ml-2" />
-                      </>
-                    )}
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back
                   </Button>
-                ) : (
-                  <Button
-                    onClick={nextStep}
-                    disabled={!canProceed()}
-                    className={`font-semibold flex items-center justify-center min-w-[120px] h-12 px-6 py-3 shadow-lg transition-all duration-200 ${
-                      !canProceed()
-                        ? 'bg-gray-400 hover:bg-gray-400 text-gray-600 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white hover:shadow-xl'
-                    }`}
-                    title={!canProceed() ? `Complete all fields in step ${currentStep} to continue` : 'Continue to next step'}
-                  >
-                    <span className="flex items-center">
-                      {!canProceed() ? 'Complete Step' : 'Next'}
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </span>
-                  </Button>
-                )}
+                </div>
               </div>
             </div>
           </div>
