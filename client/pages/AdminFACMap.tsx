@@ -24,7 +24,7 @@ import {
   Settings
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
-import AdminHeatMap from "@/components/AdminHeatMap";
+import RealTimeMap from "@/components/RealTimeMap";
 import ThemeToggle from "@/components/ThemeToggle";
 import AdminNotificationDropdown from "@/components/AdminNotificationDropdown";
 
