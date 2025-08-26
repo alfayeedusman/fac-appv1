@@ -662,20 +662,20 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         <div className="flex flex-col lg:flex-row">
           {/* Sidebar */}
           <div className={`
-            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-card/95 backdrop-blur-sm border-r z-50 lg:z-10
+            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-50 lg:z-10 shadow-2xl lg:shadow-none
             transform ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
+            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen transition-transform duration-300 ease-out
           `}>
             <div className="p-4 md:p-6 h-full overflow-y-auto">
-              <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h3 className="text-base md:text-lg font-bold text-foreground">Booking Summary</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg md:text-xl font-black text-foreground">Booking Summary</h3>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSidebar(false)}
-                  className="lg:hidden h-8 w-8"
+                  className="lg:hidden h-10 w-10 rounded-full hover:bg-muted active:scale-95 transition-all"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
               <BookingSummary bookingData={bookingData} progressPercentage={progressPercentage} />
