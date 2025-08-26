@@ -328,9 +328,12 @@ export default function AdminFACMap() {
               </CardHeader>
               <CardContent>
                 <div className={isFullscreen ? "h-[calc(100vh-200px)]" : "h-[700px]"}>
-                  <AdminHeatMap 
-                    onLocationSelect={handleLocationSelect}
+                  <RealTimeMap
+                    onCrewSelect={(crew) => console.log('Selected crew:', crew)}
+                    onCustomerSelect={(customer) => console.log('Selected customer:', customer)}
                     height={isFullscreen ? "calc(100vh - 200px)" : "700px"}
+                    showCustomers={true}
+                    showCrew={true}
                   />
                 </div>
               </CardContent>
