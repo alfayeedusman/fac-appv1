@@ -738,43 +738,53 @@ export default function AdminDashboard() {
                             <p className="text-base">No notifications</p>
                           </div>
                         ) : (
-                          notifications.slice(0, 5).map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
-                                notification.type === "new_customer"
-                                  ? "border-l-blue-500"
-                                  : notification.type === "subscription"
-                                    ? "border-l-green-500"
-                                    : notification.type === "approval_request"
-                                      ? "border-l-yellow-500"
-                                      : notification.type === "payment"
-                                        ? "border-l-green-500"
-                                        : "border-l-purple-500"
-                              } ${
-                                notification.read
-                                  ? "bg-muted opacity-75"
-                                  : "bg-card"
-                              }`}
-                              onClick={() => {
-                                try {
-                                  if (notification && !notification.read && notification.id) {
-                                    const userEmail = localStorage.getItem("userEmail") || "";
-                                    if (userEmail) {
-                                      markSystemNotificationAsRead(notification.id, userEmail);
-                                      loadSystemNotifications(); // Refresh notifications
+                          notifications.slice(0, 5).map((notification) => {
+                            // Add safety checks for notification properties
+                            if (!notification || typeof notification !== 'object') {
+                              return null;
+                            }
 
-                                      // If it's a booking notification, navigate to bookings tab
-                                      if (notification.type === 'new_booking') {
-                                        setActiveTab('bookings');
-                                        setIsNotificationDropdownOpen(false);
+                            const notificationType = notification.type || 'system';
+                            const isRead = Boolean(notification.read);
+                            const notificationId = notification.id || Math.random().toString();
+
+                            return (
+                              <div
+                                key={notificationId}
+                                className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
+                                  notificationType === "new_customer"
+                                    ? "border-l-blue-500"
+                                    : notificationType === "subscription"
+                                      ? "border-l-green-500"
+                                      : notificationType === "approval_request"
+                                        ? "border-l-yellow-500"
+                                        : notificationType === "payment"
+                                          ? "border-l-green-500"
+                                          : "border-l-purple-500"
+                                } ${
+                                  isRead
+                                    ? "bg-muted opacity-75"
+                                    : "bg-card"
+                                }`}
+                                onClick={() => {
+                                  try {
+                                    if (notification && !isRead && notificationId) {
+                                      const userEmail = localStorage.getItem("userEmail") || "";
+                                      if (userEmail) {
+                                        markSystemNotificationAsRead(notificationId, userEmail);
+                                        loadSystemNotifications(); // Refresh notifications
+
+                                        // If it's a booking notification, navigate to bookings tab
+                                        if (notificationType === 'new_booking') {
+                                          setActiveTab('bookings');
+                                          setIsNotificationDropdownOpen(false);
+                                        }
                                       }
                                     }
+                                  } catch (error) {
+                                    console.error('Error marking notification as read:', error);
                                   }
-                                } catch (error) {
-                                  console.error('Error marking notification as read:', error);
-                                }
-                              }}
+                                }}
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
@@ -863,8 +873,9 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          ))
+                              </div>
+                            );
+                          })
                         )}
                       </div>
                     </ScrollArea>
