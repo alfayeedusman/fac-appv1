@@ -354,36 +354,45 @@ export default function RealTimeMap({
 
   // Set up real-time updates
   useEffect(() => {
-    if (connectionStatus === 'connected') {
-      // Subscribe to real-time updates
-      const unsubscribeCrew = realtimeService.subscribe('crew-locations', (data) => {
-        if (data.success && data.crews) {
-          setRealTimeCrews(data.crews);
-          const convertedCrew = realtimeService.convertCrewToMapData(data.crews);
-          setCrewData(convertedCrew);
-        }
-      });
+    if (connectionStatus === 'connected' && realtimeService) {
+      try {
+        // Subscribe to real-time updates
+        const unsubscribeCrew = realtimeService.subscribe('crew-locations', (data: any) => {
+          if (data.success && data.crews) {
+            setRealTimeCrews(data.crews);
+            const convertedCrew = realtimeService.convertCrewToMapData(data.crews);
+            setCrewData(convertedCrew);
+          }
+        });
 
-      const unsubscribeJobs = realtimeService.subscribe('active-jobs', (data) => {
-        if (data.success && data.jobs) {
-          setActiveJobs(data.jobs);
-        }
-      });
+        const unsubscribeJobs = realtimeService.subscribe('active-jobs', (data: any) => {
+          if (data.success && data.jobs) {
+            setActiveJobs(data.jobs);
+          }
+        });
 
-      const unsubscribeError = realtimeService.subscribe('error', (error) => {
-        console.error('Real-time update error:', error);
+        const unsubscribeError = realtimeService.subscribe('error', (error: any) => {
+          console.error('Real-time update error:', error);
+          setConnectionStatus('error');
+        });
+
+        // Start polling for updates
+        realtimeService.startRealTimeUpdates(10000); // Update every 10 seconds
+
+        return () => {
+          try {
+            unsubscribeCrew();
+            unsubscribeJobs();
+            unsubscribeError();
+            realtimeService.stopRealTimeUpdates();
+          } catch (error) {
+            console.warn('Error cleaning up real-time subscriptions:', error);
+          }
+        };
+      } catch (error) {
+        console.error('Error setting up real-time updates:', error);
         setConnectionStatus('error');
-      });
-
-      // Start polling for updates
-      realtimeService.startRealTimeUpdates(10000); // Update every 10 seconds
-
-      return () => {
-        unsubscribeCrew();
-        unsubscribeJobs();
-        unsubscribeError();
-        realtimeService.stopRealTimeUpdates();
-      };
+      }
     } else {
       // Fallback to mock data updates
       const interval = setInterval(() => {
@@ -404,7 +413,7 @@ export default function RealTimeMap({
 
       return () => clearInterval(interval);
     }
-  }, [connectionStatus]);
+  }, [connectionStatus, serviceLoaded]);
 
   // Filter crew based on selected filters
   const filteredCrewData = useMemo(() => {
