@@ -160,16 +160,36 @@ export default function QRScanner({
   };
 
   const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+    try {
+      // Stop all tracks in the stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          console.log(`Stopped ${track.kind} track`);
+        });
+        streamRef.current = null;
+      }
+
+      // Clear video source and reset video element
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.srcObject = null;
+        videoRef.current.src = "";
+        videoRef.current.load(); // Reset the video element
+      }
+
+      // Clear scanning interval
+      if (scanIntervalRef.current) {
+        clearInterval(scanIntervalRef.current);
+        scanIntervalRef.current = null;
+      }
+
+      setIsScanning(false);
+      setFlashlight(false);
+      console.log("Camera stopped and cleaned up");
+    } catch (err) {
+      console.error("Error stopping camera:", err);
     }
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
-    setIsScanning(false);
-    setFlashlight(false);
   };
 
   const toggleFlashlight = async () => {
