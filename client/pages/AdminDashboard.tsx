@@ -788,25 +788,25 @@ export default function AdminDashboard() {
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
-                                  {notification.type === "new_booking" && (
+                                  {notificationType === "new_booking" && (
                                     <Calendar className="h-5 w-5 text-fac-orange-500" />
                                   )}
-                                  {notification.type === "new_customer" && (
+                                  {notificationType === "new_customer" && (
                                     <UserPlus className="h-5 w-5 text-blue-500" />
                                   )}
-                                  {notification.type === "subscription" && (
+                                  {notificationType === "subscription" && (
                                     <CreditCard className="h-5 w-5 text-green-500" />
                                   )}
-                                  {notification.type === "approval_request" && (
+                                  {notificationType === "approval_request" && (
                                     <Clock className="h-5 w-5 text-yellow-500" />
                                   )}
-                                  {notification.type === "status_update" && (
+                                  {notificationType === "status_update" && (
                                     <CheckCircle className="h-5 w-5 text-blue-500" />
                                   )}
-                                  {notification.type === "crew_update" && (
+                                  {notificationType === "crew_update" && (
                                     <Wrench className="h-5 w-5 text-purple-500" />
                                   )}
-                                  {notification.type === "payment_received" && (
+                                  {notificationType === "payment_received" && (
                                     <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
                                   {notification.type === "system_alert" && (
