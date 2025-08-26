@@ -209,53 +209,115 @@ export default function RealTimeMap({
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [crewData, setCrewData] = useState<CrewMember[]>([]);
   const [customerData, setCustomerData] = useState<Customer[]>([]);
+  const [realTimeCrews, setRealTimeCrews] = useState<CrewLocation[]>([]);
+  const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected');
 
   // Mapbox access token - You'll need to set this up
-  const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN || 'pk.eyJ1IjoiZmF5ZWVkYXV0b2NhcmUiLCJhIjoiY2x1dzBmb3VqMGI5aTJrcGZuaXB2bzNkZiJ9.demo-token-replace-with-real';
+  const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN ||
+                      import.meta.env.VITE_MAPBOX_TOKEN ||
+                      'pk.eyJ1IjoiZmF5ZWVkYXV0b2NhcmUiLCJhIjoiY2x1dzBmb3VqMGI5aTJrcGZuaXB2bzNkZiJ9.demo-token-replace-with-real';
 
-  // Load initial data
+  // Load initial data and set up real-time updates
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        // Check system health first
+        const healthCheck = await realtimeService.checkHealth();
+        if (healthCheck.success) {
+          setConnectionStatus('connected');
+
+          // Load initial crew locations
+          const crewResult = await realtimeService.getCrewLocations();
+          if (crewResult.success && crewResult.crews) {
+            setRealTimeCrews(crewResult.crews);
+            // Convert to CrewMember format for compatibility
+            const convertedCrew = realtimeService.convertCrewToMapData(crewResult.crews);
+            setCrewData(convertedCrew);
+          }
+
+          // Load active jobs
+          const jobsResult = await realtimeService.getActiveJobs();
+          if (jobsResult.success && jobsResult.jobs) {
+            setActiveJobs(jobsResult.jobs);
+          }
+
+        } else {
+          setConnectionStatus('error');
+          console.warn('Real-time service not available, using mock data');
+          // Fallback to mock data
+          setCrewData(generateMockCrewData());
+          setCustomerData(generateMockCustomerData());
+        }
+      } catch (error) {
+        console.error('Error loading real-time data:', error);
+        setConnectionStatus('error');
+        // Fallback to mock data
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
-      } catch (error) {
-        console.error('Error loading map data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
+    loadInitialData();
   }, []);
 
   // Set up real-time updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Update crew positions slightly (simulate movement)
-      setCrewData(prev => prev.map(crew => ({
-        ...crew,
-        location: {
-          ...crew.location,
-          latitude: crew.location.latitude + (Math.random() - 0.5) * 0.0001,
-          longitude: crew.location.longitude + (Math.random() - 0.5) * 0.0001,
-          timestamp: new Date().toISOString()
-        },
-        // Update job progress if busy
-        currentJob: crew.currentJob ? {
-          ...crew.currentJob,
-          progress: Math.min(100, crew.currentJob.progress + Math.random() * 5)
-        } : undefined
-      })));
-    }, 10000); // Update every 10 seconds
+    if (connectionStatus === 'connected') {
+      // Subscribe to real-time updates
+      const unsubscribeCrew = realtimeService.subscribe('crew-locations', (data) => {
+        if (data.success && data.crews) {
+          setRealTimeCrews(data.crews);
+          const convertedCrew = realtimeService.convertCrewToMapData(data.crews);
+          setCrewData(convertedCrew);
+        }
+      });
 
-    return () => clearInterval(interval);
-  }, []);
+      const unsubscribeJobs = realtimeService.subscribe('active-jobs', (data) => {
+        if (data.success && data.jobs) {
+          setActiveJobs(data.jobs);
+        }
+      });
+
+      const unsubscribeError = realtimeService.subscribe('error', (error) => {
+        console.error('Real-time update error:', error);
+        setConnectionStatus('error');
+      });
+
+      // Start polling for updates
+      realtimeService.startRealTimeUpdates(10000); // Update every 10 seconds
+
+      return () => {
+        unsubscribeCrew();
+        unsubscribeJobs();
+        unsubscribeError();
+        realtimeService.stopRealTimeUpdates();
+      };
+    } else {
+      // Fallback to mock data updates
+      const interval = setInterval(() => {
+        setCrewData(prev => prev.map(crew => ({
+          ...crew,
+          location: {
+            ...crew.location,
+            latitude: crew.location.latitude + (Math.random() - 0.5) * 0.0001,
+            longitude: crew.location.longitude + (Math.random() - 0.5) * 0.0001,
+            timestamp: new Date().toISOString()
+          },
+          currentJob: crew.currentJob ? {
+            ...crew.currentJob,
+            progress: Math.min(100, crew.currentJob.progress + Math.random() * 5)
+          } : undefined
+        })));
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [connectionStatus]);
 
   // Filter crew based on selected filters
   const filteredCrewData = useMemo(() => {
