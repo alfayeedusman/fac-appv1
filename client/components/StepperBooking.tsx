@@ -530,7 +530,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         // Payment Details
         paymentMethod: bookingData.paymentMethod as any,
         paymentStatus: bookingData.paymentMethod === 'online' ? 'pending' : 'pending',
-        receiptUrl: bookingData.receiptFile ? URL.createObjectURL(bookingData.receiptFile) : undefined,
+        receiptUrl: bookingData.receiptFile ? (() => {
+          // Clean up any existing object URL first
+          if (receiptObjectUrlRef.current) {
+            URL.revokeObjectURL(receiptObjectUrlRef.current);
+          }
+          // Create new object URL and store reference for cleanup
+          const objectUrl = URL.createObjectURL(bookingData.receiptFile);
+          receiptObjectUrlRef.current = objectUrl;
+          return objectUrl;
+        })() : undefined,
 
         // Status
         status: 'pending',
