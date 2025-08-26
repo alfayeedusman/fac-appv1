@@ -564,11 +564,26 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Groups</SelectItem>
-                {crewGroups.map(group => (
-                  <SelectItem key={group.id} value={group.id}>
-                    {String(group.name || 'Unknown Group')} ({String(group.memberCount || 0)})
-                  </SelectItem>
-                ))}
+                {crewGroups.map(group => {
+                  try {
+                    const safeGroupName = String(group?.name || 'Unknown Group').replace(/[^\w\s\-\(\)]/g, '');
+                    const safeMemberCount = String(group?.memberCount || 0);
+                    const safeContent = `${safeGroupName} (${safeMemberCount})`;
+
+                    return (
+                      <SelectItem key={group.id} value={String(group.id)}>
+                        {safeContent}
+                      </SelectItem>
+                    );
+                  } catch (error) {
+                    console.warn('Error rendering crew group SelectItem:', error, group);
+                    return (
+                      <SelectItem key={group.id || Math.random()} value={String(group.id || 'unknown')}>
+                        Group ({String(group?.memberCount || 0)})
+                      </SelectItem>
+                    );
+                  }
+                })}
               </SelectContent>
             </Select>
 
