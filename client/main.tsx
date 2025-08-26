@@ -112,6 +112,14 @@ const App = () => {
               }
             />
             <Route
+              path="/admin-fac-map"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminFACMap />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <ProtectedRoute>
