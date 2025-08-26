@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { resetAppState, resetUserSession } from "@/utils/resetApp";
 import { clearAllSampleData } from "@/utils/clearSampleData";
+import { clearAllDataExceptAdmins, showDataState } from "@/utils/clearAllData";
 
 interface DebugPanelProps {
   className?: string;
