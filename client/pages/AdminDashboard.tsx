@@ -350,20 +350,31 @@ export default function AdminDashboard() {
       if (userRole && userEmail) {
         const systemNotifications = getUserSystemNotifications(userEmail, userRole);
 
-        // Convert system notifications to the format expected by the UI
-        const formattedNotifications = systemNotifications.map((notification: SystemNotification) => ({
-          id: notification.id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          timestamp: new Date(notification.createdAt),
-          read: notification.readBy.some(r => r.userId === userEmail),
-          priority: notification.priority,
-          data: notification.data,
-          actionRequired: notification.type === 'new_booking',
-        }));
+        // Convert system notifications to the format expected by the UI with extra safety checks
+        const formattedNotifications = Array.isArray(systemNotifications)
+          ? systemNotifications.map((notification: SystemNotification) => {
+              try {
+                return {
+                  id: notification?.id || '',
+                  type: notification?.type || 'system',
+                  title: notification?.title || 'Notification',
+                  message: notification?.message || '',
+                  timestamp: notification?.createdAt ? new Date(notification.createdAt) : new Date(),
+                  read: Array.isArray(notification?.readBy) ? notification.readBy.some(r => r?.userId === userEmail) : false,
+                  priority: notification?.priority || 'medium',
+                  data: notification?.data || {},
+                  actionRequired: notification?.type === 'new_booking',
+                };
+              } catch (mapError) {
+                console.error('Error formatting notification:', mapError, notification);
+                return null;
+              }
+            }).filter(Boolean) // Remove any null entries
+          : [];
 
-        setNotifications(formattedNotifications || []);
+        setNotifications(formattedNotifications);
+      } else {
+        setNotifications([]);
       }
     } catch (error) {
       console.error('Error loading system notifications:', error);
