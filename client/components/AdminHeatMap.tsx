@@ -566,7 +566,7 @@ export default function AdminHeatMap({ onLocationSelect, height = "600px" }: Adm
                 <SelectItem value="">All Groups</SelectItem>
                 {crewGroups.map(group => (
                   <SelectItem key={group.id} value={group.id}>
-                    {group.name} ({group.memberCount})
+                    {String(group.name || 'Unknown Group')} ({String(group.memberCount || 0)})
                   </SelectItem>
                 ))}
               </SelectContent>
