@@ -1387,10 +1387,11 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
             <Label className="text-foreground font-semibold">Plate Number</Label>
             <Input
               value={bookingData.plateNo}
-              onChange={(e) => updateBookingData("plateNo", e.target.value)}
+              onChange={(e) => updateBookingData("plateNo", e.target.value.toUpperCase())}
               placeholder="ABC 1234"
               className="mt-1"
             />
+            <p className="text-xs text-muted-foreground mt-1">Optional - helps us identify your vehicle</p>
           </div>
         </div>
         <div>
@@ -1398,9 +1399,17 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
           <Textarea
             value={bookingData.address}
             onChange={(e) => updateBookingData("address", e.target.value)}
-            placeholder="Enter your complete address"
-            className="mt-1"
+            placeholder="Enter your complete address (street, barangay, city, province)"
+            className={`mt-1 ${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+            rows={3}
+            required
           />
+          {(!bookingData.address.trim() || bookingData.address.trim().length < 10) && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {!bookingData.address.trim() ? 'Address is required' : 'Please provide a complete address'}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
