@@ -572,7 +572,7 @@ export default function POSKiosk() {
                   placeholder="Enter customer ID or phone number"
                   value={customerInfo?.uniqueId || ""}
                   onChange={(e) =>
-                    setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })
+                    setCustomerInfo({ ...(customerInfo || {}), uniqueId: e.target.value })
                   }
                   className="pl-10"
                 />
@@ -586,7 +586,7 @@ export default function POSKiosk() {
                 placeholder="Enter customer name"
                 value={customerInfo?.name || ""}
                 onChange={(e) =>
-                  setCustomerInfo({ ...customerInfo, name: e.target.value })
+                  setCustomerInfo({ ...(customerInfo || {}), name: e.target.value })
                 }
               />
             </div>
