@@ -268,35 +268,75 @@ export default function RealTimeMap({
     }
   })();
 
+  // Load map components and services
+  useEffect(() => {
+    const initializeComponents = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Load map components
+        const mapLoaded = await loadMapComponents();
+        setMapComponentsLoaded(mapLoaded);
+
+        // Load realtime service
+        const serviceLoaded = await loadRealtimeService();
+        setServiceLoaded(serviceLoaded);
+
+        if (!mapLoaded) {
+          throw new Error('Failed to load map components');
+        }
+
+      } catch (error) {
+        console.error('Error initializing components:', error);
+        setError(error instanceof Error ? error.message : 'Failed to initialize map');
+        setConnectionStatus('error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeComponents();
+  }, []);
+
   // Load initial data and set up real-time updates
   useEffect(() => {
+    if (!serviceLoaded || !mapComponentsLoaded) return;
+
     const loadInitialData = async () => {
-      setIsLoading(true);
       try {
-        // Check system health first
-        const healthCheck = await realtimeService.checkHealth();
-        if (healthCheck.success) {
-          setConnectionStatus('connected');
+        if (realtimeService) {
+          // Check system health first
+          const healthCheck = await realtimeService.checkHealth();
+          if (healthCheck.success) {
+            setConnectionStatus('connected');
 
-          // Load initial crew locations
-          const crewResult = await realtimeService.getCrewLocations();
-          if (crewResult.success && crewResult.crews) {
-            setRealTimeCrews(crewResult.crews);
-            // Convert to CrewMember format for compatibility
-            const convertedCrew = realtimeService.convertCrewToMapData(crewResult.crews);
-            setCrewData(convertedCrew);
+            // Load initial crew locations
+            const crewResult = await realtimeService.getCrewLocations();
+            if (crewResult.success && crewResult.crews) {
+              setRealTimeCrews(crewResult.crews);
+              // Convert to CrewMember format for compatibility
+              const convertedCrew = realtimeService.convertCrewToMapData(crewResult.crews);
+              setCrewData(convertedCrew);
+            }
+
+            // Load active jobs
+            const jobsResult = await realtimeService.getActiveJobs();
+            if (jobsResult.success && jobsResult.jobs) {
+              setActiveJobs(jobsResult.jobs);
+            }
+
+          } else {
+            setConnectionStatus('error');
+            console.warn('Real-time service not available, using mock data');
+            // Fallback to mock data
+            setCrewData(generateMockCrewData());
+            setCustomerData(generateMockCustomerData());
           }
-
-          // Load active jobs
-          const jobsResult = await realtimeService.getActiveJobs();
-          if (jobsResult.success && jobsResult.jobs) {
-            setActiveJobs(jobsResult.jobs);
-          }
-
         } else {
+          // Fallback to mock data if service not available
+          console.warn('Real-time service not loaded, using mock data');
           setConnectionStatus('error');
-          console.warn('Real-time service not available, using mock data');
-          // Fallback to mock data
           setCrewData(generateMockCrewData());
           setCustomerData(generateMockCustomerData());
         }
@@ -306,13 +346,11 @@ export default function RealTimeMap({
         // Fallback to mock data
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
-      } finally {
-        setIsLoading(false);
       }
     };
 
     loadInitialData();
-  }, []);
+  }, [serviceLoaded, mapComponentsLoaded]);
 
   // Set up real-time updates
   useEffect(() => {
