@@ -572,9 +572,13 @@ export default function POSKiosk() {
                 <Input
                   id="customer-id"
                   placeholder="Enter customer ID or phone number"
-                  value={customerInfo.uniqueId}
+                  value={customerInfo.uniqueId || ""}
                   onChange={(e) => {
-                    setCustomerInfo(prev => ({ ...prev, uniqueId: e.target.value }))
+                    try {
+                      setCustomerInfo(prev => ({ ...prev, uniqueId: e.target.value }))
+                    } catch (error) {
+                      console.error('Error updating customer ID:', error)
+                    }
                   }}
                   className="pl-10"
                 />
