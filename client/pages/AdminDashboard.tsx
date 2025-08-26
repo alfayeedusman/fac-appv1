@@ -564,17 +564,19 @@ export default function AdminDashboard() {
     setCustomers(updatedCustomers);
 
     // Mark notification as processed and read
-    const updatedNotifications = notifications.map((n) =>
-      n.id === notificationId
-        ? {
-            ...n,
-            read: true,
-            title: n.title.replace("New", "Rejected"),
-            message: n.message.replace("approval", "rejected"),
-          }
-        : n,
-    );
-    setNotifications(updatedNotifications);
+    if (Array.isArray(notifications)) {
+      const updatedNotifications = notifications.map((n) =>
+        n.id === notificationId
+          ? {
+              ...n,
+              read: true,
+              title: n.title.replace("New", "Rejected"),
+              message: n.message.replace("approval", "rejected"),
+            }
+          : n,
+      );
+      setNotifications(updatedNotifications);
+    }
     localStorage.setItem(
       "admin_notifications",
       JSON.stringify(updatedNotifications),
