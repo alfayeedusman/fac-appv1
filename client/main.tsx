@@ -4,7 +4,8 @@ import './utils/emergencyFix';
 import './utils/immediateGeolocationFix'; // Load immediate GPS fix tools
 import './utils/validateTimeoutFix'; // Load validation tools
 import './utils/testSelectItemFix'; // Load SelectItem test tools
-// Emergency utilities available via global functions only
+// Cache breaking utility for persistent errors
+import './utils/cacheBreaker';
 
 // Initialize global error catching to prevent "[object Object]" errors
 setupGlobalErrorCatching();
