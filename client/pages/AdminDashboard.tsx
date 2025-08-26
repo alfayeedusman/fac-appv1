@@ -606,11 +606,15 @@ export default function AdminDashboard() {
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={(tab) => {
-          if (tab === "fac-map") {
-            navigate("/admin-fac-map");
-            return;
+          try {
+            if (tab === "fac-map") {
+              navigate("/admin-fac-map");
+              return;
+            }
+            setActiveTab(tab);
+          } catch (error) {
+            console.error('Error changing tab:', error);
           }
-          setActiveTab(tab);
         }}
         userRole={userRole}
         notificationCount={unreadNotificationCount}
