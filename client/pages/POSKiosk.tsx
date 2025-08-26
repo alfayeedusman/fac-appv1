@@ -73,7 +73,7 @@ export default function POSKiosk() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState({
+  const [customerInfo, setCustomerInfo] = useState<{uniqueId: string; name: string}>({
     uniqueId: "",
     name: "",
   });
@@ -571,9 +571,9 @@ export default function POSKiosk() {
                   id="customer-id"
                   placeholder="Enter customer ID or phone number"
                   value={customerInfo?.uniqueId || ""}
-                  onChange={(e) =>
-                    setCustomerInfo({ ...(customerInfo || {}), uniqueId: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setCustomerInfo(prev => ({ ...prev, uniqueId: e.target.value }))
+                  }}
                   className="pl-10"
                 />
               </div>
@@ -585,9 +585,9 @@ export default function POSKiosk() {
                 id="customer-name"
                 placeholder="Enter customer name"
                 value={customerInfo?.name || ""}
-                onChange={(e) =>
-                  setCustomerInfo({ ...(customerInfo || {}), name: e.target.value })
-                }
+                onChange={(e) => {
+                  setCustomerInfo(prev => ({ ...prev, name: e.target.value }))
+                }}
               />
             </div>
 
