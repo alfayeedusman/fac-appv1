@@ -59,7 +59,7 @@ import { notificationManager } from "@/components/NotificationModal";
 import { getPrintingService, ReceiptData } from "@/utils/printingService";
 import { SimplePaymentModal } from "@/components/SimplePaymentModal";
 
-export default function POSKiosk() {
+function POSKioskComponent() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -738,4 +738,25 @@ export default function POSKiosk() {
       </Dialog>
     </div>
   );
+}
+
+// Wrap with error boundary for safety
+export default function POSKiosk() {
+  try {
+    return <POSKioskComponent />;
+  } catch (error) {
+    console.error('POSKiosk rendering error:', error);
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold text-red-600 mb-4">POS System Error</h2>
+        <p className="text-gray-600 mb-4">There was an error loading the POS system.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Reload Page
+        </button>
+      </div>
+    );
+  }
 }
