@@ -843,12 +843,12 @@ export class BookingDatabase {
       return JSON.parse(settings);
     }
 
-    // Default sound settings
+    // Default sound settings (soundFile no longer used - we synthesize audio)
     const defaultSettings: NotificationSound[] = [
-      { id: '1', type: 'new_booking', soundFile: '/sounds/new-booking.mp3', enabled: true, volume: 70 },
-      { id: '2', type: 'status_update', soundFile: '/sounds/status-update.mp3', enabled: true, volume: 50 },
-      { id: '3', type: 'crew_update', soundFile: '/sounds/crew-update.mp3', enabled: true, volume: 60 },
-      { id: '4', type: 'payment_received', soundFile: '/sounds/payment.mp3', enabled: true, volume: 80 }
+      { id: '1', type: 'new_booking', soundFile: 'synthesized', enabled: true, volume: 70 },
+      { id: '2', type: 'status_update', soundFile: 'synthesized', enabled: true, volume: 50 },
+      { id: '3', type: 'crew_update', soundFile: 'synthesized', enabled: true, volume: 60 },
+      { id: '4', type: 'payment_received', soundFile: 'synthesized', enabled: true, volume: 80 }
     ];
 
     localStorage.setItem('notification_sounds', JSON.stringify(defaultSettings));
