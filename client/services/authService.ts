@@ -46,25 +46,41 @@ class AuthService {
   async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
       const result = await neonDbClient.login(credentials.email, credentials.password);
-      
+
       if (result.success && result.user) {
         this.isLoggedIn = true;
         this.currentUser = result.user;
-        
+
+        // Store session in localStorage for persistence
+        localStorage.setItem('userEmail', result.user.email);
+        localStorage.setItem('userRole', result.user.role);
+        localStorage.setItem('userId', result.user.id);
+        localStorage.setItem('userFullName', result.user.fullName || '');
+        localStorage.setItem('userLoggedInAt', new Date().toISOString());
+
+        // Store complete user object for easy access
+        localStorage.setItem('currentUser', JSON.stringify(result.user));
+
         toast({
           title: 'Login Successful',
           description: `Welcome back, ${result.user.fullName}!`,
         });
       } else {
+        // Clear any existing session on failed login
+        this.clearSession();
+
         toast({
           title: 'Login Failed',
           description: result.error || 'Invalid credentials',
           variant: 'destructive',
         });
       }
-      
+
       return result;
     } catch (error) {
+      // Clear session on error
+      this.clearSession();
+
       const errorMessage = 'Login failed. Please ensure you are connected to the database.';
       toast({
         title: 'Connection Error',
