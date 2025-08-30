@@ -1639,6 +1639,12 @@ export default function AdminDashboard() {
               <AdminUserManagement />
             </div>
           )}
+
+          {activeTab === "database" && (
+            <div className="space-y-6">
+              <NeonDatabaseSetup />
+            </div>
+          )}
         </div>
       </div>
 
