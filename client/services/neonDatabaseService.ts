@@ -240,20 +240,19 @@ class NeonDatabaseClient {
     try {
       const url = `${this.baseUrl}/auth/login`;
       console.log('🔎 Login request URL:', url);
+
+      // Create AbortController for timeout
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        signal: abortController.signal,
       });
 
-      const contentType = response.headers.get('content-type') || '';
-      const isJson = contentType.includes('application/json');
-
-      if (!isJson) {
-        const text = await response.text().catch(() => '');
-        const statusInfo = `HTTP ${response.status} ${response.statusText}`;
-        return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
-      }
+      clearTimeout(timeoutId);
 
       // Check if response is valid before trying to read it
       if (!response) {
@@ -271,7 +270,7 @@ class NeonDatabaseClient {
       try {
         // Check if response body is readable
         if (response.bodyUsed) {
-          console.error('❌ Response body already consumed');
+          console.error('��� Response body already consumed');
           return { success: false, error: 'Network error: Response already processed' };
         }
 
@@ -333,20 +332,20 @@ class NeonDatabaseClient {
           // Retry login once after reconnection
           try {
             const url = `${this.baseUrl}/auth/login`;
-      console.log('🔎 Login request URL:', url);
-      const response = await fetch(url, {
+            console.log('🔁 Retry login URL:', url);
+
+            // Create AbortController for timeout on retry
+            const retryAbortController = new AbortController();
+            const retryTimeoutId = setTimeout(() => retryAbortController.abort(), 10000);
+
+            const response = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, password }),
+              signal: retryAbortController.signal,
             });
 
-            const contentType = response.headers.get('content-type') || '';
-            const isJson = contentType.includes('application/json');
-            if (!isJson) {
-              const text = await response.text().catch(() => '');
-              const statusInfo = `HTTP ${response.status} ${response.statusText}`;
-              return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
-            }
+            clearTimeout(retryTimeoutId);
 
             // Check if response is valid before trying to read it
       if (!response) {
