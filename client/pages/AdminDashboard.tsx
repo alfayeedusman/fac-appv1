@@ -646,6 +646,7 @@ export default function AdminDashboard() {
                   {activeTab === "booking" && "Booking Settings"}
                   {activeTab === "pos" && "Point of Sale"}
                   {activeTab === "user-management" && "User Management"}
+                  {activeTab === "database" && "Database Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
