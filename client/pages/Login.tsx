@@ -312,6 +312,19 @@ export default function Login() {
                 <span className="text-xs ml-2 opacity-70">(admin@fayeedautocare.com)</span>
               </Button>
 
+              {/* SuperAdmin Setup Button */}
+              <Link to="/superadmin-setup">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full py-3 text-sm rounded-xl font-bold border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 transition-all group"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  SuperAdmin Setup
+                  <span className="text-xs ml-2 opacity-70">(Fix & Create SuperAdmin)</span>
+                </Button>
+              </Link>
+
               {/* Forgot Password Link */}
               <div className="text-center">
                 <Link
