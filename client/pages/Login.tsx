@@ -353,6 +353,31 @@ export default function Login() {
           </div>
         </div>
 
+        {/* SuperAdmin Quick Access */}
+        <Card className="mt-8 glass border-yellow-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 animate-fade-in-up animate-delay-500">
+          <CardContent className="p-6">
+            <h3 className="font-black text-foreground text-base mb-4 flex items-center">
+              <Crown className="h-5 w-5 mr-2 text-yellow-500" />
+              SuperAdmin Access
+            </h3>
+            <div className="space-y-3">
+              <Link to="/quick-superadmin">
+                <Button
+                  variant="default"
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl transition-all group shadow-lg"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Quick SuperAdmin Login
+                  <span className="text-sm ml-2 opacity-90">→ Admin Dashboard</span>
+                </Button>
+              </Link>
+              <div className="text-xs text-muted-foreground text-center">
+                One-click setup & login with SuperAdmin privileges
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Guest Booking Option */}
         <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">
           <CardContent className="p-6">
