@@ -79,6 +79,7 @@ import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
+import NeonDatabaseSetup from "@/components/NeonDatabaseSetup";
 import AdminCMS from "./AdminCMS";
 import AdminPushNotifications from "./AdminPushNotifications";
 import AdminGamification from "./AdminGamification";
