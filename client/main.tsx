@@ -59,6 +59,7 @@ import FixAdminPassword from "./components/FixAdminPassword";
 import SuperAdminSetup from "./components/SuperAdminSetup";
 import QuickSuperAdminLogin from "./components/QuickSuperAdminLogin";
 import NetworkDiagnostics from "./components/NetworkDiagnostics";
+import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
