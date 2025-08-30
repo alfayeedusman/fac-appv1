@@ -720,7 +720,13 @@ export default function UserRoleManagement() {
   const handleCreateUser = () => {
     try {
       if (!formData.fullName || !formData.email || !formData.password) {
-        alert("Please fill in all required fields");
+        Swal.fire({
+          title: 'Validation Error',
+          text: 'Please fill in all required fields',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b'
+        });
         return;
       }
 
