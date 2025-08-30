@@ -906,7 +906,16 @@ export default function UserRoleManagement() {
         localStorage.removeItem(`washLogs_${user.email}`);
 
         loadUsers();
-        alert("User deleted successfully!");
+
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'User deleted successfully!',
+          icon: 'success',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#10b981',
+          timer: 3000,
+          timerProgressBar: true
+        });
       } catch (error) {
         console.error("Error deleting user:", error);
         alert("Failed to delete user. Please try again.");
