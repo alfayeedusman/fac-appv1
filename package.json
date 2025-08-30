@@ -20,7 +20,7 @@
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
     "start": "node dist/server/node-build.mjs",
-    "start:dev": "tsx server/mysql-server.ts",
+    "start:dev": "tsx server/main-server.ts",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc"
