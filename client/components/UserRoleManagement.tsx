@@ -890,44 +890,55 @@ export default function UserRoleManagement() {
       return;
     }
 
-    if (confirm(`Are you sure you want to delete ${user.fullName}?`)) {
-      try {
-        const existingUsers = JSON.parse(
-          localStorage.getItem("registeredUsers") || "[]",
-        );
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to delete ${user.fullName}? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          const existingUsers = JSON.parse(
+            localStorage.getItem("registeredUsers") || "[]",
+          );
 
-        const filteredUsers = existingUsers.filter(
-          (u: any) => u.email !== user.email,
-        );
-        localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+          const filteredUsers = existingUsers.filter(
+            (u: any) => u.email !== user.email,
+          );
+          localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
 
-        // Clean up user data
-        localStorage.removeItem(`subscription_${user.email}`);
-        localStorage.removeItem(`washLogs_${user.email}`);
+          // Clean up user data
+          localStorage.removeItem(`subscription_${user.email}`);
+          localStorage.removeItem(`washLogs_${user.email}`);
 
-        loadUsers();
+          loadUsers();
 
-        Swal.fire({
-          title: 'Deleted!',
-          text: 'User deleted successfully!',
-          icon: 'success',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#10b981',
-          timer: 3000,
-          timerProgressBar: true
-        });
-      } catch (error) {
-        console.error("Error deleting user:", error);
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'User deleted successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#10b981',
+            timer: 3000,
+            timerProgressBar: true
+          });
+        } catch (error) {
+          console.error("Error deleting user:", error);
 
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to delete user. Please try again.',
-          icon: 'error',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#ef4444'
-        });
+          Swal.fire({
+            title: 'Error!',
+            text: 'Failed to delete user. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#ef4444'
+          });
+        }
       }
-    }
+    });
   };
 
   const handleEditClick = (user: User) => {
