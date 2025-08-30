@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { authService } from "@/services/authService";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
