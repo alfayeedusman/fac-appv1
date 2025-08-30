@@ -120,7 +120,7 @@ export interface Ad {
 }
 
 class NeonDatabaseClient {
-  private baseUrl = '/api/neon';
+  private baseUrl = `${import.meta.env.VITE_API_BASE_URL || '/api'}/neon`;
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
 
@@ -244,13 +244,24 @@ class NeonDatabaseClient {
         body: JSON.stringify({ email, password }),
       });
 
-      const result = await response.json();
-      if (result.success) {
-        // Store user session data
-        localStorage.setItem('userEmail', result.user.email);
-        localStorage.setItem('userRole', result.user.role);
-        localStorage.setItem('userId', result.user.id);
+      const contentType = response.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+
+      if (!isJson) {
+        const text = await response.text().catch(() => '');
+        const statusInfo = `HTTP ${response.status} ${response.statusText}`;
+        return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
       }
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
+      }
+
+      // Store user session data
+      localStorage.setItem('userEmail', result.user.email);
+      localStorage.setItem('userRole', result.user.role);
+      localStorage.setItem('userId', result.user.id);
       return result;
     } catch (error: any) {
       console.error('Database login failed:', error);
@@ -269,12 +280,23 @@ class NeonDatabaseClient {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, password }),
             });
-            const result = await response.json();
-            if (result.success) {
-              localStorage.setItem('userEmail', result.user.email);
-              localStorage.setItem('userRole', result.user.role);
-              localStorage.setItem('userId', result.user.id);
+
+            const contentType = response.headers.get('content-type') || '';
+            const isJson = contentType.includes('application/json');
+            if (!isJson) {
+              const text = await response.text().catch(() => '');
+              const statusInfo = `HTTP ${response.status} ${response.statusText}`;
+              return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
             }
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+              return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
+            }
+
+            localStorage.setItem('userEmail', result.user.email);
+            localStorage.setItem('userRole', result.user.role);
+            localStorage.setItem('userId', result.user.id);
             return result;
           } catch (retryError) {
             console.error('❌ Retry login also failed:', retryError);
