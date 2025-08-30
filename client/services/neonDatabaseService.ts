@@ -255,7 +255,14 @@ class NeonDatabaseClient {
         return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status})` };
+      }
+
       if (!response.ok || !result.success) {
         return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
       }
@@ -293,10 +300,17 @@ class NeonDatabaseClient {
               return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
             }
 
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-              return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
-            }
+            let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status})` };
+      }
+
+      if (!response.ok || !result.success) {
+        return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
+      }
 
             localStorage.setItem('userEmail', result.user.email);
             localStorage.setItem('userRole', result.user.role);
