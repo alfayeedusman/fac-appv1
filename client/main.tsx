@@ -63,22 +63,21 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    // Initialize Neon database connection on app startup
-    const initializeNeonDB = async () => {
+    // Test Neon database connection on app startup (avoid triggering heavy migrations)
+    const testNeonDB = async () => {
       try {
-        console.log('🔄 Initializing Neon database...');
-        const initialized = await neonDbClient.initialize();
-        if (initialized) {
-          console.log('✅ Neon database initialized successfully');
+        const result = await neonDbClient.testConnection();
+        if (result.connected) {
+          console.log('✅ Neon database available');
         } else {
-          console.warn('⚠️ Failed to initialize Neon database');
+          console.warn('⚠️ Neon database not connected');
         }
       } catch (error) {
-        console.error('❌ Error during Neon database initialization:', error);
+        console.error('❌ Error during Neon database test:', error);
       }
     };
 
-    initializeNeonDB();
+    testNeonDB();
   }, []);
 
   return (
