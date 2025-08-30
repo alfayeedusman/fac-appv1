@@ -275,6 +275,11 @@ class NeonDatabaseClient {
     } catch (error: any) {
       console.error('Database login failed:', error);
 
+      // Handle specific fetch/body consumption errors
+      if (error.message?.includes('Body has already been consumed')) {
+        return { success: false, error: 'Network error: Response already processed. Please try again.' };
+      }
+
       // If it's a network error, try to reconnect
       if (error.message?.includes('fetch') || error.name === 'TypeError') {
         console.log('🔄 Network error detected, trying to reconnect...');
