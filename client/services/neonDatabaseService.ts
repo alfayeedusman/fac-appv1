@@ -392,16 +392,10 @@ class NeonDatabaseClient {
       console.log('📝 Response URL:', response.url);
       console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
 
-      // Read response as text first to avoid body consumption issues
+      // Read response as text from a clone to avoid body consumption conflicts
       let responseText;
       try {
-        // Check if response body is readable
-        if (response.bodyUsed) {
-          console.error('❌ Response body already consumed');
-          return { success: false, error: 'Network error: Response already processed' };
-        }
-
-        responseText = await response.text();
+        responseText = await response.clone().text();
         console.log('📝 Response text length:', responseText.length);
         console.log('📝 Response text preview:', responseText.substring(0, 500));
       } catch (textError: any) {
@@ -411,7 +405,6 @@ class NeonDatabaseClient {
           message: textError.message
         });
 
-        // Provide more specific error based on the type of error
         if (textError.name === 'AbortError') {
           return { success: false, error: 'Request was cancelled or timed out. Please try again.' };
         } else if (textError.name === 'TypeError') {
