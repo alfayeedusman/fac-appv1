@@ -194,7 +194,7 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log('��� Fallback connection test successful');
+            console.log('✅ Fallback connection test successful');
           } else {
             console.warn('⚠️ Fallback connection test returned false');
           }
@@ -396,7 +396,7 @@ class NeonDatabaseClient {
           console.log('✅ Reconnected, retrying login...');
           // Retry login once after reconnection
           try {
-            const url = `${this.baseUrl}/auth/login`;
+            const url = `/api/neon/auth/login`;
             console.log('🔁 Retry login URL:', url);
 
             // Create AbortController for timeout on retry
