@@ -15,6 +15,7 @@ import {
   Crown,
   Database,
   AlertCircle,
+  Wifi,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { authService } from "@/services/authService";
