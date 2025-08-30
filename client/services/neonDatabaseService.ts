@@ -163,22 +163,9 @@ class NeonDatabaseClient {
     }
   }
 
-  // Fallback to localStorage if database is not connected
-  private getFromLocalStorage(key: string): any {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  private setToLocalStorage(key: string, data: any): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-    }
+  // Database-only mode - no localStorage fallback
+  private throwDatabaseError(operation: string): never {
+    throw new Error(`Database operation failed: ${operation}. Please ensure Neon database is connected.`);
   }
 
   // === AUTHENTICATION ===
