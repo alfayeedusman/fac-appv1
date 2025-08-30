@@ -109,6 +109,8 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
 
 // User authentication endpoints
 export const loginUser: RequestHandler = async (req, res) => {
+  // Ensure JSON response headers
+  res.setHeader('Content-Type', 'application/json');
   try {
     const { email, password } = req.body;
     console.log('🔐 Login attempt received', {
@@ -119,9 +121,10 @@ export const loginUser: RequestHandler = async (req, res) => {
     });
     
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Email and password are required' 
+      console.warn('🔐 Login failed: missing email or password');
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required'
       });
     }
 
@@ -144,9 +147,10 @@ export const loginUser: RequestHandler = async (req, res) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'Account is disabled' 
+      console.warn('🔐 Login failed: account disabled', { email });
+      return res.status(403).json({
+        success: false,
+        error: 'Account is disabled'
       });
     }
 
@@ -164,9 +168,9 @@ export const loginUser: RequestHandler = async (req, res) => {
     });
   } catch (error: any) {
     console.error('❌ Login error:', error?.message || error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      error: error?.message || 'Login failed'
+      error: error?.message || 'Internal server error'
     });
   }
 };
