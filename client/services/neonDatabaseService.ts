@@ -277,9 +277,48 @@ class NeonDatabaseClient {
   }
 
   // === AUTHENTICATION ===
-  
+
+  private async processLoginResponse(response: Response): Promise<{ success: boolean; user?: User; error?: string }> {
+    if (!response) {
+      return { success: false, error: 'Network error: No response received from server' };
+    }
+
+    if (response.type === 'opaque' || response.status === 0) {
+      return { success: false, error: 'Request blocked by CORS or network policy. Please use the same origin or enable CORS on the server.' };
+    }
+
+    try {
+      console.log('📝 Response status:', response.status, response.statusText);
+      console.log('📝 Response URL:', response.url);
+      console.log('📝 Content-Type:', response.headers.get('content-type') || 'unknown');
+    } catch (_) {}
+
+    const cloned = response.clone();
+    try {
+      const json = await cloned.json();
+      if (!response.ok || !json?.success) {
+        const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
+        return { success: false, error: errMsg };
+      }
+      localStorage.setItem('userEmail', json.user.email);
+      localStorage.setItem('userRole', json.user.role);
+      localStorage.setItem('userId', json.user.id);
+      return json;
+    } catch (jsonError: any) {
+      let bodyPreview = '';
+      try {
+        const text = await response.text();
+        if (text) bodyPreview = text.substring(0, 200);
+      } catch (textError: any) {
+        console.error('❌ Could not read server response body:', textError?.message || textError);
+      }
+      const ct = response.headers.get('content-type') || '';
+      const why = ct.includes('text/html') ? 'HTML page returned instead of JSON.' : 'Invalid JSON response.';
+      return { success: false, error: `${why} (HTTP ${response.status}). ${bodyPreview ? `Response: ${bodyPreview}` : ''}`.trim() };
+    }
+  }
+
   async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    // Ensure connection before login attempt
     const connected = await this.ensureConnection();
     if (!connected) {
       console.error('❌ Unable to establish database connection for login');
@@ -290,187 +329,75 @@ class NeonDatabaseClient {
       const url = `${this.baseUrl}/auth/login`;
       console.log('🔎 Login request URL:', url);
 
-      // Create AbortController for timeout
-      const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        signal: abortController.signal,
+        signal: ac.signal,
       });
 
-      clearTimeout(timeoutId);
+      clearTimeout(to);
+      const processed = await this.processLoginResponse(response);
+      if (processed.success) return processed;
 
-      // Check if response is valid before trying to read it
-      if (!response) {
-        console.error('❌ Response is null or undefined');
-        return { success: false, error: 'Network error: No response received from server' };
-      }
-
-      // Log response details before reading
-      console.log('📝 Response status:', response.status, response.statusText);
-      console.log('📝 Response URL:', response.url);
-      console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Read response as text from a clone to avoid body consumption conflicts
-      let responseText;
-      try {
-        responseText = await response.clone().text();
-        console.log('📝 Response text length:', responseText.length);
-        console.log('📝 Response text preview:', responseText.substring(0, 500));
-      } catch (textError: any) {
-        console.error('❌ Failed to read response text:', textError);
-        console.error('❌ Error details:', {
-          name: textError.name,
-          message: textError.message
-        });
-
-        if (textError.name === 'AbortError') {
-          return { success: false, error: 'Request was cancelled or timed out. Please try again.' };
-        } else if (textError.name === 'TypeError') {
-          return { success: false, error: 'Network connection error. Please check your internet connection.' };
-        } else {
-          return { success: false, error: `Network error: Could not read server response. ${textError.message || 'Unknown error'}` };
+      if (processed.error?.toLowerCase().includes('cors') || processed.error?.toLowerCase().includes('network')) {
+        console.log('🔄 Retrying login via same-origin fallback...');
+        const ac2 = new AbortController();
+        const to2 = setTimeout(() => ac2.abort(), 10000);
+        try {
+          const resp2 = await fetch(`/api/neon/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+            signal: ac2.signal,
+          });
+          clearTimeout(to2);
+          return await this.processLoginResponse(resp2);
+        } catch (retryErr: any) {
+          clearTimeout(to2);
+          console.error('❌ Retry login failed:', retryErr?.message || retryErr);
+          return { success: false, error: 'Login failed after retry. Please try again.' };
         }
       }
 
-      // Try to parse the text as JSON
-      let result;
-      try {
-        result = JSON.parse(responseText);
-        console.log('✅ Parsed JSON successfully:', result);
-      } catch (jsonError) {
-        console.error('❌ Failed to parse JSON response:', jsonError);
-        console.error('📝 Raw response:', responseText);
-        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Response: ${responseText.substring(0, 200)}` };
-      }
-
-      if (!response.ok || !result.success) {
-        return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
-      }
-
-      // Store user session data
-      localStorage.setItem('userEmail', result.user.email);
-      localStorage.setItem('userRole', result.user.role);
-      localStorage.setItem('userId', result.user.id);
-      return result;
+      return processed;
     } catch (error: any) {
       console.error('Database login failed:', error);
 
-      // Handle specific fetch/body consumption errors
-      if (error.message?.includes('Body has already been consumed')) {
-        return { success: false, error: 'Network error: Response already processed. Please try again.' };
+      if (error?.name === 'AbortError') {
+        return { success: false, error: 'Request timed out. Please try again.' };
       }
 
-      // Handle NetworkError specifically
-      if (error.message?.includes('NetworkError') || error.message?.includes('Failed to fetch')) {
-        console.error('❌ NetworkError detected - checking connectivity...');
-
-        // Try a simple connectivity test
+      if (error.message?.includes('NetworkError') || error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
         try {
-          const healthCheck = await fetch('/api/health', {
-            method: 'GET',
-            signal: AbortSignal.timeout(5000)
-          });
-          if (healthCheck.ok) {
-            return { success: false, error: 'Network connection restored, but login failed. Please try again.' };
+          const health = await fetch('/api/health', { method: 'GET', signal: AbortSignal.timeout(5000) });
+          if (health.ok) {
+            return { success: false, error: 'Network looks fine, but login failed. Please try again.' };
           }
-        } catch (healthError) {
-          console.error('❌ Health check also failed:', healthError);
-        }
-
-        return {
-          success: false,
-          error: 'Network connection error. Please check your internet connection and try again. If the problem persists, visit /network-test for diagnostics.'
-        };
-      }
-
-      // If it's a network error, try to reconnect
-      if (error.message?.includes('fetch') || error.name === 'TypeError') {
-        console.log('🔄 Network error detected, trying to reconnect...');
+        } catch {}
         this.isConnected = false;
-        const reconnected = await this.testConnection();
-        if (reconnected.connected) {
-          console.log('✅ Reconnected, retrying login...');
-          // Retry login once after reconnection
+        const recon = await this.testConnection();
+        if (recon.connected) {
+          console.log('✅ Reconnected, retrying login once...');
           try {
-            const url = `/api/neon/auth/login`;
-            console.log('🔁 Retry login URL:', url);
-
-            // Create AbortController for timeout on retry
-            const retryAbortController = new AbortController();
-            const retryTimeoutId = setTimeout(() => retryAbortController.abort(), 10000);
-
-            const response = await fetch(url, {
+            const resp3 = await fetch(`/api/neon/auth/login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, password }),
-              signal: retryAbortController.signal,
+              signal: AbortSignal.timeout(10000),
             });
-
-            clearTimeout(retryTimeoutId);
-
-            // Check if response is valid before trying to read it
-      if (!response) {
-        console.error('❌ Response is null or undefined');
-        return { success: false, error: 'Network error: No response received from server' };
-      }
-
-      // Log response details before reading
-      console.log('📝 Response status:', response.status, response.statusText);
-      console.log('📝 Response URL:', response.url);
-      console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Read response as text from a clone to avoid body consumption conflicts
-      let responseText;
-      try {
-        responseText = await response.clone().text();
-        console.log('📝 Response text length:', responseText.length);
-        console.log('📝 Response text preview:', responseText.substring(0, 500));
-      } catch (textError: any) {
-        console.error('❌ Failed to read response text:', textError);
-        console.error('❌ Error details:', {
-          name: textError.name,
-          message: textError.message
-        });
-
-        if (textError.name === 'AbortError') {
-          return { success: false, error: 'Request was cancelled or timed out. Please try again.' };
-        } else if (textError.name === 'TypeError') {
-          return { success: false, error: 'Network connection error. Please check your internet connection.' };
-        } else {
-          return { success: false, error: `Network error: Could not read server response. ${textError.message || 'Unknown error'}` };
-        }
-      }
-
-      // Try to parse the text as JSON
-      let result;
-      try {
-        result = JSON.parse(responseText);
-        console.log('✅ Parsed JSON successfully:', result);
-      } catch (jsonError) {
-        console.error('❌ Failed to parse JSON response:', jsonError);
-        console.error('📝 Raw response:', responseText);
-        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Response: ${responseText.substring(0, 200)}` };
-      }
-
-      if (!response.ok || !result.success) {
-        return { success: false, error: result.error || `Login failed (HTTP ${response.status}).` };
-      }
-
-            localStorage.setItem('userEmail', result.user.email);
-            localStorage.setItem('userRole', result.user.role);
-            localStorage.setItem('userId', result.user.id);
-            return result;
-          } catch (retryError) {
-            console.error('❌ Retry login also failed:', retryError);
+            return await this.processLoginResponse(resp3);
+          } catch (e3: any) {
+            console.error('❌ Retry login also failed:', e3?.message || e3);
           }
         }
+        return { success: false, error: 'Network connection error. Please check your internet and try again.' };
       }
 
-      return { success: false, error: `Login failed: ${error.message || 'Please check your connection.'}` };
+      return { success: false, error: `Login failed: ${error.message || 'Unknown error'}` };
     }
   }
 
