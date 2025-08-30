@@ -786,7 +786,16 @@ export default function UserRoleManagement() {
       loadUsers();
       setIsCreateModalOpen(false);
       resetForm();
-      alert("User created successfully!");
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'User created successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981',
+        timer: 3000,
+        timerProgressBar: true
+      });
     } catch (error) {
       console.error("Error creating user:", error);
       alert("Failed to create user. Please try again.");
