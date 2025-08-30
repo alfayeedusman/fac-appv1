@@ -81,6 +81,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <GlobalNotificationProvider />
+        <AdminNotificationListener />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
