@@ -238,7 +238,9 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
+      const url = `${this.baseUrl}/auth/login`;
+      console.log('🔎 Login request URL:', url);
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -275,7 +277,9 @@ class NeonDatabaseClient {
           console.log('✅ Reconnected, retrying login...');
           // Retry login once after reconnection
           try {
-            const response = await fetch(`${this.baseUrl}/auth/login`, {
+            const url = `${this.baseUrl}/auth/login`;
+      console.log('🔎 Login request URL:', url);
+      const response = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, password }),
