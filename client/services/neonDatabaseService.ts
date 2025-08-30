@@ -230,15 +230,11 @@ class NeonDatabaseClient {
   // === AUTHENTICATION ===
   
   async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    // Try to ensure connection before login attempt
-    if (!this.isConnected) {
-      console.log('🔄 Database not connected, attempting to establish connection...');
-      const connectionTest = await this.testConnection();
-      if (!connectionTest.connected) {
-        console.error('❌ Unable to establish database connection');
-        return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
-      }
-      console.log('✅ Database connection established');
+    // Ensure connection before login attempt
+    const connected = await this.ensureConnection();
+    if (!connected) {
+      console.error('❌ Unable to establish database connection for login');
+      return { success: false, error: 'Database connection failed. Please check your internet connection and try again.' };
     }
 
     try {
