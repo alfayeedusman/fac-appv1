@@ -855,7 +855,16 @@ export default function UserRoleManagement() {
       loadUsers();
       setIsEditModalOpen(false);
       resetForm();
-      alert("User updated successfully!");
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'User updated successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981',
+        timer: 3000,
+        timerProgressBar: true
+      });
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Failed to update user. Please try again.");
