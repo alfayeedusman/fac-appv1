@@ -13,8 +13,12 @@ import {
   Lock,
   Zap,
   Crown,
+  Database,
+  AlertCircle,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { authService } from "@/services/authService";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 export default function Login() {
   const navigate = useNavigate();
