@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { getDatabase, testConnection } from './connection';
+import bcrypt from 'bcryptjs';
 
 // Initialize Neon SQL client at module scope
 const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
@@ -253,8 +254,11 @@ export async function seedInitialData() {
 
     // Create default admin user
     const adminExists = await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
-    
+
     if (adminExists.length === 0) {
+      // Hash the password properly
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+
       await sql`
         INSERT INTO users (
           id, email, full_name, password, role, branch_location, is_active, email_verified
@@ -262,14 +266,14 @@ export async function seedInitialData() {
           'admin_' || extract(epoch from now())::text,
           'admin@fayeedautocare.com',
           'FAC Administrator',
-          '$2a$10$rOb8JPEC1HZPRGmLlWaXGOrE4pY8Qx5UF4Wl9hYGHwZLN6Q8Qs1yW', -- 'admin123'
+          ${hashedPassword},
           'admin',
           'Main Branch',
           true,
           true
         );
       `;
-      console.log('✅ Default admin user created');
+      console.log('✅ Default admin user created with properly hashed password');
     }
 
     // Insert default admin settings
