@@ -37,9 +37,6 @@ import {
   UserX,
   Eye,
 } from "lucide-react";
-import StickyHeader from "@/components/StickyHeader";
-import AdminSidebar from "@/components/AdminSidebar";
-import { useNavigate } from "react-router-dom";
 import {
   getUserAccounts,
   createUserAccount,
@@ -51,7 +48,6 @@ import {
 import { notificationManager } from "@/components/NotificationModal";
 
 export default function AdminUserManagement() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserAccount[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -183,52 +179,9 @@ export default function AdminUserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="User Management" />
-
-      <AdminSidebar
-        activeTab="user-management"
-        onTabChange={(tab) => {
-          if (tab === "overview") navigate("/admin-dashboard");
-          else if (tab === "customers")
-            navigate("/admin-dashboard"); // Customer Hub -> Dashboard for now
-          else if (tab === "roles")
-            navigate("/admin-user-management"); // User & Roles -> Stay on user management
-          else if (tab === "ads") navigate("/admin-ads");
-          else if (tab === "packages")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "branches")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "analytics")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "bookings")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "images")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "sales")
-            navigate("/admin-dashboard"); // No specific page yet
-          else if (tab === "notifications") navigate("/admin-notifications");
-          else if (tab === "cms") navigate("/admin-cms");
-          else if (tab === "booking") navigate("/admin-booking-settings");
-          else if (tab === "push-notifications")
-            navigate("/admin-push-notifications");
-          else if (tab === "gamification") navigate("/admin-gamification");
-          else if (tab === "subscription-approval")
-            navigate("/admin-subscription-approval");
-          else if (tab === "pos") navigate("/pos");
-          else if (tab === "inventory") navigate("/inventory-management");
-          else if (tab === "receipt-designer")
-            navigate("/admin-receipt-designer");
-          else if (tab === "home-service") navigate("/admin-home-service");
-        }}
-        userRole={localStorage.getItem("userRole") || "admin"}
-        notificationCount={0}
-      />
-
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 mt-16 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -285,9 +238,9 @@ export default function AdminUserManagement() {
             </Card>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+        <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
@@ -297,7 +250,7 @@ export default function AdminUserManagement() {
               />
             </div>
             <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
@@ -309,7 +262,7 @@ export default function AdminUserManagement() {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={() => setShowAddUserModal(true)}>
+            <Button onClick={() => setShowAddUserModal(true)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add User
             </Button>
@@ -320,7 +273,7 @@ export default function AdminUserManagement() {
             <CardHeader>
               <CardTitle>User Accounts</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -350,21 +303,13 @@ export default function AdminUserManagement() {
                             handleRoleChange(user.id, newRole)
                           }
                         >
-                          <SelectTrigger className="w-40">
+                          <SelectTrigger className="w-full min-w-40">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {roleOptions.map((role) => (
                               <SelectItem key={role.value} value={role.value}>
-                                <Badge
-                                  style={{
-                                    backgroundColor: role.color,
-                                    color: "white",
-                                  }}
-                                  className="mr-2"
-                                >
-                                  {role.label}
-                                </Badge>
+                                {role.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -380,11 +325,11 @@ export default function AdminUserManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                        <div className="flex gap-2 flex-wrap">
+                          <Button variant="outline" size="sm" className="min-w-0">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="min-w-0">
                             <Eye className="h-3 w-3" />
                           </Button>
                         </div>
@@ -395,9 +340,6 @@ export default function AdminUserManagement() {
               </Table>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
       {/* Add User Modal */}
       <Dialog open={showAddUserModal} onOpenChange={setShowAddUserModal}>
         <DialogContent className="sm:max-w-lg">

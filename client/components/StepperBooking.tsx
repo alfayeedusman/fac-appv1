@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,7 @@ interface BookingData {
   mobile: string;
   email: string;
   plateNo: string;
+  carModel: string; // car year and model (e.g., "Hilux Conquest 2024")
   address: string;
 
   // Schedule
@@ -253,18 +254,21 @@ const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
     icon: Car,
+    iconText: "🚗", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
   },
   auto_detailing: {
     name: "Auto Detailing",
     icon: Star,
+    iconText: "⭐", // Safe for SelectItem
     gradient: "from-purple-500 to-pink-500",
     description: "Professional interior and exterior detailing",
   },
   graphene_coating: {
     name: "Graphene Coating",
     icon: Shield,
+    iconText: "🛡️", // Safe for SelectItem
     gradient: "from-orange-500 to-red-500",
     description: "Advanced protection coating",
   },
@@ -306,6 +310,7 @@ const getTimeSlots = (date: string) => {
 export default function StepperBooking({ isGuest = false }: StepperBookingProps) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const receiptObjectUrlRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   
@@ -319,6 +324,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     mobile: "",
     email: "",
     plateNo: "",
+    carModel: "",
     address: "",
     date: "",
     timeSlot: "",
@@ -329,6 +335,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     basePrice: 0,
     totalPrice: 0,
   });
+
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+        receiptObjectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   // Memoize price calculation to prevent infinite loops
   const { basePrice, totalPrice } = useMemo(() => {
@@ -507,6 +523,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         unitType: bookingData.unitType as any,
         unitSize: bookingData.unitSize,
         plateNumber: bookingData.plateNo,
+        vehicleModel: bookingData.carModel,
 
         // Schedule Details
         date: bookingData.date,
@@ -523,7 +540,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         // Payment Details
         paymentMethod: bookingData.paymentMethod as any,
         paymentStatus: bookingData.paymentMethod === 'online' ? 'pending' : 'pending',
-        receiptUrl: bookingData.receiptFile ? URL.createObjectURL(bookingData.receiptFile) : undefined,
+        receiptUrl: bookingData.receiptFile ? (() => {
+          // Clean up any existing object URL first
+          if (receiptObjectUrlRef.current) {
+            URL.revokeObjectURL(receiptObjectUrlRef.current);
+          }
+          // Create new object URL and store reference for cleanup
+          const objectUrl = URL.createObjectURL(bookingData.receiptFile);
+          receiptObjectUrlRef.current = objectUrl;
+          return objectUrl;
+        })() : undefined,
 
         // Status
         status: 'pending',
@@ -576,12 +602,14 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       setBookingData({
         category: "",
         service: "",
+        serviceType: "branch",
         unitType: "",
         unitSize: "",
         fullName: "",
         mobile: "",
         email: "",
         plateNo: "",
+        carModel: "",
         address: "",
         date: "",
         timeSlot: "",
@@ -654,20 +682,20 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         <div className="flex flex-col lg:flex-row">
           {/* Sidebar */}
           <div className={`
-            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-card/95 backdrop-blur-sm border-r z-50 lg:z-10
+            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-50 lg:z-10 shadow-2xl lg:shadow-none
             transform ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
+            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen transition-transform duration-300 ease-out
           `}>
             <div className="p-4 md:p-6 h-full overflow-y-auto">
-              <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h3 className="text-base md:text-lg font-bold text-foreground">Booking Summary</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg md:text-xl font-black text-foreground">Booking Summary</h3>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSidebar(false)}
-                  className="lg:hidden h-8 w-8"
+                  className="lg:hidden h-10 w-10 rounded-full hover:bg-muted active:scale-95 transition-all"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
               <BookingSummary bookingData={bookingData} progressPercentage={progressPercentage} />
@@ -676,29 +704,29 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-4 md:p-6 lg:p-8">
+            <div className="p-3 sm:p-4 md:p-6 lg:p-8">
               {/* Mobile Sidebar Toggle */}
-              <div className="lg:hidden mb-4 md:mb-6">
+              <div className="lg:hidden mb-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowSidebar(true)}
-                  className="w-full sm:w-auto glass border-fac-orange-200 hover:bg-fac-orange-50"
+                  className="w-full h-12 text-base font-medium glass border-fac-orange-200 hover:bg-fac-orange-50 rounded-xl active:scale-95 transition-all duration-200"
                 >
-                  <Menu className="h-4 w-4 mr-2" />
+                  <Menu className="h-5 w-5 mr-2" />
                   View Booking Summary
                 </Button>
               </div>
 
               {/* Stepper Header */}
-              <div className="mb-6 md:mb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
+              <div className="mb-4 md:mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
                     {isGuest ? "Guest " : ""}
                     <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
                       Booking
                     </span>
                   </h1>
-                  <Badge variant="outline" className="text-xs md:text-sm w-fit">
+                  <Badge variant="outline" className="text-sm md:text-sm w-fit px-3 py-1 rounded-full">
                     Step {currentStep} of 5
                   </Badge>
                 </div>
@@ -738,35 +766,37 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                   ))}
                 </div>
 
-                {/* Mobile Stepper - More Compact Version */}
+                {/* Mobile Stepper - App-like Design */}
                 <div className="md:hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-foreground">Progress:</span>
-                    <span className="text-xs text-muted-foreground">{currentStep} of {STEPS.length}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-foreground">Progress</span>
+                    <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      {currentStep} of {STEPS.length}
+                    </span>
                   </div>
 
-                  {/* Progress Bar for Mobile */}
-                  <div className="w-full bg-border rounded-full h-2 mb-3">
+                  {/* Enhanced Progress Bar for Mobile */}
+                  <div className="w-full bg-muted rounded-full h-3 mb-4 shadow-inner">
                     <div
-                      className="bg-gradient-to-r from-fac-orange-500 to-purple-500 h-2 rounded-full transition-all"
+                      className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
                       style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
                     ></div>
                   </div>
 
-                  {/* Current Step Indicator */}
-                  <div className="flex items-center justify-center p-3 rounded-lg border border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-fac-orange-500 text-white">
+                  {/* Enhanced Current Step Indicator */}
+                  <div className="p-4 rounded-2xl border-2 border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
                         {(() => {
                           const CurrentIcon = STEPS[currentStep - 1].icon;
-                          return <CurrentIcon className="h-3 w-3" />;
+                          return <CurrentIcon className="h-5 w-5" />;
                         })()}
                       </div>
-                      <div>
-                        <span className="text-sm font-semibold text-fac-orange-500">
+                      <div className="flex-1">
+                        <span className="text-base font-bold text-fac-orange-600 dark:text-fac-orange-400">
                           {STEPS[currentStep - 1].title}
                         </span>
-                        <p className="text-xs text-muted-foreground">{STEPS[currentStep - 1].description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{STEPS[currentStep - 1].description}</p>
                       </div>
                     </div>
                   </div>
@@ -775,51 +805,64 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
               {/* Step Content */}
               <div className="w-full max-w-4xl">
-                <div className="w-full overflow-hidden">
+                <div className="w-full overflow-hidden pb-4">
                   {renderStepContent()}
                 </div>
               </div>
 
-              {/* Navigation */}
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6 md:mt-8 max-w-4xl">
-                <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex items-center justify-center w-full sm:w-auto order-2 sm:order-1"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              
-                {currentStep === 5 ? (
+              {/* Navigation - Mobile App Style */}
+              <div className="flex flex-col sm:flex-row justify-between items-stretch gap-3 mt-6 max-w-4xl">
+                {/* Primary Action Button (Next/Submit) - First on mobile for better UX */}
+                <div className="order-1 sm:order-2">
+                  {currentStep === 5 ? (
+                    <Button
+                      onClick={submitBooking}
+                      disabled={!canProceed() || isLoading}
+                      className="w-full sm:min-w-[180px] h-14 sm:h-12 text-lg sm:text-base font-bold bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl sm:rounded-lg active:scale-95"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="spinner mr-2" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Confirm Booking
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={nextStep}
+                      disabled={!canProceed()}
+                      className={`w-full sm:min-w-[140px] h-14 sm:h-12 text-lg sm:text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl sm:rounded-lg active:scale-95 ${
+                        !canProceed()
+                          ? 'bg-gray-400 hover:bg-gray-400 text-gray-600 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white'
+                      }`}
+                      title={!canProceed() ? `Complete all fields in step ${currentStep} to continue` : 'Continue to next step'}
+                    >
+                      <span className="flex items-center">
+                        {!canProceed() ? 'Complete Step' : 'Next'}
+                        <ChevronRight className="h-5 w-5 ml-2" />
+                      </span>
+                    </Button>
+                  )}
+                </div>
+
+                {/* Secondary Action Button (Back) - Second on mobile */}
+                <div className="order-2 sm:order-1">
                   <Button
-                    onClick={submitBooking}
-                    disabled={!canProceed() || isLoading}
-                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
+                    variant="ghost"
+                    onClick={prevStep}
+                    disabled={currentStep === 1}
+                    className="w-full sm:min-w-[120px] h-12 sm:h-12 text-base font-medium border border-border hover:bg-muted/50 transition-all duration-200 rounded-xl sm:rounded-lg active:scale-95 disabled:opacity-50"
                   >
-                    {isLoading ? (
-                      <>
-                        <div className="spinner mr-2" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        Confirm Booking
-                        <CheckCircle className="h-4 w-4 ml-2" />
-                      </>
-                    )}
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back
                   </Button>
-                ) : (
-                  <Button
-                    onClick={nextStep}
-                    disabled={!canProceed()}
-                    className="btn-futuristic flex items-center justify-center w-full sm:w-auto order-1 sm:order-2"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -853,10 +896,10 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
       {Object.entries(availableServices).map(([categoryKey, category]) => (
         <div
           key={categoryKey}
-          className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+          className={`p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
             bookingData.category === categoryKey
-              ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50 shadow-lg shadow-fac-orange-500/10'
-              : 'border-border glass hover:border-fac-orange-300 hover:shadow-lg'
+              ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50/80 to-orange-50/80 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl shadow-fac-orange-500/20'
+              : 'border-border/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-fac-orange-300 hover:shadow-xl hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
           }`}
           onClick={async () => {
             // Check if this category is available for current service type
@@ -873,20 +916,22 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
           }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-            <div className="flex items-center space-x-3 md:space-x-4">
-              <div className={`bg-gradient-to-r ${category.gradient} p-2 md:p-3 rounded-xl`}>
-                <category.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            <div className="flex items-center space-x-4">
+              <div className={`bg-gradient-to-r ${category.gradient} p-3 md:p-4 rounded-2xl shadow-lg`}>
+                <category.icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-black text-foreground text-base md:text-lg">{category.name}</h3>
+                <h3 className="font-black text-foreground text-lg md:text-xl">{category.name}</h3>
                 {category.description && (
-                  <p className="text-muted-foreground text-xs md:text-sm mt-1">{category.description}</p>
+                  <p className="text-muted-foreground text-sm md:text-base mt-1">{category.description}</p>
                 )}
               </div>
             </div>
             {bookingData.category === categoryKey && (
-              <div className="mt-2 sm:mt-0 flex-shrink-0">
-                <Badge className="bg-fac-orange-500 text-white text-xs">Selected</Badge>
+              <div className="mt-3 sm:mt-0 flex-shrink-0">
+                <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  ✓ Selected
+                </Badge>
               </div>
             )}
           </div>
@@ -897,14 +942,14 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
                 <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
                 <p className="text-sm md:text-base font-semibold text-foreground">Select wash type:</p>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {Object.entries(category.services).map(([serviceKey, service]) => (
                   <div
                     key={serviceKey}
-                    className={`relative p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                    className={`relative p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
                       bookingData.service === serviceKey
-                        ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950 shadow-lg shadow-fac-orange-500/20'
-                        : 'border-border hover:border-fac-orange-300 hover:shadow-md'
+                        ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-xl shadow-fac-orange-500/30'
+                        : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/50 dark:hover:bg-fac-orange-950/50'
                     }`}
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -987,21 +1032,28 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
       {Object.entries(UNIT_TYPES).map(([typeKey, type]) => (
         <div key={typeKey} className="space-y-4">
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
               bookingData.unitType === typeKey
-                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
-                : 'border-border hover:border-fac-orange-300'
+                ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl'
+                : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
             }`}
             onClick={() => {
               updateBookingData("unitType", typeKey);
               updateBookingData("unitSize", ""); // Reset size when type changes
             }}
           >
-            <h3 className="font-bold text-foreground text-lg">{type.name}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-foreground text-xl">{type.name}</h3>
+              {bookingData.unitType === typeKey && (
+                <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  ✓ Selected
+                </Badge>
+              )}
+            </div>
           </div>
           
           {bookingData.unitType === typeKey && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-0 sm:ml-4">
               {Object.entries(type.sizes).map(([sizeKey, sizeName]) => {
                 const getPrice = () => {
                   if (bookingData.category === "auto_detailing") {
@@ -1011,20 +1063,22 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
                   }
                   return 0;
                 };
-                
+
                 return (
                   <div
                     key={sizeKey}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all text-center ${
+                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center active:scale-95 min-h-[80px] flex flex-col justify-center ${
                       bookingData.unitSize === sizeKey
-                        ? 'border-fac-orange-500 bg-fac-orange-500 text-white'
-                        : 'border-border hover:border-fac-orange-300'
+                        ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white shadow-xl'
+                        : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950/50'
                     }`}
                     onClick={() => updateBookingData("unitSize", sizeKey)}
                   >
-                    <p className="font-semibold text-sm">{sizeName}</p>
+                    <p className="font-bold text-base mb-1">{sizeName}</p>
                     {bookingData.category !== "carwash" && (
-                      <p className="text-xs opacity-75">₱{getPrice().toLocaleString()}</p>
+                      <p className={`text-sm ${bookingData.unitSize === sizeKey ? 'text-white/90' : 'text-muted-foreground'}`}>
+                        ₱{getPrice().toLocaleString()}
+                      </p>
                     )}
                   </div>
                 );
@@ -1114,13 +1168,26 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label className="text-foreground font-semibold">Select Date</Label>
-            <Input
-              type="date"
-              min={new Date().toISOString().split("T")[0]}
-              value={bookingData.date}
-              onChange={(e) => updateBookingData("date", e.target.value)}
-              className="mt-2"
-            />
+            <div className="relative mt-2">
+              <Input
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                value={bookingData.date}
+                onChange={(e) => updateBookingData("date", e.target.value)}
+                className="pr-10 cursor-pointer"
+                placeholder="Choose service date"
+                onFocus={(e) => {
+                  // Prevent auto-opening on mobile
+                  if (window.innerWidth < 768) {
+                    e.target.blur();
+                    setTimeout(() => e.target.focus(), 50);
+                  }
+                }}
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
           </div>
 
           {bookingData.serviceType === 'branch' && (
@@ -1133,7 +1200,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                 <SelectContent>
                   {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
                     <SelectItem key={branch.id} value={branch.name}>
-                      {branch.name} - {branch.address}
+                      {String(branch.name)} - {String(branch.address)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1298,46 +1365,168 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
               value={bookingData.fullName}
               onChange={(e) => updateBookingData("fullName", e.target.value)}
               placeholder="Enter your full name"
-              className="mt-1"
+              className={`mt-1 ${!bookingData.fullName.trim() ? 'border-red-500 focus:border-red-500' : ''}`}
+              required
             />
+            {!bookingData.fullName.trim() && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Full name is required
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-foreground font-semibold">Mobile Number *</Label>
             <Input
               value={bookingData.mobile}
-              onChange={(e) => updateBookingData("mobile", e.target.value)}
+              onChange={(e) => {
+                // Auto-format mobile number
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.startsWith('0')) value = '63' + value.substring(1);
+                updateBookingData("mobile", value);
+              }}
               placeholder="+63 912 345 6789"
-              className="mt-1"
+              className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+              required
             />
+            {(!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10) && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {!bookingData.mobile.trim() ? 'Mobile number is required' : 'Please enter a valid mobile number'}
+              </p>
+            )}
           </div>
           <div>
-            <Label className="text-foreground font-semibold">Email</Label>
+            <Label className="text-foreground font-semibold">
+              Email {isGuest && <span className="text-red-500">*</span>}
+            </Label>
             <Input
               type="email"
               value={bookingData.email}
               onChange={(e) => updateBookingData("email", e.target.value)}
               placeholder="your.email@example.com"
-              className="mt-1"
+              className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? 'border-red-500 focus:border-red-500' : ''}`}
+              required={isGuest}
             />
+            {((isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {isGuest && !bookingData.email.trim() ? 'Email is required for guest bookings' : 'Please enter a valid email address'}
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-foreground font-semibold">Plate Number</Label>
             <Input
               value={bookingData.plateNo}
-              onChange={(e) => updateBookingData("plateNo", e.target.value)}
+              onChange={(e) => updateBookingData("plateNo", e.target.value.toUpperCase())}
               placeholder="ABC 1234"
               className="mt-1"
             />
+            <p className="text-xs text-muted-foreground mt-1">Optional - helps us identify your vehicle</p>
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-foreground font-semibold">Car Model & Year</Label>
+            <Input
+              value={bookingData.carModel}
+              onChange={(e) => updateBookingData("carModel", e.target.value)}
+              placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R 2023"
+            </p>
           </div>
         </div>
         <div>
           <Label className="text-foreground font-semibold">Address *</Label>
+
+          {/* Address Options */}
+          <div className="mt-2 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const defaultAddress = "123 Sample Street, Barangay Example, Manila City, Metro Manila";
+                updateBookingData("address", defaultAddress);
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Use Default
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      // In a real app, you'd reverse geocode these coordinates
+                      const { latitude, longitude } = position.coords;
+                      const locationAddress = `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                      updateBookingData("address", locationAddress);
+                      toast({
+                        title: "Location Retrieved",
+                        description: "Your current location has been set as the address.",
+                      });
+                    },
+                    (error) => {
+                      toast({
+                        title: "Location Error",
+                        description: "Unable to get your current location. Please enter manually.",
+                        variant: "destructive",
+                      });
+                    }
+                  );
+                } else {
+                  toast({
+                    title: "Not Supported",
+                    description: "Geolocation is not supported by this browser.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Current Location
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                updateBookingData("address", "");
+              }}
+              className="flex items-center justify-center text-xs"
+            >
+              <User className="h-3 w-3 mr-1" />
+              Custom Address
+            </Button>
+          </div>
+
           <Textarea
             value={bookingData.address}
             onChange={(e) => updateBookingData("address", e.target.value)}
-            placeholder="Enter your complete address"
-            className="mt-1"
+            placeholder="Enter your complete address (street, barangay, city, province)"
+            className={`${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+            rows={3}
+            required
           />
+          {(!bookingData.address.trim() || bookingData.address.trim().length < 10) && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {!bookingData.address.trim() ? 'Address is required' : 'Please provide a complete address'}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            💡 Use the buttons above for quick address entry, or type your custom address
+          </p>
         </div>
       </CardContent>
     </Card>

@@ -143,7 +143,7 @@ export default function FlutterCustomerApp() {
             onClick={() => setIsScanning(!isScanning)}
             className={cn(
               "h-20 flex-col gap-2 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
-              isScanning && "animate-pulse",
+              isScanning && "",
             )}
           >
             <QrCode className="w-6 h-6" />
@@ -430,7 +430,7 @@ export default function FlutterCustomerApp() {
           onClick={() => setIsScanning(!isScanning)}
           className={cn(
             "w-14 h-14 rounded-full bg-orange-500 hover:bg-orange-600 shadow-lg",
-            isScanning && "animate-pulse bg-orange-600",
+            isScanning && " bg-orange-600",
           )}
         >
           <QrCode className="w-6 h-6" />
@@ -464,7 +464,7 @@ export default function FlutterCustomerApp() {
       {isScanning && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
           <div className="text-center">
-            <div className="w-64 h-64 border-4 border-orange-500 border-dashed rounded-lg flex items-center justify-center mb-4 animate-pulse">
+            <div className="w-64 h-64 border-4 border-orange-500 border-dashed rounded-lg flex items-center justify-center mb-4 ">
               <QrCode className="w-16 h-16 text-orange-500" />
             </div>
             <p className="text-white text-lg mb-4">Scanning for QR Code...</p>

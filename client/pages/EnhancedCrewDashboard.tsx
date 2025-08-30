@@ -13,6 +13,19 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
 import { cn } from '@/lib/utils';
+import {
+  getGeolocationErrorDetails,
+  getGeolocationErrorMessage,
+  getGeolocationErrorHelp,
+  isGeolocationSupported,
+  isGeolocationContextSecure
+} from '@/utils/geolocationUtils';
+import {
+  getLocationEmergency,
+  testGeolocationStrategies
+} from '@/utils/geolocationTimeoutFix';
+import { emergencyGPSFix } from '@/utils/quickLocationFix';
+import CrewStatusToggle, { type CrewStatus } from '@/components/CrewStatusToggle';
 import { 
   Calendar,
   Clock,
@@ -166,7 +179,7 @@ export default function EnhancedCrewDashboard() {
 
   const startLocationTracking = () => {
     // Check for geolocation support
-    if (!navigator.geolocation) {
+    if (!isGeolocationSupported()) {
       console.warn('Geolocation is not supported by this browser');
       toast({
         title: "Location Not Available",
@@ -177,7 +190,7 @@ export default function EnhancedCrewDashboard() {
     }
 
     // Check for HTTPS requirement (geolocation requires secure context)
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    if (!isGeolocationContextSecure()) {
       console.warn('Geolocation requires HTTPS or localhost');
       toast({
         title: "Secure Connection Required",
@@ -223,83 +236,110 @@ export default function EnhancedCrewDashboard() {
 
       // Check location accuracy and provide guidance
       const accuracy = position.coords.accuracy;
-      if (accuracy > 100) {
-        toast({
-          title: "⚠️ Poor GPS Signal",
-          description: `Location accuracy is ${Math.round(accuracy)}m. For better accuracy, try moving outdoors or near a window.`,
-          variant: "destructive",
-          duration: 4000,
-        });
-      } else if (!currentLocation) {
-        // Show success toast only on first successful location
-        toast({
-          title: "📍 Location Tracking Active",
-          description: `GPS coordinates acquired (±${Math.round(accuracy)}m accuracy)`,
-          duration: 3000,
-        });
+      const isFirstLocation = !currentLocation;
+
+      if (accuracy > 1000) {
+        // Very poor accuracy (>1km)
+        if (isFirstLocation) {
+          toast({
+            title: "⚠️ Very Approximate Location",
+            description: `Location accuracy is ${(accuracy/1000).toFixed(1)}km. This is normal indoors or in areas with poor GPS signal.`,
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      } else if (accuracy > 100) {
+        // Poor accuracy (100m-1km)
+        if (isFirstLocation) {
+          toast({
+            title: "📍 Location Found (Approximate)",
+            description: `GPS active with ±${Math.round(accuracy)}m accuracy. For better precision, try moving outdoors.`,
+            duration: 4000,
+          });
+        }
+      } else if (accuracy > 50) {
+        // Moderate accuracy (50-100m)
+        if (isFirstLocation) {
+          toast({
+            title: "📍 Location Tracking Active",
+            description: `GPS coordinates acquired (±${Math.round(accuracy)}m accuracy)`,
+            duration: 3000,
+          });
+        }
+      } else {
+        // Good accuracy (<50m)
+        if (isFirstLocation) {
+          toast({
+            title: "🎯 High-Precision GPS Active",
+            description: `Excellent location accuracy (±${Math.round(accuracy)}m)`,
+            duration: 3000,
+          });
+        }
       }
     };
 
     const handleLocationError = (error: GeolocationPositionError) => {
-      console.error('Geolocation error details:', {
-        code: error.code,
-        message: error.message,
-        PERMISSION_DENIED: error.PERMISSION_DENIED,
-        POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
-        TIMEOUT: error.TIMEOUT
-      });
+      // Log proper error details for debugging
+      const errorDetails = getGeolocationErrorDetails(error);
+      console.error('Geolocation error:', JSON.stringify(errorDetails));
 
       setIsTrackingLocation(false);
 
-      let title = "Location Error";
-      let description = "Unable to track location";
+      const errorHelp = getGeolocationErrorHelp(error);
 
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          title = "Location Permission Denied";
-          description = "Please enable location permissions: Click the location icon in your browser's address bar, or check your browser settings.";
-          // Show additional help after a delay
-          setTimeout(() => {
-            toast({
-              title: "💡 How to Enable Location",
-              description: "1. Click the location icon (🔒) in address bar\n2. Select 'Allow' for location access\n3. Refresh this page",
-              duration: 8000,
-            });
-          }, 2000);
-          break;
-        case error.POSITION_UNAVAILABLE:
-          title = "Location Unavailable";
-          description = "Your location information is currently unavailable. Please check your GPS settings.";
-          break;
-        case error.TIMEOUT:
-          title = "Location Timeout";
-          description = "Location request timed out. Trying again...";
-          // Retry after timeout
-          setTimeout(() => {
-            if (navigator.geolocation) {
-              console.log('Retrying location tracking after timeout...');
-              startLocationTracking();
-            }
-          }, 5000);
-          return; // Don't show error toast for timeout, just retry
-        default:
-          title = "Location Error";
-          description = `Location tracking failed: ${error.message}`;
-          break;
+      // Handle timeout with improved retry logic
+      if (error.code === 3) { // TIMEOUT
+        const timeoutCount = (error as any).timeoutCount || 1;
+        const isUsingFallback = (error as any).isUsingFallback || false;
+
+        console.log(`📍 Location timeout (attempt ${timeoutCount}, fallback: ${isUsingFallback})`);
+
+        // Show user-friendly timeout notification
+        if (timeoutCount === 1) {
+          toast({
+            title: "🔍 Searching for GPS Signal",
+            description: "GPS is taking longer than usual. Trying different accuracy settings...",
+            duration: 4000,
+          });
+        } else if (timeoutCount >= 2 && !isUsingFallback) {
+          toast({
+            title: "📡 Poor GPS Signal",
+            description: "Having trouble getting precise location. Try moving near a window or outdoors.",
+            variant: "destructive",
+            duration: 6000,
+          });
+        }
+
+        // Don't retry here - the new geolocation utils handle retry automatically
+        return;
       }
 
+      // Show error toast for other errors
       toast({
-        title,
-        description,
+        title: errorHelp.title,
+        description: errorHelp.description,
         variant: "destructive",
+        duration: 7000,
       });
+
+      // Show additional help for permission errors
+      if (error.code === 1 && errorHelp.helpText) {
+        setTimeout(() => {
+          toast({
+            title: "💡 How to Enable Location",
+            description: errorHelp.helpText,
+            duration: 10000,
+          });
+        }, 2000);
+      }
     };
 
     // First try to get current position
     navigator.geolocation.getCurrentPosition(
       handleLocationSuccess,
       (error) => {
-        console.warn('Initial location fetch failed, starting watch anyway:', error.message);
+        const errorDetails = getGeolocationErrorDetails(error);
+        console.warn('Initial location fetch failed, starting watch anyway:', JSON.stringify(errorDetails));
         // Continue to watchPosition even if getCurrentPosition fails
       },
       {
@@ -669,7 +709,7 @@ export default function EnhancedCrewDashboard() {
   };
 
   const refreshLocation = () => {
-    if (!navigator.geolocation) {
+    if (!isGeolocationSupported()) {
       toast({
         title: "Location Not Supported",
         description: "Your browser doesn't support location services",
@@ -692,33 +732,30 @@ export default function EnhancedCrewDashboard() {
       },
       (error) => {
         setIsTrackingLocation(false);
-        let description = "Failed to get current location";
 
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            description = "Location permission denied. Please enable location access in your browser settings.";
-            // Provide helpful instructions
-            setTimeout(() => {
-              toast({
-                title: "🔧 Location Setup Help",
-                description: "Chrome/Edge: Click 🔒 in address bar → Site settings → Location → Allow\nFirefox: Click 🛡️ → Permissions → Location → Allow",
-                duration: 10000,
-              });
-            }, 1000);
-            break;
-          case error.POSITION_UNAVAILABLE:
-            description = "Location information unavailable.";
-            break;
-          case error.TIMEOUT:
-            description = "Location request timed out.";
-            break;
-        }
+        // Log error details for debugging
+        const errorDetails = getGeolocationErrorDetails(error);
+        console.error('Refresh location error:', JSON.stringify(errorDetails));
+
+        // Get user-friendly error information
+        const errorHelp = getGeolocationErrorHelp(error);
 
         toast({
-          title: "Location Error",
-          description,
+          title: errorHelp.title,
+          description: errorHelp.description,
           variant: "destructive",
         });
+
+        // Show additional help for permission errors
+        if (error.code === 1 && errorHelp.helpText) {
+          setTimeout(() => {
+            toast({
+              title: "🔧 Location Setup Help",
+              description: errorHelp.helpText,
+              duration: 10000,
+            });
+          }, 1000);
+        }
       },
       {
         enableHighAccuracy: true,
@@ -750,252 +787,509 @@ export default function EnhancedCrewDashboard() {
       
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center">
-              <Wrench className="h-8 w-8 mr-3 text-fac-orange-500" />
-              Crew Dashboard
-            </h1>
-            <div className="flex items-center gap-6 mt-2 text-muted-foreground">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                {currentUser?.fullName}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-fac-orange-100 p-4 rounded-xl">
+                <Wrench className="h-8 w-8 text-fac-orange-600" />
               </div>
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-2" />
-                {currentUser?.branchLocation}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Crew Dashboard</h1>
+                <div className="flex flex-wrap items-center gap-4 text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span className="font-semibold">{currentUser?.fullName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <span>{currentUser?.branchLocation}</span>
+                  </div>
+                  {currentUser?.crewRating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      <span className="font-medium">{currentUser.crewRating}/5.0</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm">Status:</span>
+                    <Badge
+                      className={cn(
+                        "font-medium",
+                        (currentUser?.crewStatus === 'online' || currentUser?.crewStatus === 'busy')
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {currentUser?.crewStatus || 'offline'}
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              {currentUser?.crewRating && (
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                  {currentUser.crewRating}/5.0
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {isWorkActive && (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg font-medium">
+                  <Timer className="h-4 w-4" />
+                  <span>Work Time: {formatTime(workTimer)}</span>
                 </div>
               )}
-              <div className="flex items-center">
-                <Activity className="h-4 w-4 mr-1" />
-                Status: <Badge className="ml-2">{currentUser?.crewStatus || 'offline'}</Badge>
+
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={isTrackingLocation && currentLocation ? "default" : "outline"}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5",
+                    isTrackingLocation && currentLocation ? "bg-green-100 text-green-800 border-green-200" :
+                    isTrackingLocation ? "bg-yellow-100 text-yellow-800 border-yellow-200" :
+                    "bg-red-100 text-red-800 border-red-200"
+                  )}
+                >
+                  <Navigation className="h-3 w-3" />
+                  <span className="font-medium">GPS {getLocationStatus()}</span>
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={refreshLocation}
+                  disabled={isTrackingLocation && !currentLocation}
+                  className="px-3 hover:bg-gray-50"
+                  title="Refresh location"
+                >
+                  <Navigation className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: "🚀 Testing Emergency GPS",
+                        description: "Running timeout-resistant location acquisition...",
+                        duration: 2000,
+                      });
+
+                      const location = await getLocationEmergency();
+                      if (location) {
+                        setCurrentLocation({ lat: location.lat, lng: location.lng });
+                        setIsTrackingLocation(true);
+                        toast({
+                          title: "✅ Emergency GPS Success",
+                          description: `Location acquired: ±${Math.round(location.accuracy || 1000)}m accuracy`,
+                          duration: 4000,
+                        });
+                      } else {
+                        toast({
+                          title: "⚠️ No Location Available",
+                          description: "All GPS methods failed. Check device settings.",
+                          variant: "destructive",
+                          duration: 5000,
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Emergency GPS test failed:', error);
+                      toast({
+                        title: "❌ Emergency GPS Failed",
+                        description: error instanceof Error ? error.message : "Unknown error occurred",
+                        variant: "destructive",
+                        duration: 6000,
+                      });
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="px-3 hover:bg-blue-50 border-blue-300 text-blue-700"
+                  title="Test emergency GPS (timeout-resistant)"
+                >
+                  <span className="text-xs">🚀 Test</span>
+                </Button>
               </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {isWorkActive && (
-              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-lg">
-                <Timer className="h-4 w-4" />
-                {formatTime(workTimer)}
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={isTrackingLocation && currentLocation ? "default" : "outline"}
-                className={cn(
-                  "flex items-center gap-1",
-                  isTrackingLocation && currentLocation ? "bg-green-100 text-green-800" :
-                  isTrackingLocation ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
-                )}
-              >
-                <Navigation className="h-3 w-3" />
-                GPS {getLocationStatus()}
-              </Badge>
+
+              {/* Debug info in development */}
+              {currentLocation && import.meta.env.DEV && (
+                <div className="bg-purple-50 border border-purple-200 text-purple-700 text-xs px-3 py-2 rounded-lg font-medium">
+                  📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
+                </div>
+              )}
+
+              {/* Emergency GPS Fix Button */}
               <Button
-                size="sm"
+                onClick={async () => {
+                  try {
+                    const result = await emergencyGPSFix();
+                    if (result) {
+                      setCurrentLocation({ lat: result.lat, lng: result.lng });
+                      setIsTrackingLocation(true);
+                    }
+                  } catch (error) {
+                    console.error('Emergency GPS fix failed:', error);
+                  }
+                }}
                 variant="outline"
-                onClick={refreshLocation}
-                disabled={isTrackingLocation && !currentLocation}
-                className="px-2"
+                className="flex items-center gap-2 hover:bg-red-50 border-red-300 text-red-700 px-4"
+                title="Emergency GPS fix for timeout issues"
               >
-                <Navigation className="h-3 w-3" />
+                <span className="text-sm">🆘 Fix GPS</span>
+              </Button>
+
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="flex items-center gap-2 hover:bg-gray-50 border-gray-300 px-4"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
               </Button>
             </div>
-            {/* Debug info in development */}
-            {currentLocation && import.meta.env.DEV && (
-              <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
-              </div>
-            )}
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Calendar className="h-6 w-6 text-blue-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Total Assignments</p>
-                  <p className="text-xl font-bold">{stats.totalAssignments}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2.5 rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Total</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats.totalAssignments}</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Clock className="h-6 w-6 text-yellow-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Pending</p>
-                  <p className="text-xl font-bold">{stats.pendingAssignments}</p>
+
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-yellow-500 p-2.5 rounded-lg">
+                    <Clock className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Pending</p>
+                    <p className="text-2xl font-bold text-yellow-900">{stats.pendingAssignments}</p>
+                  </div>
+                </div>
+                {stats.pendingAssignments > 0 && (
+                  <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                    New
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-orange-500 p-2.5 rounded-lg">
+                    <Activity className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Active</p>
+                    <p className="text-2xl font-bold text-orange-900">{stats.activeJobs}</p>
+                  </div>
+                </div>
+                {stats.activeJobs > 0 && (
+                  <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                    Live
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-green-500 p-2.5 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">Done</p>
+                    <p className="text-2xl font-bold text-green-900">{stats.completedBookings}</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Activity className="h-6 w-6 text-orange-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Active Jobs</p>
-                  <p className="text-xl font-bold">{stats.activeJobs}</p>
+
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-amber-500 p-2.5 rounded-lg">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Rating</p>
+                    <div className="flex items-center gap-1">
+                      <p className="text-2xl font-bold text-amber-900">{stats.rating.toFixed(1)}</p>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < Math.floor(stats.rating)
+                                ? 'text-amber-500 fill-amber-500'
+                                : 'text-amber-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Completed</p>
-                  <p className="text-xl font-bold">{stats.completedBookings}</p>
+
+          <Card className={`bg-gradient-to-br border-2 hover:shadow-lg transition-all duration-300 ${
+            isTrackingLocation
+              ? 'from-purple-50 to-purple-100 border-purple-200'
+              : 'from-gray-50 to-gray-100 border-gray-200'
+          }`}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={`p-2.5 rounded-lg ${
+                    isTrackingLocation ? 'bg-purple-500' : 'bg-gray-500'
+                  }`}>
+                    <MapPinned className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isTrackingLocation ? 'text-purple-700' : 'text-gray-700'
+                    }`}>Location</p>
+                    <p className={`text-2xl font-bold ${
+                      isTrackingLocation ? 'text-purple-900' : 'text-gray-900'
+                    }`}>{isTrackingLocation ? 'ON' : 'OFF'}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Star className="h-6 w-6 text-yellow-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Rating</p>
-                  <p className="text-xl font-bold">{stats.rating.toFixed(1)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <MapPinned className="h-6 w-6 text-purple-500" />
-                <div className="ml-3">
-                  <p className="text-xs font-medium text-muted-foreground">Location</p>
-                  <p className="text-xl font-bold">{isTrackingLocation ? 'ON' : 'OFF'}</p>
-                </div>
+                <div className={`w-3 h-3 rounded-full ${
+                  isTrackingLocation
+                    ? 'bg-green-500 animate-pulse'
+                    : 'bg-red-500'
+                }`}></div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="assignments" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              New Assignments
-            </TabsTrigger>
-            <TabsTrigger value="active" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Active Jobs
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="images" className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              Images
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="bg-white rounded-lg shadow-sm border p-1">
+            <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1">
+              <TabsTrigger
+                value="assignments"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">New Assignments</span>
+                <span className="sm:hidden">New</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="active"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">Active Jobs</span>
+                <span className="sm:hidden">Active</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <CheckCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="status"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Status</span>
+                <span className="sm:hidden">Status</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="images"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <ImageIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Images</span>
+                <span className="sm:hidden">Pics</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Assignments Tab */}
-          <TabsContent value="assignments" className="space-y-6">
-            <div className="grid gap-4">
+          <TabsContent value="assignments" className="space-y-6 mt-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">New Assignments</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {assignments.filter(a => a.status === 'assigned').length} pending assignment{assignments.filter(a => a.status === 'assigned').length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <Badge variant="secondary" className="px-3 py-1">
+                {assignments.filter(a => a.status === 'assigned').length} New
+              </Badge>
+            </div>
+
+            <div className="grid gap-6">
               {assignments.filter(a => a.status === 'assigned').map((assignment) => {
                 const booking = bookings.find(b => b.id === assignment.bookingId);
                 if (!booking) return null;
 
                 return (
-                  <Card key={assignment.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+                  <Card key={assignment.id} className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-fac-orange-500 bg-gradient-to-r from-orange-50 to-white">
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="grid md:grid-cols-3 gap-4 flex-1">
-                          <div>
-                            <h3 className="font-semibold text-lg">
-                              {booking.guestInfo ? 
-                                `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : 
-                                'Registered Customer'
-                              }
-                            </h3>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Phone className="h-4 w-4 mr-1" />
-                              {booking.guestInfo?.phone || 'Customer Phone'}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Mail className="h-4 w-4 mr-1" />
-                              {booking.guestInfo?.email || 'Customer Email'}
-                            </p>
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Main Content */}
+                        <div className="flex-1 space-y-4">
+                          {/* Customer Info */}
+                          <div className="flex items-start gap-4">
+                            <div className="bg-fac-orange-100 p-3 rounded-full">
+                              <User className="h-5 w-5 text-fac-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-bold text-lg text-gray-900">
+                                {booking.guestInfo ?
+                                  `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
+                                  'Registered Customer'
+                                }
+                              </h3>
+                              <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                                <p className="text-sm text-gray-600 flex items-center">
+                                  <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                                  {booking.guestInfo?.phone || 'Customer Phone'}
+                                </p>
+                                <p className="text-sm text-gray-600 flex items-center">
+                                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                                  {booking.guestInfo?.email || 'Customer Email'}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-fac-orange-500">{booking.service}</p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              {booking.date} at {booking.timeSlot}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <MapPin className="h-4 w-4 mr-1" />
-                              {booking.branch}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Clock className="h-4 w-4 mr-1" />
-                              Est. {booking.estimatedDuration} mins
-                            </p>
+
+                          {/* Service & Vehicle Info */}
+                          <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Wrench className="h-5 w-5 text-fac-orange-500" />
+                                <div>
+                                  <p className="font-semibold text-fac-orange-600">{booking.service}</p>
+                                  <p className="text-sm text-gray-500">Service Package</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Calendar className="h-5 w-5 text-blue-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.date}</p>
+                                  <p className="text-sm text-gray-500">{booking.timeSlot}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <MapPin className="h-5 w-5 text-green-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.branch}</p>
+                                  <p className="text-sm text-gray-500">Service Location</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Car className="h-5 w-5 text-purple-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.unitType}</p>
+                                  <p className="text-sm text-gray-500">{booking.plateNumber}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Clock className="h-5 w-5 text-amber-500" />
+                                <div>
+                                  <p className="font-medium text-gray-900">{booking.estimatedDuration} mins</p>
+                                  <p className="text-sm text-gray-500">Estimated Duration</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">💰</span>
+                                <div>
+                                  <p className="font-bold text-xl text-fac-orange-600">₱{booking.totalPrice.toLocaleString()}</p>
+                                  <p className="text-sm text-gray-500">Total Amount</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-lg text-fac-orange-500">₱{booking.totalPrice.toLocaleString()}</p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <Car className="h-4 w-4 mr-1" />
-                              {booking.unitType} - {booking.plateNumber}
-                            </p>
-                            {getStatusBadge(assignment.status)}
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Assigned: {new Date(assignment.assignedAt).toLocaleString()}
-                            </p>
+
+                          {/* Assignment Details */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {getStatusBadge(assignment.status)}
+                                <span className="text-sm text-gray-500">
+                                  Assigned: {new Date(assignment.assignedAt).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4">
-                          <Button 
+
+                        {/* Action Buttons */}
+                        <div className="flex lg:flex-col gap-3 lg:min-w-[140px]">
+                          <Button
                             onClick={() => acceptAssignment(assignment.id)}
-                            className="bg-green-500 hover:bg-green-600"
+                            className="flex-1 lg:flex-none bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
                           >
-                            <CheckCircle className="h-4 w-4 mr-1" />
+                            <CheckCircle className="h-5 w-5 mr-2" />
                             Accept
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => rejectAssignment(assignment.id)}
                             variant="destructive"
+                            className="flex-1 lg:flex-none font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
                           >
-                            <XCircle className="h-4 w-4 mr-1" />
+                            <XCircle className="h-5 w-5 mr-2" />
                             Reject
                           </Button>
                         </div>
                       </div>
+
                       {booking.notes && (
-                        <div className="mt-4 p-3 bg-muted rounded-lg">
-                          <p className="text-sm"><strong>Notes:</strong> {booking.notes}</p>
+                        <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                          <div className="flex items-start gap-3">
+                            <MessageSquare className="h-5 w-5 text-blue-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-blue-900">Special Instructions</p>
+                              <p className="text-sm text-blue-700 mt-1">{booking.notes}</p>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
                 );
               })}
+
               {assignments.filter(a => a.status === 'assigned').length === 0 && (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No new assignments at the moment</p>
+                <Card className="border-2 border-dashed border-gray-200">
+                  <CardContent className="p-12 text-center">
+                    <div className="bg-gray-100 p-6 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                      <Calendar className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No New Assignments</h3>
+                    <p className="text-gray-600 mb-4">You're all caught up! New assignments will appear here when available.</p>
+                    <Badge variant="outline" className="px-4 py-2">
+                      ✨ Ready for new work
+                    </Badge>
                   </CardContent>
                 </Card>
               )}
@@ -1311,6 +1605,150 @@ export default function EnhancedCrewDashboard() {
                   </CardContent>
                 </Card>
               )}
+            </div>
+          </TabsContent>
+
+          {/* Status Management Tab */}
+          <TabsContent value="status" className="space-y-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Status Controls */}
+              <div className="lg:col-span-2">
+                <CrewStatusToggle
+                  crewId={currentUser?.id || 'unknown'}
+                  initialStatus={currentUser?.crewStatus as CrewStatus || 'offline'}
+                  onStatusChange={(status) => {
+                    // Update local user status
+                    if (currentUser) {
+                      const updatedUser = { ...currentUser, crewStatus: status };
+                      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    }
+
+                    // Refresh data to reflect status changes
+                    loadCrewData();
+                  }}
+                  onLocationToggle={(enabled) => {
+                    if (enabled) {
+                      startLocationTracking();
+                    } else {
+                      setIsTrackingLocation(false);
+                      setCurrentLocation(null);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Quick Info Panel */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Navigation className="h-5 w-5 text-fac-orange-500" />
+                      Location Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">GPS Tracking:</span>
+                      <Badge
+                        variant={isTrackingLocation ? "default" : "secondary"}
+                        className={isTrackingLocation ? "bg-green-100 text-green-800" : ""}
+                      >
+                        {isTrackingLocation ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+
+                    {currentLocation && (
+                      <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="font-medium">Current Location</span>
+                        </div>
+                        <div>📍 {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Last updated: {new Date().toLocaleTimeString()}
+                        </div>
+                      </div>
+                    )}
+
+                    {!isTrackingLocation && (
+                      <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="font-medium">Location Required</span>
+                        </div>
+                        <p className="text-xs text-amber-700 mt-1">
+                          Enable location to receive nearby assignments
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Today's Performance */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-fac-orange-500" />
+                      Today's Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Assignments:</span>
+                      <span className="font-semibold">{stats.totalAssignments}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Completed:</span>
+                      <span className="font-semibold text-green-600">{stats.completedBookings}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Active Jobs:</span>
+                      <span className="font-semibold text-orange-600">{stats.activeJobs}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Rating:</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <span className="font-semibold">{stats.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Actions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button
+                      onClick={() => setActiveTab('assignments')}
+                      className="w-full justify-start"
+                      variant="outline"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      View New Assignments ({stats.pendingAssignments})
+                    </Button>
+                    <Button
+                      onClick={() => setActiveTab('active')}
+                      className="w-full justify-start"
+                      variant="outline"
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Active Jobs ({stats.activeJobs})
+                    </Button>
+                    <Button
+                      onClick={refreshLocation}
+                      className="w-full justify-start"
+                      variant="outline"
+                      disabled={!isTrackingLocation}
+                    >
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Refresh Location
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 

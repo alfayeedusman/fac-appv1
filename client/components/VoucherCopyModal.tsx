@@ -78,7 +78,7 @@ export default function VoucherCopyModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-r from-fac-orange-500 to-purple-600 p-4 rounded-full animate-pulse">
+            <div className="bg-gradient-to-r from-fac-orange-500 to-purple-600 p-4 rounded-full ">
               <Gift className="h-8 w-8 text-white" />
             </div>
           </div>

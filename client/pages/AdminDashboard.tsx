@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
+import DebugPanel from "@/components/DebugPanel";
 import {
   Users,
   Car,
@@ -60,6 +61,9 @@ import {
   Activity,
   CheckCircle,
   Printer,
+  Calendar,
+  Wrench,
+  AlertCircle,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -67,7 +71,6 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
-import StickyHeader from "@/components/StickyHeader";
 import { formatDistanceToNow } from "date-fns";
 import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
@@ -76,6 +79,14 @@ import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
+import AdminCMS from "./AdminCMS";
+import AdminPushNotifications from "./AdminPushNotifications";
+import AdminGamification from "./AdminGamification";
+import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
+import AdminBookingSettings from "./AdminBookingSettings";
+import POS from "./POS";
+import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
+import AdminUserManagement from "./AdminUserManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
@@ -343,23 +354,36 @@ export default function AdminDashboard() {
       if (userRole && userEmail) {
         const systemNotifications = getUserSystemNotifications(userEmail, userRole);
 
-        // Convert system notifications to the format expected by the UI
-        const formattedNotifications = systemNotifications.map((notification: SystemNotification) => ({
-          id: notification.id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          timestamp: new Date(notification.createdAt),
-          read: notification.readBy.some(r => r.userId === userEmail),
-          priority: notification.priority,
-          data: notification.data,
-          actionRequired: notification.type === 'new_booking',
-        }));
+        // Convert system notifications to the format expected by the UI with extra safety checks
+        const formattedNotifications = Array.isArray(systemNotifications)
+          ? systemNotifications.map((notification: SystemNotification) => {
+              try {
+                return {
+                  id: notification?.id || '',
+                  type: notification?.type || 'system',
+                  title: notification?.title || 'Notification',
+                  message: notification?.message || '',
+                  timestamp: notification?.createdAt ? new Date(notification.createdAt) : new Date(),
+                  read: Array.isArray(notification?.readBy) ? notification.readBy.some(r => r?.userId === userEmail) : false,
+                  priority: notification?.priority || 'medium',
+                  data: notification?.data || {},
+                  actionRequired: notification?.type === 'new_booking',
+                };
+              } catch (mapError) {
+                console.error('Error formatting notification:', mapError, notification);
+                return null;
+              }
+            }).filter(Boolean) // Remove any null entries
+          : [];
 
         setNotifications(formattedNotifications);
+      } else {
+        setNotifications([]);
       }
     } catch (error) {
       console.error('Error loading system notifications:', error);
+      // Ensure notifications is always an array even on error
+      setNotifications([]);
     }
   };
 
@@ -495,6 +519,7 @@ export default function AdminDashboard() {
 
   const handleApproveCustomer = (notificationId: string) => {
     // Find the notification and extract customer info
+    if (!Array.isArray(notifications)) return;
     const notification = notifications.find((n) => n.id === notificationId);
     if (!notification) return;
 
@@ -513,17 +538,19 @@ export default function AdminDashboard() {
     setCustomers(updatedCustomers);
 
     // Mark notification as processed and read
-    const updatedNotifications = notifications.map((n) =>
-      n.id === notificationId
-        ? {
-            ...n,
-            read: true,
-            title: n.title.replace("New", "Approved"),
-            message: n.message.replace("approval", "approved"),
-          }
-        : n,
-    );
-    setNotifications(updatedNotifications);
+    if (Array.isArray(notifications)) {
+      const updatedNotifications = notifications.map((n) =>
+        n.id === notificationId
+          ? {
+              ...n,
+              read: true,
+              title: n.title.replace("New", "Approved"),
+              message: n.message.replace("approval", "approved"),
+            }
+          : n,
+      );
+      setNotifications(updatedNotifications);
+    }
     localStorage.setItem(
       "admin_notifications",
       JSON.stringify(updatedNotifications),
@@ -534,6 +561,7 @@ export default function AdminDashboard() {
 
   const handleRejectCustomer = (notificationId: string) => {
     // Find the notification and extract customer info
+    if (!Array.isArray(notifications)) return;
     const notification = notifications.find((n) => n.id === notificationId);
     if (!notification) return;
 
@@ -551,17 +579,19 @@ export default function AdminDashboard() {
     setCustomers(updatedCustomers);
 
     // Mark notification as processed and read
-    const updatedNotifications = notifications.map((n) =>
-      n.id === notificationId
-        ? {
-            ...n,
-            read: true,
-            title: n.title.replace("New", "Rejected"),
-            message: n.message.replace("approval", "rejected"),
-          }
-        : n,
-    );
-    setNotifications(updatedNotifications);
+    if (Array.isArray(notifications)) {
+      const updatedNotifications = notifications.map((n) =>
+        n.id === notificationId
+          ? {
+              ...n,
+              read: true,
+              title: n.title.replace("New", "Rejected"),
+              message: n.message.replace("approval", "rejected"),
+            }
+          : n,
+      );
+      setNotifications(updatedNotifications);
+    }
     localStorage.setItem(
       "admin_notifications",
       JSON.stringify(updatedNotifications),
@@ -570,18 +600,22 @@ export default function AdminDashboard() {
     alert(`Customer registration rejected.`);
   };
 
-  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
+  const unreadNotificationCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
 
   if (!userRole) return null;
 
   return (
     <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="Admin Dashboard" />
-
       {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          if (tab === "fac-map") {
+            navigate("/admin-fac-map");
+            return;
+          }
+          setActiveTab(tab);
+        }}
         userRole={userRole}
         notificationCount={unreadNotificationCount}
       />
@@ -590,7 +624,7 @@ export default function AdminDashboard() {
       <div className="flex-1 lg:ml-64 min-h-screen">
         <div className="p-3 sm:p-4 lg:p-6">
           {/* Header */}
-          <div className="mb-6 ml-12 lg:ml-0">
+          <div className="mb-8 ml-12 lg:ml-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
@@ -604,6 +638,13 @@ export default function AdminDashboard() {
                   {activeTab === "sales" && "Sales Dashboard"}
                   {activeTab === "inventory" && "Inventory Dashboard"}
                   {activeTab === "notifications" && "Notifications"}
+                  {activeTab === "cms" && "Content Management"}
+                  {activeTab === "push-notifications" && "Push Notifications"}
+                  {activeTab === "gamification" && "Gamification"}
+                  {activeTab === "subscription-approval" && "Subscription Approval"}
+                  {activeTab === "booking" && "Booking Settings"}
+                  {activeTab === "pos" && "Point of Sale"}
+                  {activeTab === "user-management" && "User Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
@@ -619,6 +660,13 @@ export default function AdminDashboard() {
                   {activeTab === "inventory" &&
                     "Track stock levels and inventory value"}
                   {activeTab === "notifications" && "System alerts"}
+                  {activeTab === "cms" && "Manage content and pages"}
+                  {activeTab === "push-notifications" && "Send push notifications"}
+                  {activeTab === "gamification" && "Manage rewards and levels"}
+                  {activeTab === "subscription-approval" && "Approve payment plans"}
+                  {activeTab === "booking" && "Configure booking settings"}
+                  {activeTab === "pos" && "Point of sale system"}
+                  {activeTab === "user-management" && "Manage staff and users"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
@@ -640,6 +688,7 @@ export default function AdminDashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
+                    <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Error loading notifications</div>}>
                     <div className="p-6 border-b border-border">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-foreground">
@@ -652,14 +701,20 @@ export default function AdminDashboard() {
                               size="sm"
                               className="text-xs h-7"
                               onClick={() => {
-                                const userEmail = localStorage.getItem("userEmail") || "";
-                                // Mark all unread notifications as read
-                                notifications.forEach(notification => {
-                                  if (!notification.read) {
-                                    markSystemNotificationAsRead(notification.id, userEmail);
+                                try {
+                                  const userEmail = localStorage.getItem("userEmail") || "";
+                                  // Mark all unread notifications as read with safety checks
+                                  if (Array.isArray(notifications) && notifications.length > 0) {
+                                    notifications.forEach(notification => {
+                                      if (notification && !notification.read && notification.id && userEmail) {
+                                        markSystemNotificationAsRead(notification.id, userEmail);
+                                      }
+                                    });
                                   }
-                                });
-                                loadSystemNotifications(); // Refresh notifications
+                                  loadSystemNotifications(); // Refresh notifications
+                                } catch (error) {
+                                  console.error('Error marking all notifications as read:', error);
+                                }
                               }}
                             >
                               Mark all read
@@ -681,97 +736,118 @@ export default function AdminDashboard() {
                     </div>
                     <ScrollArea className="h-96">
                       <div className="p-4">
-                        {notifications.slice(0, 5).length === 0 ? (
+                        {!Array.isArray(notifications) || notifications.slice(0, 5).length === 0 ? (
                           <div className="text-center py-12 text-muted-foreground">
                             <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p className="text-base">No notifications</p>
                           </div>
                         ) : (
-                          notifications.slice(0, 5).map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
-                                notification.type === "new_customer"
-                                  ? "border-l-blue-500"
-                                  : notification.type === "subscription"
-                                    ? "border-l-green-500"
-                                    : notification.type === "approval_request"
-                                      ? "border-l-yellow-500"
-                                      : notification.type === "payment"
-                                        ? "border-l-green-500"
-                                        : "border-l-purple-500"
-                              } ${
-                                notification.read
-                                  ? "bg-muted opacity-75"
-                                  : "bg-card"
-                              }`}
-                              onClick={() => {
-                                if (!notification.read) {
-                                  const userEmail = localStorage.getItem("userEmail") || "";
-                                  markSystemNotificationAsRead(notification.id, userEmail);
-                                  loadSystemNotifications(); // Refresh notifications
+                          notifications.slice(0, 5).map((notification) => {
+                            try {
+                            // Add safety checks for notification properties
+                            if (!notification || typeof notification !== 'object') {
+                              return null;
+                            }
 
-                                  // If it's a booking notification, navigate to bookings tab
-                                  if (notification.type === 'new_booking') {
-                                    setActiveTab('bookings');
-                                    setIsNotificationDropdownOpen(false);
+                            const notificationType = notification.type || 'system';
+                            const isRead = Boolean(notification.read);
+                            const notificationId = notification.id || Math.random().toString();
+
+                              return (
+                                <div
+                                key={notificationId}
+                                className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
+                                  notificationType === "new_customer"
+                                    ? "border-l-blue-500"
+                                    : notificationType === "subscription"
+                                      ? "border-l-green-500"
+                                      : notificationType === "approval_request"
+                                        ? "border-l-yellow-500"
+                                        : notificationType === "payment"
+                                          ? "border-l-green-500"
+                                          : "border-l-purple-500"
+                                } ${
+                                  isRead
+                                    ? "bg-muted opacity-75"
+                                    : "bg-card"
+                                }`}
+                                onClick={() => {
+                                  try {
+                                    if (notification && !isRead && notificationId) {
+                                      const userEmail = localStorage.getItem("userEmail") || "";
+                                      if (userEmail) {
+                                        markSystemNotificationAsRead(notificationId, userEmail);
+                                        loadSystemNotifications(); // Refresh notifications
+
+                                        // If it's a booking notification, navigate to bookings tab
+                                        if (notificationType === 'new_booking') {
+                                          try {
+                                            setActiveTab('bookings');
+                                            setIsNotificationDropdownOpen(false);
+                                          } catch (error) {
+                                            console.error('Error navigating to bookings tab:', error);
+                                          }
+                                        }
+                                      }
+                                    }
+                                  } catch (error) {
+                                    console.error('Error marking notification as read:', error);
                                   }
-                                }
-                              }}
+                                }}
                             >
                               <div className="flex items-start space-x-4">
                                 <div className="flex-shrink-0 mt-1">
-                                  {notification.type === "new_booking" && (
+                                  {notificationType === "new_booking" && (
                                     <Calendar className="h-5 w-5 text-fac-orange-500" />
                                   )}
-                                  {notification.type === "new_customer" && (
+                                  {notificationType === "new_customer" && (
                                     <UserPlus className="h-5 w-5 text-blue-500" />
                                   )}
-                                  {notification.type === "subscription" && (
+                                  {notificationType === "subscription" && (
                                     <CreditCard className="h-5 w-5 text-green-500" />
                                   )}
-                                  {notification.type === "approval_request" && (
+                                  {notificationType === "approval_request" && (
                                     <Clock className="h-5 w-5 text-yellow-500" />
                                   )}
-                                  {notification.type === "status_update" && (
+                                  {notificationType === "status_update" && (
                                     <CheckCircle className="h-5 w-5 text-blue-500" />
                                   )}
-                                  {notification.type === "crew_update" && (
+                                  {notificationType === "crew_update" && (
                                     <Wrench className="h-5 w-5 text-purple-500" />
                                   )}
-                                  {notification.type === "payment_received" && (
+                                  {notificationType === "payment_received" && (
                                     <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
-                                  {notification.type === "system_alert" && (
+                                  {notificationType === "system_alert" && (
                                     <AlertCircle className="h-5 w-5 text-red-500" />
                                   )}
-                                  {notification.type === "payment" && (
+                                  {notificationType === "payment" && (
                                     <DollarSign className="h-5 w-5 text-green-500" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <h4 className="text-base font-bold text-foreground truncate">
-                                      {notification.title}
+                                      {notification?.title || 'Notification'}
                                     </h4>
-                                    {!notification.read && (
+                                    {!isRead && (
                                       <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
                                     )}
                                   </div>
                                   <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {notification.message}
+                                    {notification?.message || ''}
                                   </p>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-muted-foreground">
-                                      {formatDistanceToNow(
+                                      {notification?.timestamp ? formatDistanceToNow(
                                         notification.timestamp,
                                         {
                                           addSuffix: true,
                                         },
-                                      )}
+                                      ) : 'Unknown time'}
                                     </span>
-                                    {(notification.type === "new_customer" ||
-                                      notification.type ===
+                                    {(notificationType === "new_customer" ||
+                                      notificationType ===
                                         "approval_request") && (
                                       <div className="flex gap-2">
                                         <Button
@@ -780,7 +856,7 @@ export default function AdminDashboard() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleApproveCustomer(
-                                              notification.id,
+                                              notificationId,
                                             );
                                           }}
                                         >
@@ -794,7 +870,7 @@ export default function AdminDashboard() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleRejectCustomer(
-                                              notification.id,
+                                              notificationId,
                                             );
                                           }}
                                         >
@@ -806,11 +882,17 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          ))
+                                </div>
+                              );
+                            } catch (error) {
+                              console.error('Error rendering notification:', error);
+                              return null;
+                            }
+                          })
                         )}
                       </div>
                     </ScrollArea>
+                    </ErrorBoundary>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -929,8 +1011,89 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
+              {/* Location Summary */}
+              <Card className="glass border-border shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gradient-to-r from-fac-orange-500 to-red-500 p-3 rounded-lg">
+                        <MapPin className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground">Location Summary</h3>
+                        <p className="text-sm text-muted-foreground">Crew and customer overview</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => navigate("/admin-fac-map")}
+                      className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-semibold"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      View FAC MAP
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <div className="text-3xl font-bold text-green-600">18</div>
+                      <div className="text-sm text-muted-foreground">Online Crew</div>
+                      <div className="text-xs text-green-600 mt-1">Real-time tracking</div>
+                    </div>
+                    <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                      <div className="text-3xl font-bold text-orange-600">12</div>
+                      <div className="text-sm text-muted-foreground">Busy Crew</div>
+                      <div className="text-xs text-orange-600 mt-1">Currently working</div>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-600">47</div>
+                      <div className="text-sm text-muted-foreground">Active Customers</div>
+                      <div className="text-xs text-purple-600 mt-1">Online now</div>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-600">5</div>
+                      <div className="text-sm text-muted-foreground">Active Groups</div>
+                      <div className="text-xs text-blue-600 mt-1">Crew teams</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={() => navigate("/admin-fac-map")}
+                      variant="outline"
+                      className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950"
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      View Full Heat Map
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card
+                  className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
+                  onClick={() => navigate("/admin-crew-management")}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center text-xl text-foreground">
+                      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
+                        <Users className="h-6 w-6 text-white" />
+                      </div>
+                      Crew Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-base mb-6">
+                      Manage crew teams, groups, and real-time locations
+                    </p>
+                    <Button className="btn-futuristic w-full py-3 rounded-xl font-bold">
+                      Manage Crew
+                    </Button>
+                  </CardContent>
+                </Card>
+
                 {userRole === "superadmin" && (
                   <Card
                     className="glass border-border shadow-xl hover-lift cursor-pointer group relative overflow-hidden"
@@ -939,7 +1102,7 @@ export default function AdminDashboard() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
                       <CardTitle className="flex items-center text-xl text-foreground">
-                        <div className="bg-gradient-to-r from-purple-500 to-violet-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                        <div className="bg-gradient-to-r from-purple-500 to-violet-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                           <Shield className="h-6 w-6 text-white" />
                         </div>
                         Role Manager
@@ -963,7 +1126,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-primary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-primary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <Package className="h-6 w-6 text-white" />
                       </div>
                       Package Studio
@@ -986,7 +1149,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-secondary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-secondary p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <BarChart3 className="h-6 w-6 text-white" />
                       </div>
                       Analytics Center
@@ -1009,7 +1172,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <Sparkles className="h-6 w-6 text-white" />
                       </div>
                       Ad Studio
@@ -1032,7 +1195,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center text-xl text-foreground">
-                      <div className="gradient-futuristic p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform animate-pulse-glow">
+                      <div className="gradient-futuristic p-3 rounded-xl mr-4 group-hover:scale-110 transition-transform">
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       Branch Network
@@ -1052,11 +1215,11 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "customers" && (
-            <Card className="glass border-border shadow-2xl animate-fade-in-scale">
+            <Card className="glass border-border shadow-2xl">
               <CardHeader>
                 <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center">
-                    <div className="gradient-primary p-3 rounded-xl mr-4 animate-pulse-glow">
+                    <div className="gradient-primary p-3 rounded-xl mr-4">
                       <Users className="h-6 w-6 text-white" />
                     </div>
                     <span className="text-2xl font-black text-foreground">
@@ -1077,8 +1240,7 @@ export default function AdminDashboard() {
                   {customers.map((customer, index) => (
                     <div
                       key={customer.id}
-                      className={`glass rounded-2xl p-6 hover-lift transition-all duration-300 animate-fade-in-up`}
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex-1 min-w-0">
@@ -1171,24 +1333,25 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "packages" && (
-            <div className="space-y-8 animate-fade-in-scale">
+            <div className="space-y-8">
               {/* Package Management Header */}
               <Card className="glass border-border shadow-2xl">
                 <CardHeader>
                   <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center space-x-4">
-                      <div className="gradient-primary p-3 rounded-xl animate-pulse-glow">
+                      <div className="gradient-primary p-3 rounded-xl">
                         <Package className="h-6 w-6 text-white" />
                       </div>
-                      <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <span className="text-2xl font-black text-foreground">
                           Package Studio
                         </span>
                         <Badge
                           variant="outline"
-                          className="ml-4 text-sm border-fac-orange-500 text-fac-orange-500"
+                          className="text-xs sm:text-sm border-fac-orange-500 text-fac-orange-500 w-fit"
                         >
-                          Role: {userRole} | Editing:{" "}
+                          <span className="hidden sm:inline">Role: {userRole} | Editing: </span>
+                          <span className="sm:hidden">{userRole} - </span>
                           {userRole === "superadmin" || userRole === "admin"
                             ? "Enabled"
                             : "Disabled"}
@@ -1209,12 +1372,11 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Package Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
                 {packages.map((pkg, index) => (
                   <Card
                     key={pkg.id}
-                    className={`glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden animate-fade-in-up`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader className="relative z-10">
@@ -1225,7 +1387,7 @@ export default function AdminDashboard() {
                         <Badge
                           className={`${
                             pkg.active
-                              ? "bg-green-500 animate-pulse-glow"
+                              ? "bg-green-500"
                               : "bg-gray-400"
                           } text-white font-bold px-3 py-1 rounded-full`}
                         >
@@ -1324,11 +1486,11 @@ export default function AdminDashboard() {
           {activeTab === "inventory" && <InventoryDashboard />}
 
           {activeTab === "old_sales" && (
-            <div className="space-y-8 animate-fade-in-scale">
+            <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <DollarSign className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-4xl font-black text-foreground mb-2">
@@ -1342,7 +1504,7 @@ export default function AdminDashboard() {
 
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-secondary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <TrendingUp className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-4xl font-black text-foreground mb-2">
@@ -1356,7 +1518,7 @@ export default function AdminDashboard() {
 
                 <Card className="glass border-border shadow-xl hover-lift">
                   <CardContent className="p-8 text-center">
-                    <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                    <div className="gradient-futuristic w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <Crown className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-xl font-black text-foreground mb-2">
@@ -1378,7 +1540,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "roles" && userRole === "superadmin" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <ErrorBoundary>
                 <UserRoleManagement />
               </ErrorBoundary>
@@ -1386,7 +1548,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "ads" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <AdminAdManagement
                 adminEmail={localStorage.getItem("userEmail") || ""}
               />
@@ -1394,7 +1556,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "bookings" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <EnhancedBookingManagement
                 userRole={userRole as "admin" | "superadmin"}
                 showCrewAssignment={true}
@@ -1403,7 +1565,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "images" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <ImageUploadManager
                 allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
                 maxFileSize={10}
@@ -1417,7 +1579,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "notifications" && (
-            <div className="animate-fade-in-scale">
+            <div>
               <NotificationService
                 userRole={userRole}
                 userId={localStorage.getItem('userEmail') || 'unknown'}
@@ -1425,6 +1587,54 @@ export default function AdminDashboard() {
                   console.log('New notification received:', notification);
                 }}
               />
+            </div>
+          )}
+
+          {activeTab === "cms" && (
+            <div className="space-y-6">
+              <AdminCMS />
+            </div>
+          )}
+
+          {activeTab === "push-notifications" && (
+            <div className="space-y-6">
+              <AdminPushNotifications />
+            </div>
+          )}
+
+          {activeTab === "gamification" && (
+            <div>
+              <AdminGamification />
+            </div>
+          )}
+
+          {activeTab === "subscription-approval" && (
+            <div>
+              <AdminSubscriptionApproval />
+            </div>
+          )}
+
+          {activeTab === "booking" && (
+            <div>
+              <AdminBookingSettings />
+            </div>
+          )}
+
+          {activeTab === "pos" && (
+            <div className="space-y-6">
+              <POS />
+            </div>
+          )}
+
+          {activeTab === "inventory" && (
+            <div className="space-y-6">
+              <EnhancedInventoryManagement />
+            </div>
+          )}
+
+          {activeTab === "user-management" && (
+            <div className="space-y-6">
+              <AdminUserManagement />
             </div>
           )}
         </div>
@@ -1845,6 +2055,9 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Debug Panel for Development/Testing */}
+      <DebugPanel className="mt-8" />
     </div>
   );
 }

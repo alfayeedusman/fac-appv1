@@ -18,6 +18,7 @@ import CredentialSetup from "./pages/CredentialSetup";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminFACMap from "./pages/AdminFACMap";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import GuestBooking from "./pages/GuestBooking";
@@ -44,6 +45,7 @@ import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminHomeService from "./pages/AdminHomeService";
 import AdminBookingSettings from "./pages/AdminBookingSettings";
+import AdminCrewManagement from "./pages/AdminCrewManagement";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import EnhancedCrewDashboard from "./pages/EnhancedCrewDashboard";
 import FlutterCustomerApp from "./pages/FlutterCustomerApp";
@@ -51,6 +53,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import ErrorBoundary from "./components/ErrorBoundary";
+import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
 import { initializeSampleAds } from "./utils/initializeSampleAds";
 import { initializeAllSampleData } from "./utils/initializeSampleBookings";
@@ -60,9 +63,13 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     // Initialize admin accounts and sample data on app startup
-    initializeAdminAccounts();
-    initializeSampleAds();
-    initializeAllSampleData();
+    try {
+      initializeAdminAccounts();
+      initializeSampleAds();
+      initializeAllSampleData();
+    } catch (error) {
+      console.warn('Error during initialization:', error);
+    }
   }, []);
 
   return (
@@ -101,6 +108,14 @@ const App = () => {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-fac-map"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminFACMap />
                 </ProtectedRoute>
               }
             />
@@ -302,6 +317,14 @@ const App = () => {
               }
             />
             <Route
+              path="/admin-crew-management"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminCrewManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/manager-dashboard"
               element={
                 <ProtectedRoute requiredRole="manager">
@@ -325,6 +348,16 @@ const App = () => {
                 </div>
               }
             />
+            <Route
+              path="/diagnostics"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ErrorBoundary>
+                    <DiagnosticsPage />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -336,4 +369,8 @@ const App = () => {
   );
 };
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);

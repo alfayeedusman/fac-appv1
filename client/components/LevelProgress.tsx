@@ -82,7 +82,7 @@ export default function LevelProgress({
 
   if (!userProgress || !levelProgress) {
     return (
-      <Card className="glass border-border animate-pulse">
+      <Card className="glass border-border">
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-muted rounded-full"></div>

@@ -12,8 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { AdminConfigManager, type AdminConfig } from '@/utils/adminConfig';
 import { getCarWashServices } from '@/utils/carWashServices';
-import StickyHeader from '@/components/StickyHeader';
-import AdminSidebar from '@/components/AdminSidebar';
 import { 
   Calendar,
   Clock,
@@ -195,19 +193,7 @@ export default function AdminBookingSettings() {
   const availableMotorcycleServices = config.homeService.availableServices.motorcycleCarwash || [];
 
   return (
-    <div className="min-h-screen bg-background">
-      <StickyHeader />
-      
-      <div className="flex">
-        <AdminSidebar
-          activeTab="booking"
-          onTabChange={setActiveTab}
-          userRole="admin"
-          notificationCount={0}
-        />
-        
-        <div className="flex-1 lg:ml-64">
-          <div className="p-6 space-y-6">
+    <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
@@ -709,9 +695,6 @@ export default function AdminBookingSettings() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

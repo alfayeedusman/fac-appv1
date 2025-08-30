@@ -33,15 +33,6 @@
   }
 }
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(255, 122, 53, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(255, 122, 53, 0.6);
-  }
-}
 
 @keyframes shimmer {
   0% {
@@ -112,10 +103,6 @@
   animation: float 3s ease-in-out infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.3));
-}
 
 .animate-shimmer {
   background: linear-gradient(

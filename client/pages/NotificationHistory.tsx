@@ -181,7 +181,7 @@ export default function NotificationHistory() {
             </Button>
           </Link>
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-fac-orange-500 to-purple-600 p-3 rounded-xl animate-pulse-glow">
+            <div className="bg-gradient-to-r from-fac-orange-500 to-purple-600 p-3 rounded-xl ">
               <Bell className="h-6 w-6 text-white" />
             </div>
             <div>

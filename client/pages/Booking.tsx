@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -6,20 +5,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import UpgradeNotificationBanner from "@/components/UpgradeNotificationBanner";
-import QRScanner from "@/components/QRScanner";
 import StepperBooking from "@/components/StepperBooking";
 
 export default function Booking() {
-  const [showQRScanner, setShowQRScanner] = useState(false);
-
-  const handleQRScan = () => {
-    setShowQRScanner(true);
-  };
-
-  const handleScanSuccess = (result: any) => {
-    // QR scan functionality can be integrated with stepper if needed
-    console.log("QR scan result:", result);
-  };
+  // QR Scanner is now optional and handled by BottomNavigation itself
+  // No automatic popup in booking flow
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
@@ -60,13 +50,7 @@ export default function Booking() {
       {/* Stepper Booking Component */}
       <StepperBooking isGuest={false} />
 
-      <BottomNavigation onQRScan={handleQRScan} />
-
-      <QRScanner
-        isOpen={showQRScanner}
-        onClose={() => setShowQRScanner(false)}
-        onScanSuccess={handleScanSuccess}
-      />
+      <BottomNavigation />
     </div>
   );
 }

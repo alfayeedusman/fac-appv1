@@ -1,0 +1,232 @@
+# =====================================================
+# Docker Compose for Fayeed Auto Care with phpMyAdmin
+# Custom phpMyAdmin access at /facmydb
+# =====================================================
+
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: fayeed_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-fayeed_root_2024}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fayeed_auto_care}
+      MYSQL_USER: ${MYSQL_USER:-fayeed_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fayeed_pass_2024}
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/exports:/docker-entrypoint-initdb.d:ro
+      - ./config/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - fayeed_network
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_connections=200
+      --innodb_buffer_pool_size=1G
+      --innodb_log_file_size=256M
+      --slow_query_log=1
+      --long_query_time=2
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # phpMyAdmin Service with Custom Configuration
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: fayeed_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${MYSQL_USER:-fayeed_user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-fayeed_pass_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-fayeed_root_2024}
+      PMA_ABSOLUTE_URI: ${PHPMYADMIN_ABSOLUTE_URI:-http://localhost/facmydb/}
+      UPLOAD_LIMIT: 100M
+      MEMORY_LIMIT: 512M
+      MAX_EXECUTION_TIME: 300
+      # Custom phpMyAdmin settings
+      PMA_THEME: original
+      PMA_TITLE: "Fayeed Auto Care - Database Administration"
+      PMA_DEFAULT_LANG: en
+      PMA_HIDE_DBS: "information_schema,performance_schema,mysql,sys"
+      # Security settings
+      PMA_CONFIG_BASE64: ""
+      PMA_ARBITRARY: 0
+      PMA_CONTROLUSER: ""
+      PMA_CONTROLPASS: ""
+    volumes:
+      - ./config/phpmyadmin/config.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - ./config/phpmyadmin/themes:/var/www/html/themes:ro
+      - phpmyadmin_sessions:/sessions
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fayeed_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=PathPrefix(`/facmydb`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.middlewares.phpmyadmin-strip.stripprefix.prefixes=/facmydb"
+      - "traefik.http.routers.phpmyadmin.middlewares=phpmyadmin-strip"
+
+  # Nginx Reverse Proxy (for custom path routing)
+  nginx:
+    image: nginx:alpine
+    container_name: fayeed_nginx
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/phpmyadmin.conf:/etc/nginx/conf.d/phpmyadmin.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - ./public:/var/www/html:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - phpmyadmin
+      - app
+    networks:
+      - fayeed_network
+    environment:
+      - NGINX_ENVSUBST_TEMPLATE_SUFFIX=.template
+      - PHPMYADMIN_HOST=phpmyadmin
+      - PHPMYADMIN_PORT=80
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: fayeed_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${APP_PORT:-3000}
+      # Database configuration
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fayeed_auto_care}
+      MYSQL_USER: ${MYSQL_USER:-fayeed_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fayeed_pass_2024}
+      # Other environment variables
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    volumes:
+      - ./uploads:/app/uploads
+      - app_logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fayeed_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache Service (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: fayeed_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - fayeed_network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backup Service (for automated database backups)
+  backup:
+    image: mysql:8.0
+    container_name: fayeed_backup
+    restart: "no"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER:-fayeed_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fayeed_pass_2024}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fayeed_auto_care}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-"0 2 * * *"}  # Daily at 2 AM
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    depends_on:
+      - mysql
+    networks:
+      - fayeed_network
+    command: >
+      bash -c "
+        chmod +x /usr/local/bin/backup.sh &&
+        echo '${BACKUP_SCHEDULE:-0 2 * * *} /usr/local/bin/backup.sh' | crontab - &&
+        crond -f
+      "
+
+# Named Volumes
+volumes:
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/mysql
+  
+  phpmyadmin_sessions:
+    driver: local
+  
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/redis
+  
+  nginx_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH:-./logs}/nginx
+  
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH:-./logs}/app
+
+# Networks
+networks:
+  fayeed_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

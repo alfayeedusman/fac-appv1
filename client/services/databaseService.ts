@@ -1,8 +1,9 @@
 // Database service to replace localStorage with proper MySQL backend
 import { type Booking } from "@/utils/databaseSchema";
 import FallbackService from "./fallbackService";
+import { formatError } from '../lib/errorUtils';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface ApiResponse<T = any> {
   success?: boolean;
@@ -87,10 +88,36 @@ export class DatabaseService {
 
       return response.json();
     } catch (error: any) {
-      // Handle network errors (server not running, etc.)
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Unable to connect to server. Please check if the backend is running.');
+      // Handle various types of network errors
+      const errorMessage = error?.message?.toLowerCase() || '';
+      const isNetworkError =
+        error instanceof TypeError ||
+        error instanceof DOMException ||
+        error.name === 'TypeError' ||
+        error.name === 'NetworkError' ||
+        errorMessage.includes('failed to fetch') ||
+        errorMessage.includes('networkerror') ||
+        errorMessage.includes('network error') ||
+        errorMessage.includes('fetch') ||
+        errorMessage.includes('connection') ||
+        !navigator.onLine;
+
+      if (isNetworkError) {
+        const friendlyMessage = !navigator.onLine
+          ? 'No internet connection. Please check your network and try again.'
+          : 'Unable to connect to server. Please check if the backend is running or try again later.';
+
+        // Log detailed error for debugging
+        console.warn('Network error details:', {
+          endpoint,
+          error: formatError(error),
+          online: navigator.onLine,
+          apiBaseUrl: API_BASE_URL
+        });
+
+        throw new Error(friendlyMessage);
       }
+
       throw error;
     }
   }
@@ -283,7 +310,7 @@ export class DatabaseService {
           await this.createBooking(dbBooking);
           migrated++;
         } catch (error) {
-          errors.push(`Failed to migrate booking: ${error}`);
+          errors.push(`Failed to migrate booking: ${formatError(error)}`);
         }
       }
       
@@ -295,7 +322,7 @@ export class DatabaseService {
       
       return { migrated, errors };
     } catch (error) {
-      return { migrated: 0, errors: [`Migration failed: ${error}`] };
+      return { migrated: 0, errors: [`Migration failed: ${formatError(error)}`] };
     }
   }
 

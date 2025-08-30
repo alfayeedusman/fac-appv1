@@ -54,6 +54,17 @@ export default function SubscriptionSubmission({
   const [userPhone, setUserPhone] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const receiptObjectUrlRef = React.useRef<string | null>(null);
+
+  // Cleanup object URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+        receiptObjectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const packages = [
     {
@@ -145,9 +156,18 @@ export default function SubscriptionSubmission({
 
     try {
       // Simulate file upload and create receipt data
+      // Clean up any existing object URL first
+      if (receiptObjectUrlRef.current) {
+        URL.revokeObjectURL(receiptObjectUrlRef.current);
+      }
+
+      // Create new object URL and store reference for cleanup
+      const objectUrl = URL.createObjectURL(receiptFile);
+      receiptObjectUrlRef.current = objectUrl;
+
       const receipt = {
         id: `RCP${Date.now()}`,
-        imageUrl: URL.createObjectURL(receiptFile),
+        imageUrl: objectUrl,
         fileName: receiptFile.name,
         uploadDate: new Date().toISOString(),
         fileSize: receiptFile.size,

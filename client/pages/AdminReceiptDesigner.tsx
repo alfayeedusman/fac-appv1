@@ -834,36 +834,11 @@ export default function AdminReceiptDesigner() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="thermal">
-                              <div className="flex items-center">
-                                <Printer className="h-4 w-4 mr-2" />
-                                Thermal Printer
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="bluetooth">
-                              <div className="flex items-center">
-                                <Bluetooth className="h-4 w-4 mr-2" />
-                                Bluetooth Printer
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="wifi">
-                              <div className="flex items-center">
-                                <Wifi className="h-4 w-4 mr-2" />
-                                WiFi Printer
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="usb">
-                              <div className="flex items-center">
-                                <Usb className="h-4 w-4 mr-2" />
-                                USB Printer
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="web">
-                              <div className="flex items-center">
-                                <Monitor className="h-4 w-4 mr-2" />
-                                Web Browser
-                              </div>
-                            </SelectItem>
+                            <SelectItem value="thermal">Thermal Printer</SelectItem>
+                            <SelectItem value="bluetooth">Bluetooth Printer</SelectItem>
+                            <SelectItem value="wifi">WiFi Printer</SelectItem>
+                            <SelectItem value="usb">USB Printer</SelectItem>
+                            <SelectItem value="web">Web Browser</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
