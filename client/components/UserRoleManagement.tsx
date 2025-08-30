@@ -880,7 +880,13 @@ export default function UserRoleManagement() {
 
   const handleDeleteUser = (user: User) => {
     if (user.role === "superadmin") {
-      alert("Cannot delete superadmin users");
+      Swal.fire({
+        title: 'Access Denied',
+        text: 'Cannot delete superadmin users',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      });
       return;
     }
 
