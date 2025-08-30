@@ -219,64 +219,42 @@ class NeonDatabaseClient {
   // === BOOKINGS ===
 
   async createBooking(bookingData: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'confirmationCode'>): Promise<{ success: boolean; booking?: Booking; error?: string }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/bookings`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bookingData),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database booking creation failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
     }
 
-    // Fallback to localStorage
-    const bookings = this.getFromLocalStorage('fac_bookings') || [];
-    const newBooking = {
-      ...bookingData,
-      id: `FAC_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      confirmationCode: `FAC-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(-3).toUpperCase()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch(`${this.baseUrl}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData),
+      });
 
-    bookings.push(newBooking);
-    this.setToLocalStorage('fac_bookings', bookings);
-    return { success: true, booking: newBooking };
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database booking creation failed:', error);
+      return { success: false, error: 'Failed to create booking. Please check your connection.' };
+    }
   }
 
   async getBookings(params?: { userId?: string; status?: string }): Promise<{ success: boolean; bookings?: Booking[] }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const queryParams = new URLSearchParams();
-        if (params?.userId) queryParams.append('userId', params.userId);
-        if (params?.status) queryParams.append('status', params.status);
-        
-        const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`);
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database booking fetch failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, bookings: [] };
     }
 
-    // Fallback to localStorage
-    let bookings = this.getFromLocalStorage('fac_bookings') || [];
-    
-    if (params?.userId) {
-      bookings = bookings.filter((b: Booking) => b.userId === params.userId);
-    }
-    if (params?.status) {
-      bookings = bookings.filter((b: Booking) => b.status === params.status);
-    }
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.userId) queryParams.append('userId', params.userId);
+      if (params?.status) queryParams.append('status', params.status);
 
-    return { success: true, bookings };
+      const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database booking fetch failed:', error);
+      return { success: false, bookings: [] };
+    }
   }
 
   async updateBooking(id: string, updates: Partial<Booking>): Promise<{ success: boolean; booking?: Booking }> {
