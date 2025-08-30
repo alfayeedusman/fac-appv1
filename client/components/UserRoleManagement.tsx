@@ -746,7 +746,13 @@ export default function UserRoleManagement() {
         (user: any) => user && user.email === formData.email,
       );
       if (userExists) {
-        alert("User with this email already exists");
+        Swal.fire({
+          title: 'Duplicate Email',
+          text: 'User with this email already exists',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b'
+        });
         return;
       }
 
