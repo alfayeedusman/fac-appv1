@@ -255,17 +255,44 @@ class NeonDatabaseClient {
         return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
       }
 
+      // Check if response is valid before trying to read it
+      if (!response) {
+        console.error('❌ Response is null or undefined');
+        return { success: false, error: 'Network error: No response received from server' };
+      }
+
+      // Log response details before reading
+      console.log('📝 Response status:', response.status, response.statusText);
+      console.log('📝 Response URL:', response.url);
+      console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
+
       // Read response as text first to avoid body consumption issues
       let responseText;
       try {
+        // Check if response body is readable
+        if (response.bodyUsed) {
+          console.error('❌ Response body already consumed');
+          return { success: false, error: 'Network error: Response already processed' };
+        }
+
         responseText = await response.text();
-        console.log('📝 Response text:', responseText.substring(0, 500));
-        console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
-        console.log('📝 Response URL:', response.url);
-        console.log('📝 Response status:', response.status, response.statusText);
-      } catch (textError) {
+        console.log('📝 Response text length:', responseText.length);
+        console.log('📝 Response text preview:', responseText.substring(0, 500));
+      } catch (textError: any) {
         console.error('❌ Failed to read response text:', textError);
-        return { success: false, error: `Network error: Could not read server response (HTTP ${response.status})` };
+        console.error('❌ Error details:', {
+          name: textError.name,
+          message: textError.message
+        });
+
+        // Provide more specific error based on the type of error
+        if (textError.name === 'AbortError') {
+          return { success: false, error: 'Request was cancelled or timed out. Please try again.' };
+        } else if (textError.name === 'TypeError') {
+          return { success: false, error: 'Network connection error. Please check your internet connection.' };
+        } else {
+          return { success: false, error: `Network error: Could not read server response. ${textError.message || 'Unknown error'}` };
+        }
       }
 
       // Try to parse the text as JSON
@@ -321,17 +348,44 @@ class NeonDatabaseClient {
               return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
             }
 
-            // Read response as text first to avoid body consumption issues
+            // Check if response is valid before trying to read it
+      if (!response) {
+        console.error('❌ Response is null or undefined');
+        return { success: false, error: 'Network error: No response received from server' };
+      }
+
+      // Log response details before reading
+      console.log('📝 Response status:', response.status, response.statusText);
+      console.log('📝 Response URL:', response.url);
+      console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      // Read response as text first to avoid body consumption issues
       let responseText;
       try {
+        // Check if response body is readable
+        if (response.bodyUsed) {
+          console.error('❌ Response body already consumed');
+          return { success: false, error: 'Network error: Response already processed' };
+        }
+
         responseText = await response.text();
-        console.log('📝 Response text:', responseText.substring(0, 500));
-        console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
-        console.log('📝 Response URL:', response.url);
-        console.log('📝 Response status:', response.status, response.statusText);
-      } catch (textError) {
+        console.log('📝 Response text length:', responseText.length);
+        console.log('📝 Response text preview:', responseText.substring(0, 500));
+      } catch (textError: any) {
         console.error('❌ Failed to read response text:', textError);
-        return { success: false, error: `Network error: Could not read server response (HTTP ${response.status})` };
+        console.error('❌ Error details:', {
+          name: textError.name,
+          message: textError.message
+        });
+
+        // Provide more specific error based on the type of error
+        if (textError.name === 'AbortError') {
+          return { success: false, error: 'Request was cancelled or timed out. Please try again.' };
+        } else if (textError.name === 'TypeError') {
+          return { success: false, error: 'Network connection error. Please check your internet connection.' };
+        } else {
+          return { success: false, error: `Network error: Could not read server response. ${textError.message || 'Unknown error'}` };
+        }
       }
 
       // Try to parse the text as JSON
