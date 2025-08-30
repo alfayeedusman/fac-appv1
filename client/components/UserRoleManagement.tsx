@@ -798,7 +798,14 @@ export default function UserRoleManagement() {
       });
     } catch (error) {
       console.error("Error creating user:", error);
-      alert("Failed to create user. Please try again.");
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create user. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
