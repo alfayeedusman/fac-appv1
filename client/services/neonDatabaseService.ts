@@ -258,96 +258,60 @@ class NeonDatabaseClient {
   }
 
   async updateBooking(id: string, updates: Partial<Booking>): Promise<{ success: boolean; booking?: Booking }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database booking update failed, falling back to localStorage');
-      }
-    }
-
-    // Fallback to localStorage
-    const bookings = this.getFromLocalStorage('fac_bookings') || [];
-    const bookingIndex = bookings.findIndex((b: Booking) => b.id === id);
-    
-    if (bookingIndex === -1) {
+    if (!this.isConnected) {
       return { success: false };
     }
 
-    bookings[bookingIndex] = { 
-      ...bookings[bookingIndex], 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
-    };
-    
-    this.setToLocalStorage('fac_bookings', bookings);
-    return { success: true, booking: bookings[bookingIndex] };
+    try {
+      const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database booking update failed:', error);
+      return { success: false };
+    }
   }
 
   // === NOTIFICATIONS ===
 
   async getNotifications(userId: string, userRole: string): Promise<{ success: boolean; notifications?: SystemNotification[] }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`);
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database notification fetch failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, notifications: [] };
     }
 
-    // Fallback to localStorage
-    const notifications = this.getFromLocalStorage('system_notifications') || [];
-    const userNotifications = notifications.filter((n: SystemNotification) => {
-      return n.targetRoles.includes(userRole) || n.targetUsers?.includes(userId);
-    });
-
-    return { success: true, notifications: userNotifications };
+    try {
+      const response = await fetch(`${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database notification fetch failed:', error);
+      return { success: false, notifications: [] };
+    }
   }
 
   async markNotificationAsRead(notificationId: string, userId: string): Promise<{ success: boolean }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/notifications/${notificationId}/read`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId }),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database notification update failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false };
     }
 
-    // Fallback to localStorage
-    const notifications = this.getFromLocalStorage('system_notifications') || [];
-    const notificationIndex = notifications.findIndex((n: SystemNotification) => n.id === notificationId);
-    
-    if (notificationIndex !== -1) {
-      const notification = notifications[notificationIndex];
-      const readBy = notification.readBy || [];
-      
-      if (!readBy.some((r: any) => r.userId === userId)) {
-        readBy.push({ userId, readAt: new Date().toISOString() });
-        notification.readBy = readBy;
-        this.setToLocalStorage('system_notifications', notifications);
-      }
-    }
+    try {
+      const response = await fetch(`${this.baseUrl}/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
 
-    return { success: true };
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database notification update failed:', error);
+      return { success: false };
+    }
   }
 
   // === ADMIN SETTINGS ===
