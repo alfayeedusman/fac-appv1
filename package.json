@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/mapbox-gl": "^3.4.1",
     "@types/nodemailer": "^7.0.1",

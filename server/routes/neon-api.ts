@@ -1,0 +1,388 @@
+import { RequestHandler } from 'express';
+import { neonDbService } from '../services/neonDatabaseService';
+import { initializeDatabase, testConnection } from '../database/connection';
+import { migrate } from '../database/migrate';
+
+// Initialize database connection
+export const initializeNeonDB: RequestHandler = async (req, res) => {
+  try {
+    console.log('🔄 Initializing Neon database...');
+    
+    const db = initializeDatabase();
+    if (!db) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to initialize database connection. Check NEON_DATABASE_URL environment variable.' 
+      });
+    }
+
+    // Test connection
+    const isConnected = await testConnection();
+    if (!isConnected) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database connection test failed' 
+      });
+    }
+
+    // Run migrations
+    await migrate();
+
+    res.json({ 
+      success: true, 
+      message: 'Neon database initialized and migrated successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    });
+  }
+};
+
+// Test database connection
+export const testNeonConnection: RequestHandler = async (req, res) => {
+  try {
+    const isConnected = await testConnection();
+    const stats = isConnected ? await neonDbService.getStats() : null;
+    
+    res.json({ 
+      success: isConnected, 
+      connected: isConnected,
+      stats: stats || null,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Connection test failed' 
+    });
+  }
+};
+
+// User authentication endpoints
+export const loginUser: RequestHandler = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    const user = await neonDbService.getUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials' 
+      });
+    }
+
+    const isValidPassword = await neonDbService.verifyPassword(email, password);
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials' 
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Account is disabled' 
+      });
+    }
+
+    // Update last login
+    await neonDbService.updateUser(user.id, { lastLoginAt: new Date() });
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+    
+    res.json({ 
+      success: true, 
+      user: userWithoutPassword,
+      message: 'Login successful' 
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Login failed' 
+    });
+  }
+};
+
+export const registerUser: RequestHandler = async (req, res) => {
+  try {
+    const userData = req.body;
+    
+    // Check if user already exists
+    const existingUser = await neonDbService.getUserByEmail(userData.email);
+    if (existingUser) {
+      return res.status(409).json({ 
+        success: false, 
+        error: 'User with this email already exists' 
+      });
+    }
+
+    const user = await neonDbService.createUser(userData);
+    
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+    
+    res.status(201).json({ 
+      success: true, 
+      user: userWithoutPassword,
+      message: 'User registered successfully' 
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Registration failed' 
+    });
+  }
+};
+
+// Booking endpoints
+export const createBooking: RequestHandler = async (req, res) => {
+  try {
+    const booking = await neonDbService.createBooking(req.body);
+    
+    // Create notification for new booking
+    await neonDbService.createSystemNotification({
+      type: 'new_booking',
+      title: '🎯 New Booking Received',
+      message: `New booking created: ${booking.service} on ${booking.date}`,
+      priority: 'high',
+      targetRoles: ['admin', 'superadmin', 'manager'],
+      data: { bookingId: booking.id },
+      playSound: true,
+      soundType: 'new_booking'
+    });
+    
+    res.status(201).json({ 
+      success: true, 
+      booking,
+      message: 'Booking created successfully' 
+    });
+  } catch (error) {
+    console.error('Create booking error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to create booking' 
+    });
+  }
+};
+
+export const getBookings: RequestHandler = async (req, res) => {
+  try {
+    const { userId, status } = req.query;
+    
+    let bookings;
+    if (userId) {
+      bookings = await neonDbService.getBookingsByUserId(userId as string);
+    } else if (status) {
+      bookings = await neonDbService.getBookingsByStatus(status as string);
+    } else {
+      bookings = await neonDbService.getAllBookings();
+    }
+    
+    res.json({ 
+      success: true, 
+      bookings 
+    });
+  } catch (error) {
+    console.error('Get bookings error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch bookings' 
+    });
+  }
+};
+
+export const updateBooking: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    const booking = await neonDbService.updateBooking(id, updates);
+    
+    res.json({ 
+      success: true, 
+      booking,
+      message: 'Booking updated successfully' 
+    });
+  } catch (error) {
+    console.error('Update booking error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update booking' 
+    });
+  }
+};
+
+// Notification endpoints
+export const getNotifications: RequestHandler = async (req, res) => {
+  try {
+    const { userId, userRole } = req.query;
+    
+    if (!userId || !userRole) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'userId and userRole are required' 
+      });
+    }
+    
+    const notifications = await neonDbService.getNotificationsForUser(
+      userId as string, 
+      userRole as string
+    );
+    
+    res.json({ 
+      success: true, 
+      notifications 
+    });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch notifications' 
+    });
+  }
+};
+
+export const markNotificationRead: RequestHandler = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const { userId } = req.body;
+    
+    await neonDbService.markNotificationAsRead(notificationId, userId);
+    
+    res.json({ 
+      success: true, 
+      message: 'Notification marked as read' 
+    });
+  } catch (error) {
+    console.error('Mark notification read error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to mark notification as read' 
+    });
+  }
+};
+
+// Admin settings endpoints
+export const getSettings: RequestHandler = async (req, res) => {
+  try {
+    const settings = await neonDbService.getAllSettings();
+    res.json({ 
+      success: true, 
+      settings 
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch settings' 
+    });
+  }
+};
+
+export const updateSetting: RequestHandler = async (req, res) => {
+  try {
+    const { key, value, description, category } = req.body;
+    
+    const setting = await neonDbService.setSetting(key, value, description, category);
+    
+    res.json({ 
+      success: true, 
+      setting,
+      message: 'Setting updated successfully' 
+    });
+  } catch (error) {
+    console.error('Update setting error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update setting' 
+    });
+  }
+};
+
+// Ads endpoints
+export const getAds: RequestHandler = async (req, res) => {
+  try {
+    const ads = await neonDbService.getActiveAds();
+    res.json({ 
+      success: true, 
+      ads 
+    });
+  } catch (error) {
+    console.error('Get ads error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch ads' 
+    });
+  }
+};
+
+export const createAd: RequestHandler = async (req, res) => {
+  try {
+    const ad = await neonDbService.createAd(req.body);
+    
+    res.status(201).json({ 
+      success: true, 
+      ad,
+      message: 'Ad created successfully' 
+    });
+  } catch (error) {
+    console.error('Create ad error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to create ad' 
+    });
+  }
+};
+
+export const dismissAd: RequestHandler = async (req, res) => {
+  try {
+    const { adId } = req.params;
+    const { userEmail } = req.body;
+    
+    await neonDbService.dismissAd(adId, userEmail);
+    
+    res.json({ 
+      success: true, 
+      message: 'Ad dismissed successfully' 
+    });
+  } catch (error) {
+    console.error('Dismiss ad error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to dismiss ad' 
+    });
+  }
+};
+
+// Database stats endpoint
+export const getDatabaseStats: RequestHandler = async (req, res) => {
+  try {
+    const stats = await neonDbService.getStats();
+    res.json({ 
+      success: true, 
+      stats 
+    });
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch database stats' 
+    });
+  }
+};
