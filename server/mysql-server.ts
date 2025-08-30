@@ -70,6 +70,33 @@ export const createServer = () => {
   app.use("/api", otpApiRoutes);
   app.use("/api/realtime", realtimeApiRoutes);
 
+  // Neon Database API Routes
+  app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
+  app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
+  app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
+
+  // Auth endpoints
+  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
+  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
+
+  // Booking endpoints
+  app.post("/api/neon/bookings", neonApiRoutes.createBooking);
+  app.get("/api/neon/bookings", neonApiRoutes.getBookings);
+  app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
+
+  // Notification endpoints
+  app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
+  app.put("/api/neon/notifications/:notificationId/read", neonApiRoutes.markNotificationRead);
+
+  // Admin settings endpoints
+  app.get("/api/neon/settings", neonApiRoutes.getSettings);
+  app.put("/api/neon/settings", neonApiRoutes.updateSetting);
+
+  // Ads endpoints
+  app.get("/api/neon/ads", neonApiRoutes.getAds);
+  app.post("/api/neon/ads", neonApiRoutes.createAd);
+  app.post("/api/neon/ads/:adId/dismiss", neonApiRoutes.dismissAd);
+
   // Serve Flutter web app (replaces React customer pages)
   const flutterBuildPath = path.join(__dirname, "../flutter_app/build/web");
   app.use("/customer", express.static(flutterBuildPath));
