@@ -28,6 +28,7 @@ import {
   Home,
   Camera,
   Wrench,
+  Database,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -185,6 +186,13 @@ const sidebarItems = [
     icon: Users,
     description: "Staff & Roles",
     gradient: "from-purple-500 to-violet-600",
+  },
+  {
+    id: "database",
+    label: "Database Setup",
+    icon: Database,
+    description: "Neon Database Management",
+    gradient: "from-slate-500 to-gray-600",
   },
 ];
 
