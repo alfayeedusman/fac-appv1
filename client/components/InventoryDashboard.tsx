@@ -13,6 +13,7 @@ import {
 import {
   Package,
   TrendingDown,
+  TrendingUp,
   AlertTriangle,
   DollarSign,
   BarChart3,
