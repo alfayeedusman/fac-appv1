@@ -293,37 +293,47 @@ class NeonDatabaseClient {
       console.log('📝 Content-Type:', response.headers.get('content-type') || 'unknown');
     } catch (_) {}
 
-    const cloned = response.clone();
     try {
-      const json = await cloned.json();
-      if (!response.ok || !json?.success) {
-        const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
-        return { success: false, error: errMsg };
-      }
+      const cloned = response.clone();
       try {
-        localStorage.setItem('userEmail', json.user.email);
-        localStorage.setItem('userRole', json.user.role);
-        localStorage.setItem('userId', json.user.id);
-      } catch (e) {
-        console.warn('⚠️ Storage unavailable, proceeding without persisting session:', (e as any)?.message || e);
+        const json = await cloned.json();
+        if (!response.ok || !json?.success) {
+          const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
+          return { success: false, error: errMsg };
+        }
         try {
-          sessionStorage.setItem('userEmail', json.user.email);
-          sessionStorage.setItem('userRole', json.user.role);
-          sessionStorage.setItem('userId', json.user.id);
-        } catch (_) {}
+          localStorage.setItem('userEmail', json.user.email);
+          localStorage.setItem('userRole', json.user.role);
+          localStorage.setItem('userId', json.user.id);
+        } catch (e) {
+          console.warn('⚠️ Storage unavailable, proceeding without persisting session:', (e as any)?.message || e);
+          try {
+            sessionStorage.setItem('userEmail', json.user.email);
+            sessionStorage.setItem('userRole', json.user.role);
+            sessionStorage.setItem('userId', json.user.id);
+          } catch (_) {}
+        }
+        return json;
+      } catch (jsonError: any) {
+        let bodyPreview = '';
+        try {
+          const text = await response.text();
+          if (text) bodyPreview = text.substring(0, 200);
+        } catch (textError: any) {
+          console.error('❌ Could not read server response body:', textError?.message || textError);
+        }
+        const ct = response.headers.get('content-type') || '';
+        const why = ct.includes('text/html') ? 'HTML page returned instead of JSON.' : 'Invalid JSON response.';
+        return { success: false, error: `${why} (HTTP ${response.status}). ${bodyPreview ? `Response: ${bodyPreview}` : ''}`.trim() };
       }
-      return json;
-    } catch (jsonError: any) {
-      let bodyPreview = '';
+    } catch (cloneError: any) {
+      console.error('❌ Failed to clone response:', cloneError?.message || cloneError);
+      let preview = '';
       try {
-        const text = await response.text();
-        if (text) bodyPreview = text.substring(0, 200);
-      } catch (textError: any) {
-        console.error('❌ Could not read server response body:', textError?.message || textError);
-      }
-      const ct = response.headers.get('content-type') || '';
-      const why = ct.includes('text/html') ? 'HTML page returned instead of JSON.' : 'Invalid JSON response.';
-      return { success: false, error: `${why} (HTTP ${response.status}). ${bodyPreview ? `Response: ${bodyPreview}` : ''}`.trim() };
+        const txt = await response.text();
+        if (txt) preview = txt.substring(0, 200);
+      } catch {}
+      return { success: false, error: `Unable to read server response (HTTP ${response.status}). ${preview ? `Response: ${preview}` : ''}`.trim() };
     }
   }
 
