@@ -55,22 +55,28 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
-import { initializeAdminAccounts } from "./utils/initializeAdminAccounts";
-import { initializeSampleAds } from "./utils/initializeSampleAds";
-import { initializeAllSampleData } from "./utils/initializeSampleBookings";
+import { neonDbClient } from "./services/neonDatabaseService";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    // Initialize admin accounts and sample data on app startup
-    try {
-      initializeAdminAccounts();
-      initializeSampleAds();
-      initializeAllSampleData();
-    } catch (error) {
-      console.warn('Error during initialization:', error);
-    }
+    // Initialize Neon database connection on app startup
+    const initializeNeonDB = async () => {
+      try {
+        console.log('🔄 Initializing Neon database...');
+        const initialized = await neonDbClient.initialize();
+        if (initialized) {
+          console.log('✅ Neon database initialized successfully');
+        } else {
+          console.warn('⚠️ Failed to initialize Neon database');
+        }
+      } catch (error) {
+        console.error('❌ Error during Neon database initialization:', error);
+      }
+    };
+
+    initializeNeonDB();
   }, []);
 
   return (
