@@ -57,6 +57,7 @@ import NeonConnectionTest from "./components/NeonConnectionTest";
 import LoginDebugger from "./components/LoginDebugger";
 import FixAdminPassword from "./components/FixAdminPassword";
 import SuperAdminSetup from "./components/SuperAdminSetup";
+import QuickSuperAdminLogin from "./components/QuickSuperAdminLogin";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
@@ -388,6 +389,14 @@ const App = () => {
               element={
                 <div className="min-h-screen bg-background p-4">
                   <SuperAdminSetup />
+                </div>
+              }
+            />
+            <Route
+              path="/quick-superadmin"
+              element={
+                <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                  <QuickSuperAdminLogin />
                 </div>
               }
             />
