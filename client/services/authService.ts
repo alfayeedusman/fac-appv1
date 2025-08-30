@@ -169,14 +169,8 @@ class AuthService {
   }
 
   logout() {
-    this.isLoggedIn = false;
-    this.currentUser = null;
-    
-    // Clear local storage
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    
+    this.clearSession();
+
     toast({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
