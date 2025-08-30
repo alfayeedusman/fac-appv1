@@ -102,7 +102,7 @@ const BottomNavigation = ({ onQRScan }: BottomNavigationProps = {}) => {
                         <Icon className="h-8 w-8" />
                         {/* Pulse animation ring */}
                         <div className="absolute inset-0 rounded-full bg-fac-orange-500 animate-ping opacity-20"></div>
-                        <div className="absolute inset-0 rounded-full bg-fac-orange-400 animate-pulse opacity-30"></div>
+                        <div className="absolute inset-0 rounded-full bg-fac-orange-400 opacity-30"></div>
                       </button>
                     ) : (
                       <Link

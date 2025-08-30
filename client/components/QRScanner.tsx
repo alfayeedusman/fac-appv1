@@ -91,32 +91,66 @@ export default function QRScanner({
       streamRef.current = stream;
 
       if (videoRef.current) {
+        // Clear any existing srcObject to prevent "not suitable" errors
+        if (videoRef.current.srcObject) {
+          const oldStream = videoRef.current.srcObject as MediaStream;
+          oldStream.getTracks().forEach(track => track.stop());
+        }
+
         videoRef.current.srcObject = stream;
 
         // Wait for video to load before starting detection
         videoRef.current.onloadedmetadata = () => {
           console.log("Video metadata loaded");
-          videoRef.current
-            ?.play()
-            .then(() => {
-              console.log("Video playing");
-              setIsScanning(true);
-              startQRDetection();
-            })
-            .catch((err) => {
-              console.error("Video play error:", err);
-              setError("Failed to start video playback");
-            });
+          if (videoRef.current && videoRef.current.readyState >= 3) { // HAVE_FUTURE_DATA
+            videoRef.current
+              ?.play()
+              .then(() => {
+                console.log("Video playing");
+                setIsScanning(true);
+                startQRDetection();
+              })
+              .catch((err) => {
+                console.error("Video play error:", err);
+                setError("Failed to start video playback. Please check camera permissions.");
+                stopCamera();
+              });
+          }
         };
 
         videoRef.current.onerror = (err) => {
           console.error("Video error:", err);
-          setError("Video playback error");
+          setError("Video stream error. The media resource may not be suitable for this device.");
+          stopCamera();
+        };
+
+        videoRef.current.onabort = () => {
+          console.warn("Video loading aborted");
+          setError("Video loading was interrupted");
+          stopCamera();
+        };
+
+        videoRef.current.onemptied = () => {
+          console.warn("Video element emptied");
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera access error:", err);
       setHasPermission(false);
+
+      let errorMessage = "Camera access failed";
+      if (err.name === 'NotAllowedError') {
+        errorMessage = "Camera permission denied. Please allow camera access and try again.";
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = "Camera is already in use or hardware error occurred.";
+      } else if (err.name === 'OverconstrainedError') {
+        errorMessage = "Camera doesn't support the requested constraints.";
+      } else if (err.name === 'SecurityError') {
+        errorMessage = "Camera access blocked due to security restrictions.";
+      }
+
       setError(
         err instanceof Error
           ? err.message
@@ -126,16 +160,36 @@ export default function QRScanner({
   };
 
   const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+    try {
+      // Stop all tracks in the stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          console.log(`Stopped ${track.kind} track`);
+        });
+        streamRef.current = null;
+      }
+
+      // Clear video source and reset video element
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.srcObject = null;
+        videoRef.current.src = "";
+        videoRef.current.load(); // Reset the video element
+      }
+
+      // Clear scanning interval
+      if (scanIntervalRef.current) {
+        clearInterval(scanIntervalRef.current);
+        scanIntervalRef.current = null;
+      }
+
+      setIsScanning(false);
+      setFlashlight(false);
+      console.log("Camera stopped and cleaned up");
+    } catch (err) {
+      console.error("Error stopping camera:", err);
     }
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
-    setIsScanning(false);
-    setFlashlight(false);
   };
 
   const toggleFlashlight = async () => {
@@ -169,34 +223,39 @@ export default function QRScanner({
         videoRef.current &&
         videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA
       ) {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
+        try {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
-        if (context) {
-          canvas.width = videoRef.current.videoWidth;
-          canvas.height = videoRef.current.videoHeight;
+          if (context && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
 
-          context.drawImage(
-            videoRef.current,
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-          );
+            context.drawImage(
+              videoRef.current,
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+            );
 
-          const imageData = context.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-          );
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
-          });
+            const imageData = context.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+            );
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
 
-          if (code) {
-            handleQRDetected(code.data);
+            if (code) {
+              handleQRDetected(code.data);
+            }
           }
+        } catch (err) {
+          console.warn("Error during QR code detection:", err);
+          // Continue scanning - this is likely a temporary issue
         }
       }
     }, 100); // Scan every 100ms for better performance
@@ -367,7 +426,7 @@ export default function QRScanner({
 
                       {/* Scanning line animation */}
                       {isScanning && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-fac-orange-500 to-transparent animate-pulse shadow-lg"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-fac-orange-500 to-transparent shadow-lg"></div>
                       )}
                     </div>
 
@@ -415,7 +474,7 @@ export default function QRScanner({
                 {/* Camera Status Indicator */}
                 <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-white text-xs font-medium">LIVE</span>
                   </div>
                 </div>

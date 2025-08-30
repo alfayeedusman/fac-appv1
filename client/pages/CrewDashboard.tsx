@@ -11,6 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
+import {
+  getGeolocationErrorDetails,
+  getGeolocationErrorMessage,
+  isGeolocationSupported
+} from '@/utils/geolocationUtils';
 import { 
   Calendar,
   Clock,
@@ -135,24 +140,44 @@ export default function CrewDashboard() {
   };
 
   const startLocationTracking = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Location tracking error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
+    if (!isGeolocationSupported()) {
+      console.warn('Geolocation is not supported by this browser');
+      return;
     }
+
+    navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        console.log('Location updated:', {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        const errorDetails = getGeolocationErrorDetails(error);
+        const errorMessage = getGeolocationErrorMessage(error);
+        console.error('Location tracking error:', errorDetails);
+
+        // Handle different error types appropriately
+        if (error.code === 3) { // TIMEOUT - new geolocation utils handle retry automatically
+          console.log('📍 Location timeout - system will retry automatically');
+        } else if (error.code !== 1) { // Don't retry for permission denied
+          // Retry for other errors after a delay
+          setTimeout(() => {
+            console.log('Retrying location tracking...');
+            startLocationTracking();
+          }, 10000);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
   };
 
   const updateBookingStatus = (bookingId: string, status: Booking['status']) => {

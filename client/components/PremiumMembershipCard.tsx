@@ -205,7 +205,7 @@ export default function PremiumMembershipCard({
 
               {/* Floating elements - 2025 style */}
               <div className="absolute top-6 right-6 opacity-8">
-                <div className="w-20 h-20 border border-fac-orange-500/30 rounded-full animate-pulse"></div>
+                <div className="w-20 h-20 border border-fac-orange-500/30 rounded-full "></div>
                 <div className="absolute top-2 left-2 w-16 h-16 border border-fac-orange-500/20 rounded-full"></div>
               </div>
 
@@ -219,7 +219,7 @@ export default function PremiumMembershipCard({
               </div>
 
               {/* Luxury shine effect */}
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/[0.02] to-transparent transform -skew-x-12 animate-pulse"></div>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/[0.02] to-transparent transform -skew-x-12 "></div>
             </div>
 
             {/* Card Content */}

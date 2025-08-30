@@ -47,9 +47,6 @@ import {
   Trash2,
   Save,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import StickyHeader from "@/components/StickyHeader";
-import AdminSidebar from "@/components/AdminSidebar";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
 import {
   getProducts,
@@ -64,6 +61,7 @@ import {
   StockMovement,
   Supplier,
 } from "@/utils/inventoryData";
+import SafeSelectItem from "@/components/SafeSelectItem";
 import {
   getCarWashServices,
   addCarWashService,
@@ -105,7 +103,6 @@ interface EnhancedProduct extends Product {
 }
 
 export default function EnhancedInventoryManagement() {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<EnhancedProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<EnhancedProduct[]>(
     [],
@@ -630,44 +627,21 @@ export default function EnhancedInventoryManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <StickyHeader showBack={false} title="Enhanced Inventory" />
+    <div className="space-y-6">
+      <Tabs defaultValue="products" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="services">Car Wash Services</TabsTrigger>
+          <TabsTrigger value="movements">Stock Movements</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-      {/* Admin Sidebar */}
-      <AdminSidebar
-        activeTab="inventory"
-        onTabChange={(tab) => {
-          if (tab === "overview") navigate("/admin-dashboard");
-          else if (tab === "cms") navigate("/admin-cms");
-          else if (tab === "push-notifications")
-            navigate("/admin-push-notifications");
-          else if (tab === "gamification") navigate("/admin-gamification");
-          else if (tab === "subscription-approval")
-            navigate("/admin-subscription-approval");
-          else if (tab === "pos") navigate("/pos");
-          else if (tab === "user-management")
-            navigate("/admin-user-management");
-        }}
-        userRole={localStorage.getItem("userRole") || "admin"}
-        notificationCount={0}
-      />
-
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 mt-16">
-          <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="categories">Categories</TabsTrigger>
-              <TabsTrigger value="services">Car Wash Services</TabsTrigger>
-              <TabsTrigger value="movements">Stock Movements</TabsTrigger>
-              <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
-
-            {/* Products Tab */}
-            <TabsContent value="products" className="space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Products Tab */}
+        <TabsContent value="products" className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2">
@@ -735,7 +709,7 @@ export default function EnhancedInventoryManagement() {
               </div>
 
               {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -749,19 +723,19 @@ export default function EnhancedInventoryManagement() {
                   value={selectedCategory}
                   onValueChange={setSelectedCategory}
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
+                      <SafeSelectItem key={category.id} value={category.id}>
+                        {typeof category.icon === 'string' ? category.icon : '📦'} {category.name}
+                      </SafeSelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button onClick={() => setShowAddProductModal(true)}>
+                <Button onClick={() => setShowAddProductModal(true)} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
@@ -772,8 +746,9 @@ export default function EnhancedInventoryManagement() {
                 <CardHeader>
                   <CardTitle>Products Inventory</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Table>
+                <CardContent className="overflow-x-auto">
+                  <div className="min-w-full">
+                    <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Product</TableHead>
@@ -863,21 +838,22 @@ export default function EnhancedInventoryManagement() {
                       })}
                     </TableBody>
                   </Table>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Categories Tab */}
-            <TabsContent value="categories" className="space-y-6">
-              <div className="flex justify-between items-center">
+        {/* Categories Tab */}
+        <TabsContent value="categories" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-2xl font-bold">Product Categories</h2>
-                <Button onClick={() => setShowAddCategoryModal(true)}>
+                <Button onClick={() => setShowAddCategoryModal(true)} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Category
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 {categories.map((category) => (
                   <Card
                     key={category.id}
@@ -939,9 +915,9 @@ export default function EnhancedInventoryManagement() {
               </div>
             </TabsContent>
 
-            {/* Car Wash Services Tab */}
-            <TabsContent value="services" className="space-y-6">
-              <div className="flex justify-between items-center mb-6">
+        {/* Car Wash Services Tab */}
+        <TabsContent value="services" className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
                     Car Wash Services
@@ -965,14 +941,14 @@ export default function EnhancedInventoryManagement() {
                     setServiceModalMode("add");
                     setShowServiceModal(true);
                   }}
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Service
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 {carWashServices.map((service) => (
                   <Card
                     key={service.id}
@@ -996,12 +972,12 @@ export default function EnhancedInventoryManagement() {
                             {service.category}
                           </Badge>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => showServicePricing(service)}
-                            className="text-orange-500 hover:text-orange-600 p-1"
+                            className="text-orange-500 hover:text-orange-600 p-1 min-w-0"
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
@@ -1009,7 +985,7 @@ export default function EnhancedInventoryManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEditService(service)}
-                            className="text-blue-500 hover:text-blue-600 p-1"
+                            className="text-blue-500 hover:text-blue-600 p-1 min-w-0"
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -1017,7 +993,7 @@ export default function EnhancedInventoryManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteService(service.id)}
-                            className="text-red-500 hover:text-red-600 p-1"
+                            className="text-red-500 hover:text-red-600 p-1 min-w-0"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -1043,11 +1019,12 @@ export default function EnhancedInventoryManagement() {
                         </div>
                         <Button
                           variant="outline"
-                          className="w-full"
+                          className="w-full text-sm"
                           onClick={() => showServicePricing(service)}
                         >
                           <Car className="h-4 w-4 mr-2" />
-                          View Vehicle Pricing
+                          <span className="hidden sm:inline">View Vehicle Pricing</span>
+                          <span className="sm:hidden">Pricing</span>
                         </Button>
                       </div>
                     </CardContent>
@@ -1056,8 +1033,8 @@ export default function EnhancedInventoryManagement() {
               </div>
             </TabsContent>
 
-            {/* Other tabs remain the same... */}
-            <TabsContent value="movements">
+        {/* Other tabs remain the same... */}
+        <TabsContent value="movements">
               <Card>
                 <CardHeader>
                   <CardTitle>Stock Movements</CardTitle>
@@ -1070,7 +1047,7 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="suppliers">
+        <TabsContent value="suppliers">
               <Card>
                 <CardHeader>
                   <CardTitle>Suppliers</CardTitle>
@@ -1083,7 +1060,7 @@ export default function EnhancedInventoryManagement() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="analytics">
+        <TabsContent value="analytics">
               <Card>
                 <CardHeader>
                   <CardTitle>Analytics</CardTitle>
@@ -1094,10 +1071,8 @@ export default function EnhancedInventoryManagement() {
                   </p>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Add Category Modal */}
       <Dialog

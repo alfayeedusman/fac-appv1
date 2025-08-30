@@ -59,35 +59,6 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-    Future<void> _forceSuperadminLogin() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    // Force superadmin login bypassing registration
-    final success = await authProvider.login(
-      'superadmin@fac.com',
-      'super123',
-    );
-
-    if (!mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('👑 FORCE SUPERADMIN LOGIN SUCCESSFUL! ⚡'),
-          backgroundColor: Color(0xFF9333EA), // Purple color
-          duration: Duration(seconds: 3),
-        ),
-      );
-      context.go('/admin-dashboard');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error ?? 'Force login failed'),
-          backgroundColor: AppColors.destructive,
-        ),
-      );
-    }
-  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -175,9 +146,6 @@ class _LoginScreenState extends State<LoginScreen>
             _buildLoginButton(),
             const SizedBox(height: 16),
 
-            // Force Superadmin Login Button
-            _buildForceSuperadminButton(),
-            const SizedBox(height: 16),
 
             // Forgot Password
             _buildForgotPassword(),
@@ -352,65 +320,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildForceSuperadminButton() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        return Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF9333EA), Color(0xFFEC4899)],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF9333EA).withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: authProvider.isLoading ? null : _forceSuperadminLogin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: authProvider.isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('👑', style: TextStyle(fontSize: 20)),
-                      SizedBox(width: 8),
-                      Text(
-                        'FORCE SUPERADMIN LOGIN',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text('⚡', style: TextStyle(fontSize: 20)),
-                    ],
-                  ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildForgotPassword() {
     return TextButton(

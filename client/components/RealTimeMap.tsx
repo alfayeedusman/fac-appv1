@@ -1,0 +1,541 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  MapPin, 
+  Users, 
+  Car, 
+  Navigation, 
+  Activity, 
+  Clock, 
+  Star, 
+  CheckCircle, 
+  AlertCircle, 
+  Truck,
+  Phone,
+  Wrench,
+  Droplet,
+  Zap,
+  Shield,
+  Crown,
+  UserX,
+  MapPinned,
+  WifiOff,
+  RefreshCw
+} from 'lucide-react';
+
+// Philippines coordinates (Manila center)
+const MANILA_COORDINATES = {
+  latitude: 14.5995,
+  longitude: 120.9842
+};
+
+interface CrewMember {
+  id: string;
+  name: string;
+  phone: string;
+  status: 'online' | 'offline' | 'busy' | 'available' | 'break';
+  location: {
+    latitude: number;
+    longitude: number;
+    accuracy?: number;
+    timestamp: string;
+  };
+  currentJob?: {
+    id: string;
+    customer: string;
+    vehicleType: 'car' | 'suv' | 'motorcycle' | 'truck';
+    serviceType: 'basic' | 'premium' | 'deluxe' | 'vip';
+    washType: 'exterior' | 'interior' | 'full' | 'detailing';
+    startTime: string;
+    estimatedDuration: number;
+    address: string;
+    progress: number;
+  };
+  groupId: string;
+  groupName: string;
+  rating: number;
+  completedJobs: number;
+  lastActive: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
+  status: 'online' | 'offline' | 'requesting' | 'being_served';
+  membership: 'basic' | 'silver' | 'gold' | 'platinum';
+  activeBooking?: {
+    id: string;
+    serviceType: string;
+    crewId?: string;
+    status: 'pending' | 'assigned' | 'in_progress' | 'completed';
+  };
+}
+
+interface RealTimeMapProps {
+  height?: string;
+  onCrewSelect?: (crew: CrewMember) => void;
+  onCustomerSelect?: (customer: Customer) => void;
+  showCustomers?: boolean;
+  showCrew?: boolean;
+  selectedFilters?: {
+    status?: string;
+    groupId?: string;
+    serviceType?: string;
+  };
+}
+
+// Mock data generator
+const generateMockCrewData = (): CrewMember[] => {
+  const crews: CrewMember[] = [];
+  const serviceTypes = ['basic', 'premium', 'deluxe', 'vip'] as const;
+  const washTypes = ['exterior', 'interior', 'full', 'detailing'] as const;
+  const vehicleTypes = ['car', 'suv', 'motorcycle', 'truck'] as const;
+  const statuses = ['online', 'busy', 'available', 'break'] as const;
+
+  for (let i = 1; i <= 20; i++) {
+    const latOffset = (Math.random() - 0.5) * 0.02;
+    const lngOffset = (Math.random() - 0.5) * 0.02;
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const isBusy = status === 'busy';
+
+    const crew: CrewMember = {
+      id: `crew-${i}`,
+      name: `Crew Member ${i}`,
+      phone: `+63 9${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}`,
+      status,
+      location: {
+        latitude: MANILA_COORDINATES.latitude + latOffset,
+        longitude: MANILA_COORDINATES.longitude + lngOffset,
+        accuracy: Math.floor(Math.random() * 10) + 3,
+        timestamp: new Date(Date.now() - Math.random() * 300000).toISOString()
+      },
+      currentJob: isBusy ? {
+        id: `job-${i}`,
+        customer: `Customer ${Math.floor(Math.random() * 100) + 1}`,
+        vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)],
+        serviceType: serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
+        washType: washTypes[Math.floor(Math.random() * washTypes.length)],
+        startTime: new Date(Date.now() - Math.random() * 3600000).toISOString(),
+        estimatedDuration: Math.floor(Math.random() * 120) + 30,
+        address: `Manila Area ${i}`,
+        progress: Math.floor(Math.random() * 100)
+      } : undefined,
+      groupId: `group-${Math.ceil(i / 4)}`,
+      groupName: `Team ${Math.ceil(i / 4)}`,
+      rating: 3.5 + Math.random() * 1.5,
+      completedJobs: Math.floor(Math.random() * 200) + 10,
+      lastActive: new Date(Date.now() - Math.random() * 1800000).toISOString()
+    };
+
+    crews.push(crew);
+  }
+
+  return crews;
+};
+
+const generateMockCustomerData = (): Customer[] => {
+  const customers: Customer[] = [];
+  const memberships = ['basic', 'silver', 'gold', 'platinum'] as const;
+  const statuses = ['online', 'offline', 'requesting', 'being_served'] as const;
+
+  for (let i = 1; i <= 15; i++) {
+    const latOffset = (Math.random() - 0.5) * 0.05;
+    const lngOffset = (Math.random() - 0.5) * 0.05;
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+    const customer: Customer = {
+      id: `customer-${i}`,
+      name: `Customer ${i}`,
+      location: {
+        latitude: MANILA_COORDINATES.latitude + latOffset,
+        longitude: MANILA_COORDINATES.longitude + lngOffset,
+        address: `Address ${i}, Metro Manila`
+      },
+      status,
+      membership: memberships[Math.floor(Math.random() * memberships.length)],
+      activeBooking: status === 'requesting' || status === 'being_served' ? {
+        id: `booking-${i}`,
+        serviceType: 'Premium Wash',
+        crewId: status === 'being_served' ? `crew-${Math.floor(Math.random() * 20) + 1}` : undefined,
+        status: status === 'requesting' ? 'pending' : 'in_progress'
+      } : undefined
+    };
+
+    customers.push(customer);
+  }
+
+  return customers;
+};
+
+export default function RealTimeMap({ 
+  height = '600px', 
+  onCrewSelect, 
+  onCustomerSelect,
+  showCustomers = true,
+  showCrew = true,
+  selectedFilters = {}
+}: RealTimeMapProps) {
+  const [crewData, setCrewData] = useState<CrewMember[]>([]);
+  const [customerData, setCustomerData] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCrew, setSelectedCrew] = useState<CrewMember | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  // Load initial data
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setCrewData(generateMockCrewData());
+        setCustomerData(generateMockCustomerData());
+        setError(null);
+      } catch (error) {
+        console.error('Error loading map data:', error);
+        setError('Failed to load location data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Set up real-time updates (mock simulation)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCrewData(prev => prev.map(crew => ({
+        ...crew,
+        location: {
+          ...crew.location,
+          latitude: crew.location.latitude + (Math.random() - 0.5) * 0.0001,
+          longitude: crew.location.longitude + (Math.random() - 0.5) * 0.0001,
+          timestamp: new Date().toISOString()
+        },
+        currentJob: crew.currentJob ? {
+          ...crew.currentJob,
+          progress: Math.min(100, crew.currentJob.progress + Math.random() * 5)
+        } : undefined
+      })));
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getCrewMarkerColor = (crew: CrewMember) => {
+    switch (crew.status) {
+      case 'online': return '#10B981';
+      case 'busy': return '#F59E0B';
+      case 'available': return '#3B82F6';
+      case 'break': return '#8B5CF6';
+      case 'offline': return '#6B7280';
+      default: return '#6B7280';
+    }
+  };
+
+  const getCustomerMarkerColor = (customer: Customer) => {
+    switch (customer.membership) {
+      case 'platinum': return '#E5E7EB';
+      case 'gold': return '#F59E0B';
+      case 'silver': return '#9CA3AF';
+      case 'basic': return '#3B82F6';
+      default: return '#3B82F6';
+    }
+  };
+
+  // Filter crew based on selected filters
+  const filteredCrewData = crewData.filter(crew => {
+    if (selectedFilters.status && crew.status !== selectedFilters.status) return false;
+    if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId) return false;
+    if (selectedFilters.serviceType && (!crew.currentJob || crew.currentJob.serviceType !== selectedFilters.serviceType)) return false;
+    return true;
+  });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center" style={{ height }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading real-time map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error/Fallback state with interactive map simulation
+  return (
+    <div className="relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden" style={{ height }}>
+      
+      {/* Status Banner */}
+      <div className="absolute top-4 left-4 right-4 z-10">
+        <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <WifiOff className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+              Map service unavailable - Showing simulated data
+            </span>
+            <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Simulated Map Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950">
+        {/* Grid background to simulate map */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="grid grid-cols-20 grid-rows-20 h-full w-full">
+            {[...Array(400)].map((_, i) => (
+              <div key={i} className="border border-gray-300 dark:border-gray-600"></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Manila center marker */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="bg-red-500 w-4 h-4 rounded-full animate-pulse"></div>
+          <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1 text-center whitespace-nowrap">
+            Manila Center
+          </div>
+        </div>
+        
+        {/* Crew markers */}
+        {showCrew && filteredCrewData.map((crew, index) => {
+          const x = 20 + (index % 8) * 80 + Math.random() * 60;
+          const y = 100 + Math.floor(index / 8) * 80 + Math.random() * 60;
+          
+          return (
+            <div
+              key={crew.id}
+              className="absolute cursor-pointer hover:scale-110 transition-transform"
+              style={{
+                left: `${Math.min(90, x)}%`,
+                top: `${Math.min(80, y)}%`,
+              }}
+              onClick={() => {
+                setSelectedCrew(crew);
+                setSelectedCustomer(null);
+                onCrewSelect?.(crew);
+              }}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                style={{ backgroundColor: getCrewMarkerColor(crew) }}
+              >
+                <Truck className="h-4 w-4 text-white" />
+              </div>
+              {crew.currentJob && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+              )}
+              {crew.status === 'online' && (
+                <div className="absolute -top-1 -left-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              )}
+            </div>
+          );
+        })}
+        
+        {/* Customer markers */}
+        {showCustomers && customerData.map((customer, index) => {
+          const x = 15 + (index % 6) * 70 + Math.random() * 40;
+          const y = 120 + Math.floor(index / 6) * 60 + Math.random() * 40;
+          
+          return (
+            <div
+              key={customer.id}
+              className="absolute cursor-pointer hover:scale-110 transition-transform"
+              style={{
+                left: `${Math.min(85, x)}%`,
+                top: `${Math.min(75, y)}%`,
+              }}
+              onClick={() => {
+                setSelectedCustomer(customer);
+                setSelectedCrew(null);
+                onCustomerSelect?.(customer);
+              }}
+            >
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                style={{ backgroundColor: getCustomerMarkerColor(customer) }}
+              >
+                <Car className="h-3 w-3 text-white" />
+              </div>
+              {customer.status === 'requesting' && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Selected crew popup */}
+      {selectedCrew && (
+        <div className="absolute bottom-20 left-4 w-80 max-w-sm z-20">
+          <Card className="border shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-fac-orange-500" />
+                  {selectedCrew.name}
+                </div>
+                <Badge
+                  className="text-xs text-white"
+                  style={{ backgroundColor: getCrewMarkerColor(selectedCrew) }}
+                >
+                  {selectedCrew.status.toUpperCase()}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-600">Group:</span>
+                  <div className="font-medium">{selectedCrew.groupName}</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">Rating:</span>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                    <span className="font-medium">{selectedCrew.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {selectedCrew.currentJob && (
+                <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg">
+                  <h4 className="font-semibold text-xs mb-2 text-orange-800 dark:text-orange-200">
+                    Current Job
+                  </h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Customer:</span>
+                      <span className="font-medium">{selectedCrew.currentJob.customer}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Progress:</span>
+                      <span className="font-medium">{selectedCrew.currentJob.progress.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${selectedCrew.currentJob.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" variant="outline" className="flex-1">
+                  <Phone className="h-3 w-3 mr-1" />
+                  Call
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedCrew(null)}>
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Selected customer popup */}
+      {selectedCustomer && (
+        <div className="absolute bottom-20 right-4 w-72 max-w-sm z-20">
+          <Card className="border shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-purple-500" />
+                  {selectedCustomer.name}
+                </div>
+                <Badge
+                  className="text-xs text-white capitalize"
+                  style={{ backgroundColor: getCustomerMarkerColor(selectedCustomer) }}
+                >
+                  {selectedCustomer.membership}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-xs">
+                <span className="text-gray-600">Status:</span>
+                <Badge variant="outline" className="ml-2 text-xs capitalize">
+                  {selectedCustomer.status.replace('_', ' ')}
+                </Badge>
+              </div>
+
+              <div className="text-xs">
+                <span className="text-gray-600">Address:</span>
+                <p className="font-medium mt-1">{selectedCustomer.location.address}</p>
+              </div>
+
+              {selectedCustomer.activeBooking && (
+                <div className="bg-purple-50 dark:bg-purple-950 p-3 rounded-lg">
+                  <h4 className="font-semibold text-xs mb-2 text-purple-800 dark:text-purple-200">
+                    Active Booking
+                  </h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Service:</span>
+                      <span className="font-medium">{selectedCustomer.activeBooking.serviceType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status:</span>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {selectedCustomer.activeBooking.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Button size="sm" variant="outline" onClick={() => setSelectedCustomer(null)} className="w-full">
+                Close
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Map Legend */}
+      <div className="absolute bottom-4 left-4 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border max-w-xs">
+        <h4 className="font-semibold text-sm mb-2">Crew Status</h4>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span>Online ({filteredCrewData.filter(c => c.status === 'online').length})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+              <span>Busy ({filteredCrewData.filter(c => c.status === 'busy').length})</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span>Available ({filteredCrewData.filter(c => c.status === 'available').length})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span>Break ({filteredCrewData.filter(c => c.status === 'break').length})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

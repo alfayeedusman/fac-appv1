@@ -301,7 +301,7 @@ export default function Dashboard() {
             <CardHeader className="pb-4 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 p-3 rounded-xl animate-pulse-glow">
+                  <div className="bg-gradient-to-r from-red-500 to-orange-500 p-3 rounded-xl">
                     <AlertCircle className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -314,7 +314,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <Link to="/manage-subscription">
-                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold animate-pulse-glow hover-lift">
+                  <Button className="bg-gradient-to-r from-fac-orange-500 to-red-500 hover:from-fac-orange-600 hover:to-red-600 text-white font-bold hover-lift">
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade Now
                   </Button>
@@ -329,19 +329,19 @@ export default function Dashboard() {
                 </h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center text-red-700 dark:text-red-300">
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}
                     Monthly car washes
                   </div>
                   <div className="flex items-center text-red-700 dark:text-red-300">
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}
                     VIP services
                   </div>
                   <div className="flex items-center text-red-700 dark:text-red-300">
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}
                     Priority booking
                   </div>
                   <div className="flex items-center text-red-700 dark:text-red-300">
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 animate-pulse" />{" "}
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}
                     Exclusive discounts
                   </div>
                 </div>
@@ -660,7 +660,7 @@ export default function Dashboard() {
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         membershipData.remainingWashes.classic === 999
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 w-full animate-pulse"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 w-full"
                           : "bg-blue-500"
                       }`}
                       style={{
@@ -718,7 +718,7 @@ export default function Dashboard() {
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         membershipData.remainingWashes.vipProMax === 999
-                          ? "bg-gradient-to-r from-purple-500 to-pink-500 w-full animate-pulse"
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 w-full"
                           : "bg-purple-500"
                       }`}
                       style={{
@@ -777,7 +777,7 @@ export default function Dashboard() {
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           membershipData.remainingWashes.premium === 999
-                            ? "bg-gradient-to-r from-fac-orange-500 to-yellow-500 w-full animate-pulse"
+                            ? "bg-gradient-to-r from-fac-orange-500 to-yellow-500 w-full"
                             : "bg-fac-orange-500"
                         }`}
                         style={{

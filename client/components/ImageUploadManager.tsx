@@ -107,6 +107,19 @@ export default function ImageUploadManager({
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
+        const base64Result = e.target?.result as string;
+
+        // Validate the base64 data
+        if (!base64Result || typeof base64Result !== 'string' || !base64Result.startsWith('data:image/')) {
+          toast({
+            title: "Invalid Image Data",
+            description: "The selected file could not be processed as an image",
+            variant: "destructive",
+          });
+          setIsUploading(false);
+          return;
+        }
+
         const imageData: ImageAttachment = {
           id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           bookingId: bookingId || '',
@@ -115,7 +128,7 @@ export default function ImageUploadManager({
           originalName: file.name,
           mimeType: file.type,
           size: file.size,
-          base64Data: e.target?.result as string,
+          base64Data: base64Result,
           uploadedBy: currentUser?.id || 'unknown',
           uploadedAt: new Date().toISOString(),
           description: description.trim(),
@@ -167,6 +180,15 @@ export default function ImageUploadManager({
         description: "Failed to read the selected file",
         variant: "destructive",
       });
+    };
+
+    reader.onerror = () => {
+      toast({
+        title: "File Read Error",
+        description: "Failed to read the selected file. Please try again.",
+        variant: "destructive",
+      });
+      setIsUploading(false);
     };
 
     reader.readAsDataURL(file);
@@ -345,11 +367,19 @@ export default function ImageUploadManager({
                       <div className="aspect-video relative">
                         <img
                           src={image.base64Data}
-                          alt={image.description || image.originalName}
+                          alt={image.description || image.originalName || "Uploaded image"}
                           className="w-full h-full object-cover cursor-pointer"
                           onClick={() => {
                             setSelectedImage(image);
                             setIsViewerOpen(true);
+                          }}
+                          onError={(e) => {
+                            console.warn(`Failed to load image: ${image.originalName || image.id}`);
+                            e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDNIOGEyIDIgMCAwIDAtMiAydjEyYTIgMiAwIDAgMCAyIDJoMTNhMiAyIDAgMCAwIDItMlY1YTIgMiAwIDAgMC0yLTJ6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Im0yMSAxNS00LTQtNC41IDQuNS0zLTMiIHN0cm9rZT0iIzljYTdiMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
+                            e.currentTarget.className = "w-full h-full object-contain cursor-not-allowed opacity-50";
+                          }}
+                          onLoad={() => {
+                            console.log(`Successfully loaded image: ${image.originalName || image.id}`);
                           }}
                         />
                         <div className="absolute top-2 right-2 flex gap-1">
@@ -441,8 +471,13 @@ export default function ImageUploadManager({
               <div className="flex justify-center">
                 <img
                   src={selectedImage.base64Data}
-                  alt={selectedImage.description || selectedImage.originalName}
+                  alt={selectedImage.description || selectedImage.originalName || "Selected image"}
                   className="max-w-full max-h-96 object-contain"
+                  onError={(e) => {
+                    console.warn(`Failed to load selected image: ${selectedImage.originalName || selectedImage.id}`);
+                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDNIOGEyIDIgMCAwIDAtMiAydjEyYTIgMiAwIDAgMCAyIDJoMTNhMiAyIDAgMCAwIDItMlY1YTIgMiAwIDAgMC0yLTJ6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Im0yMSAxNS00LTQtNC41IDQuNS0zLTMiIHN0cm9rZT0iIzljYTdiMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
+                    e.currentTarget.className = "max-w-full max-h-96 object-contain opacity-50";
+                  }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">

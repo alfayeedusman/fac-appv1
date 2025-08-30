@@ -56,6 +56,7 @@ import {
   StockMovement,
   Supplier,
 } from "@/utils/inventoryData";
+import SafeSelectItem from "@/components/SafeSelectItem";
 import { notificationManager } from "@/components/NotificationModal";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -731,9 +732,9 @@ export default function InventoryManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
+                      <SafeSelectItem key={category.value} value={category.value}>
+                        {String(category.label || 'Unknown Category')}
+                      </SafeSelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -751,9 +752,9 @@ export default function InventoryManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.name}>
-                        {supplier.name}
-                      </SelectItem>
+                      <SafeSelectItem key={supplier.id} value={supplier.id}>
+                        {String(supplier.name || 'Unknown Supplier')}
+                      </SafeSelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -1035,7 +1036,6 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-        </div>
       </div>
     </div>
   );

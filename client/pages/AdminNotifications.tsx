@@ -260,18 +260,8 @@ export default function AdminNotifications() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4" />
-                        <span>All Customers (1,234)</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="premium">
-                      <div className="flex items-center space-x-2">
-                        <UserCheck className="h-4 w-4" />
-                        <span>Premium Members (456)</span>
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="all">All Customers (1,234)</SelectItem>
+                    <SelectItem value="premium">Premium Members (456)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

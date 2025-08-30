@@ -24,9 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
   Send,
   Bell,
   Users,
@@ -42,7 +40,6 @@ import {
   Target,
   Megaphone,
 } from "lucide-react";
-import StickyHeader from "@/components/StickyHeader";
 import {
   PushNotification,
   getAllNotifications,
@@ -173,28 +170,35 @@ export default function AdminPushNotifications() {
     }
   };
 
-  const stats = getNotificationStats();
-  const registeredUsers = JSON.parse(
-    localStorage.getItem("registeredUsers") || "[]",
-  );
+  // Add error handling for stats and users
+  let stats;
+  let registeredUsers = [];
+
+  try {
+    stats = getNotificationStats();
+    registeredUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]",
+    );
+  } catch (error) {
+    console.error('Error loading notification stats:', error);
+    // Provide fallback stats object with all required properties
+    stats = {
+      totalSent: 0,
+      totalDelivered: 0,
+      totalRead: 0,
+      totalClicked: 0,
+      deliveryRate: 0,
+      readRate: 0,
+      clickRate: 0
+    };
+    registeredUsers = [];
+  }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <StickyHeader
-        showBack={true}
-        title="Push Notifications"
-        backTo="/admin-dashboard"
-      />
-
-      <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <Link to="/admin-dashboard" className="mr-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div className="flex items-center space-x-4">
               <div className="bg-fac-orange-500 p-3 rounded-xl">
                 <Bell className="h-6 w-6 text-white" />
@@ -381,7 +385,7 @@ export default function AdminPushNotifications() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">
-                          All Users ({registeredUsers.length})
+                          All Users ({String(registeredUsers.length)})
                         </SelectItem>
                         <SelectItem value="members">Members Only</SelectItem>
                         <SelectItem value="vip">VIP Members</SelectItem>
@@ -710,7 +714,6 @@ export default function AdminPushNotifications() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }

@@ -41,7 +41,7 @@ export default function LevelBadge({
     const gradientClasses = `bg-gradient-to-br ${level.gradient}`;
     const glowClasses =
       level.badge.pattern === "glow"
-        ? `shadow-lg shadow-${level.color}/50 animate-pulse-glow`
+        ? `shadow-lg shadow-${level.color}/50`
         : "";
 
     switch (level.badge.shape) {
@@ -123,7 +123,7 @@ export default function LevelBadge({
             <span className={iconSizes[size]}>{level.icon}</span>
             {level.badge.pattern === "glow" && (
               <>
-                <div className="absolute inset-0 bg-white/20 animate-pulse rounded-sm"></div>
+                <div className="absolute inset-0 bg-white/20 rounded-sm"></div>
                 <div className="absolute inset-1 bg-gradient-to-t from-transparent to-white/30 rounded-sm"></div>
               </>
             )}

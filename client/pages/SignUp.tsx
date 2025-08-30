@@ -460,7 +460,7 @@ export default function SignUp() {
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
-                    <div className="gradient-primary w-12 h-12 rounded-xl flex items-center justify-center mr-4 animate-pulse-glow">
+                    <div className="gradient-primary w-12 h-12 rounded-xl flex items-center justify-center mr-4">
                       <User className="h-6 w-6 text-white" />
                     </div>
                     Personal Details
@@ -710,7 +710,7 @@ export default function SignUp() {
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
-                    <div className="gradient-secondary w-12 h-12 rounded-xl flex items-center justify-center mr-4 animate-pulse-glow">
+                    <div className="gradient-secondary w-12 h-12 rounded-xl flex items-center justify-center mr-4">
                       <Car className="h-6 w-6 text-white" />
                     </div>
                     Vehicle Details
@@ -846,7 +846,7 @@ export default function SignUp() {
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
-                    <div className="gradient-futuristic w-12 h-12 rounded-xl flex items-center justify-center mr-4 animate-pulse-glow">
+                    <div className="gradient-futuristic w-12 h-12 rounded-xl flex items-center justify-center mr-4">
                       <Sparkles className="h-6 w-6 text-white" />
                     </div>
                     Choose Your Plan
