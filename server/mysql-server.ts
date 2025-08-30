@@ -9,6 +9,7 @@ import demoRoutes from "./routes/demo.js";
 import mysqlApiRoutes from "./routes/mysql-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import realtimeApiRoutes from "./routes/realtime-api.js";
+import * as neonApiRoutes from "./routes/neon-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
