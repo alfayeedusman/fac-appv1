@@ -18,15 +18,23 @@ export const createServer = () => {
   // Middleware
   app.use(
     cors({
-      origin: [
-        "http://localhost:8080",
-        "http://localhost:3000",
-        "http://localhost:5173",
-        process.env.FRONTEND_URL || "http://localhost:8080",
-      ],
+      origin: (origin, callback) => {
+        // Reflect the request origin to support any frontend domain (including https)
+        callback(null, true);
+      },
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+      ],
     }),
   );
+  // Ensure preflight requests are handled
+  app.options("*", cors());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
