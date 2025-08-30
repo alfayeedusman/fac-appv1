@@ -54,6 +54,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
 import NeonConnectionTest from "./components/NeonConnectionTest";
+import LoginDebugger from "./components/LoginDebugger";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
@@ -362,6 +363,14 @@ const App = () => {
               element={
                 <div className="min-h-screen bg-background p-4">
                   <NeonConnectionTest />
+                </div>
+              }
+            />
+            <Route
+              path="/login-debug"
+              element={
+                <div className="min-h-screen bg-background p-4">
+                  <LoginDebugger />
                 </div>
               }
             />
