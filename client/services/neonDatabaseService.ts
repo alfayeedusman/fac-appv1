@@ -317,111 +317,75 @@ class NeonDatabaseClient {
   // === ADMIN SETTINGS ===
 
   async getSettings(): Promise<{ success: boolean; settings?: AdminSetting[] }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/settings`);
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database settings fetch failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, settings: [] };
     }
 
-    // Fallback to localStorage
-    const settings = this.getFromLocalStorage('admin_settings') || [];
-    return { success: true, settings };
+    try {
+      const response = await fetch(`${this.baseUrl}/settings`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database settings fetch failed:', error);
+      return { success: false, settings: [] };
+    }
   }
 
   async updateSetting(key: string, value: any, description?: string, category?: string): Promise<{ success: boolean; setting?: AdminSetting }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/settings`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, value, description, category }),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database setting update failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false };
     }
 
-    // Fallback to localStorage
-    const settings = this.getFromLocalStorage('admin_settings') || [];
-    const existingIndex = settings.findIndex((s: AdminSetting) => s.key === key);
-    
-    const setting = {
-      id: existingIndex !== -1 ? settings[existingIndex].id : `setting_${Date.now()}`,
-      key,
-      value,
-      description,
-      category,
-      createdAt: existingIndex !== -1 ? settings[existingIndex].createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch(`${this.baseUrl}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value, description, category }),
+      });
 
-    if (existingIndex !== -1) {
-      settings[existingIndex] = setting;
-    } else {
-      settings.push(setting);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database setting update failed:', error);
+      return { success: false };
     }
-
-    this.setToLocalStorage('admin_settings', settings);
-    return { success: true, setting };
   }
 
   // === ADS ===
 
   async getAds(): Promise<{ success: boolean; ads?: Ad[] }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/ads`);
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database ads fetch failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, ads: [] };
     }
 
-    // Fallback to localStorage
-    const ads = this.getFromLocalStorage('fayeed_ads') || [];
-    return { success: true, ads };
+    try {
+      const response = await fetch(`${this.baseUrl}/ads`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database ads fetch failed:', error);
+      return { success: false, ads: [] };
+    }
   }
 
   async createAd(adData: Omit<Ad, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; ad?: Ad }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/ads`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(adData),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database ad creation failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false };
     }
 
-    // Fallback to localStorage
-    const ads = this.getFromLocalStorage('fayeed_ads') || [];
-    const newAd = {
-      ...adData,
-      id: `ad_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch(`${this.baseUrl}/ads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adData),
+      });
 
-    ads.push(newAd);
-    this.setToLocalStorage('fayeed_ads', ads);
-    return { success: true, ad: newAd };
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database ad creation failed:', error);
+      return { success: false };
+    }
   }
 
   async dismissAd(adId: string, userEmail: string): Promise<{ success: boolean }> {
