@@ -122,6 +122,7 @@ export interface Ad {
 class NeonDatabaseClient {
   private baseUrl = '/api/neon';
   private isConnected = false;
+  private initializationPromise: Promise<boolean> | null = null;
 
   // Initialize and test connection
   async initialize(): Promise<boolean> {
@@ -175,6 +176,49 @@ class NeonDatabaseClient {
       console.error('❌ Connection test failed:', error.message || error);
       this.isConnected = false;
       return { connected: false };
+    }
+  }
+
+  // Get connection status
+  getConnectionStatus(): boolean {
+    return this.isConnected;
+  }
+
+  // Ensure connection with auto-initialization
+  private async ensureConnection(): Promise<boolean> {
+    if (this.isConnected) {
+      return true;
+    }
+
+    // If already initializing, wait for it
+    if (this.initializationPromise) {
+      return await this.initializationPromise;
+    }
+
+    // Start initialization
+    this.initializationPromise = this.autoInitialize();
+    const result = await this.initializationPromise;
+    this.initializationPromise = null;
+    return result;
+  }
+
+  // Auto-initialize without user interaction
+  private async autoInitialize(): Promise<boolean> {
+    try {
+      console.log('🔄 Auto-initializing Neon database...');
+
+      // First try test connection
+      const testResult = await this.testConnection();
+      if (testResult.connected) {
+        return true;
+      }
+
+      // If test fails, try full initialization
+      const initResult = await this.initialize();
+      return initResult;
+    } catch (error) {
+      console.error('❌ Auto-initialization failed:', error);
+      return false;
     }
   }
 
