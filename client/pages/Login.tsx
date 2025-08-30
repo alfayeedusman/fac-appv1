@@ -299,6 +299,18 @@ export default function Login() {
                 )}
               </Button>
 
+              {/* Test Neon Admin Login Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={testNeonAdminLogin}
+                disabled={isLoading}
+                className="w-full py-3 text-sm rounded-xl font-bold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 transition-all group"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Test Neon Admin Login
+                <span className="text-xs ml-2 opacity-70">(admin@fayeedautocare.com)</span>
+              </Button>
 
               {/* Forgot Password Link */}
               <div className="text-center">
