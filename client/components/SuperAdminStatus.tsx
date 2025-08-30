@@ -13,8 +13,19 @@ export default function SuperAdminStatus() {
 
   const checkSuperAdminStatus = async () => {
     setStatus('checking');
-    
+
     try {
+      // First, check API health to distinguish server/network issues
+      try {
+        const health = await fetch('/api/health', { signal: AbortSignal.timeout(4000) });
+        if (!health.ok) throw new Error('Health check failed');
+      } catch (e) {
+        console.error('Health check failed:', e);
+        setStatus('error');
+        setLastChecked(new Date().toLocaleTimeString());
+        return;
+      }
+
       // Quick test to see if SuperAdmin credentials work
       const response = await fetch('/api/neon/auth/login', {
         method: 'POST',
@@ -40,7 +51,7 @@ export default function SuperAdminStatus() {
       console.error('SuperAdmin status check failed:', error);
       setStatus('error');
     }
-    
+
     setLastChecked(new Date().toLocaleTimeString());
   };
 
