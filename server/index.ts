@@ -1,21 +1,77 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Import routes
 import demoRoutes from "./routes/demo.js";
 import customerApiRoutes from "./routes/customer-api.js";
+import otpApiRoutes from "./routes/otp-api.js";
+import * as neonApiRoutes from "./routes/neon-api.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function createServer() {
   const app = express();
 
   // Middleware
-  app.use(cors());
-  app.use(express.json());
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:8080",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        process.env.FRONTEND_URL || "http://localhost:8080",
+      ],
+      credentials: true,
+    }),
+  );
+  app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
-  // Demo API routes
-  app.use("/api", demoRoutes);
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      services: {
+        neon: "connected",
+      },
+    });
+  });
 
-  // Customer API routes for Flutter app
+  // API Routes
+  app.use("/api", demoRoutes);
+  app.use("/api", otpApiRoutes);
   app.use("/api/v2", customerApiRoutes);
+
+  // Neon Database API Routes
+  app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
+  app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
+  app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
+  
+  // Auth endpoints
+  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
+  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
+  
+  // Booking endpoints
+  app.post("/api/neon/bookings", neonApiRoutes.createBooking);
+  app.get("/api/neon/bookings", neonApiRoutes.getBookings);
+  app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
+  
+  // Notification endpoints
+  app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
+  app.put("/api/neon/notifications/:notificationId/read", neonApiRoutes.markNotificationRead);
+  
+  // Admin settings endpoints
+  app.get("/api/neon/settings", neonApiRoutes.getSettings);
+  app.put("/api/neon/settings", neonApiRoutes.updateSetting);
+  
+  // Ads endpoints
+  app.get("/api/neon/ads", neonApiRoutes.getAds);
+  app.post("/api/neon/ads", neonApiRoutes.createAd);
+  app.post("/api/neon/ads/:adId/dismiss", neonApiRoutes.dismissAd);
 
   return app;
 }
