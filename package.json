@@ -14,7 +14,7 @@
     "dev": "vite",
     "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
-    "dev:server": "tsx server/mysql-server.ts",
+    "dev:server": "tsx server/main-server.ts",
     "dev:frontend-only": "vite",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
@@ -26,14 +26,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.1",
-    "@paralleldrive/cuid2": "^2.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/mapbox-gl": "^3.4.1",
     "@types/nodemailer": "^7.0.1",
     "bcryptjs": "^3.0.2",
-    "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.5",
     "express": "^4.18.2",
     "firebase-admin": "^13.4.0",
     "jsqr": "^1.4.0",
