@@ -171,8 +171,15 @@ class NeonDatabaseClient {
   // === AUTHENTICATION ===
   
   async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+    // Try to ensure connection before login attempt
     if (!this.isConnected) {
-      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
+      console.log('🔄 Database not connected, attempting to establish connection...');
+      const connectionTest = await this.testConnection();
+      if (!connectionTest.connected) {
+        console.error('❌ Unable to establish database connection');
+        return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
+      }
+      console.log('✅ Database connection established');
     }
 
     try {
@@ -190,9 +197,37 @@ class NeonDatabaseClient {
         localStorage.setItem('userId', result.user.id);
       }
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Database login failed:', error);
-      return { success: false, error: 'Login failed. Please check your connection.' };
+
+      // If it's a network error, try to reconnect
+      if (error.message?.includes('fetch') || error.name === 'TypeError') {
+        console.log('🔄 Network error detected, trying to reconnect...');
+        this.isConnected = false;
+        const reconnected = await this.testConnection();
+        if (reconnected.connected) {
+          console.log('✅ Reconnected, retrying login...');
+          // Retry login once after reconnection
+          try {
+            const response = await fetch(`${this.baseUrl}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              localStorage.setItem('userEmail', result.user.email);
+              localStorage.setItem('userRole', result.user.role);
+              localStorage.setItem('userId', result.user.id);
+            }
+            return result;
+          } catch (retryError) {
+            console.error('❌ Retry login also failed:', retryError);
+          }
+        }
+      }
+
+      return { success: false, error: `Login failed: ${error.message || 'Please check your connection.'}` };
     }
   }
 
