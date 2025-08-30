@@ -154,11 +154,26 @@ class NeonDatabaseClient {
   async testConnection(): Promise<{ connected: boolean; stats?: any }> {
     try {
       const response = await fetch(`${this.baseUrl}/test`);
+
+      if (!response.ok) {
+        console.error(`Connection test failed: HTTP ${response.status}`);
+        this.isConnected = false;
+        return { connected: false };
+      }
+
       const result = await response.json();
-      this.isConnected = result.connected;
+      this.isConnected = result.connected || result.success || false;
+
+      if (this.isConnected) {
+        console.log('✅ Database connection test successful');
+      } else {
+        console.warn('⚠️ Database connection test returned false');
+      }
+
       return result;
-    } catch (error) {
-      console.error('Connection test failed:', error);
+    } catch (error: any) {
+      console.error('❌ Connection test failed:', error.message || error);
+      this.isConnected = false;
       return { connected: false };
     }
   }
