@@ -389,60 +389,40 @@ class NeonDatabaseClient {
   }
 
   async dismissAd(adId: string, userEmail: string): Promise<{ success: boolean }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/ads/${adId}/dismiss`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userEmail }),
-        });
-        
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database ad dismissal failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false };
     }
 
-    // Fallback to localStorage
-    const dismissals = this.getFromLocalStorage('fayeed_ad_dismissals') || [];
-    dismissals.push({
-      adId,
-      userEmail,
-      dismissedAt: new Date().toISOString(),
-    });
-    this.setToLocalStorage('fayeed_ad_dismissals', dismissals);
-    return { success: true };
+    try {
+      const response = await fetch(`${this.baseUrl}/ads/${adId}/dismiss`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail }),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database ad dismissal failed:', error);
+      return { success: false };
+    }
   }
 
   // === STATS ===
 
   async getStats(): Promise<{ success: boolean; stats?: any }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/stats`);
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        console.error('Database stats fetch failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, stats: null };
     }
 
-    // Fallback to localStorage - calculate stats from local data
-    const users = this.getFromLocalStorage('fac_users') || [];
-    const bookings = this.getFromLocalStorage('fac_bookings') || [];
-    const ads = this.getFromLocalStorage('fayeed_ads') || [];
-    
-    const stats = {
-      totalUsers: users.length,
-      totalBookings: bookings.length,
-      activeAds: ads.filter((ad: Ad) => ad.isActive).length,
-      pendingBookings: bookings.filter((booking: Booking) => booking.status === 'pending').length,
-    };
-
-    return { success: true, stats };
+    try {
+      const response = await fetch(`${this.baseUrl}/stats`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database stats fetch failed:', error);
+      return { success: false, stats: null };
+    }
   }
 }
 
