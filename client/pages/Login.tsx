@@ -316,6 +316,16 @@ export default function Login() {
 
               {/* SuperAdmin Setup Button */}
               <div className="grid grid-cols-1 gap-2">
+                <Link to="/admin-login-test">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-green-200 text-green-600 hover:bg-green-50 transition-all group"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Login Test Suite
+                  </Button>
+                </Link>
                 <Link to="/superadmin-setup">
                   <Button
                     type="button"
