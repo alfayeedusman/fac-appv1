@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import DatabaseService from '@/services/databaseService';
+import { neonDbClient } from '@/services/neonDatabaseService';
 import { toast } from '@/hooks/use-toast';
 
 interface DatabaseContextType {
@@ -42,11 +42,13 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
       );
 
       const health = await Promise.race([
-        DatabaseService.healthCheck(),
+        neonDbClient.testConnection(),
         timeoutPromise
       ]);
 
-      if (health && health.status === 'healthy') {
+      const healthStatus = health.connected ? { status: 'healthy' } : { status: 'offline' };
+
+      if (healthStatus && healthStatus.status === 'healthy') {
         setIsConnected(true);
         console.log('✅ Database connected successfully');
 
@@ -55,12 +57,12 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         if (userId) {
           await migrateUserData(userId);
         }
-      } else if (health && health.status === 'offline') {
+      } else if (healthStatus && healthStatus.status === 'offline') {
         setIsConnected(false);
         console.log('ℹ️ Running in offline/demo mode');
       } else {
         setIsConnected(false);
-        console.warn('Database health check failed:', health);
+        console.warn('Database health check failed:', healthStatus);
       }
     } catch (error: any) {
       setIsConnected(false);
@@ -92,7 +94,10 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
       if (userBookings || guestBookings) {
         console.log('Migrating localStorage data to database...');
         
-        const result = await DatabaseService.migrateLocalStorageBookings(userId);
+        // Migration to Neon database - we'll skip localStorage migration
+        // as Neon database is the primary storage now
+        console.log('Neon database is primary storage - skipping localStorage migration');
+        const result = { migrated: 0, errors: [] };
         
         if (result.migrated > 0) {
           toast({
@@ -119,8 +124,8 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
 
   const healthCheck = async (): Promise<boolean> => {
     try {
-      const health = await DatabaseService.healthCheck();
-      const healthy = health.status === 'healthy';
+      const health = await neonDbClient.testConnection();
+      const healthy = health.connected;
       setIsConnected(healthy);
       return healthy;
     } catch (error) {
