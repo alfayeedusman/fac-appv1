@@ -53,6 +53,7 @@ import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
+import NeonConnectionTest from "./components/NeonConnectionTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
@@ -353,6 +354,14 @@ const App = () => {
               element={
                 <div className="min-h-screen bg-background p-4">
                   <DatabaseConnectionTest />
+                </div>
+              }
+            />
+            <Route
+              path="/neon-test"
+              element={
+                <div className="min-h-screen bg-background p-4">
+                  <NeonConnectionTest />
                 </div>
               }
             />
