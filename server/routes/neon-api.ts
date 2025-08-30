@@ -96,6 +96,12 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
 export const loginUser: RequestHandler = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('🔐 Login attempt received', {
+      email,
+      hasPassword: typeof password === 'string' && password.length > 0,
+      contentType: req.headers['content-type'],
+      time: new Date().toISOString(),
+    });
     
     if (!email || !password) {
       return res.status(400).json({ 
@@ -106,17 +112,19 @@ export const loginUser: RequestHandler = async (req, res) => {
 
     const user = await neonDbService.getUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid credentials' 
+      console.warn('🔐 Login failed: user not found', { email });
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials'
       });
     }
 
     const isValidPassword = await neonDbService.verifyPassword(email, password);
     if (!isValidPassword) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid credentials' 
+      console.warn('🔐 Login failed: invalid password', { email });
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials'
       });
     }
 
@@ -132,17 +140,18 @@ export const loginUser: RequestHandler = async (req, res) => {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-    
-    res.json({ 
-      success: true, 
+
+    console.log('✅ Login successful', { email, role: userWithoutPassword.role, id: userWithoutPassword.id });
+    res.json({
+      success: true,
       user: userWithoutPassword,
-      message: 'Login successful' 
+      message: 'Login successful'
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Login failed' 
+  } catch (error: any) {
+    console.error('❌ Login error:', error?.message || error);
+    res.status(500).json({
+      success: false,
+      error: error?.message || 'Login failed'
     });
   }
 };
