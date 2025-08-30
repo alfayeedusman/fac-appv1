@@ -154,7 +154,15 @@ class NeonDatabaseClient {
 
   async testConnection(): Promise<{ connected: boolean; stats?: any }> {
     try {
-      const response = await fetch(`${this.baseUrl}/test`);
+      // Add timeout to prevent hanging
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/test`, {
+        signal: abortController.signal
+      });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.error(`Connection test failed: HTTP ${response.status}`);
@@ -175,7 +183,17 @@ class NeonDatabaseClient {
     } catch (error: any) {
       console.error('❌ Connection test failed:', error.message || error);
       this.isConnected = false;
-      return { connected: false };
+
+      // Provide more specific error info
+      if (error.name === 'AbortError') {
+        console.error('❌ Connection test timed out');
+        return { connected: false, error: 'Connection timeout' };
+      } else if (error.message?.includes('NetworkError')) {
+        console.error('❌ Network error during connection test');
+        return { connected: false, error: 'Network error' };
+      }
+
+      return { connected: false, error: error.message };
     }
   }
 
@@ -270,7 +288,7 @@ class NeonDatabaseClient {
       try {
         // Check if response body is readable
         if (response.bodyUsed) {
-          console.error('��� Response body already consumed');
+          console.error('❌ Response body already consumed');
           return { success: false, error: 'Network error: Response already processed' };
         }
 
@@ -320,6 +338,29 @@ class NeonDatabaseClient {
       // Handle specific fetch/body consumption errors
       if (error.message?.includes('Body has already been consumed')) {
         return { success: false, error: 'Network error: Response already processed. Please try again.' };
+      }
+
+      // Handle NetworkError specifically
+      if (error.message?.includes('NetworkError') || error.message?.includes('Failed to fetch')) {
+        console.error('❌ NetworkError detected - checking connectivity...');
+
+        // Try a simple connectivity test
+        try {
+          const healthCheck = await fetch('/api/health', {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000)
+          });
+          if (healthCheck.ok) {
+            return { success: false, error: 'Network connection restored, but login failed. Please try again.' };
+          }
+        } catch (healthError) {
+          console.error('❌ Health check also failed:', healthError);
+        }
+
+        return {
+          success: false,
+          error: 'Network connection error. Please check your internet connection and try again. If the problem persists, visit /network-test for diagnostics.'
+        };
       }
 
       // If it's a network error, try to reconnect
