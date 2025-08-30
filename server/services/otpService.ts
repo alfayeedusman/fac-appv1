@@ -1,25 +1,19 @@
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
-import mysql from 'mysql2/promise';
 
-// MySQL connection configuration
-const mysqlConfig = {
-  host: process.env.MYSQL_HOST || "localhost",
-  port: parseInt(process.env.MYSQL_PORT || "3306"),
-  user: process.env.MYSQL_USER || "fayeed_user",
-  password: process.env.MYSQL_PASSWORD || "fayeed_pass_2024",
-  database: process.env.MYSQL_DATABASE || "fayeed_auto_care",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-};
-
-const pool = mysql.createPool(mysqlConfig);
+// In-memory OTP store to avoid any local DB dependency
+// Key format: `${email}:${type}`
+const otpStore = new Map<string, {
+  otpHash: string;
+  expiresAt: number; // epoch ms
+  attempts: number;
+  isVerified: boolean;
+}>();
 
 // Email transporter configuration
 const createEmailTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail', // You can change this to your preferred email service
+    service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER || 'your-email@gmail.com',
       pass: process.env.EMAIL_APP_PASSWORD || 'your-app-password'
@@ -35,28 +29,20 @@ export class OTPService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Store OTP in database
+  // Store OTP in memory (10 min expiry)
   static async storeOTP(email: string, otp: string, type: 'signup' | 'forgot_password' | 'login'): Promise<boolean> {
     try {
-      const hashedOTP = await bcrypt.hash(otp, 10);
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-      
-      const connection = await pool.getConnection();
-      
-      // Delete any existing OTPs for this email and type
-      await connection.execute(
-        'DELETE FROM email_otps WHERE email = ? AND type = ?',
-        [email, type]
-      );
-      
-      // Store new OTP
-      await connection.execute(
-        `INSERT INTO email_otps (email, otp_hash, type, expires_at, attempts) 
-         VALUES (?, ?, ?, ?, 0)`,
-        [email, hashedOTP, type, expiresAt]
-      );
-      
-      connection.release();
+      const otpHash = await bcrypt.hash(otp, 10);
+      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const key = `${email}:${type}`;
+
+      otpStore.set(key, {
+        otpHash,
+        expiresAt,
+        attempts: 0,
+        isVerified: false,
+      });
+
       return true;
     } catch (error) {
       console.error('Error storing OTP:', error);
@@ -67,64 +53,31 @@ export class OTPService {
   // Verify OTP
   static async verifyOTP(email: string, otp: string, type: 'signup' | 'forgot_password' | 'login'): Promise<{ valid: boolean; message: string }> {
     try {
-      const connection = await pool.getConnection();
-      
-      // Get OTP record
-      const [rows] = await connection.execute(
-        `SELECT otp_hash, expires_at, attempts, is_verified 
-         FROM email_otps 
-         WHERE email = ? AND type = ? AND is_verified = false
-         ORDER BY created_at DESC LIMIT 1`,
-        [email, type]
-      );
-      
-      if (!Array.isArray(rows) || rows.length === 0) {
-        connection.release();
+      const key = `${email}:${type}`;
+      const record = otpStore.get(key);
+
+      if (!record || record.isVerified) {
         return { valid: false, message: 'No valid OTP found. Please request a new one.' };
       }
-      
-      const otpRecord = rows[0] as any;
-      
-      // Check if OTP has expired
-      if (new Date() > new Date(otpRecord.expires_at)) {
-        connection.release();
+
+      if (Date.now() > record.expiresAt) {
+        otpStore.delete(key);
         return { valid: false, message: 'OTP has expired. Please request a new one.' };
       }
-      
-      // Check attempts limit
-      if (otpRecord.attempts >= 3) {
-        connection.release();
+
+      if (record.attempts >= 3) {
         return { valid: false, message: 'Too many failed attempts. Please request a new OTP.' };
       }
-      
-      // Verify OTP
-      const isValid = await bcrypt.compare(otp, otpRecord.otp_hash);
-      
+
+      const isValid = await bcrypt.compare(otp, record.otpHash);
+
       if (isValid) {
-        // Mark OTP as verified
-        await connection.execute(
-          'UPDATE email_otps SET is_verified = true, verified_at = NOW() WHERE email = ? AND type = ?',
-          [email, type]
-        );
-        
-        // Update user email verification status if this is a signup OTP
-        if (type === 'signup') {
-          await connection.execute(
-            'UPDATE users SET email_verified = true WHERE email = ?',
-            [email]
-          );
-        }
-        
-        connection.release();
+        record.isVerified = true;
+        otpStore.set(key, record);
         return { valid: true, message: 'OTP verified successfully.' };
       } else {
-        // Increment attempt count
-        await connection.execute(
-          'UPDATE email_otps SET attempts = attempts + 1 WHERE email = ? AND type = ?',
-          [email, type]
-        );
-        
-        connection.release();
+        record.attempts += 1;
+        otpStore.set(key, record);
         return { valid: false, message: 'Invalid OTP. Please try again.' };
       }
     } catch (error) {
@@ -138,7 +91,7 @@ export class OTPService {
     try {
       let subject = '';
       let htmlContent = '';
-      
+
       switch (type) {
         case 'signup':
           subject = 'Welcome to Fayeed Auto Care - Verify Your Email';
@@ -162,7 +115,6 @@ export class OTPService {
             </div>
           `;
           break;
-          
         case 'forgot_password':
           subject = 'Fayeed Auto Care - Password Reset Code';
           htmlContent = `
@@ -185,7 +137,6 @@ export class OTPService {
             </div>
           `;
           break;
-          
         case 'login':
           subject = 'Fayeed Auto Care - Login Verification Code';
           htmlContent = `
@@ -209,14 +160,14 @@ export class OTPService {
           `;
           break;
       }
-      
+
       const mailOptions = {
         from: `"Fayeed Auto Care" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: subject,
-        html: htmlContent
+        subject,
+        html: htmlContent,
       };
-      
+
       await this.transporter.sendMail(mailOptions);
       return true;
     } catch (error) {
@@ -229,17 +180,17 @@ export class OTPService {
   static async sendOTP(email: string, type: 'signup' | 'forgot_password' | 'login'): Promise<{ success: boolean; message: string }> {
     try {
       const otp = this.generateOTP();
-      
+
       const stored = await this.storeOTP(email, otp, type);
       if (!stored) {
         return { success: false, message: 'Failed to generate OTP. Please try again.' };
       }
-      
+
       const sent = await this.sendOTPEmail(email, otp, type);
       if (!sent) {
         return { success: false, message: 'Failed to send OTP email. Please try again.' };
       }
-      
+
       return { success: true, message: 'OTP sent successfully to your email.' };
     } catch (error) {
       console.error('Error in OTP flow:', error);
@@ -247,14 +198,15 @@ export class OTPService {
     }
   }
 
-  // Clean up expired OTPs (should be called periodically)
+  // Clean up expired OTPs (noop for in-memory, optional manual cleanup)
   static async cleanupExpiredOTPs(): Promise<void> {
     try {
-      const connection = await pool.getConnection();
-      await connection.execute(
-        'DELETE FROM email_otps WHERE expires_at < NOW()'
-      );
-      connection.release();
+      const now = Date.now();
+      for (const [key, record] of otpStore.entries()) {
+        if (record.expiresAt < now || record.isVerified) {
+          otpStore.delete(key);
+        }
+      }
     } catch (error) {
       console.error('Error cleaning up expired OTPs:', error);
     }
