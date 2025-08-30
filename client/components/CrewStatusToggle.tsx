@@ -280,7 +280,6 @@ export default function CrewStatusToggle({
           <Switch
             checked={crewData.locationEnabled}
             onCheckedChange={toggleLocation}
-            size="sm"
           />
         </div>
       </div>
@@ -304,7 +303,7 @@ export default function CrewStatusToggle({
             </div>
             <div className="flex items-center gap-2">
               {getStatusIcon(crewData.status)}
-              <Badge className={getStatusColor(crewData.status)} size="lg">
+              <Badge className={getStatusColor(crewData.status)}>
                 {crewData.status.replace('_', ' ').toUpperCase()}
               </Badge>
             </div>
