@@ -300,9 +300,18 @@ class NeonDatabaseClient {
         const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
         return { success: false, error: errMsg };
       }
-      localStorage.setItem('userEmail', json.user.email);
-      localStorage.setItem('userRole', json.user.role);
-      localStorage.setItem('userId', json.user.id);
+      try {
+        localStorage.setItem('userEmail', json.user.email);
+        localStorage.setItem('userRole', json.user.role);
+        localStorage.setItem('userId', json.user.id);
+      } catch (e) {
+        console.warn('⚠️ Storage unavailable, proceeding without persisting session:', (e as any)?.message || e);
+        try {
+          sessionStorage.setItem('userEmail', json.user.email);
+          sessionStorage.setItem('userRole', json.user.role);
+          sessionStorage.setItem('userId', json.user.id);
+        } catch (_) {}
+      }
       return json;
     } catch (jsonError: any) {
       let bodyPreview = '';
