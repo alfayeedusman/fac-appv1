@@ -3,11 +3,23 @@ import { neonDbService } from '../services/neonDatabaseService';
 import { initializeDatabase, testConnection } from '../database/connection';
 import { migrate } from '../database/migrate';
 
+// Simple in-memory guards to avoid repeated heavy migrations per server process
+let __NEON_DB_INITIALIZED__ = false;
+let __NEON_DB_INITIALIZING__ = false;
+
 // Initialize database connection
 export const initializeNeonDB: RequestHandler = async (req, res) => {
   try {
+    if (__NEON_DB_INITIALIZED__) {
+      return res.json({ success: true, message: 'Neon database already initialized', timestamp: new Date().toISOString() });
+    }
+    if (__NEON_DB_INITIALIZING__) {
+      return res.json({ success: true, message: 'Initialization in progress', timestamp: new Date().toISOString() });
+    }
+
+    __NEON_DB_INITIALIZING__ = true;
     console.log('🔄 Initializing Neon database...');
-    
+
     const db = initializeDatabase();
     if (!db) {
       return res.status(500).json({ 
@@ -25,20 +37,23 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
       });
     }
 
-    // Run migrations
+    // Run migrations (idempotent)
     await migrate();
 
-    res.json({ 
-      success: true, 
+    __NEON_DB_INITIALIZED__ = true;
+    res.json({
+      success: true,
       message: 'Neon database initialized and migrated successfully',
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('Database initialization error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
+  } finally {
+    __NEON_DB_INITIALIZING__ = false;
   }
 };
 
