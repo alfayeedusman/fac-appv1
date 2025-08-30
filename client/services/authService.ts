@@ -29,18 +29,57 @@ class AuthService {
   }
 
   private checkAuthStatus() {
-    const userEmail = localStorage.getItem('userEmail');
-    const userRole = localStorage.getItem('userRole');
-    const userId = localStorage.getItem('userId');
-    
-    if (userEmail && userRole && userId) {
-      this.isLoggedIn = true;
-      this.currentUser = {
-        id: userId,
-        email: userEmail,
-        role: userRole
-      };
+    try {
+      const userEmail = localStorage.getItem('userEmail');
+      const userRole = localStorage.getItem('userRole');
+      const userId = localStorage.getItem('userId');
+      const currentUserStr = localStorage.getItem('currentUser');
+      const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+
+      if (userEmail && userRole && userId && currentUserStr) {
+        // Check if session is not too old (24 hours)
+        if (userLoggedInAt) {
+          const loginTime = new Date(userLoggedInAt);
+          const now = new Date();
+          const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+
+          if (hoursSinceLogin > 24) {
+            console.log('Session expired (>24 hours), clearing session');
+            this.clearSession();
+            return;
+          }
+        }
+
+        // Restore full user object
+        this.currentUser = JSON.parse(currentUserStr);
+        this.isLoggedIn = true;
+
+        console.log('Session restored:', {
+          email: userEmail,
+          role: userRole,
+          loginTime: userLoggedInAt
+        });
+      } else {
+        // Clear incomplete session data
+        this.clearSession();
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      this.clearSession();
     }
+  }
+
+  private clearSession() {
+    this.isLoggedIn = false;
+    this.currentUser = null;
+
+    // Clear all session-related localStorage items
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userFullName');
+    localStorage.removeItem('userLoggedInAt');
+    localStorage.removeItem('currentUser');
   }
 
   async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: any; error?: string }> {
