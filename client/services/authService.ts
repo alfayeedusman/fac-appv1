@@ -202,6 +202,66 @@ class AuthService {
       return false;
     }
   }
+
+  // Session validation methods
+  validateSession(): boolean {
+    const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+
+    if (!this.isLoggedIn || !this.currentUser || !userLoggedInAt) {
+      return false;
+    }
+
+    // Check if session is not too old (24 hours)
+    const loginTime = new Date(userLoggedInAt);
+    const now = new Date();
+    const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+
+    if (hoursSinceLogin > 24) {
+      console.log('Session validation failed: session expired');
+      this.clearSession();
+      return false;
+    }
+
+    return true;
+  }
+
+  refreshSession(): void {
+    if (this.isLoggedIn && this.currentUser) {
+      localStorage.setItem('userLoggedInAt', new Date().toISOString());
+    }
+  }
+
+  getSessionInfo(): { loginTime?: string; isValid: boolean; hoursRemaining?: number } {
+    const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+
+    if (!userLoggedInAt || !this.isLoggedIn) {
+      return { isValid: false };
+    }
+
+    const loginTime = new Date(userLoggedInAt);
+    const now = new Date();
+    const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+    const hoursRemaining = Math.max(0, 24 - hoursSinceLogin);
+
+    return {
+      loginTime: userLoggedInAt,
+      isValid: hoursSinceLogin <= 24,
+      hoursRemaining
+    };
+  }
+
+  // Force session validation (useful for admin routes)
+  requireValidSession(): boolean {
+    if (!this.validateSession()) {
+      toast({
+        title: 'Session Invalid',
+        description: 'Your session has expired. Please log in again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    return true;
+  }
 }
 
 // Export singleton instance
