@@ -7,21 +7,25 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Database, 
-  CheckCircle, 
-  AlertCircle, 
-  ExternalLink, 
+import {
+  Database,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
   Copy,
   Loader,
   Users,
   Calendar,
   Bell,
   Settings,
-  Megaphone
+  Megaphone,
+  Upload,
+  HardDrive,
+  ArrowRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { neonDbClient } from '@/services/neonDatabaseService';
+import { migrationHelper } from '@/utils/migrationHelper';
 
 export default function NeonDatabaseSetup() {
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
