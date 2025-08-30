@@ -918,7 +918,14 @@ export default function UserRoleManagement() {
         });
       } catch (error) {
         console.error("Error deleting user:", error);
-        alert("Failed to delete user. Please try again.");
+
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete user. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#ef4444'
+        });
       }
     }
   };
