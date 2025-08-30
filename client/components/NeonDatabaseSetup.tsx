@@ -38,6 +38,9 @@ export default function NeonDatabaseSetup() {
 
   useEffect(() => {
     checkConnection();
+    // Check for local data that can be migrated
+    const summary = migrationHelper.getMigrationSummary();
+    setMigrationSummary(summary);
   }, []);
 
   const checkConnection = async () => {
@@ -89,6 +92,43 @@ export default function NeonDatabaseSetup() {
     });
   };
 
+  const handleMigration = async () => {
+    setIsMigrating(true);
+    try {
+      const result = await migrationHelper.migrateAllData();
+
+      if (result.success) {
+        toast({
+          title: 'Migration Successful',
+          description: `Successfully migrated ${result.migrated} items to Neon database.`,
+        });
+
+        // Clear localStorage after successful migration
+        migrationHelper.clearLocalStorageData();
+
+        // Update migration summary
+        setMigrationSummary({});
+
+        // Refresh connection stats
+        await checkConnection();
+      } else {
+        toast({
+          title: 'Migration Failed',
+          description: `Migrated ${result.migrated} items. Errors: ${result.errors.join(', ')}`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Migration Error',
+        description: error instanceof Error ? error.message : 'Migration failed',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
   const getStatusBadge = () => {
     switch (connectionStatus) {
       case 'connected':
@@ -121,9 +161,10 @@ export default function NeonDatabaseSetup() {
           )}
 
           <Tabs defaultValue="status" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="status">Status</TabsTrigger>
               <TabsTrigger value="setup">Setup</TabsTrigger>
+              <TabsTrigger value="migration">Migration</TabsTrigger>
               <TabsTrigger value="guide">Guide</TabsTrigger>
             </TabsList>
 
@@ -277,6 +318,77 @@ export default function NeonDatabaseSetup() {
                       <div>DATABASE_URL=your_neon_connection_string</div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="migration" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center">
+                    <Upload className="h-5 w-5 mr-2" />
+                    Data Migration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Object.values(migrationSummary).some(count => count > 0) ? (
+                    <>
+                      <Alert>
+                        <HardDrive className="h-4 w-4" />
+                        <AlertDescription>
+                          Local data found in browser storage. Migrate to Neon database for better performance and reliability.
+                        </AlertDescription>
+                      </Alert>
+
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">Found Local Data:</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(migrationSummary).map(([type, count]) => (
+                            count > 0 && (
+                              <div key={type} className="flex justify-between p-2 bg-muted rounded">
+                                <span>{type}</span>
+                                <Badge variant="secondary">{count}</Badge>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </div>
+
+                      {connectionStatus === 'connected' && (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleMigration}
+                            disabled={isMigrating}
+                            className="flex-1"
+                          >
+                            {isMigrating ? (
+                              <Loader className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <ArrowRight className="h-4 w-4 mr-2" />
+                            )}
+                            {isMigrating ? 'Migrating...' : 'Migrate to Neon Database'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {connectionStatus !== 'connected' && (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            Connect to Neon database first before migrating data.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                      <h3 className="font-semibold mb-2">No Local Data Found</h3>
+                      <p className="text-muted-foreground">
+                        All data is already stored in the Neon database or no data exists.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
