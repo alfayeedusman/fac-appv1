@@ -102,101 +102,68 @@ export default function Login() {
       return;
     }
 
-    // Simulate API call with modern loading
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Check database connection first
+      const isConnected = await neonDbClient.testConnection();
 
-    // Secure database validation - only allow registered users
-    const validUsers = [
-      { email: "admin@fac.com", password: "admin123", role: "admin" },
-      { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
-      { email: "fffayeed@gmail.com", password: "Fayeed22beats", role: "superadmin" },
-      { email: "manager@fayeedautocare.com", password: "manager123", role: "manager" },
-      { email: "juan.cruz@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "maria.santos@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "carlos.mendoza@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "ana.reyes@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "user@fac.com", password: "user123", role: "user" },
-      { email: "demo@fac.com", password: "demo123", role: "user" },
-      { email: "fayeedtest@g.com", password: "test101", role: "user" },
-    ];
+      if (!isConnected.connected) {
+        toast({
+          title: "Database Connection Required",
+          description: "Please connect to Neon database first. Check the Database Setup in Admin Dashboard.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    // Get saved registration data
-    const savedRegistrations = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-    const allValidUsers = [...validUsers, ...savedRegistrations];
+      // Attempt login with Neon database
+      const result = await authService.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    // Find matching user
-    const authenticatedUser = allValidUsers.find(
-      (user) =>
-        user.email === formData.email && user.password === formData.password,
-    );
+      if (result.success && result.user) {
+        // Set authentication flags
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("justLoggedIn", "true");
 
-    if (authenticatedUser) {
-      // Clear any cached user-specific data to prevent data leakage
-      const keysToCheck = Object.keys(localStorage);
-      keysToCheck.forEach((key) => {
-        if (key.startsWith("subscription_") || key.startsWith("washLogs_")) {
-          // Only keep data for the current user
-          if (!key.includes(authenticatedUser.email)) {
-            localStorage.removeItem(key);
+        // Check if this is a returning user
+        const hasCompletedWelcome = localStorage.getItem(
+          `welcomed_${result.user.email}`,
+        );
+
+        setTimeout(() => {
+          if (
+            result.user.role === "admin" ||
+            result.user.role === "superadmin"
+          ) {
+            // Set welcome flags for admin users to bypass welcome screen
+            localStorage.setItem("hasSeenWelcome", "true");
+            localStorage.setItem(`welcomed_${result.user.email}`, "true");
+            navigate("/admin-dashboard");
+          } else if (result.user.role === "manager") {
+            navigate("/manager-dashboard");
+          } else if (result.user.role === "crew") {
+            navigate("/crew-dashboard");
+          } else if (result.user.role === "cashier") {
+            navigate("/pos");
+          } else if (result.user.role === "inventory_manager") {
+            navigate("/inventory-management");
+          } else if (hasCompletedWelcome) {
+            // Returning user - go straight to dashboard
+            navigate("/dashboard");
+          } else {
+            // New user - show welcome flow
+            localStorage.setItem("showSplashScreen", "true");
+            navigate("/welcome");
           }
-        }
-      });
-
-      // Successful login
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", authenticatedUser.email);
-      localStorage.setItem("userRole", authenticatedUser.role);
-
-      // Success notification
-      toast({
-        title: "Login Successful! 🎉",
-        description: `Welcome back, ${authenticatedUser.email}!`,
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
-
-      // Set splash screen flag and navigate
-      localStorage.setItem("justLoggedIn", "true");
-
-      // Check if this is a returning user or first time
-      const hasCompletedWelcome = localStorage.getItem(
-        `welcomed_${authenticatedUser.email}`,
-      );
-
-      setTimeout(() => {
-        if (
-          authenticatedUser.role === "admin" ||
-          authenticatedUser.role === "superadmin"
-        ) {
-          // Set welcome flags for admin users to bypass welcome screen
-          localStorage.setItem("hasSeenWelcome", "true");
-          localStorage.setItem(`welcomed_${authenticatedUser.email}`, "true");
-          navigate("/admin-dashboard");
-        } else if (authenticatedUser.role === "manager") {
-          navigate("/manager-dashboard");
-        } else if (authenticatedUser.role === "crew") {
-          navigate("/crew-dashboard");
-        } else if (authenticatedUser.role === "cashier") {
-          navigate("/pos");
-        } else if (authenticatedUser.role === "inventory_manager") {
-          navigate("/inventory-management");
-        } else if (hasCompletedWelcome) {
-          // Returning user - go straight to dashboard
-          navigate("/dashboard");
-        } else {
-          // New user - show welcome flow
-          localStorage.setItem("showSplashScreen", "true");
-          navigate("/welcome");
-        }
-      }, 1000);
-    } else {
-      // Failed login
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
-        description:
-          "Invalid email or password. Please check your credentials.",
+        description: "Unable to connect to database. Please try again.",
         variant: "destructive",
       });
     }
