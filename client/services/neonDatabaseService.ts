@@ -152,47 +152,78 @@ class NeonDatabaseClient {
     }
   }
 
-  async testConnection(): Promise<{ connected: boolean; stats?: any }> {
+  async testConnection(): Promise<{ connected: boolean; stats?: any; error?: string }> {
+    const tryFetch = async (url: string, timeoutMs = 8000) => {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: ac.signal });
+        clearTimeout(to);
+        return res;
+      } catch (e) {
+        clearTimeout(to);
+        throw e;
+      }
+    };
+
     try {
-      // Add timeout to prevent hanging
-      const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(), 8000);
-
-      const response = await fetch(`${this.baseUrl}/test`, {
-        signal: abortController.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
+      // 1) Try configured base URL
+      const primaryUrl = `${this.baseUrl}/test`;
+      try {
+        const response = await tryFetch(primaryUrl, 8000);
+        if (response.ok) {
+          const result = await response.json();
+          this.isConnected = result.connected || result.success || false;
+          if (this.isConnected) {
+            console.log('✅ Database connection test successful');
+          } else {
+            console.warn('⚠️ Database connection test returned false');
+          }
+          return result;
+        }
         console.error(`Connection test failed: HTTP ${response.status}`);
-        this.isConnected = false;
-        return { connected: false };
+      } catch (err) {
+        console.warn('Primary connection test failed:', (err as any).message || err);
       }
 
-      const result = await response.json();
-      this.isConnected = result.connected || result.success || false;
-
-      if (this.isConnected) {
-        console.log('✅ Database connection test successful');
-      } else {
-        console.warn('⚠️ Database connection test returned false');
+      // 2) Fallback to same-origin relative API
+      const fallbackUrl = `/api/neon/test`;
+      try {
+        const response = await tryFetch(fallbackUrl, 8000);
+        if (response.ok) {
+          const result = await response.json();
+          this.isConnected = result.connected || result.success || false;
+          if (this.isConnected) {
+            console.log('��� Fallback connection test successful');
+          } else {
+            console.warn('⚠️ Fallback connection test returned false');
+          }
+          return result;
+        }
+        console.error(`Fallback connection test failed: HTTP ${response.status}`);
+      } catch (err) {
+        console.warn('Fallback connection test failed:', (err as any).message || err);
       }
 
-      return result;
+      // 3) Final: health check to distinguish server vs network
+      try {
+        const health = await tryFetch('/api/health', 5000);
+        if (health.ok) {
+          this.isConnected = false;
+          return { connected: false, error: 'API reachable, Neon test failed' };
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      this.isConnected = false;
+      return { connected: false, error: 'Network error' };
     } catch (error: any) {
       console.error('❌ Connection test failed:', error.message || error);
       this.isConnected = false;
-
-      // Provide more specific error info
       if (error.name === 'AbortError') {
-        console.error('❌ Connection test timed out');
         return { connected: false, error: 'Connection timeout' };
-      } else if (error.message?.includes('NetworkError')) {
-        console.error('❌ Network error during connection test');
-        return { connected: false, error: 'Network error' };
       }
-
       return { connected: false, error: error.message };
     }
   }
