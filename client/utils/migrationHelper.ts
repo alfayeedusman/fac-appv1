@@ -258,42 +258,25 @@ export class DataMigrationHelper {
   }
 
   // Show migration prompt to user
-  showMigrationPrompt(): Promise<boolean> {
-    return new Promise((resolve) => {
-      const summary = this.getMigrationSummary();
-      const hasData = Object.values(summary).some(count => count > 0);
-      
-      if (!hasData) {
-        resolve(false);
-        return;
-      }
+  showMigrationPrompt(): boolean {
+    const summary = this.getMigrationSummary();
+    const hasData = Object.values(summary).some(count => count > 0);
 
-      const summaryText = Object.entries(summary)
-        .filter(([_, count]) => count > 0)
-        .map(([type, count]) => `${type}: ${count}`)
-        .join(', ');
+    if (!hasData) {
+      return false;
+    }
 
-      toast({
-        title: 'Local Data Found',
-        description: `Found local data: ${summaryText}. Would you like to migrate to Neon database?`,
-        action: (
-          <div className="flex gap-2">
-            <button 
-              onClick={() => resolve(true)}
-              className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
-            >
-              Migrate
-            </button>
-            <button 
-              onClick={() => resolve(false)}
-              className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
-            >
-              Skip
-            </button>
-          </div>
-        ),
-      });
+    const summaryText = Object.entries(summary)
+      .filter(([_, count]) => count > 0)
+      .map(([type, count]) => `${type}: ${count}`)
+      .join(', ');
+
+    toast({
+      title: 'Local Data Found',
+      description: `Found local data: ${summaryText}. Use the Migration section in Database Setup to migrate to Neon database.`,
     });
+
+    return true;
   }
 }
 

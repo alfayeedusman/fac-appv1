@@ -33,6 +33,8 @@ export default function NeonDatabaseSetup() {
   const [databaseUrl, setDatabaseUrl] = useState('');
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrationSummary, setMigrationSummary] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     checkConnection();
