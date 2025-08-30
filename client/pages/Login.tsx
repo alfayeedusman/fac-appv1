@@ -18,6 +18,7 @@ import {
   Wifi,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import SuperAdminStatus from "@/components/SuperAdminStatus";
 import { authService } from "@/services/authService";
 import { neonDbClient } from "@/services/neonDatabaseService";
 
@@ -365,8 +366,13 @@ export default function Login() {
           </div>
         </div>
 
+        {/* SuperAdmin Status */}
+        <div className="mt-6 animate-fade-in-up animate-delay-450">
+          <SuperAdminStatus />
+        </div>
+
         {/* SuperAdmin Quick Access */}
-        <Card className="mt-8 glass border-yellow-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 animate-fade-in-up animate-delay-500">
+        <Card className="mt-6 glass border-yellow-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 animate-fade-in-up animate-delay-500">
           <CardContent className="p-6">
             <h3 className="font-black text-foreground text-base mb-4 flex items-center">
               <Crown className="h-5 w-5 mr-2 text-yellow-500" />
