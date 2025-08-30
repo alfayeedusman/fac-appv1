@@ -252,16 +252,45 @@ export async function seedInitialData() {
       throw new Error('Database not initialized');
     }
 
+    // Create or update superadmin user
+    const superAdminExists = await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
+    const superAdminPassword = await bcrypt.hash('SuperAdmin2025!', 10);
+
+    if (superAdminExists.length === 0) {
+      await sql`
+        INSERT INTO users (
+          id, email, full_name, password, role, branch_location, is_active, email_verified, loyalty_points, subscription_status
+        ) VALUES (
+          'superadmin_' || extract(epoch from now())::text,
+          'superadmin@fayeedautocare.com',
+          'Super Administrator',
+          ${superAdminPassword},
+          'superadmin',
+          'Head Office',
+          true,
+          true,
+          0,
+          'vip'
+        );
+      `;
+      console.log('✅ Superadmin user created: superadmin@fayeedautocare.com / SuperAdmin2025!');
+    } else {
+      await sql`
+        UPDATE users
+        SET password = ${superAdminPassword}, role = 'superadmin', updated_at = NOW()
+        WHERE email = 'superadmin@fayeedautocare.com';
+      `;
+      console.log('✅ Superadmin user password updated');
+    }
+
     // Create or update default admin user
     const adminExists = await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
-
-    // Hash the password properly
     const hashedPassword = await bcrypt.hash('admin123', 10);
 
     if (adminExists.length === 0) {
       await sql`
         INSERT INTO users (
-          id, email, full_name, password, role, branch_location, is_active, email_verified
+          id, email, full_name, password, role, branch_location, is_active, email_verified, loyalty_points, subscription_status
         ) VALUES (
           'admin_' || extract(epoch from now())::text,
           'admin@fayeedautocare.com',
@@ -270,12 +299,13 @@ export async function seedInitialData() {
           'admin',
           'Main Branch',
           true,
-          true
+          true,
+          0,
+          'premium'
         );
       `;
       console.log('✅ Default admin user created with properly hashed password');
     } else {
-      // Update existing admin user's password to ensure it's correct
       await sql`
         UPDATE users
         SET password = ${hashedPassword}, updated_at = NOW()
