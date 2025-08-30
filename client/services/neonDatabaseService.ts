@@ -168,7 +168,7 @@ class NeonDatabaseClient {
       if (this.isConnected) {
         console.log('✅ Database connection test successful');
       } else {
-        console.warn('⚠�� Database connection test returned false');
+        console.warn('⚠️ Database connection test returned false');
       }
 
       return result;
@@ -255,23 +255,28 @@ class NeonDatabaseClient {
         return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
       }
 
+      // Read response as text first to avoid body consumption issues
+      let responseText;
+      try {
+        responseText = await response.text();
+        console.log('📝 Response text:', responseText.substring(0, 500));
+        console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
+        console.log('📝 Response URL:', response.url);
+        console.log('📝 Response status:', response.status, response.statusText);
+      } catch (textError) {
+        console.error('❌ Failed to read response text:', textError);
+        return { success: false, error: `Network error: Could not read server response (HTTP ${response.status})` };
+      }
+
+      // Try to parse the text as JSON
       let result;
       try {
-        result = await response.json();
+        result = JSON.parse(responseText);
+        console.log('✅ Parsed JSON successfully:', result);
       } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
-        // Try to get the actual response text to see what we received
-        try {
-          const responseClone = response.clone();
-          const responseText = await responseClone.text();
-          console.error('Actual response text:', responseText.substring(0, 500));
-          console.error('Response headers:', Object.fromEntries(response.headers.entries()));
-          console.error('Response URL:', response.url);
-          console.error('Response status:', response.status, response.statusText);
-        } catch (e) {
-          console.error('Could not read response text:', e);
-        }
-        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Server may be returning HTML instead of JSON.` };
+        console.error('❌ Failed to parse JSON response:', jsonError);
+        console.error('📝 Raw response:', responseText);
+        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Response: ${responseText.substring(0, 200)}` };
       }
 
       if (!response.ok || !result.success) {
@@ -316,23 +321,28 @@ class NeonDatabaseClient {
               return { success: false, error: `Unexpected response from server (${statusInfo}). ${text ? 'Details: ' + text.slice(0,200) : ''}` };
             }
 
-            let result;
+            // Read response as text first to avoid body consumption issues
+      let responseText;
       try {
-        result = await response.json();
+        responseText = await response.text();
+        console.log('📝 Response text:', responseText.substring(0, 500));
+        console.log('📝 Response headers:', Object.fromEntries(response.headers.entries()));
+        console.log('📝 Response URL:', response.url);
+        console.log('📝 Response status:', response.status, response.statusText);
+      } catch (textError) {
+        console.error('❌ Failed to read response text:', textError);
+        return { success: false, error: `Network error: Could not read server response (HTTP ${response.status})` };
+      }
+
+      // Try to parse the text as JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('✅ Parsed JSON successfully:', result);
       } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
-        // Try to get the actual response text to see what we received
-        try {
-          const responseClone = response.clone();
-          const responseText = await responseClone.text();
-          console.error('Actual response text:', responseText.substring(0, 500));
-          console.error('Response headers:', Object.fromEntries(response.headers.entries()));
-          console.error('Response URL:', response.url);
-          console.error('Response status:', response.status, response.statusText);
-        } catch (e) {
-          console.error('Could not read response text:', e);
-        }
-        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Server may be returning HTML instead of JSON.` };
+        console.error('❌ Failed to parse JSON response:', jsonError);
+        console.error('📝 Raw response:', responseText);
+        return { success: false, error: `Invalid JSON response from server (HTTP ${response.status}). Response: ${responseText.substring(0, 200)}` };
       }
 
       if (!response.ok || !result.success) {
