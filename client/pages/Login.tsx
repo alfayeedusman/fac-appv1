@@ -313,17 +313,28 @@ export default function Login() {
               </Button>
 
               {/* SuperAdmin Setup Button */}
-              <Link to="/superadmin-setup">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full py-3 text-sm rounded-xl font-bold border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 transition-all group"
-                >
-                  <Crown className="h-4 w-4 mr-2" />
-                  SuperAdmin Setup
-                  <span className="text-xs ml-2 opacity-70">(Fix & Create SuperAdmin)</span>
-                </Button>
-              </Link>
+              <div className="grid grid-cols-1 gap-2">
+                <Link to="/superadmin-setup">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 transition-all group"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    SuperAdmin Setup
+                  </Button>
+                </Link>
+                <Link to="/network-test">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all group"
+                  >
+                    <Wifi className="h-4 w-4 mr-2" />
+                    Network Diagnostics
+                  </Button>
+                </Link>
+              </div>
 
               {/* Forgot Password Link */}
               <div className="text-center">
