@@ -38,6 +38,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Swal from 'sweetalert2';
 
 interface User {
   id: string;
