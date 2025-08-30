@@ -171,84 +171,49 @@ class NeonDatabaseClient {
   // === AUTHENTICATION ===
   
   async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-          // Cache user data locally
-          this.setToLocalStorage('currentUser', result.user);
-          localStorage.setItem('userEmail', result.user.email);
-          localStorage.setItem('userRole', result.user.role);
-        }
-        return result;
-      } catch (error) {
-        console.error('Database login failed, falling back to localStorage');
+    if (!this.isConnected) {
+      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Store user session data
+        localStorage.setItem('userEmail', result.user.email);
+        localStorage.setItem('userRole', result.user.role);
+        localStorage.setItem('userId', result.user.id);
       }
+      return result;
+    } catch (error) {
+      console.error('Database login failed:', error);
+      return { success: false, error: 'Login failed. Please check your connection.' };
     }
-
-    // Fallback to localStorage
-    const users = this.getFromLocalStorage('fac_users') || [];
-    const user = users.find((u: any) => u.email === email);
-    
-    if (!user) {
-      return { success: false, error: 'User not found' };
-    }
-
-    // Simple password check for demo (in real app, passwords should be hashed)
-    if (user.password !== password) {
-      return { success: false, error: 'Invalid password' };
-    }
-
-    localStorage.setItem('userEmail', user.email);
-    localStorage.setItem('userRole', user.role);
-    return { success: true, user };
   }
 
   async register(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; user?: User; error?: string }> {
-    // Try database first
-    if (this.isConnected) {
-      try {
-        const response = await fetch(`${this.baseUrl}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData),
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-          this.setToLocalStorage('currentUser', result.user);
-        }
-        return result;
-      } catch (error) {
-        console.error('Database registration failed, falling back to localStorage');
-      }
+    if (!this.isConnected) {
+      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
     }
 
-    // Fallback to localStorage
-    const users = this.getFromLocalStorage('fac_users') || [];
-    const existingUser = users.find((u: any) => u.email === userData.email);
-    
-    if (existingUser) {
-      return { success: false, error: 'User already exists' };
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database registration failed:', error);
+      return { success: false, error: 'Registration failed. Please check your connection.' };
     }
-
-    const newUser = {
-      ...userData,
-      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    users.push(newUser);
-    this.setToLocalStorage('fac_users', users);
-    return { success: true, user: newUser };
   }
 
   // === BOOKINGS ===
