@@ -252,13 +252,13 @@ export async function seedInitialData() {
       throw new Error('Database not initialized');
     }
 
-    // Create default admin user
+    // Create or update default admin user
     const adminExists = await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
 
-    if (adminExists.length === 0) {
-      // Hash the password properly
-      const hashedPassword = await bcrypt.hash('admin123', 10);
+    // Hash the password properly
+    const hashedPassword = await bcrypt.hash('admin123', 10);
 
+    if (adminExists.length === 0) {
       await sql`
         INSERT INTO users (
           id, email, full_name, password, role, branch_location, is_active, email_verified
@@ -274,6 +274,14 @@ export async function seedInitialData() {
         );
       `;
       console.log('✅ Default admin user created with properly hashed password');
+    } else {
+      // Update existing admin user's password to ensure it's correct
+      await sql`
+        UPDATE users
+        SET password = ${hashedPassword}, updated_at = NOW()
+        WHERE email = 'admin@fayeedautocare.com';
+      `;
+      console.log('✅ Default admin user password updated with proper hash');
     }
 
     // Insert default admin settings
