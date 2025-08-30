@@ -131,19 +131,17 @@ export const loginUser: RequestHandler = async (req, res) => {
     const user = await neonDbService.getUserByEmail(email);
     if (!user) {
       console.warn('🔐 Login failed: user not found', { email });
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials'
-      });
+      const response = { success: false, error: 'Invalid credentials' };
+      console.log('📤 Sending user not found response:', JSON.stringify(response));
+      return res.status(401).json(response);
     }
 
     const isValidPassword = await neonDbService.verifyPassword(email, password);
     if (!isValidPassword) {
       console.warn('🔐 Login failed: invalid password', { email });
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials'
-      });
+      const response = { success: false, error: 'Invalid credentials' };
+      console.log('📤 Sending invalid password response:', JSON.stringify(response));
+      return res.status(401).json(response);
     }
 
     if (!user.isActive) {
@@ -161,11 +159,13 @@ export const loginUser: RequestHandler = async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
 
     console.log('✅ Login successful', { email, role: userWithoutPassword.role, id: userWithoutPassword.id });
-    res.json({
+    const response = {
       success: true,
       user: userWithoutPassword,
       message: 'Login successful'
-    });
+    };
+    console.log('📤 Sending login success response:', JSON.stringify(response).substring(0, 200));
+    return res.json(response);
   } catch (error: any) {
     console.error('❌ Login error:', error?.message || error);
     return res.status(500).json({
