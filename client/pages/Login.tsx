@@ -16,6 +16,7 @@ import {
   Database,
   AlertCircle,
   Wifi,
+  Shield,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SuperAdminStatus from "@/components/SuperAdminStatus";
