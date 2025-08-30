@@ -1,4 +1,4 @@
-import { sql } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 import { getDatabase, testConnection } from './connection';
 
 // Database migration script to create all tables
