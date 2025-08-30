@@ -411,6 +411,14 @@ const App = () => {
               }
             />
             <Route
+              path="/admin-login-test"
+              element={
+                <div className="min-h-screen bg-background p-4">
+                  <AdminLoginTest />
+                </div>
+              }
+            />
+            <Route
               path="/diagnostics"
               element={
                 <ProtectedRoute requiredRole="admin">
