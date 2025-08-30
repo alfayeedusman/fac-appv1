@@ -29,46 +29,36 @@ export default function Login() {
     password: "",
   });
 
-  // Check for auto-login on component mount
+  // Check Neon database connection on component mount
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const autoLogin = urlParams.get("auto");
-    const userEmail = urlParams.get("email");
+    const checkNeonConnection = async () => {
+      try {
+        const connected = await neonDbClient.testConnection();
+        if (connected.connected) {
+          console.log('✅ Neon database connected');
+        } else {
+          console.warn('⚠️ Neon database not connected');
+        }
+      } catch (error) {
+        console.error('❌ Failed to check Neon connection:', error);
+      }
+    };
 
-    // Auto-login for superadmin
-    if (autoLogin === "true" && userEmail === "fffayeed@gmail.com") {
-      setFormData({
-        email: "fffayeed@gmail.com",
-        password: "Fayeed22beats"
-      });
-
-      // Trigger auto-login after a short delay
-      setTimeout(() => {
-        const event = new Event('submit');
-        document.querySelector('form')?.dispatchEvent(event);
-      }, 1000);
-    }
+    checkNeonConnection();
   }, []);
 
-  // Auto-login function for superadmin
-  const triggerAutoLogin = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", "fffayeed@gmail.com");
-    localStorage.setItem("userRole", "superadmin");
-    localStorage.setItem("justLoggedIn", "true");
-    localStorage.setItem("hasSeenWelcome", "true"); // Bypass welcome screen
-    localStorage.setItem(`welcomed_fffayeed@gmail.com`, "true"); // Mark user as welcomed
-
-    toast({
-      title: "Auto-Login Successful! 🎉",
-      description: "Welcome back, Superadmin!",
-      variant: "default",
-      className: "bg-green-50 border-green-200 text-green-800",
+  // Test login with Neon admin credentials
+  const testNeonAdminLogin = async () => {
+    setFormData({
+      email: "admin@fayeedautocare.com",
+      password: "admin123"
     });
 
+    // Auto-submit after setting credentials
     setTimeout(() => {
-      navigate("/admin-dashboard");
-    }, 1000);
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      document.querySelector('form')?.dispatchEvent(submitEvent);
+    }, 100);
   };
 
   const handleInputChange = (field: string, value: string) => {
