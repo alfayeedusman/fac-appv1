@@ -67,7 +67,7 @@ import { neonDbClient } from "./services/neonDatabaseService";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   useEffect(() => {
     // Test Neon database connection on app startup (avoid triggering heavy migrations)
     const testNeonDB = async () => {
