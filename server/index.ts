@@ -50,6 +50,7 @@ export function createServer() {
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
+  app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
   
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
