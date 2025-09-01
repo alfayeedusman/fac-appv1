@@ -514,6 +514,126 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= IMAGE MANAGEMENT SYSTEM =============
+
+    // Create images table
+    await sql`
+      CREATE TABLE IF NOT EXISTS images (
+        id TEXT PRIMARY KEY,
+        original_name VARCHAR(255) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        size INTEGER NOT NULL,
+        width INTEGER,
+        height INTEGER,
+        storage_type VARCHAR(50) NOT NULL DEFAULT 'local',
+        storage_path TEXT NOT NULL,
+        public_url TEXT NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        tags JSONB DEFAULT '[]',
+        uploaded_by TEXT,
+        associated_with VARCHAR(50),
+        associated_id TEXT,
+        alt_text TEXT,
+        description TEXT,
+        processing_status VARCHAR(50) DEFAULT 'completed',
+        thumbnail_url TEXT,
+        medium_url TEXT,
+        download_count INTEGER DEFAULT 0,
+        view_count INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT true,
+        is_public BOOLEAN DEFAULT true,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create image_collections table
+    await sql`
+      CREATE TABLE IF NOT EXISTS image_collections (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100) NOT NULL,
+        is_public BOOLEAN DEFAULT true,
+        sort_order INTEGER DEFAULT 0,
+        created_by TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create image_collection_items table
+    await sql`
+      CREATE TABLE IF NOT EXISTS image_collection_items (
+        id TEXT PRIMARY KEY,
+        collection_id TEXT NOT NULL,
+        image_id TEXT NOT NULL,
+        sort_order INTEGER DEFAULT 0,
+        caption TEXT,
+        added_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // ============= PUSH NOTIFICATION SYSTEM =============
+
+    // Create fcm_tokens table
+    await sql`
+      CREATE TABLE IF NOT EXISTS fcm_tokens (
+        id TEXT PRIMARY KEY,
+        token TEXT NOT NULL UNIQUE,
+        user_id TEXT,
+        device_type VARCHAR(50),
+        browser_info TEXT,
+        device_name VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        last_used TIMESTAMP DEFAULT NOW(),
+        notification_types JSONB DEFAULT '["booking_updates", "loyalty_updates", "system"]',
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create push_notifications table
+    await sql`
+      CREATE TABLE IF NOT EXISTS push_notifications (
+        id TEXT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        body TEXT NOT NULL,
+        image_url TEXT,
+        target_type VARCHAR(50) NOT NULL,
+        target_ids JSONB,
+        notification_type VARCHAR(100) NOT NULL,
+        data JSONB,
+        total_targets INTEGER DEFAULT 0,
+        successful_deliveries INTEGER DEFAULT 0,
+        failed_deliveries INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'pending',
+        scheduled_for TIMESTAMP,
+        sent_at TIMESTAMP,
+        created_by TEXT,
+        campaign VARCHAR(255),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create notification_deliveries table
+    await sql`
+      CREATE TABLE IF NOT EXISTS notification_deliveries (
+        id TEXT PRIMARY KEY,
+        notification_id TEXT NOT NULL,
+        fcm_token_id TEXT NOT NULL,
+        user_id TEXT,
+        status VARCHAR(50) NOT NULL,
+        error_message TEXT,
+        delivered_at TIMESTAMP,
+        clicked_at TIMESTAMP,
+        dismissed_at TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
     // Create indexes for better performance
     await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);`;
