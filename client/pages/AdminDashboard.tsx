@@ -363,13 +363,20 @@ export default function AdminDashboard() {
       // Initialize sample ads for demonstration
       initializeSampleAds();
 
+      // Load real statistics from database
+      loadRealStats();
+
       // Load system notifications
       loadSystemNotifications();
 
-      // Set up polling for new notifications every 10 seconds
+      // Set up polling for new notifications and stats every 10 seconds
       const notificationInterval = setInterval(loadSystemNotifications, 10000);
+      const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
 
-      return () => clearInterval(notificationInterval);
+      return () => {
+        clearInterval(notificationInterval);
+        clearInterval(statsInterval);
+      };
     } else {
       navigate("/login");
     }
