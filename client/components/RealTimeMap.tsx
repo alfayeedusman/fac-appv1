@@ -215,52 +215,73 @@ export default function RealTimeMap({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    console.log('🗺️ Initializing Mapbox...');
-    console.log('🔑 Token:', mapboxgl.accessToken ? 'Present' : 'Missing');
-    console.log('📦 Container:', mapContainer.current ? 'Found' : 'Missing');
+    const initializeMap = async () => {
+      console.log('🗺️ Initializing Mapbox...');
+      console.log('🔑 Token:', mapboxgl.accessToken ? 'Present' : 'Missing');
+      console.log('📦 Container:', mapContainer.current ? 'Found' : 'Missing');
 
-    if (!mapboxgl.accessToken) {
-      console.error('❌ Mapbox token not found');
-      setError('Mapbox token not configured. Please check environment variables.');
-      return;
-    }
+      if (!mapboxgl.accessToken) {
+        console.error('❌ Mapbox token not found');
+        setError('Mapbox token not configured. Please check environment variables.');
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [MANILA_COORDINATES.longitude, MANILA_COORDINATES.latitude],
-        zoom: 12,
-        attributionControl: false
-      });
+      // Add a small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      map.current.on('load', () => {
-        console.log('✅ Mapbox loaded successfully');
-        setError(null);
-      });
+      try {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [MANILA_COORDINATES.longitude, MANILA_COORDINATES.latitude],
+          zoom: 12,
+          attributionControl: false
+        });
 
-      map.current.on('error', (e) => {
-        console.error('❌ Mapbox error:', e);
-        setError('Map failed to load. Please check your internet connection.');
-      });
+        map.current.on('load', () => {
+          console.log('✅ Mapbox loaded successfully');
+          setError(null);
+          setIsLoading(false);
+        });
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      map.current.addControl(
-        new mapboxgl.AttributionControl({
-          compact: true
-        }),
-        'bottom-right'
-      );
+        map.current.on('error', (e) => {
+          console.error('❌ Mapbox error:', e);
+          setError('Map failed to load. Please check your internet connection.');
+          setIsLoading(false);
+        });
 
-      console.log('✅ Mapbox initialized successfully');
-    } catch (err: any) {
-      console.error('❌ Failed to initialize Mapbox:', err);
-      setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
-    }
+        // Set a timeout for map loading
+        setTimeout(() => {
+          if (isLoading) {
+            console.warn('⚠️ Map loading timeout');
+            setError('Map loading timeout. Please refresh the page.');
+            setIsLoading(false);
+          }
+        }, 10000);
+
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current.addControl(
+          new mapboxgl.AttributionControl({
+            compact: true
+          }),
+          'bottom-right'
+        );
+
+        console.log('✅ Mapbox initialized successfully');
+      } catch (err: any) {
+        console.error('❌ Failed to initialize Mapbox:', err);
+        setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
+        setIsLoading(false);
+      }
+    };
+
+    initializeMap();
 
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, []);
