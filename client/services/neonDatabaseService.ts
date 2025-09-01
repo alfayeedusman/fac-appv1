@@ -290,7 +290,7 @@ class NeonDatabaseClient {
     try {
       console.log('📝 Response status:', response.status, response.statusText);
       console.log('📝 Response URL:', response.url);
-      console.log('📝 Content-Type:', response.headers.get('content-type') || 'unknown');
+      console.log('��� Content-Type:', response.headers.get('content-type') || 'unknown');
     } catch (_) {}
 
     // Read body ONCE as text to avoid bodyUsed/clone issues, then try JSON parse
@@ -625,6 +625,23 @@ class NeonDatabaseClient {
     } catch (error) {
       console.error('Database ad dismissal failed:', error);
       return { success: false };
+    }
+  }
+
+  // === USERS ===
+
+  async getUsers(): Promise<{ success: boolean; users?: User[] }> {
+    if (!this.isConnected) {
+      return { success: false, users: [] };
+    }
+
+    try {
+      const response = await fetch('/api/users');
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database users fetch failed:', error);
+      return { success: false, users: [] };
     }
   }
 

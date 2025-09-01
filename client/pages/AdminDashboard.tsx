@@ -99,6 +99,7 @@ import {
 } from "@/utils/databaseSchema";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
+import Swal from "sweetalert2";
 
 interface Customer {
   id: string;
@@ -366,9 +367,7 @@ export default function AdminDashboard() {
       loadRealtimeStats();
 
       // Load real customer data from database
-      // TODO: Implement getUsers API endpoint in server
-      // loadRealCustomers();
-      setCustomersLoading(false);
+      loadRealCustomers();
 
       // Load system notifications
       loadSystemNotifications();
@@ -961,13 +960,20 @@ export default function AdminDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
                     loadRealStats();
                     loadRealtimeStats();
                     loadSystemNotifications();
-                    toast({
-                      title: "Refreshed",
-                      description: "Dashboard data has been refreshed",
+                    loadRealCustomers();
+
+                    await Swal.fire({
+                      title: 'Refreshed!',
+                      text: 'Dashboard data has been refreshed successfully',
+                      icon: 'success',
+                      timer: 2000,
+                      showConfirmButton: false,
+                      position: 'top-end',
+                      toast: true
                     });
                   }}
                   disabled={statsLoading || realtimeLoading}
