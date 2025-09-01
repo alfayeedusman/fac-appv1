@@ -1001,7 +1001,11 @@ export default function AdminDashboard() {
                           Total Revenue
                         </p>
                         <p className="text-3xl font-bold text-foreground">
-                          {formatCurrency(stats.totalRevenue)}
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalRevenue)
+                          )}
                         </p>
                       </div>
                       <div className="bg-green-500 p-3 rounded-lg">
@@ -1022,7 +1026,11 @@ export default function AdminDashboard() {
                           Total Washes
                         </p>
                         <p className="text-3xl font-bold text-foreground">
-                          {stats.totalWashes.toLocaleString()}
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalWashes.toLocaleString()
+                          )}
                         </p>
                       </div>
                       <div className="bg-blue-500 p-3 rounded-lg">
@@ -1043,7 +1051,11 @@ export default function AdminDashboard() {
                           Active Subscriptions
                         </p>
                         <p className="text-3xl font-bold text-foreground">
-                          {stats.activeSubscriptions}
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.activeSubscriptions.toLocaleString()
+                          )}
                         </p>
                       </div>
                       <div className="bg-purple-500 p-3 rounded-lg">
