@@ -293,9 +293,12 @@ export default function AdminDashboard() {
   const loadRealCustomers = async () => {
     try {
       setCustomersLoading(true);
+      console.log('🔍 Loading customers from database...');
       const result = await neonDbClient.getUsers();
+      console.log('👥 Customer load result:', result);
 
       if (result.success && result.users) {
+        console.log('📋 Raw users from database:', result.users);
         // Transform database users to Customer interface
         const transformedCustomers: Customer[] = result.users.map((user: any) => ({
           id: user.id,
@@ -315,13 +318,14 @@ export default function AdminDashboard() {
           approvalStatus: user.isActive ? "approved" : "pending",
         }));
 
+        console.log('✅ Transformed customers:', transformedCustomers);
         setCustomers(transformedCustomers);
       } else {
-        console.warn('Failed to load real customers, using empty array');
+        console.warn('⚠️ Failed to load real customers, using empty array. Result:', result);
         setCustomers([]);
       }
     } catch (error) {
-      console.error('Error loading customers:', error);
+      console.error('❌ Error loading customers:', error);
       setCustomers([]);
     } finally {
       setCustomersLoading(false);
