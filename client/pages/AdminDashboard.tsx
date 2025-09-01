@@ -511,15 +511,36 @@ export default function AdminDashboard() {
   };
 
   const handleDeletePackage = (pkg: ServicePackage) => {
-    if (confirm(`Are you sure you want to delete ${pkg.name}?`)) {
-      setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
-      alert("Package deleted successfully!");
-    }
+    Swal.fire({
+      title: 'Delete Package?',
+      text: `Are you sure you want to delete ${pkg.name}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Package deleted successfully!',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const handleSavePackage = () => {
     if (!newPackage.name || newPackage.basePrice <= 0) {
-      alert("Please fill in all required fields");
+      Swal.fire({
+        title: 'Validation Error',
+        text: 'Please fill in all required fields',
+        icon: 'error',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
 
@@ -538,7 +559,12 @@ export default function AdminDashboard() {
         active: newPackage.active,
       };
       setPackages((prev) => [...prev, pkg]);
-      alert("Package created successfully!");
+      Swal.fire({
+        title: 'Package Created!',
+        text: 'Package created successfully!',
+        icon: 'success',
+        confirmButtonColor: '#f97316'
+      });
     } else if (currentPackage) {
       const updatedPackage: ServicePackage = {
         ...currentPackage,
@@ -551,7 +577,12 @@ export default function AdminDashboard() {
       setPackages((prev) =>
         prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
       );
-      alert("Package updated successfully!");
+      Swal.fire({
+        title: 'Package Updated!',
+        text: 'Package updated successfully!',
+        icon: 'success',
+        confirmButtonColor: '#f97316'
+      });
     }
 
     setIsPackageModalOpen(false);
@@ -603,7 +634,15 @@ export default function AdminDashboard() {
       JSON.stringify(updatedNotifications),
     );
 
-    alert(`Customer approved successfully!`);
+    Swal.fire({
+      title: 'Customer Approved!',
+      text: 'Customer approved successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false,
+      position: 'top-end',
+      toast: true
+    });
   };
 
   const handleRejectCustomer = (notificationId: string) => {
@@ -644,7 +683,15 @@ export default function AdminDashboard() {
       JSON.stringify(updatedNotifications),
     );
 
-    alert(`Customer registration rejected.`);
+    Swal.fire({
+      title: 'Customer Rejected',
+      text: 'Customer registration rejected.',
+      icon: 'info',
+      timer: 2000,
+      showConfirmButton: false,
+      position: 'top-end',
+      toast: true
+    });
   };
 
   const unreadNotificationCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
