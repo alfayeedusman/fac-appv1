@@ -467,10 +467,10 @@ class NeonDatabaseService {
             eq(schema.crewGroups.status, 'active'),
             sql`EXISTS (
               SELECT 1 FROM ${schema.crewMembers} cm
-              JOIN ${schema.crewStatus} cs ON cm.id = cs.crewId
-              WHERE cm.crewGroupId = ${schema.crewGroups.id}
+              JOIN ${schema.crewStatus} cs ON cm.id = cs.crew_id
+              WHERE cm.crew_group_id = ${schema.crewGroups.id}
               AND cs.status IN ('online', 'busy')
-              AND cs.endedAt IS NULL
+              AND cs.ended_at IS NULL
             )`
           )
         );
