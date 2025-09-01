@@ -7,10 +7,6 @@ import { fileURLToPath } from "url";
 import demoRoutes from "./routes/demo.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
-import * as packagesApiRoutes from "./routes/packages-api.js";
-import * as branchesApiRoutes from "./routes/branches-api.js";
-import * as gamificationApiRoutes from "./routes/gamification-api.js";
-import * as posApiRoutes from "./routes/pos-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
