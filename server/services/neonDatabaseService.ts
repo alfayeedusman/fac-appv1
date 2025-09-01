@@ -335,32 +335,77 @@ class NeonDatabaseService {
     totalBookings: number;
     activeAds: number;
     pendingBookings: number;
+    totalRevenue: number;
+    totalWashes: number;
+    activeSubscriptions: number;
+    monthlyGrowth: number;
   }> {
     if (!this.db) throw new Error('Database not connected');
-    
+
     const [userCount] = await this.db
       .select({ count: count() })
       .from(schema.users);
-    
+
     const [bookingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings);
-    
+
     const [adCount] = await this.db
       .select({ count: count() })
       .from(schema.ads)
       .where(eq(schema.ads.isActive, true));
-    
+
     const [pendingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
       .where(eq(schema.bookings.status, 'pending'));
-    
+
+    // Calculate total revenue from completed bookings
+    const [revenueResult] = await this.db
+      .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
+      .from(schema.bookings)
+      .where(eq(schema.bookings.status, 'completed'));
+
+    // Count completed washes
+    const [washCount] = await this.db
+      .select({ count: count() })
+      .from(schema.bookings)
+      .where(eq(schema.bookings.status, 'completed'));
+
+    // Count active subscriptions (users with non-free subscription status)
+    const [subscriptionCount] = await this.db
+      .select({ count: count() })
+      .from(schema.users)
+      .where(sql`${schema.users.subscriptionStatus} != 'free'`);
+
+    // Calculate monthly growth (users created in last 30 days vs previous 30 days)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+    const [recentUsers] = await this.db
+      .select({ count: count() })
+      .from(schema.users)
+      .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
+
+    const [previousUsers] = await this.db
+      .select({ count: count() })
+      .from(schema.users)
+      .where(sql`${schema.users.createdAt} >= ${sixtyDaysAgo} AND ${schema.users.createdAt} < ${thirtyDaysAgo}`);
+
+    // Calculate growth percentage
+    const monthlyGrowth = previousUsers.count > 0
+      ? ((recentUsers.count - previousUsers.count) / previousUsers.count) * 100
+      : recentUsers.count > 0 ? 100 : 0;
+
     return {
       totalUsers: userCount.count,
       totalBookings: bookingCount.count,
       activeAds: adCount.count,
       pendingBookings: pendingCount.count,
+      totalRevenue: parseFloat(revenueResult.totalRevenue || '0'),
+      totalWashes: washCount.count,
+      activeSubscriptions: subscriptionCount.count,
+      monthlyGrowth: Math.round(monthlyGrowth * 100) / 100, // Round to 2 decimal places
     };
   }
 
