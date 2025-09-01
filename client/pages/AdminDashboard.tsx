@@ -312,6 +312,45 @@ export default function AdminDashboard() {
     }
   };
 
+  // Function to load real customer data from database
+  const loadRealCustomers = async () => {
+    try {
+      setCustomersLoading(true);
+      const result = await neonDbClient.getUsers();
+
+      if (result.success && result.users) {
+        // Transform database users to Customer interface
+        const transformedCustomers: Customer[] = result.users.map((user: any) => ({
+          id: user.id,
+          name: user.fullName,
+          email: user.email,
+          phone: user.contactNumber || 'N/A',
+          carUnit: user.carUnit || 'N/A',
+          plateNumber: user.carPlateNumber || 'N/A',
+          membershipType: user.subscriptionStatus === 'free' ? 'Classic' :
+                         user.subscriptionStatus === 'basic' ? 'VIP Silver' :
+                         user.subscriptionStatus === 'premium' ? 'VIP Gold' :
+                         user.subscriptionStatus === 'vip' ? 'VIP Gold Ultimate' : 'Classic',
+          joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+          totalWashes: 0, // This would need to be calculated from bookings
+          totalSpent: 0, // This would need to be calculated from bookings
+          status: user.isActive ? "active" : "inactive",
+          approvalStatus: user.isActive ? "approved" : "pending",
+        }));
+
+        setCustomers(transformedCustomers);
+      } else {
+        console.warn('Failed to load real customers, using empty array');
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+      setCustomers([]);
+    } finally {
+      setCustomersLoading(false);
+    }
+  };
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
