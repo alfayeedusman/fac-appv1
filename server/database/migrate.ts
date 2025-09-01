@@ -524,6 +524,34 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_ads_active ON ads(is_active);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_admin_settings_key ON admin_settings(key);`;
 
+    // Service Packages indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_service_packages_active ON service_packages(is_active);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_service_packages_category ON service_packages(category);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_service_packages_featured ON service_packages(is_featured);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_package_subscriptions_user ON package_subscriptions(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_package_subscriptions_status ON package_subscriptions(status);`;
+
+    // Branches indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_branches_active ON branches(is_active);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_branches_code ON branches(code);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_branches_city ON branches(city);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_branches_location ON branches(latitude, longitude);`;
+
+    // Gamification indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_customer_levels_points ON customer_levels(min_points, max_points);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_achievements_completed ON user_achievements(completed);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_user ON loyalty_transactions(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_type ON loyalty_transactions(type);`;
+
+    // POS System indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_products_active ON pos_products(is_active);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_products_category ON pos_products(category_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_branch ON pos_transactions(branch_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_cashier ON pos_transactions(cashier_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_date ON pos_transactions(created_at);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_transaction_items_transaction ON pos_transaction_items(transaction_id);`;
+
     console.log('✅ Database migrations completed successfully!');
     return true;
   } catch (error) {
