@@ -179,20 +179,58 @@ const generateMockCustomerData = (): Customer[] => {
   return customers;
 };
 
-export default function RealTimeMap({ 
-  height = '600px', 
-  onCrewSelect, 
+export default function RealTimeMap({
+  height = '600px',
+  onCrewSelect,
   onCustomerSelect,
   showCustomers = true,
   showCrew = true,
   selectedFilters = {}
 }: RealTimeMapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
   const [crewData, setCrewData] = useState<CrewMember[]>([]);
   const [customerData, setCustomerData] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCrew, setSelectedCrew] = useState<CrewMember | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || map.current) return;
+
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [MANILA_COORDINATES.longitude, MANILA_COORDINATES.latitude],
+        zoom: 12,
+        attributionControl: false
+      });
+
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(
+        new mapboxgl.AttributionControl({
+          compact: true
+        }),
+        'bottom-right'
+      );
+
+      console.log('✅ Mapbox initialized successfully');
+      setError(null);
+    } catch (err) {
+      console.error('❌ Failed to initialize Mapbox:', err);
+      setError('Failed to initialize map. Please check your internet connection.');
+    }
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+      }
+    };
+  }, []);
 
   // Load initial data
   useEffect(() => {
@@ -201,7 +239,7 @@ export default function RealTimeMap({
       try {
         // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
         setError(null);
