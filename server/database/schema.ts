@@ -206,3 +206,374 @@ export const stockMovements = pgTable('stock_movements', {
   notes: text('notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// ============= SERVICE PACKAGES SYSTEM =============
+
+// Service Packages table (for Package Studio)
+export const servicePackages = pgTable('service_packages', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  category: varchar('category', { length: 100 }).notNull(), // 'carwash' | 'detailing' | 'coating' | 'subscription'
+  type: varchar('type', { length: 50 }).notNull(), // 'single' | 'recurring' | 'bundle'
+  basePrice: decimal('base_price', { precision: 10, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 10 }).notNull().default('PHP'),
+
+  // Duration settings
+  durationType: varchar('duration_type', { length: 20 }).default('preset'), // 'preset' | 'hours' | 'custom'
+  duration: varchar('duration', { length: 50 }), // 'Daily' | 'Weekly' | 'Monthly' | 'Yearly'
+  hours: integer('hours'), // For hour-based packages
+  startDate: timestamp('start_date'), // For custom date ranges
+  endDate: timestamp('end_date'), // For custom date ranges
+
+  // Package details
+  features: json('features').$type<string[]>().notNull().default([]),
+  inclusions: json('inclusions').$type<string[]>().default([]),
+  exclusions: json('exclusions').$type<string[]>().default([]),
+  vehicleTypes: json('vehicle_types').$type<string[]>().notNull().default(['car']), // 'car' | 'motorcycle' | 'suv' | 'truck'
+
+  // Pricing variations
+  carPrice: decimal('car_price', { precision: 10, scale: 2 }),
+  motorcyclePrice: decimal('motorcycle_price', { precision: 10, scale: 2 }),
+  suvPrice: decimal('suv_price', { precision: 10, scale: 2 }),
+  truckPrice: decimal('truck_price', { precision: 10, scale: 2 }),
+
+  // Media and branding
+  imageUrl: text('image_url'),
+  bannerUrl: text('banner_url'),
+  color: varchar('color', { length: 50 }).default('#f97316'), // Theme color
+
+  // Availability
+  isActive: boolean('is_active').notNull().default(true),
+  isPopular: boolean('is_popular').default(false),
+  isFeatured: boolean('is_featured').default(false),
+  availableBranches: json('available_branches').$type<string[]>(), // Branch IDs where available
+
+  // Limits and restrictions
+  maxBookingsPerDay: integer('max_bookings_per_day'),
+  maxBookingsPerMonth: integer('max_bookings_per_month'),
+  minAdvanceBooking: integer('min_advance_booking'), // Hours
+  maxAdvanceBooking: integer('max_advance_booking'), // Days
+
+  // Metadata
+  tags: json('tags').$type<string[]>().default([]),
+  priority: integer('priority').default(0), // For sorting
+  createdBy: text('created_by'), // Admin user ID
+  updatedBy: text('updated_by'), // Admin user ID
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Package Subscriptions (customer package purchases)
+export const packageSubscriptions = pgTable('package_subscriptions', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').notNull(),
+  packageId: text('package_id').notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('active'), // 'active' | 'paused' | 'cancelled' | 'expired'
+
+  // Subscription details
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date'),
+  autoRenew: boolean('auto_renew').default(true),
+  renewalDate: timestamp('renewal_date'),
+
+  // Pricing at time of purchase
+  originalPrice: decimal('original_price', { precision: 10, scale: 2 }).notNull(),
+  discountApplied: decimal('discount_applied', { precision: 10, scale: 2 }).default('0'),
+  finalPrice: decimal('final_price', { precision: 10, scale: 2 }).notNull(),
+
+  // Usage tracking
+  usageCount: integer('usage_count').default(0),
+  usageLimit: integer('usage_limit'), // If package has usage limits
+  remainingCredits: integer('remaining_credits'),
+
+  // Payment tracking
+  paymentMethod: varchar('payment_method', { length: 50 }),
+  paymentStatus: varchar('payment_status', { length: 50 }).default('pending'),
+  lastPaymentDate: timestamp('last_payment_date'),
+  nextPaymentDate: timestamp('next_payment_date'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ============= BRANCHES SYSTEM =============
+
+// Branches table
+export const branches = pgTable('branches', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  code: varchar('code', { length: 20 }).notNull().unique(), // Short code like 'MNL01'
+  type: varchar('type', { length: 50 }).notNull().default('full_service'), // 'full_service' | 'express' | 'mobile' | 'kiosk'
+
+  // Contact information
+  address: text('address').notNull(),
+  city: varchar('city', { length: 100 }).notNull(),
+  state: varchar('state', { length: 100 }),
+  postalCode: varchar('postal_code', { length: 20 }),
+  country: varchar('country', { length: 100 }).notNull().default('Philippines'),
+  phone: varchar('phone', { length: 20 }),
+  email: varchar('email', { length: 255 }),
+
+  // Location data
+  latitude: decimal('latitude', { precision: 10, scale: 8 }),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }),
+  timezone: varchar('timezone', { length: 100 }).default('Asia/Manila'),
+
+  // Operational details
+  managerName: varchar('manager_name', { length: 255 }),
+  managerPhone: varchar('manager_phone', { length: 20 }),
+  capacity: integer('capacity').default(10), // Max concurrent services
+
+  // Services offered
+  services: json('services').$type<string[]>().notNull().default([]),
+  specializations: json('specializations').$type<string[]>().default([]),
+
+  // Operating hours
+  operatingHours: json('operating_hours').$type<{
+    monday: { open: string; close: string; closed?: boolean };
+    tuesday: { open: string; close: string; closed?: boolean };
+    wednesday: { open: string; close: string; closed?: boolean };
+    thursday: { open: string; close: string; closed?: boolean };
+    friday: { open: string; close: string; closed?: boolean };
+    saturday: { open: string; close: string; closed?: boolean };
+    sunday: { open: string; close: string; closed?: boolean };
+  }>(),
+
+  // Status and features
+  isActive: boolean('is_active').notNull().default(true),
+  isMainBranch: boolean('is_main_branch').default(false),
+  hasWifi: boolean('has_wifi').default(true),
+  hasParking: boolean('has_parking').default(true),
+  hasWaitingArea: boolean('has_waiting_area').default(true),
+  has24HourService: boolean('has_24_hour_service').default(false),
+
+  // Media
+  images: json('images').$type<string[]>().default([]),
+  logoUrl: text('logo_url'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ============= ENHANCED GAMIFICATION SYSTEM =============
+
+// Customer Achievement Levels
+export const customerLevels = pgTable('customer_levels', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 100 }).notNull(),
+  description: text('description'),
+  minPoints: integer('min_points').notNull(),
+  maxPoints: integer('max_points'),
+
+  // Level benefits
+  discountPercentage: decimal('discount_percentage', { precision: 5, scale: 2 }).default('0'),
+  priority: integer('priority').default(0), // Booking priority
+  specialPerks: json('special_perks').$type<string[]>().default([]),
+
+  // Visual elements
+  badgeIcon: varchar('badge_icon', { length: 100 }),
+  badgeColor: varchar('badge_color', { length: 50 }).default('#6B7280'),
+  levelColor: varchar('level_color', { length: 50 }).default('#F97316'),
+
+  isActive: boolean('is_active').default(true),
+  sortOrder: integer('sort_order').default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Achievements system
+export const achievements = pgTable('achievements', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  category: varchar('category', { length: 100 }).notNull(), // 'loyalty' | 'usage' | 'social' | 'special'
+
+  // Achievement criteria
+  type: varchar('type', { length: 50 }).notNull(), // 'visit_count' | 'spending' | 'referral' | 'streak' | 'special'
+  targetValue: integer('target_value'), // Required value to unlock
+  requirementData: json('requirement_data'), // Additional criteria
+
+  // Rewards
+  pointsReward: integer('points_reward').default(0),
+  badgeIcon: varchar('badge_icon', { length: 100 }),
+  badgeColor: varchar('badge_color', { length: 50 }).default('#10B981'),
+
+  // Availability
+  isActive: boolean('is_active').default(true),
+  isRepeatable: boolean('is_repeatable').default(false),
+  validFrom: timestamp('valid_from'),
+  validUntil: timestamp('valid_until'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// User achievements tracking
+export const userAchievements = pgTable('user_achievements', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').notNull(),
+  achievementId: text('achievement_id').notNull(),
+
+  progress: integer('progress').default(0),
+  completed: boolean('completed').default(false),
+  completedAt: timestamp('completed_at'),
+  pointsEarned: integer('points_earned').default(0),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Loyalty Point Transactions
+export const loyaltyTransactions = pgTable('loyalty_transactions', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').notNull(),
+  type: varchar('type', { length: 50 }).notNull(), // 'earned' | 'redeemed' | 'expired' | 'bonus'
+  amount: integer('amount').notNull(),
+  description: text('description'),
+
+  // Reference data
+  referenceType: varchar('reference_type', { length: 50 }), // 'booking' | 'achievement' | 'referral' | 'manual'
+  referenceId: text('reference_id'),
+
+  balanceBefore: integer('balance_before').notNull(),
+  balanceAfter: integer('balance_after').notNull(),
+
+  expiresAt: timestamp('expires_at'), // For points that expire
+  processedBy: text('processed_by'), // Admin user ID for manual transactions
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ============= POS SYSTEM =============
+
+// Product Categories for POS
+export const posCategories = pgTable('pos_categories', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  icon: varchar('icon', { length: 100 }),
+  color: varchar('color', { length: 50 }).default('#F97316'),
+  sortOrder: integer('sort_order').default(0),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Products for POS
+export const posProducts = pgTable('pos_products', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  categoryId: text('category_id'),
+
+  // Pricing
+  basePrice: decimal('base_price', { precision: 10, scale: 2 }).notNull(),
+  carPrice: decimal('car_price', { precision: 10, scale: 2 }),
+  motorcyclePrice: decimal('motorcycle_price', { precision: 10, scale: 2 }),
+  suvPrice: decimal('suv_price', { precision: 10, scale: 2 }),
+  truckPrice: decimal('truck_price', { precision: 10, scale: 2 }),
+
+  // Product details
+  sku: varchar('sku', { length: 100 }),
+  barcode: varchar('barcode', { length: 100 }),
+  unit: varchar('unit', { length: 50 }).default('piece'),
+
+  // Inventory tracking
+  trackInventory: boolean('track_inventory').default(false),
+  currentStock: integer('current_stock').default(0),
+  minStockLevel: integer('min_stock_level').default(0),
+
+  // Service-specific
+  isService: boolean('is_service').default(false),
+  estimatedDuration: integer('estimated_duration'), // in minutes
+  vehicleTypes: json('vehicle_types').$type<string[]>().default(['car']),
+
+  // Media and display
+  imageUrl: text('image_url'),
+  color: varchar('color', { length: 50 }),
+
+  // Availability
+  isActive: boolean('is_active').default(true),
+  availableBranches: json('available_branches').$type<string[]>(),
+
+  // Metadata
+  tags: json('tags').$type<string[]>().default([]),
+  sortOrder: integer('sort_order').default(0),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// POS Transactions
+export const posTransactions = pgTable('pos_transactions', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  transactionNumber: varchar('transaction_number', { length: 50 }).notNull().unique(),
+
+  // Customer information
+  customerId: text('customer_id'), // null for walk-in customers
+  customerName: varchar('customer_name', { length: 255 }),
+  customerEmail: varchar('customer_email', { length: 255 }),
+  customerPhone: varchar('customer_phone', { length: 20 }),
+
+  // Transaction details
+  type: varchar('type', { length: 50 }).notNull().default('sale'), // 'sale' | 'refund' | 'void'
+  status: varchar('status', { length: 50 }).notNull().default('completed'), // 'pending' | 'completed' | 'cancelled' | 'refunded'
+
+  // Location and staff
+  branchId: text('branch_id').notNull(),
+  cashierId: text('cashier_id').notNull(),
+  cashierName: varchar('cashier_name', { length: 255 }).notNull(),
+
+  // Pricing
+  subtotal: decimal('subtotal', { precision: 10, scale: 2 }).notNull(),
+  taxAmount: decimal('tax_amount', { precision: 10, scale: 2 }).default('0'),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0'),
+  totalAmount: decimal('total_amount', { precision: 10, scale: 2 }).notNull(),
+
+  // Payment
+  paymentMethod: varchar('payment_method', { length: 50 }).notNull(), // 'cash' | 'card' | 'gcash' | 'paymaya'
+  paymentReference: varchar('payment_reference', { length: 255 }),
+  amountPaid: decimal('amount_paid', { precision: 10, scale: 2 }).notNull(),
+  changeAmount: decimal('change_amount', { precision: 10, scale: 2 }).default('0'),
+
+  // Additional data
+  notes: text('notes'),
+  receiptData: json('receipt_data'), // Full receipt information
+
+  // Loyalty points
+  pointsEarned: integer('points_earned').default(0),
+  pointsRedeemed: integer('points_redeemed').default(0),
+
+  refundedAt: timestamp('refunded_at'),
+  refundReason: text('refund_reason'),
+  refundedBy: text('refunded_by'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// POS Transaction Items
+export const posTransactionItems = pgTable('pos_transaction_items', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  transactionId: text('transaction_id').notNull(),
+  productId: text('product_id'),
+
+  // Item details at time of sale
+  itemName: varchar('item_name', { length: 255 }).notNull(),
+  itemSku: varchar('item_sku', { length: 100 }),
+  itemCategory: varchar('item_category', { length: 100 }),
+
+  // Pricing
+  unitPrice: decimal('unit_price', { precision: 10, scale: 2 }).notNull(),
+  quantity: integer('quantity').notNull().default(1),
+  subtotal: decimal('subtotal', { precision: 10, scale: 2 }).notNull(),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0'),
+  finalPrice: decimal('final_price', { precision: 10, scale: 2 }).notNull(),
+
+  // Service-specific data
+  vehicleType: varchar('vehicle_type', { length: 50 }),
+  serviceNotes: text('service_notes'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
