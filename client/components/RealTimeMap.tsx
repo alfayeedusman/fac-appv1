@@ -492,13 +492,27 @@ export default function RealTimeMap({
   }
 
   return (
-    <div className="relative w-full rounded-lg overflow-hidden" style={{ height }}>
+    <div className="relative w-full rounded-lg overflow-hidden border" style={{ height }}>
       {/* Mapbox container */}
-      <div ref={mapContainer} className="w-full h-full" />
+      <div
+        ref={mapContainer}
+        className="w-full h-full bg-gray-100 dark:bg-gray-800"
+        style={{ minHeight: height }}
+      />
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center z-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading map...</p>
+          </div>
+        </div>
+      )}
 
       {/* Error banner if map fails to load */}
       {error && (
-        <div className="absolute top-4 left-4 right-4 z-10">
+        <div className="absolute top-4 left-4 right-4 z-30">
           <div className="bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <div className="flex items-center gap-2">
               <WifiOff className="h-4 w-4 text-red-600 dark:text-red-400" />
@@ -510,6 +524,21 @@ export default function RealTimeMap({
                 Retry
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fallback content when no map */}
+      {!map.current && !isLoading && (
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 flex items-center justify-center">
+          <div className="text-center p-8">
+            <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Map Loading...
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              Initializing Mapbox service
+            </p>
           </div>
         </div>
       )}
