@@ -83,6 +83,7 @@ import NeonDatabaseSetup from "@/components/NeonDatabaseSetup";
 import AdminCMS from "./AdminCMS";
 import AdminPushNotifications from "./AdminPushNotifications";
 import AdminGamification from "./AdminGamification";
+import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
 import POS from "./POS";
