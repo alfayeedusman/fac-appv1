@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MapPin, 
-  Users, 
-  Car, 
-  Navigation, 
-  Activity, 
-  Clock, 
-  Star, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  MapPin,
+  Users,
+  Car,
+  Navigation,
+  Activity,
+  Clock,
+  Star,
+  CheckCircle,
+  AlertCircle,
   Truck,
   Phone,
   Wrench,
@@ -24,6 +26,9 @@ import {
   WifiOff,
   RefreshCw
 } from 'lucide-react';
+
+// Set Mapbox access token
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg';
 
 // Philippines coordinates (Manila center)
 const MANILA_COORDINATES = {
