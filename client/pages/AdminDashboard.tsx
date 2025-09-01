@@ -1110,22 +1110,46 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <div className="text-3xl font-bold text-green-600">18</div>
+                      <div className="text-3xl font-bold text-green-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.onlineCrew
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">Online Crew</div>
                       <div className="text-xs text-green-600 mt-1">Real-time tracking</div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <div className="text-3xl font-bold text-orange-600">12</div>
+                      <div className="text-3xl font-bold text-orange-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.busyCrew
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">Busy Crew</div>
                       <div className="text-xs text-orange-600 mt-1">Currently working</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                      <div className="text-3xl font-bold text-purple-600">47</div>
+                      <div className="text-3xl font-bold text-purple-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.activeCustomers
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">Active Customers</div>
                       <div className="text-xs text-purple-600 mt-1">Online now</div>
                     </div>
                     <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <div className="text-3xl font-bold text-blue-600">5</div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.activeGroups
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">Active Groups</div>
                       <div className="text-xs text-blue-600 mt-1">Crew teams</div>
                     </div>
