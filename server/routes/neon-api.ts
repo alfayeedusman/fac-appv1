@@ -444,6 +444,23 @@ export const getDatabaseStats: RequestHandler = async (req, res) => {
   }
 };
 
+// Real-time crew and customer stats endpoint
+export const getRealtimeStats: RequestHandler = async (req, res) => {
+  try {
+    const realtimeStats = await neonDbService.getRealtimeStats();
+    res.json({
+      success: true,
+      stats: realtimeStats
+    });
+  } catch (error) {
+    console.error('Get realtime stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch realtime stats'
+    });
+  }
+};
+
 // ============= NEW FEATURES API ENDPOINTS =============
 
 // Branches endpoints
