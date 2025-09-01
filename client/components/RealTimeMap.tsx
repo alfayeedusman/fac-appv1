@@ -254,6 +254,162 @@ export default function RealTimeMap({
     loadData();
   }, []);
 
+  // Create crew marker element
+  const createCrewMarkerElement = (crew: CrewMember) => {
+    const el = document.createElement('div');
+    el.className = 'crew-marker';
+    el.style.width = '32px';
+    el.style.height = '32px';
+    el.style.borderRadius = '50%';
+    el.style.backgroundColor = getCrewMarkerColor(crew);
+    el.style.border = '2px solid white';
+    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.cursor = 'pointer';
+    el.style.position = 'relative';
+
+    el.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+        <path d="M15 18H9"/>
+        <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/>
+        <circle cx="17" cy="18" r="2"/>
+        <circle cx="7" cy="18" r="2"/>
+      </svg>
+    `;
+
+    // Add status indicator
+    if (crew.currentJob) {
+      const indicator = document.createElement('div');
+      indicator.style.position = 'absolute';
+      indicator.style.top = '-2px';
+      indicator.style.right = '-2px';
+      indicator.style.width = '12px';
+      indicator.style.height = '12px';
+      indicator.style.backgroundColor = '#F59E0B';
+      indicator.style.borderRadius = '50%';
+      indicator.style.border = '2px solid white';
+      indicator.className = 'animate-pulse';
+      el.appendChild(indicator);
+    }
+
+    if (crew.status === 'online') {
+      const indicator = document.createElement('div');
+      indicator.style.position = 'absolute';
+      indicator.style.top = '-2px';
+      indicator.style.left = '-2px';
+      indicator.style.width = '12px';
+      indicator.style.height = '12px';
+      indicator.style.backgroundColor = '#10B981';
+      indicator.style.borderRadius = '50%';
+      indicator.style.border = '2px solid white';
+      indicator.className = 'animate-pulse';
+      el.appendChild(indicator);
+    }
+
+    el.addEventListener('click', () => {
+      setSelectedCrew(crew);
+      setSelectedCustomer(null);
+      onCrewSelect?.(crew);
+    });
+
+    return el;
+  };
+
+  // Create customer marker element
+  const createCustomerMarkerElement = (customer: Customer) => {
+    const el = document.createElement('div');
+    el.className = 'customer-marker';
+    el.style.width = '24px';
+    el.style.height = '24px';
+    el.style.borderRadius = '50%';
+    el.style.backgroundColor = getCustomerMarkerColor(customer);
+    el.style.border = '2px solid white';
+    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.cursor = 'pointer';
+    el.style.position = 'relative';
+
+    el.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M8 19l-1-1 2-2 2 2z"/>
+        <path d="M16 17h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>
+        <path d="M12 17v4"/>
+        <path d="M7 13h10"/>
+        <path d="M7 9h6"/>
+        <path d="M16 9h1"/>
+      </svg>
+    `;
+
+    // Add status indicator for requesting customers
+    if (customer.status === 'requesting') {
+      const indicator = document.createElement('div');
+      indicator.style.position = 'absolute';
+      indicator.style.top = '-2px';
+      indicator.style.right = '-2px';
+      indicator.style.width = '12px';
+      indicator.style.height = '12px';
+      indicator.style.backgroundColor = '#EF4444';
+      indicator.style.borderRadius = '50%';
+      indicator.style.border = '2px solid white';
+      indicator.className = 'animate-bounce';
+      el.appendChild(indicator);
+    }
+
+    el.addEventListener('click', () => {
+      setSelectedCustomer(customer);
+      setSelectedCrew(null);
+      onCustomerSelect?.(customer);
+    });
+
+    return el;
+  };
+
+  // Update markers when data changes
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Clear existing markers
+    Object.values(markersRef.current).forEach(marker => marker.remove());
+    markersRef.current = {};
+
+    // Filter crew data
+    const filteredCrew = crewData.filter(crew => {
+      if (selectedFilters.status && crew.status !== selectedFilters.status) return false;
+      if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId) return false;
+      if (selectedFilters.serviceType && (!crew.currentJob || crew.currentJob.serviceType !== selectedFilters.serviceType)) return false;
+      return true;
+    });
+
+    // Add crew markers
+    if (showCrew) {
+      filteredCrew.forEach(crew => {
+        const el = createCrewMarkerElement(crew);
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([crew.location.longitude, crew.location.latitude])
+          .addTo(map.current!);
+
+        markersRef.current[`crew-${crew.id}`] = marker;
+      });
+    }
+
+    // Add customer markers
+    if (showCustomers) {
+      customerData.forEach(customer => {
+        const el = createCustomerMarkerElement(customer);
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([customer.location.longitude, customer.location.latitude])
+          .addTo(map.current!);
+
+        markersRef.current[`customer-${customer.id}`] = marker;
+      });
+    }
+  }, [crewData, customerData, showCrew, showCustomers, selectedFilters]);
+
   // Set up real-time updates (mock simulation)
   useEffect(() => {
     const interval = setInterval(() => {
