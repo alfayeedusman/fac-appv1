@@ -327,6 +327,29 @@ export default function AdminDashboard() {
     }
   };
 
+  // Function to load real-time crew and customer statistics
+  const loadRealtimeStats = async () => {
+    try {
+      setRealtimeLoading(true);
+      const result = await neonDbClient.getRealtimeStats();
+
+      if (result.success && result.stats) {
+        setRealtimeStats({
+          onlineCrew: result.stats.onlineCrew || 0,
+          busyCrew: result.stats.busyCrew || 0,
+          activeCustomers: result.stats.activeCustomers || 0,
+          activeGroups: result.stats.activeGroups || 0,
+        });
+      } else {
+        console.warn('Failed to load realtime stats, using defaults');
+      }
+    } catch (error) {
+      console.error('Error loading realtime statistics:', error);
+    } finally {
+      setRealtimeLoading(false);
+    }
+  };
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
