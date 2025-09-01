@@ -172,40 +172,7 @@ export default function AdminDashboard() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "approval_request",
-      title: "New Customer Approval",
-      message:
-        "Ana Rodriguez is requesting account approval for VIP Silver membership.",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-      read: false,
-      customerName: "Ana Rodriguez",
-      actionRequired: true,
-    },
-    {
-      id: "2",
-      type: "new_customer",
-      title: "New Registration",
-      message:
-        "Carlos Reyes has completed registration and is awaiting approval.",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: false,
-      customerName: "Carlos Reyes",
-      actionRequired: true,
-    },
-    {
-      id: "3",
-      type: "subscription",
-      title: "VIP Gold Subscription",
-      message: "John Dela Cruz upgraded to VIP Gold membership.",
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      read: false,
-      customerName: "John Dela Cruz",
-      amount: 3000,
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
