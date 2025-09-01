@@ -114,7 +114,7 @@ const sidebarItems = [
     id: "images",
     label: "Image Manager",
     icon: Camera,
-    description: "Booking Images",
+    description: "Media & Asset Management",
     gradient: "from-purple-500 to-pink-500",
   },
   {
