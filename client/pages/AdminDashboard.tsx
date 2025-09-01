@@ -381,6 +381,7 @@ export default function AdminDashboard() {
       return () => {
         clearInterval(notificationInterval);
         clearInterval(statsInterval);
+        clearInterval(realtimeInterval);
       };
     } else {
       navigate("/login");
