@@ -224,6 +224,296 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= SERVICE PACKAGES SYSTEM =============
+
+    // Create service_packages table
+    await sql`
+      CREATE TABLE IF NOT EXISTS service_packages (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        base_price DECIMAL(10,2) NOT NULL,
+        currency VARCHAR(10) NOT NULL DEFAULT 'PHP',
+        duration_type VARCHAR(20) DEFAULT 'preset',
+        duration VARCHAR(50),
+        hours INTEGER,
+        start_date TIMESTAMP,
+        end_date TIMESTAMP,
+        features JSONB NOT NULL DEFAULT '[]',
+        inclusions JSONB DEFAULT '[]',
+        exclusions JSONB DEFAULT '[]',
+        vehicle_types JSONB NOT NULL DEFAULT '["car"]',
+        car_price DECIMAL(10,2),
+        motorcycle_price DECIMAL(10,2),
+        suv_price DECIMAL(10,2),
+        truck_price DECIMAL(10,2),
+        image_url TEXT,
+        banner_url TEXT,
+        color VARCHAR(50) DEFAULT '#f97316',
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        is_popular BOOLEAN DEFAULT false,
+        is_featured BOOLEAN DEFAULT false,
+        available_branches JSONB,
+        max_bookings_per_day INTEGER,
+        max_bookings_per_month INTEGER,
+        min_advance_booking INTEGER,
+        max_advance_booking INTEGER,
+        tags JSONB DEFAULT '[]',
+        priority INTEGER DEFAULT 0,
+        created_by TEXT,
+        updated_by TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create package_subscriptions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS package_subscriptions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        package_id TEXT NOT NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'active',
+        start_date TIMESTAMP NOT NULL,
+        end_date TIMESTAMP,
+        auto_renew BOOLEAN DEFAULT true,
+        renewal_date TIMESTAMP,
+        original_price DECIMAL(10,2) NOT NULL,
+        discount_applied DECIMAL(10,2) DEFAULT 0,
+        final_price DECIMAL(10,2) NOT NULL,
+        usage_count INTEGER DEFAULT 0,
+        usage_limit INTEGER,
+        remaining_credits INTEGER,
+        payment_method VARCHAR(50),
+        payment_status VARCHAR(50) DEFAULT 'pending',
+        last_payment_date TIMESTAMP,
+        next_payment_date TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // ============= BRANCHES SYSTEM =============
+
+    // Create branches table
+    await sql`
+      CREATE TABLE IF NOT EXISTS branches (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        code VARCHAR(20) NOT NULL UNIQUE,
+        type VARCHAR(50) NOT NULL DEFAULT 'full_service',
+        address TEXT NOT NULL,
+        city VARCHAR(100) NOT NULL,
+        state VARCHAR(100),
+        postal_code VARCHAR(20),
+        country VARCHAR(100) NOT NULL DEFAULT 'Philippines',
+        phone VARCHAR(20),
+        email VARCHAR(255),
+        latitude DECIMAL(10,8),
+        longitude DECIMAL(11,8),
+        timezone VARCHAR(100) DEFAULT 'Asia/Manila',
+        manager_name VARCHAR(255),
+        manager_phone VARCHAR(20),
+        capacity INTEGER DEFAULT 10,
+        services JSONB NOT NULL DEFAULT '[]',
+        specializations JSONB DEFAULT '[]',
+        operating_hours JSONB,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        is_main_branch BOOLEAN DEFAULT false,
+        has_wifi BOOLEAN DEFAULT true,
+        has_parking BOOLEAN DEFAULT true,
+        has_waiting_area BOOLEAN DEFAULT true,
+        has_24_hour_service BOOLEAN DEFAULT false,
+        images JSONB DEFAULT '[]',
+        logo_url TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // ============= ENHANCED GAMIFICATION SYSTEM =============
+
+    // Create customer_levels table
+    await sql`
+      CREATE TABLE IF NOT EXISTS customer_levels (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        min_points INTEGER NOT NULL,
+        max_points INTEGER,
+        discount_percentage DECIMAL(5,2) DEFAULT 0,
+        priority INTEGER DEFAULT 0,
+        special_perks JSONB DEFAULT '[]',
+        badge_icon VARCHAR(100),
+        badge_color VARCHAR(50) DEFAULT '#6B7280',
+        level_color VARCHAR(50) DEFAULT '#F97316',
+        is_active BOOLEAN DEFAULT true,
+        sort_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create achievements table
+    await sql`
+      CREATE TABLE IF NOT EXISTS achievements (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        target_value INTEGER,
+        requirement_data JSONB,
+        points_reward INTEGER DEFAULT 0,
+        badge_icon VARCHAR(100),
+        badge_color VARCHAR(50) DEFAULT '#10B981',
+        is_active BOOLEAN DEFAULT true,
+        is_repeatable BOOLEAN DEFAULT false,
+        valid_from TIMESTAMP,
+        valid_until TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create user_achievements table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_achievements (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        achievement_id TEXT NOT NULL,
+        progress INTEGER DEFAULT 0,
+        completed BOOLEAN DEFAULT false,
+        completed_at TIMESTAMP,
+        points_earned INTEGER DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create loyalty_transactions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS loyalty_transactions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        amount INTEGER NOT NULL,
+        description TEXT,
+        reference_type VARCHAR(50),
+        reference_id TEXT,
+        balance_before INTEGER NOT NULL,
+        balance_after INTEGER NOT NULL,
+        expires_at TIMESTAMP,
+        processed_by TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // ============= POS SYSTEM =============
+
+    // Create pos_categories table
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_categories (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        icon VARCHAR(100),
+        color VARCHAR(50) DEFAULT '#F97316',
+        sort_order INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create pos_products table
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_products (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category_id TEXT,
+        base_price DECIMAL(10,2) NOT NULL,
+        car_price DECIMAL(10,2),
+        motorcycle_price DECIMAL(10,2),
+        suv_price DECIMAL(10,2),
+        truck_price DECIMAL(10,2),
+        sku VARCHAR(100),
+        barcode VARCHAR(100),
+        unit VARCHAR(50) DEFAULT 'piece',
+        track_inventory BOOLEAN DEFAULT false,
+        current_stock INTEGER DEFAULT 0,
+        min_stock_level INTEGER DEFAULT 0,
+        is_service BOOLEAN DEFAULT false,
+        estimated_duration INTEGER,
+        vehicle_types JSONB DEFAULT '["car"]',
+        image_url TEXT,
+        color VARCHAR(50),
+        is_active BOOLEAN DEFAULT true,
+        available_branches JSONB,
+        tags JSONB DEFAULT '[]',
+        sort_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create pos_transactions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_transactions (
+        id TEXT PRIMARY KEY,
+        transaction_number VARCHAR(50) NOT NULL UNIQUE,
+        customer_id TEXT,
+        customer_name VARCHAR(255),
+        customer_email VARCHAR(255),
+        customer_phone VARCHAR(20),
+        type VARCHAR(50) NOT NULL DEFAULT 'sale',
+        status VARCHAR(50) NOT NULL DEFAULT 'completed',
+        branch_id TEXT NOT NULL,
+        cashier_id TEXT NOT NULL,
+        cashier_name VARCHAR(255) NOT NULL,
+        subtotal DECIMAL(10,2) NOT NULL,
+        tax_amount DECIMAL(10,2) DEFAULT 0,
+        discount_amount DECIMAL(10,2) DEFAULT 0,
+        total_amount DECIMAL(10,2) NOT NULL,
+        payment_method VARCHAR(50) NOT NULL,
+        payment_reference VARCHAR(255),
+        amount_paid DECIMAL(10,2) NOT NULL,
+        change_amount DECIMAL(10,2) DEFAULT 0,
+        notes TEXT,
+        receipt_data JSONB,
+        points_earned INTEGER DEFAULT 0,
+        points_redeemed INTEGER DEFAULT 0,
+        refunded_at TIMESTAMP,
+        refund_reason TEXT,
+        refunded_by TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create pos_transaction_items table
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_transaction_items (
+        id TEXT PRIMARY KEY,
+        transaction_id TEXT NOT NULL,
+        product_id TEXT,
+        item_name VARCHAR(255) NOT NULL,
+        item_sku VARCHAR(100),
+        item_category VARCHAR(100),
+        unit_price DECIMAL(10,2) NOT NULL,
+        quantity INTEGER NOT NULL DEFAULT 1,
+        subtotal DECIMAL(10,2) NOT NULL,
+        discount_amount DECIMAL(10,2) DEFAULT 0,
+        final_price DECIMAL(10,2) NOT NULL,
+        vehicle_type VARCHAR(50),
+        service_notes TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
     // Create indexes for better performance
     await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);`;
