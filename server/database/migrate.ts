@@ -672,6 +672,22 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_date ON pos_transactions(created_at);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_transaction_items_transaction ON pos_transaction_items(transaction_id);`;
 
+    // Image Management indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_images_category ON images(category);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_images_active ON images(is_active);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_images_uploaded_by ON images(uploaded_by);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_images_associated ON images(associated_with, associated_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_image_collection_items_collection ON image_collection_items(collection_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_image_collection_items_image ON image_collection_items(image_id);`;
+
+    // Push Notification indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_fcm_tokens_user ON fcm_tokens(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_fcm_tokens_active ON fcm_tokens(is_active);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_push_notifications_type ON push_notifications(notification_type);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_push_notifications_status ON push_notifications(status);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification ON notification_deliveries(notification_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_user ON notification_deliveries(user_id);`;
+
     console.log('✅ Database migrations completed successfully!');
     return true;
   } catch (error) {
