@@ -362,6 +362,9 @@ export default function AdminDashboard() {
       // Load real statistics from database
       loadRealStats();
 
+      // Load real-time crew and customer statistics
+      loadRealtimeStats();
+
       // Load real customer data from database
       // TODO: Implement getUsers API endpoint in server
       // loadRealCustomers();
@@ -373,6 +376,7 @@ export default function AdminDashboard() {
       // Set up polling for new notifications and stats every 10 seconds
       const notificationInterval = setInterval(loadSystemNotifications, 10000);
       const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
+      const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
 
       return () => {
         clearInterval(notificationInterval);
