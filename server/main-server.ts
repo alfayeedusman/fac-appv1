@@ -96,6 +96,12 @@ export const createServer = () => {
   // POS endpoints
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
 
+  // ============= FIREBASE PUSH NOTIFICATIONS API =============
+  app.use("/api/notifications", notificationsApiRoutes);
+
+  // ============= IMAGE MANAGEMENT API =============
+  app.use("/api/images", imagesApiRoutes);
+
   // Serve React admin app for everything
   const reactBuildPath = path.join(__dirname, "../dist/spa");
   app.use(express.static(reactBuildPath));
