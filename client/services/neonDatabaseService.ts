@@ -628,6 +628,23 @@ class NeonDatabaseClient {
     }
   }
 
+  // === REAL-TIME STATS ===
+
+  async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
+    if (!this.isConnected) {
+      return { success: false, stats: null };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/realtime-stats`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Database realtime stats fetch failed:', error);
+      return { success: false, stats: null };
+    }
+  }
+
   // === STATS ===
 
   async getStats(): Promise<{ success: boolean; stats?: any }> {
