@@ -173,6 +173,14 @@ export default function AdminDashboard() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [realtimeStats, setRealtimeStats] = useState({
+    onlineCrew: 0,
+    busyCrew: 0,
+    activeCustomers: 0,
+    activeGroups: 0,
+  });
+  const [realtimeLoading, setRealtimeLoading] = useState(true);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
