@@ -976,7 +976,11 @@ export default function AdminDashboard() {
                           Total Customers
                         </p>
                         <p className="text-3xl font-bold text-foreground">
-                          {stats.totalCustomers.toLocaleString()}
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalCustomers.toLocaleString()
+                          )}
                         </p>
                       </div>
                       <div className="bg-fac-orange-500 p-3 rounded-lg">
