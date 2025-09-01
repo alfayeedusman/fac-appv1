@@ -1568,7 +1568,8 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "images" && (
-            <div>
+            <div className="space-y-6">
+              <AdminImageManager />
               <ImageUploadManager
                 allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
                 maxFileSize={10}
