@@ -29,6 +29,100 @@ export async function runMigrations() {
     // Create CUID2 extension if needed (for better ID generation)
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
+    // Create crew tracking tables first
+    console.log('📊 Creating crew tracking tables...');
+
+    // Create crew groups table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_groups (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        leader_id TEXT,
+        color_code VARCHAR(7) DEFAULT '#3B82F6',
+        max_members INTEGER DEFAULT 10,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew members table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_members (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        crew_group_id TEXT,
+        employee_id VARCHAR(50) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        email VARCHAR(100),
+        hire_date TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'active',
+        specializations JSONB,
+        skill_level VARCHAR(20) DEFAULT 'trainee',
+        hourly_rate DECIMAL(10,2) DEFAULT 0.00,
+        commission_rate DECIMAL(5,2) DEFAULT 0.00,
+        emergency_contact_name VARCHAR(100),
+        emergency_contact_phone VARCHAR(20),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew locations table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_locations (
+        id TEXT PRIMARY KEY,
+        crew_id TEXT NOT NULL,
+        latitude DECIMAL(10,8) NOT NULL,
+        longitude DECIMAL(11,8) NOT NULL,
+        accuracy DECIMAL(6,2),
+        altitude DECIMAL(8,2),
+        heading DECIMAL(5,2),
+        speed DECIMAL(6,2),
+        address TEXT,
+        location_source VARCHAR(20) DEFAULT 'gps',
+        battery_level INTEGER,
+        signal_strength INTEGER,
+        timestamp TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew status table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_status (
+        id TEXT PRIMARY KEY,
+        crew_id TEXT NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        previous_status VARCHAR(20),
+        reason VARCHAR(255),
+        auto_generated BOOLEAN DEFAULT FALSE,
+        location_id TEXT,
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ended_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create customer sessions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS customer_sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        session_type VARCHAR(20) NOT NULL,
+        status VARCHAR(20) DEFAULT 'active',
+        device_info JSONB,
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ended_at TIMESTAMP
+      )
+    `;
+
+    console.log('✅ Crew tracking tables created successfully');
+
     // Create users table
     await sql`
       CREATE TABLE IF NOT EXISTS users (
