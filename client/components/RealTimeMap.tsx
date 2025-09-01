@@ -721,6 +721,14 @@ export default function RealTimeMap({
             <span>Customers ({customerData.filter(c => c.status === 'online' || c.status === 'requesting').length})</span>
           </div>
         </div>
+        {debugInfo && (
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-xs text-gray-500">
+              <div>🔍 {debugInfo}</div>
+              <div>Map: {map.current ? 'Loaded' : 'Loading'}</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
