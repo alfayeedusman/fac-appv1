@@ -358,8 +358,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
+    console.log('🔐 Admin Dashboard useEffect - Role:', role, 'Email:', email);
 
     if (role === "admin" || role === "superadmin") {
+      console.log('✅ User authorized, setting up dashboard...');
       setUserRole(role);
       // Initialize sample ads for demonstration
       initializeSampleAds();
@@ -371,6 +373,7 @@ export default function AdminDashboard() {
       loadRealtimeStats();
 
       // Load real customer data from database
+      console.log('📋 About to call loadRealCustomers...');
       loadRealCustomers();
 
       // Load system notifications
