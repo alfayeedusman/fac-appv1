@@ -35,6 +35,16 @@ router.get("/health", async (req, res) => {
 });
 
 // User routes
+router.get("/users", async (req, res) => {
+  try {
+    const users = await neonDbService.getAllUsers();
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, error: "Failed to get users" });
+  }
+});
+
 router.get("/user/profile", mockAuth, async (req, res) => {
   try {
     const profile = await neonDbService.getUserById(req.user.uid);
