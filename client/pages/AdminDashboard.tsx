@@ -329,6 +329,31 @@ export default function AdminDashboard() {
 
   const [editingFeatures, setEditingFeatures] = useState("");
 
+  // Function to load real statistics from database
+  const loadRealStats = async () => {
+    try {
+      setStatsLoading(true);
+      const result = await neonDbClient.getStats();
+
+      if (result.success && result.stats) {
+        setStats({
+          totalCustomers: result.stats.totalUsers || 0,
+          totalRevenue: result.stats.totalRevenue || 0,
+          totalWashes: result.stats.totalWashes || 0,
+          activeSubscriptions: result.stats.activeSubscriptions || 0,
+          monthlyGrowth: result.stats.monthlyGrowth || 0,
+          topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
+        });
+      } else {
+        console.warn('Failed to load real stats, using defaults');
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
