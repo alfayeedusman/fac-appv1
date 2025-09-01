@@ -363,6 +363,9 @@ export default function AdminDashboard() {
       // Load real statistics from database
       loadRealStats();
 
+      // Load real customer data from database
+      loadRealCustomers();
+
       // Load system notifications
       loadSystemNotifications();
 
