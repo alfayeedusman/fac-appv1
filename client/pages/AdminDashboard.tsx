@@ -207,50 +207,8 @@ export default function AdminDashboard() {
     },
   ]);
 
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: "1",
-      name: "John Dela Cruz",
-      email: "john@email.com",
-      phone: "+63 912 345 6789",
-      carUnit: "Toyota Vios 2020",
-      plateNumber: "ABC 1234",
-      membershipType: "VIP Gold",
-      joinDate: "2024-01-15",
-      totalWashes: 24,
-      totalSpent: 12000,
-      status: "active",
-      approvalStatus: "approved",
-    },
-    {
-      id: "2",
-      name: "Maria Santos",
-      email: "maria@email.com",
-      phone: "+63 918 765 4321",
-      carUnit: "Honda Civic 2019",
-      plateNumber: "XYZ 5678",
-      membershipType: "VIP Silver",
-      joinDate: "2024-02-01",
-      totalWashes: 15,
-      totalSpent: 7500,
-      status: "active",
-      approvalStatus: "approved",
-    },
-    {
-      id: "3",
-      name: "Ana Rodriguez",
-      email: "ana@email.com",
-      phone: "+63 920 123 4567",
-      carUnit: "Ford EcoSport 2021",
-      plateNumber: "DEF 9012",
-      membershipType: "Classic",
-      joinDate: "2024-03-10",
-      totalWashes: 0,
-      totalSpent: 0,
-      status: "pending",
-      approvalStatus: "pending",
-    },
-  ]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
 
   const [packages, setPackages] = useState<ServicePackage[]>([
     {
