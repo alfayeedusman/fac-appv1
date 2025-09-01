@@ -671,6 +671,7 @@ export default function AdminDashboard() {
                   {activeTab === "booking" && "Configure booking settings"}
                   {activeTab === "pos" && "Point of sale system"}
                   {activeTab === "user-management" && "Manage staff and users"}
+                  {activeTab === "images" && "Manage media assets and galleries"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
