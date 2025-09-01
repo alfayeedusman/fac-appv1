@@ -963,13 +963,14 @@ export default function AdminDashboard() {
                   size="sm"
                   onClick={() => {
                     loadRealStats();
+                    loadRealtimeStats();
                     loadSystemNotifications();
                     toast({
                       title: "Refreshed",
                       description: "Dashboard data has been refreshed",
                     });
                   }}
-                  disabled={statsLoading}
+                  disabled={statsLoading || realtimeLoading}
                 >
                   <RefreshCw className={`h-4 w-4 mr-1 ${statsLoading ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">Refresh</span>
