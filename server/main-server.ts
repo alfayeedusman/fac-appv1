@@ -52,6 +52,14 @@ export const createServer = () => {
     });
   });
 
+  // Request logging middleware for debugging
+  app.use('/api', (req, res, next) => {
+    if (req.url.includes('users')) {
+      console.log(`🌐 API Request: ${req.method} ${req.originalUrl}`);
+    }
+    next();
+  });
+
   // API Routes
   app.use("/api", demoRoutes);
   app.use("/api", customerApiRoutes);

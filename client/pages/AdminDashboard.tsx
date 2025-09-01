@@ -1021,10 +1021,14 @@ export default function AdminDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={async () => {
+                    console.log('🔄 Refresh button clicked!');
                     loadRealStats();
                     loadRealtimeStats();
                     loadSystemNotifications();
-                    loadRealCustomers();
+
+                    // Force customer loading with debug
+                    console.log('🚀 Force loading customers from refresh button...');
+                    await loadRealCustomers();
 
                     await Swal.fire({
                       title: 'Refreshed!',
