@@ -201,6 +201,16 @@ export default function RealTimeMap({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
+    console.log('🗺️ Initializing Mapbox...');
+    console.log('🔑 Token:', mapboxgl.accessToken ? 'Present' : 'Missing');
+    console.log('📦 Container:', mapContainer.current ? 'Found' : 'Missing');
+
+    if (!mapboxgl.accessToken) {
+      console.error('❌ Mapbox token not found');
+      setError('Mapbox token not configured. Please check environment variables.');
+      return;
+    }
+
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -208,6 +218,16 @@ export default function RealTimeMap({
         center: [MANILA_COORDINATES.longitude, MANILA_COORDINATES.latitude],
         zoom: 12,
         attributionControl: false
+      });
+
+      map.current.on('load', () => {
+        console.log('✅ Mapbox loaded successfully');
+        setError(null);
+      });
+
+      map.current.on('error', (e) => {
+        console.error('❌ Mapbox error:', e);
+        setError('Map failed to load. Please check your internet connection.');
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -219,10 +239,9 @@ export default function RealTimeMap({
       );
 
       console.log('✅ Mapbox initialized successfully');
-      setError(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Failed to initialize Mapbox:', err);
-      setError('Failed to initialize map. Please check your internet connection.');
+      setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
     }
 
     return () => {
