@@ -472,112 +472,28 @@ export default function RealTimeMap({
     );
   }
 
-  // Error/Fallback state with interactive map simulation
   return (
-    <div className="relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden" style={{ height }}>
-      
-      {/* Status Banner */}
-      <div className="absolute top-4 left-4 right-4 z-10">
-        <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-          <div className="flex items-center gap-2">
-            <WifiOff className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-            <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-              Map service unavailable - Showing simulated data
-            </span>
-            <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
-              <RefreshCw className="h-3 w-3 mr-1" />
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="relative w-full rounded-lg overflow-hidden" style={{ height }}>
+      {/* Mapbox container */}
+      <div ref={mapContainer} className="w-full h-full" />
 
-      {/* Simulated Map Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950">
-        {/* Grid background to simulate map */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="grid grid-cols-20 grid-rows-20 h-full w-full">
-            {[...Array(400)].map((_, i) => (
-              <div key={i} className="border border-gray-300 dark:border-gray-600"></div>
-            ))}
+      {/* Error banner if map fails to load */}
+      {error && (
+        <div className="absolute top-4 left-4 right-4 z-10">
+          <div className="bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <WifiOff className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <span className="text-sm font-medium text-red-800 dark:text-red-200">
+                {error}
+              </span>
+              <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Retry
+              </Button>
+            </div>
           </div>
         </div>
-        
-        {/* Manila center marker */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="bg-red-500 w-4 h-4 rounded-full animate-pulse"></div>
-          <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1 text-center whitespace-nowrap">
-            Manila Center
-          </div>
-        </div>
-        
-        {/* Crew markers */}
-        {showCrew && filteredCrewData.map((crew, index) => {
-          const x = 20 + (index % 8) * 80 + Math.random() * 60;
-          const y = 100 + Math.floor(index / 8) * 80 + Math.random() * 60;
-          
-          return (
-            <div
-              key={crew.id}
-              className="absolute cursor-pointer hover:scale-110 transition-transform"
-              style={{
-                left: `${Math.min(90, x)}%`,
-                top: `${Math.min(80, y)}%`,
-              }}
-              onClick={() => {
-                setSelectedCrew(crew);
-                setSelectedCustomer(null);
-                onCrewSelect?.(crew);
-              }}
-            >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                style={{ backgroundColor: getCrewMarkerColor(crew) }}
-              >
-                <Truck className="h-4 w-4 text-white" />
-              </div>
-              {crew.currentJob && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-              )}
-              {crew.status === 'online' && (
-                <div className="absolute -top-1 -left-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              )}
-            </div>
-          );
-        })}
-        
-        {/* Customer markers */}
-        {showCustomers && customerData.map((customer, index) => {
-          const x = 15 + (index % 6) * 70 + Math.random() * 40;
-          const y = 120 + Math.floor(index / 6) * 60 + Math.random() * 40;
-          
-          return (
-            <div
-              key={customer.id}
-              className="absolute cursor-pointer hover:scale-110 transition-transform"
-              style={{
-                left: `${Math.min(85, x)}%`,
-                top: `${Math.min(75, y)}%`,
-              }}
-              onClick={() => {
-                setSelectedCustomer(customer);
-                setSelectedCrew(null);
-                onCustomerSelect?.(customer);
-              }}
-            >
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                style={{ backgroundColor: getCustomerMarkerColor(customer) }}
-              >
-                <Car className="h-3 w-3 text-white" />
-              </div>
-              {customer.status === 'requesting' && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      )}
 
       {/* Selected crew popup */}
       {selectedCrew && (
