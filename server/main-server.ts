@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 
 // Import routes
 import demoRoutes from "./routes/demo.js";
+import customerApiRoutes from "./routes/customer-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
@@ -53,6 +54,7 @@ export const createServer = () => {
 
   // API Routes
   app.use("/api", demoRoutes);
+  app.use("/api", customerApiRoutes);
   app.use("/api", otpApiRoutes);
   
   // Neon Database API Routes
