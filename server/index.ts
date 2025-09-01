@@ -73,23 +73,11 @@ export function createServer() {
   app.post("/api/neon/ads", neonApiRoutes.createAd);
   app.post("/api/neon/ads/:adId/dismiss", neonApiRoutes.dismissAd);
 
-  // Service packages endpoints
-  // app.get("/api/packages", packagesApiRoutes.getServicePackages);
-  // app.post("/api/packages", packagesApiRoutes.createServicePackage);
-
-  // Branches endpoints
-  // app.get("/api/branches", branchesApiRoutes.getBranches);
-  // app.post("/api/branches", branchesApiRoutes.createBranch);
-
-  // Gamification endpoints
-  // app.get("/api/gamification/levels", gamificationApiRoutes.getCustomerLevels);
-  // app.get("/api/gamification/achievements", gamificationApiRoutes.getAchievements);
-
-  // POS endpoints
-  // app.get("/api/pos/products", posApiRoutes.getPOSProducts);
-  // app.post("/api/pos/transactions", posApiRoutes.createPOSTransaction);
-
-  // Note: New API routes are registered in main-server.ts for the main application
+  // New features endpoints
+  app.get("/api/neon/branches", neonApiRoutes.getBranches);
+  app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
+  app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
+  app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
 
   return app;
 }
