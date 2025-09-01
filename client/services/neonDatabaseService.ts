@@ -631,16 +631,29 @@ class NeonDatabaseClient {
   // === USERS ===
 
   async getUsers(): Promise<{ success: boolean; users?: User[] }> {
+    console.log('🔗 getUsers called, connection status:', this.isConnected);
     if (!this.isConnected) {
+      console.warn('⚠️ Database not connected for getUsers');
       return { success: false, users: [] };
     }
 
     try {
+      console.log('📞 Making request to /api/users...');
       const response = await fetch('/api/users');
+      console.log('📥 Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        console.error('❌ Response not OK:', response.status, response.statusText);
+        const text = await response.text();
+        console.error('Response body:', text);
+        return { success: false, users: [] };
+      }
+
       const result = await response.json();
+      console.log('✅ getUsers result:', result);
       return result;
     } catch (error) {
-      console.error('Database users fetch failed:', error);
+      console.error('❌ Database users fetch failed:', error);
       return { success: false, users: [] };
     }
   }

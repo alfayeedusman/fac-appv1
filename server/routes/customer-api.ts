@@ -36,11 +36,14 @@ router.get("/health", async (req, res) => {
 
 // User routes
 router.get("/users", async (req, res) => {
+  console.log('🔍 GET /api/users endpoint called');
   try {
+    console.log('📋 Fetching users from database...');
     const users = await neonDbService.getAllUsers();
+    console.log('✅ Users retrieved:', users);
     res.json({ success: true, users });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("❌ Error fetching users:", error);
     res.status(500).json({ success: false, error: "Failed to get users" });
   }
 });
