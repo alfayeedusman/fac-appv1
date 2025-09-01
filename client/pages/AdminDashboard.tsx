@@ -921,8 +921,20 @@ export default function AdminDashboard() {
                   <span className="hidden sm:inline">Receipt Designer</span>
                 </Button>
                 <ThemeToggle />
-                <Button variant="outline" size="sm">
-                  <RefreshCw className="h-4 w-4 mr-1" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    loadRealStats();
+                    loadSystemNotifications();
+                    toast({
+                      title: "Refreshed",
+                      description: "Dashboard data has been refreshed",
+                    });
+                  }}
+                  disabled={statsLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-1 ${statsLoading ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
