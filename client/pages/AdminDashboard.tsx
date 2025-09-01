@@ -1292,96 +1292,109 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {customers.map((customer, index) => (
-                    <div
-                      key={customer.id}
-                      className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
-                    >
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-black text-foreground text-lg truncate">
-                                {customer.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground font-medium truncate">
-                                {customer.email} • {customer.phone}
-                              </p>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {customer.carUnit} • {customer.plateNumber}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Badge
-                                className={`${
-                                  customer.membershipType === "VIP Gold"
-                                    ? "bg-gradient-to-r from-yellow-500 to-fac-orange-500"
-                                    : customer.membershipType === "VIP Silver"
-                                      ? "bg-gradient-to-r from-gray-400 to-gray-600"
-                                      : "bg-gradient-to-r from-blue-500 to-cyan-500"
-                                } text-white font-bold px-4 py-2 rounded-full`}
-                              >
-                                {customer.membershipType}
-                              </Badge>
-                              <Badge
-                                className={`${
-                                  customer.approvalStatus === "approved"
-                                    ? "bg-green-500"
-                                    : customer.approvalStatus === "pending"
-                                      ? "bg-yellow-500"
-                                      : customer.approvalStatus === "banned"
-                                        ? "bg-red-500"
-                                        : "bg-gray-500"
-                                } text-white font-bold px-4 py-2 rounded-full`}
-                              >
-                                {customer.approvalStatus.toUpperCase()}
-                              </Badge>
+                  {customersLoading ? (
+                    <div className="text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading customers...</p>
+                    </div>
+                  ) : customers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">No customers found</p>
+                      <p className="text-sm">Start by adding your first customer</p>
+                    </div>
+                  ) : (
+                    customers.map((customer, index) => (
+                      <div
+                        key={customer.id}
+                        className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-black text-foreground text-lg truncate">
+                                  {customer.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground font-medium truncate">
+                                  {customer.email} • {customer.phone}
+                                </p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {customer.carUnit} • {customer.plateNumber}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge
+                                  className={`${
+                                    customer.membershipType === "VIP Gold"
+                                      ? "bg-gradient-to-r from-yellow-500 to-fac-orange-500"
+                                      : customer.membershipType === "VIP Silver"
+                                        ? "bg-gradient-to-r from-gray-400 to-gray-600"
+                                        : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                                  } text-white font-bold px-4 py-2 rounded-full`}
+                                >
+                                  {customer.membershipType}
+                                </Badge>
+                                <Badge
+                                  className={`${
+                                    customer.approvalStatus === "approved"
+                                      ? "bg-green-500"
+                                      : customer.approvalStatus === "pending"
+                                        ? "bg-yellow-500"
+                                        : customer.approvalStatus === "banned"
+                                          ? "bg-red-500"
+                                          : "bg-gray-500"
+                                  } text-white font-bold px-4 py-2 rounded-full`}
+                                >
+                                  {customer.approvalStatus.toUpperCase()}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                          <div className="text-left sm:text-right">
-                            <p className="text-base font-bold text-foreground">
-                              {customer.totalWashes} washes
-                            </p>
-                            <p className="text-base text-green-600 font-bold">
-                              {formatCurrency(customer.totalSpent)}
-                            </p>
-                          </div>
-                          <div className="flex items-center flex-wrap gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              title="Edit Customer"
-                              className="glass hover-lift"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            {customer.approvalStatus === "pending" && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
-                                  title="Approve User"
-                                >
-                                  <UserCheck className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
-                                  title="Reject User"
-                                >
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="text-left sm:text-right">
+                              <p className="text-base font-bold text-foreground">
+                                {customer.totalWashes} washes
+                              </p>
+                              <p className="text-base text-green-600 font-bold">
+                                {formatCurrency(customer.totalSpent)}
+                              </p>
+                            </div>
+                            <div className="flex items-center flex-wrap gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                title="Edit Customer"
+                                className="glass hover-lift"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              {customer.approvalStatus === "pending" && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
+                                    title="Approve User"
+                                  >
+                                    <UserCheck className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
+                                    title="Reject User"
+                                  >
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
