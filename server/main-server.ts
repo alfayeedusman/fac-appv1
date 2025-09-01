@@ -84,6 +84,75 @@ export const createServer = () => {
   app.post("/api/neon/ads", neonApiRoutes.createAd);
   app.post("/api/neon/ads/:adId/dismiss", neonApiRoutes.dismissAd);
 
+  // ============= SERVICE PACKAGES API ROUTES =============
+
+  // Service packages endpoints
+  app.get("/api/packages", packagesApiRoutes.getServicePackages);
+  app.get("/api/packages/:id", packagesApiRoutes.getServicePackageById);
+  app.post("/api/packages", packagesApiRoutes.createServicePackage);
+  app.put("/api/packages/:id", packagesApiRoutes.updateServicePackage);
+  app.delete("/api/packages/:id", packagesApiRoutes.deleteServicePackage);
+
+  // Package subscriptions endpoints
+  app.get("/api/packages/subscriptions/:userId", packagesApiRoutes.getUserSubscriptions);
+  app.post("/api/packages/subscribe", packagesApiRoutes.subscribeToPackage);
+  app.put("/api/packages/subscriptions/:id", packagesApiRoutes.updateSubscriptionStatus);
+
+  // ============= BRANCHES API ROUTES =============
+
+  // Branches endpoints
+  app.get("/api/branches", branchesApiRoutes.getBranches);
+  app.get("/api/branches/:id", branchesApiRoutes.getBranchById);
+  app.get("/api/branches/code/:code", branchesApiRoutes.getBranchByCode);
+  app.post("/api/branches", branchesApiRoutes.createBranch);
+  app.put("/api/branches/:id", branchesApiRoutes.updateBranch);
+  app.delete("/api/branches/:id", branchesApiRoutes.deleteBranch);
+  app.get("/api/branches/nearby", branchesApiRoutes.getNearbyBranches);
+  app.get("/api/branches/:id/stats", branchesApiRoutes.getBranchStats);
+  app.get("/api/branches/:id/hours", branchesApiRoutes.getBranchHours);
+
+  // ============= GAMIFICATION API ROUTES =============
+
+  // Customer levels endpoints
+  app.get("/api/gamification/levels", gamificationApiRoutes.getCustomerLevels);
+  app.post("/api/gamification/levels", gamificationApiRoutes.createCustomerLevel);
+  app.put("/api/gamification/levels/:id", gamificationApiRoutes.updateCustomerLevel);
+  app.get("/api/gamification/users/:userId/level", gamificationApiRoutes.getUserLevel);
+
+  // Achievements endpoints
+  app.get("/api/gamification/achievements", gamificationApiRoutes.getAchievements);
+  app.post("/api/gamification/achievements", gamificationApiRoutes.createAchievement);
+  app.get("/api/gamification/users/:userId/achievements", gamificationApiRoutes.getUserAchievements);
+  app.post("/api/gamification/achievements/award", gamificationApiRoutes.awardAchievement);
+  app.post("/api/gamification/achievements/complete", gamificationApiRoutes.completeAchievement);
+
+  // Loyalty transactions endpoints
+  app.get("/api/gamification/users/:userId/transactions", gamificationApiRoutes.getLoyaltyTransactions);
+  app.post("/api/gamification/loyalty/add", gamificationApiRoutes.addLoyaltyPoints);
+  app.post("/api/gamification/loyalty/redeem", gamificationApiRoutes.redeemLoyaltyPoints);
+  app.get("/api/gamification/users/:userId/dashboard", gamificationApiRoutes.getGamificationDashboard);
+
+  // ============= POS API ROUTES =============
+
+  // POS categories endpoints
+  app.get("/api/pos/categories", posApiRoutes.getPOSCategories);
+  app.post("/api/pos/categories", posApiRoutes.createPOSCategory);
+  app.put("/api/pos/categories/:id", posApiRoutes.updatePOSCategory);
+
+  // POS products endpoints
+  app.get("/api/pos/products", posApiRoutes.getPOSProducts);
+  app.get("/api/pos/products/:id", posApiRoutes.getPOSProductById);
+  app.post("/api/pos/products", posApiRoutes.createPOSProduct);
+  app.put("/api/pos/products/:id", posApiRoutes.updatePOSProduct);
+  app.put("/api/pos/products/:id/stock", posApiRoutes.updateProductStock);
+
+  // POS transactions endpoints
+  app.get("/api/pos/transactions", posApiRoutes.getPOSTransactions);
+  app.get("/api/pos/transactions/:id", posApiRoutes.getPOSTransactionById);
+  app.post("/api/pos/transactions", posApiRoutes.createPOSTransaction);
+  app.post("/api/pos/transactions/:id/refund", posApiRoutes.refundPOSTransaction);
+  app.get("/api/pos/analytics", posApiRoutes.getPOSAnalytics);
+
   // Serve React admin app for everything
   const reactBuildPath = path.join(__dirname, "../dist/spa");
   app.use(express.static(reactBuildPath));
