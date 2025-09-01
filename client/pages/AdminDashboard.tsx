@@ -331,7 +331,9 @@ export default function AdminDashboard() {
       loadRealStats();
 
       // Load real customer data from database
-      loadRealCustomers();
+      // TODO: Implement getUsers API endpoint in server
+      // loadRealCustomers();
+      setCustomersLoading(false);
 
       // Load system notifications
       loadSystemNotifications();
