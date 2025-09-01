@@ -431,15 +431,85 @@ export const dismissAd: RequestHandler = async (req, res) => {
 export const getDatabaseStats: RequestHandler = async (req, res) => {
   try {
     const stats = await neonDbService.getStats();
-    res.json({ 
-      success: true, 
-      stats 
+    res.json({
+      success: true,
+      stats
     });
   } catch (error) {
     console.error('Get stats error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch database stats' 
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch database stats'
+    });
+  }
+};
+
+// ============= NEW FEATURES API ENDPOINTS =============
+
+// Branches endpoints
+export const getBranches: RequestHandler = async (req, res) => {
+  try {
+    const branches = await neonDbService.getBranches();
+    res.json({
+      success: true,
+      branches: branches || []
+    });
+  } catch (error) {
+    console.error('Get branches error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch branches'
+    });
+  }
+};
+
+// Service packages endpoints
+export const getServicePackages: RequestHandler = async (req, res) => {
+  try {
+    const packages = await neonDbService.getServicePackages();
+    res.json({
+      success: true,
+      packages: packages || []
+    });
+  } catch (error) {
+    console.error('Get service packages error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch service packages'
+    });
+  }
+};
+
+// Gamification levels endpoints
+export const getCustomerLevels: RequestHandler = async (req, res) => {
+  try {
+    const levels = await neonDbService.getCustomerLevels();
+    res.json({
+      success: true,
+      levels: levels || []
+    });
+  } catch (error) {
+    console.error('Get customer levels error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch customer levels'
+    });
+  }
+};
+
+// POS categories endpoints
+export const getPOSCategories: RequestHandler = async (req, res) => {
+  try {
+    const categories = await neonDbService.getPOSCategories();
+    res.json({
+      success: true,
+      categories: categories || []
+    });
+  } catch (error) {
+    console.error('Get POS categories error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch POS categories'
     });
   }
 };
