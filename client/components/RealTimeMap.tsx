@@ -626,8 +626,11 @@ export default function RealTimeMap({
       )}
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border max-w-xs">
-        <h4 className="font-semibold text-sm mb-2">Crew Status</h4>
+      <div className="absolute bottom-4 left-4 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border max-w-xs z-10">
+        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-fac-orange-500" />
+          Live Status
+        </h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -648,6 +651,12 @@ export default function RealTimeMap({
               <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
               <span>Break ({filteredCrewData.filter(c => c.status === 'break').length})</span>
             </div>
+          </div>
+        </div>
+        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2">
+            <Car className="h-3 w-3 text-purple-500" />
+            <span>Customers ({customerData.filter(c => c.status === 'online' || c.status === 'requesting').length})</span>
           </div>
         </div>
       </div>
