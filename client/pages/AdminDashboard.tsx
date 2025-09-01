@@ -97,6 +97,7 @@ import {
   getAllBookings,
   type SystemNotification
 } from "@/utils/databaseSchema";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 interface Customer {
   id: string;
