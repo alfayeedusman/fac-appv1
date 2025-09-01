@@ -340,6 +340,14 @@ const App = () => {
               }
             />
             <Route
+              path="/admin-image-manager"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminImageManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/manager-dashboard"
               element={
                 <ProtectedRoute requiredRole="manager">
