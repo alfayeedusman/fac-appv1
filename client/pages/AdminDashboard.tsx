@@ -162,13 +162,14 @@ export default function AdminDashboard() {
   >("monthly");
 
   const [stats, setStats] = useState<DashboardStats>({
-    totalCustomers: 1247,
-    totalRevenue: 156780,
-    totalWashes: 3456,
-    activeSubscriptions: 892,
-    monthlyGrowth: 12.5,
+    totalCustomers: 0,
+    totalRevenue: 0,
+    totalWashes: 0,
+    activeSubscriptions: 0,
+    monthlyGrowth: 0,
     topPackage: "VIP Gold Ultimate",
   });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const [notifications, setNotifications] = useState<Notification[]>([
     {
