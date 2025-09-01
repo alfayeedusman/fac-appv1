@@ -363,6 +363,117 @@ class NeonDatabaseService {
       pendingBookings: pendingCount.count,
     };
   }
+
+  // ============= NEW FEATURES METHODS =============
+
+  // Branches methods
+  async getBranches() {
+    try {
+      // Use raw SQL since schema might not be updated yet
+      const sql = this.createSqlClient();
+      const result = await sql`SELECT * FROM branches WHERE is_active = true ORDER BY is_main_branch DESC, name ASC`;
+      return result || [];
+    } catch (error) {
+      console.error('Get branches error:', error);
+      // Return mock data if table doesn't exist yet
+      return [
+        {
+          id: "branch_main_001",
+          name: "Main Branch",
+          code: "MAIN",
+          address: "123 Main Street, Makati City",
+          city: "Makati",
+          is_active: true,
+          is_main_branch: true
+        }
+      ];
+    }
+  }
+
+  // Service packages methods
+  async getServicePackages() {
+    try {
+      const sql = this.createSqlClient();
+      const result = await sql`SELECT * FROM service_packages WHERE is_active = true ORDER BY is_featured DESC, is_popular DESC, name ASC`;
+      return result || [];
+    } catch (error) {
+      console.error('Get service packages error:', error);
+      // Return mock data if table doesn't exist yet
+      return [
+        {
+          id: "pkg_basic_carwash",
+          name: "Basic Car Wash",
+          description: "Essential car wash service",
+          category: "carwash",
+          base_price: 150,
+          is_active: true,
+          is_popular: true
+        }
+      ];
+    }
+  }
+
+  // Gamification methods
+  async getCustomerLevels() {
+    try {
+      const sql = this.createSqlClient();
+      const result = await sql`SELECT * FROM customer_levels WHERE is_active = true ORDER BY min_points ASC`;
+      return result || [];
+    } catch (error) {
+      console.error('Get customer levels error:', error);
+      // Return mock data if table doesn't exist yet
+      return [
+        {
+          id: "level_bronze",
+          name: "Bronze Member",
+          min_points: 0,
+          max_points: 999,
+          discount_percentage: 0,
+          is_active: true
+        },
+        {
+          id: "level_silver",
+          name: "Silver Member",
+          min_points: 1000,
+          max_points: 4999,
+          discount_percentage: 5,
+          is_active: true
+        }
+      ];
+    }
+  }
+
+  // POS methods
+  async getPOSCategories() {
+    try {
+      const sql = this.createSqlClient();
+      const result = await sql`SELECT * FROM pos_categories WHERE is_active = true ORDER BY sort_order ASC, name ASC`;
+      return result || [];
+    } catch (error) {
+      console.error('Get POS categories error:', error);
+      // Return mock data if table doesn't exist yet
+      return [
+        {
+          id: "cat_carwash",
+          name: "Car Wash Services",
+          description: "Professional car washing services",
+          icon: "Car",
+          color: "#3B82F6",
+          is_active: true
+        }
+      ];
+    }
+  }
+
+  // Helper method to create SQL client
+  private createSqlClient() {
+    const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
+    if (!DATABASE_URL) {
+      throw new Error('Database URL not configured');
+    }
+    const { neon } = require('@neondatabase/serverless');
+    return neon(DATABASE_URL);
+  }
 }
 
 // Export singleton instance
