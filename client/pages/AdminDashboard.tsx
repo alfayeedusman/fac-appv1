@@ -957,13 +957,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Customers
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {statsLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
                             stats.totalCustomers.toLocaleString()
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-fac-orange-500 p-3 rounded-lg">
                         <Users className="h-6 w-6 text-white" />
@@ -982,13 +982,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Revenue
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {statsLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
                             formatCurrency(stats.totalRevenue)
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-green-500 p-3 rounded-lg">
                         <DollarSign className="h-6 w-6 text-white" />
@@ -1007,13 +1007,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Washes
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {statsLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
                             stats.totalWashes.toLocaleString()
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-blue-500 p-3 rounded-lg">
                         <Car className="h-6 w-6 text-white" />
@@ -1032,13 +1032,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Active Subscriptions
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {statsLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
                             stats.activeSubscriptions.toLocaleString()
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-purple-500 p-3 rounded-lg">
                         <Crown className="h-6 w-6 text-white" />
