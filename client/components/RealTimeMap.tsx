@@ -195,7 +195,21 @@ export default function RealTimeMap({
   const [error, setError] = useState<string | null>(null);
   const [selectedCrew, setSelectedCrew] = useState<CrewMember | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+
+  // Debug token and environment
+  useEffect(() => {
+    const token = import.meta.env.VITE_MAPBOX_TOKEN;
+    const info = `Token: ${token ? 'Present' : 'Missing'} | Length: ${token?.length || 0}`;
+    setDebugInfo(info);
+    console.log('🔍 Debug info:', info);
+    console.log('🌍 Environment vars:', {
+      VITE_MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN ? 'SET' : 'MISSING',
+      NODE_ENV: import.meta.env.NODE_ENV,
+      MODE: import.meta.env.MODE
+    });
+  }, []);
 
   // Initialize map
   useEffect(() => {
