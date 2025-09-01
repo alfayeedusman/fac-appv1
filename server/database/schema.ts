@@ -577,3 +577,164 @@ export const posTransactionItems = pgTable('pos_transaction_items', {
 
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// ============= IMAGE MANAGEMENT SYSTEM =============
+
+// Image Storage and Management
+export const images = pgTable('images', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+
+  // Basic image information
+  originalName: varchar('original_name', { length: 255 }).notNull(),
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  size: integer('size').notNull(), // File size in bytes
+
+  // Image dimensions
+  width: integer('width'),
+  height: integer('height'),
+
+  // Storage information
+  storageType: varchar('storage_type', { length: 50 }).notNull().default('local'), // 'local' | 'cloudinary' | 's3' | 'firebase'
+  storagePath: text('storage_path').notNull(), // Local path or cloud URL
+  publicUrl: text('public_url').notNull(), // Publicly accessible URL
+
+  // Image categorization
+  category: varchar('category', { length: 100 }).notNull(), // 'profile' | 'service' | 'branch' | 'product' | 'banner' | 'gallery'
+  tags: json('tags').$type<string[]>().default([]),
+
+  // Ownership and association
+  uploadedBy: text('uploaded_by'), // User ID who uploaded
+  associatedWith: varchar('associated_with', { length: 50 }), // 'user' | 'service_package' | 'branch' | 'pos_product' | 'ad'
+  associatedId: text('associated_id'), // ID of the associated entity
+
+  // Image metadata
+  altText: text('alt_text'),
+  description: text('description'),
+
+  // Processing status
+  processingStatus: varchar('processing_status', { length: 50 }).default('completed'), // 'pending' | 'processing' | 'completed' | 'failed'
+  thumbnailUrl: text('thumbnail_url'), // URL for thumbnail version
+  mediumUrl: text('medium_url'), // URL for medium resolution
+
+  // Usage tracking
+  downloadCount: integer('download_count').default(0),
+  viewCount: integer('view_count').default(0),
+
+  // Status
+  isActive: boolean('is_active').default(true),
+  isPublic: boolean('is_public').default(true),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Image Collections (for organizing images)
+export const imageCollections = pgTable('image_collections', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+
+  // Collection properties
+  category: varchar('category', { length: 100 }).notNull(), // 'gallery' | 'portfolio' | 'banners' | 'products'
+  isPublic: boolean('is_public').default(true),
+  sortOrder: integer('sort_order').default(0),
+
+  // Ownership
+  createdBy: text('created_by').notNull(), // User ID
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Image Collection Items (many-to-many relationship)
+export const imageCollectionItems = pgTable('image_collection_items', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  collectionId: text('collection_id').notNull(),
+  imageId: text('image_id').notNull(),
+  sortOrder: integer('sort_order').default(0),
+  caption: text('caption'),
+
+  addedAt: timestamp('added_at').notNull().defaultNow(),
+});
+
+// ============= PUSH NOTIFICATION SYSTEM =============
+
+// FCM Token Storage
+export const fcmTokens = pgTable('fcm_tokens', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+
+  // Token information
+  token: text('token').notNull().unique(),
+  userId: text('user_id'), // null for guest/anonymous tokens
+
+  // Device information
+  deviceType: varchar('device_type', { length: 50 }), // 'web' | 'android' | 'ios'
+  browserInfo: text('browser_info'), // User agent string
+  deviceName: varchar('device_name', { length: 255 }),
+
+  // Status
+  isActive: boolean('is_active').default(true),
+  lastUsed: timestamp('last_used').defaultNow(),
+
+  // Subscription preferences
+  notificationTypes: json('notification_types').$type<string[]>().default(['booking_updates', 'loyalty_updates', 'system']),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Push Notification History
+export const pushNotifications = pgTable('push_notifications', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+
+  // Notification content
+  title: varchar('title', { length: 255 }).notNull(),
+  body: text('body').notNull(),
+  imageUrl: text('image_url'),
+
+  // Targeting
+  targetType: varchar('target_type', { length: 50 }).notNull(), // 'user' | 'role' | 'all' | 'topic'
+  targetIds: json('target_ids').$type<string[]>(), // User IDs, role names, or topic names
+
+  // Notification data
+  notificationType: varchar('notification_type', { length: 100 }).notNull(), // 'booking_update' | 'loyalty_update' | 'achievement' | 'system'
+  data: json('data'), // Additional data payload
+
+  // Delivery information
+  totalTargets: integer('total_targets').default(0),
+  successfulDeliveries: integer('successful_deliveries').default(0),
+  failedDeliveries: integer('failed_deliveries').default(0),
+
+  // Status
+  status: varchar('status', { length: 50 }).default('pending'), // 'pending' | 'sending' | 'sent' | 'failed'
+  scheduledFor: timestamp('scheduled_for'), // For scheduled notifications
+  sentAt: timestamp('sent_at'),
+
+  // Metadata
+  createdBy: text('created_by'), // Admin user ID
+  campaign: varchar('campaign', { length: 255 }), // Campaign identifier
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Notification Delivery Tracking
+export const notificationDeliveries = pgTable('notification_deliveries', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+
+  notificationId: text('notification_id').notNull(),
+  fcmTokenId: text('fcm_token_id').notNull(),
+  userId: text('user_id'),
+
+  // Delivery status
+  status: varchar('status', { length: 50 }).notNull(), // 'sent' | 'delivered' | 'clicked' | 'dismissed' | 'failed'
+  errorMessage: text('error_message'),
+
+  // Interaction tracking
+  deliveredAt: timestamp('delivered_at'),
+  clickedAt: timestamp('clicked_at'),
+  dismissedAt: timestamp('dismissed_at'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
