@@ -409,6 +409,90 @@ class NeonDatabaseService {
     };
   }
 
+  // === REAL-TIME CREW AND CUSTOMER TRACKING ===
+
+  async getRealtimeStats(): Promise<{
+    onlineCrew: number;
+    busyCrew: number;
+    activeCustomers: number;
+    activeGroups: number;
+  }> {
+    if (!this.db) throw new Error('Database not connected');
+
+    try {
+      // Count online crew (active status within last 10 minutes)
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+      const [onlineCrewResult] = await this.db
+        .select({ count: count() })
+        .from(schema.crewStatus)
+        .where(
+          and(
+            eq(schema.crewStatus.status, 'online'),
+            sql`${schema.crewStatus.endedAt} IS NULL`,
+            sql`${schema.crewStatus.startedAt} >= ${tenMinutesAgo}`
+          )
+        );
+
+      // Count busy crew
+      const [busyCrewResult] = await this.db
+        .select({ count: count() })
+        .from(schema.crewStatus)
+        .where(
+          and(
+            eq(schema.crewStatus.status, 'busy'),
+            sql`${schema.crewStatus.endedAt} IS NULL`
+          )
+        );
+
+      // Count active customers (sessions active within last 30 minutes)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+      const [activeCustomersResult] = await this.db
+        .select({ count: count() })
+        .from(schema.customerSessions)
+        .where(
+          and(
+            eq(schema.customerSessions.status, 'active'),
+            sql`${schema.customerSessions.lastActivity} >= ${thirtyMinutesAgo}`
+          )
+        );
+
+      // Count active crew groups (groups with at least one online member)
+      const [activeGroupsResult] = await this.db
+        .select({ count: count() })
+        .from(schema.crewGroups)
+        .where(
+          and(
+            eq(schema.crewGroups.status, 'active'),
+            sql`EXISTS (
+              SELECT 1 FROM ${schema.crewMembers} cm
+              JOIN ${schema.crewStatus} cs ON cm.id = cs.crewId
+              WHERE cm.crewGroupId = ${schema.crewGroups.id}
+              AND cs.status IN ('online', 'busy')
+              AND cs.endedAt IS NULL
+            )`
+          )
+        );
+
+      return {
+        onlineCrew: onlineCrewResult.count,
+        busyCrew: busyCrewResult.count,
+        activeCustomers: activeCustomersResult.count,
+        activeGroups: activeGroupsResult.count,
+      };
+    } catch (error) {
+      console.error('Error fetching realtime stats:', error);
+      // Return default values if query fails
+      return {
+        onlineCrew: 0,
+        busyCrew: 0,
+        activeCustomers: 0,
+        activeGroups: 0,
+      };
+    }
+  }
+
   // ============= NEW FEATURES METHODS =============
 
   // Branches methods
