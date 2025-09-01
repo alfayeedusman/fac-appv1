@@ -35,6 +35,7 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
 import AdminCMS from "./pages/AdminCMS";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
+import AdminImageManager from "./pages/AdminImageManager";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import PaymentHistory from "./pages/PaymentHistory";
