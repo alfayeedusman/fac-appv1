@@ -471,7 +471,13 @@ export default function AdminDashboard() {
         vehicleType: "car",
         motorcycleType: "",
       });
-      alert("Customer added successfully!");
+
+      Swal.fire({
+        title: 'Customer Added!',
+        text: `${newCustomer.name} has been added successfully and is awaiting approval.`,
+        icon: 'success',
+        confirmButtonColor: '#f97316'
+      });
     }
   };
 
