@@ -227,9 +227,54 @@ export const updateProductStock = (
   }
 };
 
+// Sample stock movements
+const sampleStockMovements: StockMovement[] = [
+  {
+    id: "STK001",
+    productId: "PRD001",
+    productName: "Car Shampoo Premium",
+    type: "in",
+    quantity: 50,
+    reason: "Initial stock",
+    newBalance: 25,
+    performedBy: "Admin",
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    notes: "First stock delivery"
+  },
+  {
+    id: "STK002",
+    productId: "PRD002",
+    productName: "Microfiber Towel Set",
+    type: "in",
+    quantity: 30,
+    reason: "Restock",
+    newBalance: 15,
+    performedBy: "Manager",
+    timestamp: new Date(Date.now() - 43200000).toISOString(),
+    notes: "Regular restock from supplier"
+  },
+  {
+    id: "STK003",
+    productId: "PRD001",
+    productName: "Car Shampoo Premium",
+    type: "out",
+    quantity: 25,
+    reason: "Daily usage",
+    newBalance: 25,
+    performedBy: "Staff",
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    notes: "Used for service operations"
+  }
+];
+
 export const getStockMovements = (): StockMovement[] => {
   const stored = localStorage.getItem("fac_stock_movements");
-  return stored ? JSON.parse(stored) : [];
+  if (stored) {
+    return JSON.parse(stored);
+  }
+
+  localStorage.setItem("fac_stock_movements", JSON.stringify(sampleStockMovements));
+  return sampleStockMovements;
 };
 
 export const addStockMovement = (
