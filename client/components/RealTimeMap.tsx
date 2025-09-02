@@ -215,10 +215,11 @@ export default function RealTimeMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || initializingRef.current) return;
 
     let isMounted = true;
     let timeoutId: NodeJS.Timeout;
+    initializingRef.current = true;
 
     const initializeMap = async () => {
       console.log('🗺️ Initializing Mapbox...');
