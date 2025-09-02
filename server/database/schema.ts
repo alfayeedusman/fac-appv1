@@ -528,6 +528,104 @@ export const loyaltyTransactions = pgTable('loyalty_transactions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ============= SUPPLIERS SYSTEM =============
+
+// Suppliers table
+export const suppliers = pgTable('suppliers', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  name: varchar('name', { length: 255 }).notNull(),
+  contactPerson: varchar('contact_person', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }),
+  phone: varchar('phone', { length: 20 }),
+  address: text('address'),
+  website: varchar('website', { length: 255 }),
+  taxId: varchar('tax_id', { length: 100 }),
+
+  // Payment terms
+  paymentTerms: varchar('payment_terms', { length: 100 }).default('Net 30'),
+  creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }).default('0.00'),
+  currentBalance: decimal('current_balance', { precision: 12, scale: 2 }).default('0.00'),
+
+  // Rating and performance
+  rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
+  totalOrders: integer('total_orders').default(0),
+  totalValue: decimal('total_value', { precision: 12, scale: 2 }).default('0.00'),
+
+  // Status and metadata
+  status: varchar('status', { length: 20 }).default('active'), // 'active' | 'inactive' | 'blacklisted'
+  notes: text('notes'),
+  tags: json('tags').$type<string[]>().default([]),
+
+  // Lead times and delivery
+  averageLeadTime: integer('average_lead_time'), // in days
+  deliveryReliability: decimal('delivery_reliability', { precision: 5, scale: 2 }).default('100.00'), // percentage
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Purchase Orders table
+export const purchaseOrders = pgTable('purchase_orders', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  orderNumber: varchar('order_number', { length: 50 }).notNull().unique(),
+  supplierId: text('supplier_id').notNull(),
+
+  // Order details
+  status: varchar('status', { length: 50 }).default('draft'), // 'draft' | 'pending' | 'approved' | 'ordered' | 'partial' | 'completed' | 'cancelled'
+  orderDate: timestamp('order_date').notNull().defaultNow(),
+  expectedDelivery: timestamp('expected_delivery'),
+  actualDelivery: timestamp('actual_delivery'),
+
+  // Financial details
+  subtotal: decimal('subtotal', { precision: 12, scale: 2 }).notNull(),
+  taxAmount: decimal('tax_amount', { precision: 12, scale: 2 }).default('0.00'),
+  shippingCost: decimal('shipping_cost', { precision: 12, scale: 2 }).default('0.00'),
+  discountAmount: decimal('discount_amount', { precision: 12, scale: 2 }).default('0.00'),
+  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
+
+  // Approval workflow
+  requestedBy: text('requested_by').notNull(), // User ID
+  approvedBy: text('approved_by'), // User ID
+  approvedAt: timestamp('approved_at'),
+
+  // Additional info
+  notes: text('notes'),
+  internalReference: varchar('internal_reference', { length: 100 }),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Purchase Order Items table
+export const purchaseOrderItems = pgTable('purchase_order_items', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  purchaseOrderId: text('purchase_order_id').notNull(),
+  inventoryItemId: text('inventory_item_id').notNull(),
+
+  // Item details at time of order
+  itemName: varchar('item_name', { length: 255 }).notNull(),
+  itemSku: varchar('item_sku', { length: 100 }),
+
+  // Quantities
+  quantityOrdered: integer('quantity_ordered').notNull(),
+  quantityReceived: integer('quantity_received').default(0),
+  quantityPending: integer('quantity_pending').notNull(), // calculated field
+
+  // Pricing
+  unitCost: decimal('unit_cost', { precision: 10, scale: 2 }).notNull(),
+  lineTotal: decimal('line_total', { precision: 12, scale: 2 }).notNull(),
+
+  // Delivery tracking
+  receivedDate: timestamp('received_date'),
+  receivedBy: text('received_by'), // User ID
+
+  // Quality control
+  qualityStatus: varchar('quality_status', { length: 50 }).default('pending'), // 'pending' | 'approved' | 'rejected'
+  qualityNotes: text('quality_notes'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // ============= POS SYSTEM =============
 
 // Product Categories for POS
