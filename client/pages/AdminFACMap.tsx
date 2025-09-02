@@ -59,13 +59,61 @@ interface LocationData {
 
 export default function AdminFACMap() {
   const navigate = useNavigate();
-  const [userRole] = useState(() => localStorage.getItem("userRole") || "");
+  const [userRole, setUserRole] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Redirect if not admin
-  if (!userRole || (userRole !== "admin" && userRole !== "superadmin")) {
-    navigate("/login");
+  // Check authentication on mount and whenever storage changes
+  useEffect(() => {
+    const checkAuth = () => {
+      const role = localStorage.getItem("userRole");
+      const email = localStorage.getItem("userEmail");
+
+      console.log('🔐 Auth check - Role:', role, 'Email:', email);
+
+      if (!role || !email) {
+        console.log('❌ No auth found, redirecting to login');
+        navigate("/login");
+        return;
+      }
+
+      if (role !== "admin" && role !== "superadmin") {
+        console.log('❌ Insufficient permissions, redirecting to login');
+        navigate("/login");
+        return;
+      }
+
+      console.log('✅ Auth valid, setting role:', role);
+      setUserRole(role);
+      setIsLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (in case user logs out in another tab)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [navigate]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if no valid role
+  if (!userRole) {
     return null;
   }
 
