@@ -594,6 +594,391 @@ class NeonDatabaseService {
     }
   }
 
+  // === INVENTORY MANAGEMENT ===
+
+  async getInventoryItems() {
+    try {
+      if (!this.db) {
+        console.warn('Database not initialized');
+        return [];
+      }
+
+      const items = await this.db.select().from(schema.inventoryItems).where(eq(schema.inventoryItems.isActive, true));
+      console.log('✅ Inventory items retrieved:', items.length);
+      return items;
+    } catch (error) {
+      console.error('❌ Error getting inventory items:', error);
+      return [];
+    }
+  }
+
+  async createInventoryItem(itemData: {
+    name: string;
+    category: string;
+    description?: string;
+    currentStock: number;
+    minStockLevel: number;
+    maxStockLevel: number;
+    unitPrice?: number;
+    supplier?: string;
+    barcode?: string;
+  }) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      const [newItem] = await this.db.insert(schema.inventoryItems).values({
+        name: itemData.name,
+        category: itemData.category,
+        description: itemData.description,
+        currentStock: itemData.currentStock,
+        minStockLevel: itemData.minStockLevel,
+        maxStockLevel: itemData.maxStockLevel,
+        unitPrice: itemData.unitPrice,
+        supplier: itemData.supplier,
+        barcode: itemData.barcode,
+        isActive: true,
+      }).returning();
+
+      // Create initial stock movement
+      if (itemData.currentStock > 0) {
+        await this.createStockMovement({
+          itemId: newItem.id,
+          type: 'in',
+          quantity: itemData.currentStock,
+          reason: 'Initial stock',
+          performedBy: 'system',
+          notes: 'Item created with initial stock'
+        });
+      }
+
+      console.log('✅ Inventory item created:', newItem.id);
+      return newItem;
+    } catch (error) {
+      console.error('❌ Error creating inventory item:', error);
+      throw error;
+    }
+  }
+
+  async updateInventoryItem(id: string, updates: Partial<{
+    name: string;
+    category: string;
+    description: string;
+    minStockLevel: number;
+    maxStockLevel: number;
+    unitPrice: number;
+    supplier: string;
+    barcode: string;
+    isActive: boolean;
+  }>) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      const [updatedItem] = await this.db
+        .update(schema.inventoryItems)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(schema.inventoryItems.id, id))
+        .returning();
+
+      console.log('✅ Inventory item updated:', id);
+      return updatedItem;
+    } catch (error) {
+      console.error('❌ Error updating inventory item:', error);
+      throw error;
+    }
+  }
+
+  async deleteInventoryItem(id: string) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      // Soft delete by setting isActive to false
+      await this.db
+        .update(schema.inventoryItems)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(schema.inventoryItems.id, id));
+
+      console.log('✅ Inventory item deleted (soft):', id);
+    } catch (error) {
+      console.error('❌ Error deleting inventory item:', error);
+      throw error;
+    }
+  }
+
+  async updateInventoryStock(id: string, newStock: number, reason: string, performedBy: string, notes?: string) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      // Get current item
+      const [currentItem] = await this.db.select().from(schema.inventoryItems).where(eq(schema.inventoryItems.id, id));
+      if (!currentItem) throw new Error('Item not found');
+
+      const oldStock = currentItem.currentStock;
+      const stockDiff = newStock - oldStock;
+
+      // Update stock
+      await this.db
+        .update(schema.inventoryItems)
+        .set({ currentStock: newStock, updatedAt: new Date() })
+        .where(eq(schema.inventoryItems.id, id));
+
+      // Record stock movement
+      await this.createStockMovement({
+        itemId: id,
+        type: stockDiff > 0 ? 'in' : stockDiff < 0 ? 'out' : 'adjustment',
+        quantity: Math.abs(stockDiff),
+        reason,
+        performedBy,
+        notes
+      });
+
+      console.log('✅ Inventory stock updated:', id, `${oldStock} → ${newStock}`);
+      return { oldStock, newStock, difference: stockDiff };
+    } catch (error) {
+      console.error('❌ Error updating inventory stock:', error);
+      throw error;
+    }
+  }
+
+  async getStockMovements(itemId?: string, limit: number = 50) {
+    try {
+      if (!this.db) {
+        console.warn('Database not initialized');
+        return [];
+      }
+
+      let query = this.db.select().from(schema.stockMovements);
+
+      if (itemId) {
+        query = query.where(eq(schema.stockMovements.itemId, itemId));
+      }
+
+      const movements = await query
+        .orderBy(desc(schema.stockMovements.createdAt))
+        .limit(limit);
+
+      console.log('✅ Stock movements retrieved:', movements.length);
+      return movements;
+    } catch (error) {
+      console.error('❌ Error getting stock movements:', error);
+      return [];
+    }
+  }
+
+  async createStockMovement(movementData: {
+    itemId: string;
+    type: 'in' | 'out' | 'adjustment';
+    quantity: number;
+    reason: string;
+    reference?: string;
+    performedBy: string;
+    notes?: string;
+  }) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      const [movement] = await this.db.insert(schema.stockMovements).values({
+        itemId: movementData.itemId,
+        type: movementData.type,
+        quantity: movementData.quantity,
+        reason: movementData.reason,
+        reference: movementData.reference,
+        performedBy: movementData.performedBy,
+        notes: movementData.notes,
+      }).returning();
+
+      console.log('✅ Stock movement created:', movement.id);
+      return movement;
+    } catch (error) {
+      console.error('❌ Error creating stock movement:', error);
+      throw error;
+    }
+  }
+
+  async getSuppliers() {
+    try {
+      if (!this.db) {
+        console.warn('Database not initialized');
+        return [];
+      }
+
+      const suppliersList = await this.db.select().from(schema.suppliers).where(eq(schema.suppliers.status, 'active'));
+      console.log('✅ Suppliers retrieved:', suppliersList.length);
+      return suppliersList;
+    } catch (error) {
+      console.error('❌ Error getting suppliers:', error);
+      return [];
+    }
+  }
+
+  async createSupplier(supplierData: {
+    name: string;
+    contactPerson: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    website?: string;
+    paymentTerms?: string;
+    notes?: string;
+  }) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      const [newSupplier] = await this.db.insert(schema.suppliers).values({
+        name: supplierData.name,
+        contactPerson: supplierData.contactPerson,
+        email: supplierData.email,
+        phone: supplierData.phone,
+        address: supplierData.address,
+        website: supplierData.website,
+        paymentTerms: supplierData.paymentTerms || 'Net 30',
+        notes: supplierData.notes,
+        status: 'active',
+      }).returning();
+
+      console.log('✅ Supplier created:', newSupplier.id);
+      return newSupplier;
+    } catch (error) {
+      console.error('❌ Error creating supplier:', error);
+      throw error;
+    }
+  }
+
+  async updateSupplier(id: string, updates: Partial<{
+    name: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    address: string;
+    website: string;
+    paymentTerms: string;
+    notes: string;
+    status: string;
+  }>) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      const [updatedSupplier] = await this.db
+        .update(schema.suppliers)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(schema.suppliers.id, id))
+        .returning();
+
+      console.log('✅ Supplier updated:', id);
+      return updatedSupplier;
+    } catch (error) {
+      console.error('❌ Error updating supplier:', error);
+      throw error;
+    }
+  }
+
+  async deleteSupplier(id: string) {
+    try {
+      if (!this.db) throw new Error('Database not initialized');
+
+      // Soft delete by setting status to inactive
+      await this.db
+        .update(schema.suppliers)
+        .set({ status: 'inactive', updatedAt: new Date() })
+        .where(eq(schema.suppliers.id, id));
+
+      console.log('✅ Supplier deleted (soft):', id);
+    } catch (error) {
+      console.error('❌ Error deleting supplier:', error);
+      throw error;
+    }
+  }
+
+  async getLowStockItems() {
+    try {
+      if (!this.db) {
+        console.warn('Database not initialized');
+        return [];
+      }
+
+      const lowStockItems = await this.db
+        .select()
+        .from(schema.inventoryItems)
+        .where(
+          and(
+            eq(schema.inventoryItems.isActive, true),
+            sql`${schema.inventoryItems.currentStock} <= ${schema.inventoryItems.minStockLevel}`
+          )
+        )
+        .orderBy(schema.inventoryItems.currentStock);
+
+      console.log('✅ Low stock items retrieved:', lowStockItems.length);
+      return lowStockItems;
+    } catch (error) {
+      console.error('❌ Error getting low stock items:', error);
+      return [];
+    }
+  }
+
+  async getInventoryAnalytics() {
+    try {
+      if (!this.db) {
+        console.warn('Database not initialized');
+        return {
+          totalItems: 0,
+          totalValue: 0,
+          lowStockCount: 0,
+          outOfStockCount: 0,
+          categoryBreakdown: [],
+          recentMovements: []
+        };
+      }
+
+      // Get all active items
+      const items = await this.db.select().from(schema.inventoryItems).where(eq(schema.inventoryItems.isActive, true));
+
+      // Calculate metrics
+      const totalItems = items.length;
+      const totalValue = items.reduce((sum: number, item: any) => sum + (item.currentStock * (item.unitPrice || 0)), 0);
+      const lowStockCount = items.filter((item: any) => item.currentStock <= item.minStockLevel && item.currentStock > 0).length;
+      const outOfStockCount = items.filter((item: any) => item.currentStock === 0).length;
+
+      // Category breakdown
+      const categoryBreakdown = items.reduce((acc: Record<string, { count: number; value: number }>, item: any) => {
+        const category = item.category;
+        if (!acc[category]) {
+          acc[category] = { count: 0, value: 0 };
+        }
+        acc[category].count++;
+        acc[category].value += item.currentStock * (item.unitPrice || 0);
+        return acc;
+      }, {});
+
+      // Recent movements
+      const recentMovements = await this.db
+        .select()
+        .from(schema.stockMovements)
+        .orderBy(desc(schema.stockMovements.createdAt))
+        .limit(10);
+
+      const analytics = {
+        totalItems,
+        totalValue,
+        lowStockCount,
+        outOfStockCount,
+        categoryBreakdown: Object.entries(categoryBreakdown).map(([name, data]) => ({ name, ...data })),
+        recentMovements
+      };
+
+      console.log('✅ Inventory analytics calculated');
+      return analytics;
+    } catch (error) {
+      console.error('❌ Error calculating inventory analytics:', error);
+      return {
+        totalItems: 0,
+        totalValue: 0,
+        lowStockCount: 0,
+        outOfStockCount: 0,
+        categoryBreakdown: [],
+        recentMovements: []
+      };
+    }
+  }
+
   // Helper method to create SQL client
   private createSqlClient() {
     const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
