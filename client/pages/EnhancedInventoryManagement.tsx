@@ -2235,9 +2235,9 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       <Dialog open={showAddProductModal} onOpenChange={setShowAddProductModal}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>{editingProductId ? "Edit Product" : "Add New Product"}</DialogTitle>
             <DialogDescription>
-              Add a new product to your inventory with complete details
+              {editingProductId ? "Update product details" : "Add a new product to your inventory with complete details"}
             </DialogDescription>
           </DialogHeader>
 
