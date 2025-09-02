@@ -762,7 +762,7 @@ export default function AdminInventory() {
               ) : (
                 // Enhanced Table View
                 <Card className="border-0 shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
+                  <CardHeader className="bg-gray-50 border-b px-4 sm:px-6">
                     <CardTitle className="text-lg font-semibold text-gray-900">Products Inventory</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
