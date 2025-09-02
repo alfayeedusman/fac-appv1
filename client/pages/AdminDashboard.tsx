@@ -1968,7 +1968,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === "inventory" && <InventoryDashboard />}
+          {activeTab === "inventory" && <EnhancedInventoryManagement />}
 
           {activeTab === "user-management" && (
             <div className="space-y-6">
