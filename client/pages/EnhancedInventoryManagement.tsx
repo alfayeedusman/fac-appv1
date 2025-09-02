@@ -204,10 +204,10 @@ export default function EnhancedInventoryManagement() {
       isActive: true,
     },
     {
-      id: "car_wash_services",
-      name: "Car Wash Services",
-      description: "Vehicle cleaning services with dynamic pricing",
-      icon: "🚗",
+      id: "chemicals",
+      name: "Chemicals & Solutions",
+      description: "Chemical products for cleaning and detailing",
+      icon: "🧪",
       color: "#F59E0B",
       variants: [
         {
