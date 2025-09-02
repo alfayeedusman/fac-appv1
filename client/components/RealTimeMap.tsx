@@ -204,15 +204,24 @@ export default function RealTimeMap({
 
   // Debug token and environment
   useEffect(() => {
-    const token = import.meta.env.VITE_MAPBOX_TOKEN;
-    const info = `Token: ${token ? 'Present' : 'Missing'} | Length: ${token?.length || 0}`;
+    const token = MAPBOX_TOKEN;
+    const isValidToken = token && token.startsWith('pk.') && token.length > 50;
+    const info = `Token: ${token ? 'Present' : 'Missing'} | Valid: ${isValidToken ? 'Yes' : 'No'} | Length: ${token?.length || 0}`;
     setDebugInfo(info);
     console.log('🔍 Debug info:', info);
+    console.log('🔑 Full token:', token);
     console.log('🌍 Environment vars:', {
       VITE_MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN ? 'SET' : 'MISSING',
       NODE_ENV: import.meta.env.NODE_ENV,
       MODE: import.meta.env.MODE
     });
+
+    if (!isValidToken) {
+      console.warn('⚠️ Invalid or missing Mapbox token - will use fallback map');
+      setError('Invalid Mapbox token configuration');
+      setShowFallback(true);
+      setIsLoading(false);
+    }
   }, []);
 
   // Initialize map
