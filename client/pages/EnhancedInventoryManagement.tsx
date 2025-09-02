@@ -868,8 +868,7 @@ export default function EnhancedInventoryManagement() {
     }
 
     try {
-      const supplier: Supplier = {
-        id: `supplier_${Date.now()}`,
+      const supplierData = {
         name: newSupplier.name,
         contactPerson: newSupplier.contactPerson,
         email: newSupplier.email,
@@ -878,11 +877,12 @@ export default function EnhancedInventoryManagement() {
         website: newSupplier.website,
         notes: newSupplier.notes,
         isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
       };
 
-      setSuppliers([...suppliers, supplier]);
+      const persistedSupplier = addSupplier(supplierData);
+
+      // Refresh suppliers from storage
+      setSuppliers(getSuppliers());
 
       // Clear form
       setNewSupplier({
@@ -899,7 +899,7 @@ export default function EnhancedInventoryManagement() {
 
       notificationManager.showSuccess(
         "Supplier Added!",
-        `${supplier.name} has been added to your supplier list.`
+        `${persistedSupplier.name} has been added to your supplier list.`
       );
 
     } catch (error) {
@@ -910,8 +910,14 @@ export default function EnhancedInventoryManagement() {
 
   const handleDeleteSupplier = (supplierId: string) => {
     if (confirm("Are you sure you want to delete this supplier?")) {
-      setSuppliers(suppliers.filter((s) => s.id !== supplierId));
-      notificationManager.showSuccess("Supplier Deleted", "Supplier removed from list.");
+      const success = deleteSupplier(supplierId);
+      if (success) {
+        // Refresh suppliers from storage
+        setSuppliers(getSuppliers());
+        notificationManager.showSuccess("Supplier Deleted", "Supplier removed from list.");
+      } else {
+        notificationManager.showError("Delete Failed", "Supplier not found or could not be deleted.");
+      }
     }
   };
 
