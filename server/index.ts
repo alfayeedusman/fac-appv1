@@ -9,6 +9,7 @@ import customerApiRoutes from "./routes/customer-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
+import notificationsApiRoutes from "./routes/notifications-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,7 @@ export function createServer() {
   app.use("/api", otpApiRoutes);
   app.use("/api/v2", customerApiRoutes);
   app.use("/api/images", imagesApiRoutes);
+  app.use("/api/notifications", notificationsApiRoutes);
 
   // Neon Database API Routes
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
