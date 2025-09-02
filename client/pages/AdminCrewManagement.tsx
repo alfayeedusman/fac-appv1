@@ -149,13 +149,33 @@ export default function AdminCrewManagement() {
     loadData();
   }, []);
 
-  const refreshData = () => {
-    setStats(generateMockStats());
-    setRecentActivity(generateMockActivity());
-    toast({
-      title: "Data Refreshed",
-      description: "Crew management data has been updated",
-    });
+  const refreshData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Reload real data from API
+      const [crewStats, crewActivity] = await Promise.all([
+        fetchCrewStats(),
+        fetchCrewActivity()
+      ]);
+
+      setStats(crewStats);
+      setRecentActivity(crewActivity);
+
+      toast({
+        title: "Data Refreshed",
+        description: "Crew management data has been updated",
+      });
+    } catch (error) {
+      console.error('Error refreshing crew data:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Could not refresh crew management data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getActivityIcon = (type: string) => {
