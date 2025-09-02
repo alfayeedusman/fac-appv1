@@ -323,15 +323,27 @@ export default function EnhancedInventoryManagement() {
   }, [searchQuery, selectedCategory, products]);
 
   const initializeCategories = () => {
-    const stored = localStorage.getItem("fac_product_categories");
-    if (!stored) {
-      localStorage.setItem(
-        "fac_product_categories",
-        JSON.stringify(defaultCategories),
-      );
+    try {
+      const stored = localStorage.getItem("fac_product_categories");
+      if (!stored) {
+        localStorage.setItem(
+          "fac_product_categories",
+          JSON.stringify(defaultCategories),
+        );
+        setCategories(defaultCategories);
+      } else {
+        const parsedCategories = JSON.parse(stored);
+        // Validate that parsed data is an array
+        if (Array.isArray(parsedCategories)) {
+          setCategories(parsedCategories);
+        } else {
+          console.warn("Invalid categories data in localStorage, using defaults");
+          setCategories(defaultCategories);
+        }
+      }
+    } catch (error) {
+      console.error("Error initializing categories:", error);
       setCategories(defaultCategories);
-    } else {
-      setCategories(JSON.parse(stored));
     }
   };
 
