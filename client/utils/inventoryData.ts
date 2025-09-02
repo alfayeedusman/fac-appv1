@@ -177,11 +177,12 @@ export const addProduct = (
   // Log stock movement
   addStockMovement({
     productId: newProduct.id,
+    productName: newProduct.name,
     type: "in",
     quantity: newProduct.currentStock,
     reason: "Initial stock",
     previousStock: 0,
-    newStock: newProduct.currentStock,
+    newBalance: newProduct.currentStock,
     performedBy: localStorage.getItem("userEmail") || "system",
     notes: "Product added to inventory",
   });
