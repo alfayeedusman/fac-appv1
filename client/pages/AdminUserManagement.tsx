@@ -41,6 +41,7 @@ import {
   Settings,
   Crown,
   UserPlus,
+  User,
 } from "lucide-react";
 import { neonDbClient, User } from "@/services/neonDatabaseService";
 import Swal from "sweetalert2";
