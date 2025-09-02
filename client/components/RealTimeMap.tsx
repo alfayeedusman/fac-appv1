@@ -585,16 +585,24 @@ export default function RealTimeMap({
       )}
 
       {/* Fallback content when no map */}
-      {!map.current && !isLoading && (
+      {!map.current && !isLoading && !error && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 flex items-center justify-center">
           <div className="text-center p-8">
             <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Map Loading...
+              Map Ready
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Initializing Mapbox service
+              Click refresh if map doesn't appear
             </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="mt-4 bg-blue-500 hover:bg-blue-600"
+              size="sm"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh Map
+            </Button>
           </div>
         </div>
       )}
