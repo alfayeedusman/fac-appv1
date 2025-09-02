@@ -328,6 +328,54 @@ export const addSupplier = (
   return newSupplier;
 };
 
+export const updateProduct = (
+  productId: string,
+  updates: Partial<Omit<Product, "id" | "createdDate">>,
+): Product | null => {
+  const products = getProducts();
+  const productIndex = products.findIndex((p) => p.id === productId);
+
+  if (productIndex === -1) {
+    return null;
+  }
+
+  const updatedProduct: Product = {
+    ...products[productIndex],
+    ...updates,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  products[productIndex] = updatedProduct;
+  localStorage.setItem("fac_inventory_products", JSON.stringify(products));
+  return updatedProduct;
+};
+
+export const deleteProduct = (productId: string): boolean => {
+  const products = getProducts();
+  const initialLength = products.length;
+  const filteredProducts = products.filter((p) => p.id !== productId);
+
+  if (filteredProducts.length === initialLength) {
+    return false; // Product not found
+  }
+
+  localStorage.setItem("fac_inventory_products", JSON.stringify(filteredProducts));
+  return true;
+};
+
+export const deleteSupplier = (supplierId: string): boolean => {
+  const suppliers = getSuppliers();
+  const initialLength = suppliers.length;
+  const filteredSuppliers = suppliers.filter((s) => s.id !== supplierId);
+
+  if (filteredSuppliers.length === initialLength) {
+    return false; // Supplier not found
+  }
+
+  localStorage.setItem("fac_suppliers", JSON.stringify(filteredSuppliers));
+  return true;
+};
+
 export const getLowStockProducts = (): Product[] => {
   const products = getProducts();
   return products.filter(
