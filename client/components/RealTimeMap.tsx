@@ -324,12 +324,10 @@ export default function RealTimeMap({
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
         console.log('✅ Map data loaded successfully');
-      } catch (error) {
-        console.error('❌ Error loading map data:', error);
-        // Don't set loading state here, only set error if no map error exists
-        if (!error) {
-          setError('Failed to load location data');
-        }
+      } catch (dataError) {
+        console.error('❌ Error loading map data:', dataError);
+        // Don't override map errors, only set data loading error if no existing error
+        setError(prevError => prevError || 'Failed to load location data');
       }
     };
 
