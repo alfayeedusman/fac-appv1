@@ -330,6 +330,118 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * Get all image collections
+ * GET /api/images/collections
+ */
+router.get('/collections', async (req, res) => {
+  try {
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+    const { category, isPublic, createdBy } = req.query;
+
+    const conditions = [];
+
+    if (category) {
+      conditions.push(eq(schema.imageCollections.category, category as string));
+    }
+
+    if (isPublic !== undefined) {
+      conditions.push(eq(schema.imageCollections.isPublic, isPublic === 'true'));
+    }
+
+    if (createdBy) {
+      conditions.push(eq(schema.imageCollections.createdBy, createdBy as string));
+    }
+
+    const collections = await neonDbService.db
+      .select()
+      .from(schema.imageCollections)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(schema.imageCollections.sortOrder, desc(schema.imageCollections.createdAt));
+
+    res.json({
+      success: true,
+      data: collections
+    });
+  } catch (error) {
+    console.error('Error getting image collections:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get image collections'
+    });
+  }
+});
+
+/**
+ * Get image statistics
+ * GET /api/images/stats
+ */
+router.get('/stats', async (req, res) => {
+  try {
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection not available'
+      });
+    }
+
+    // Get total images count
+    const totalImagesResult = await neonDbService.db
+      .select({ count: count() })
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true));
+
+    // Get images by category
+    const categoryStats = await neonDbService.db
+      .select({
+        category: schema.images.category,
+        count: count(),
+      })
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true))
+      .groupBy(schema.images.category);
+
+    // Get storage usage
+    const storageResult = await neonDbService.db
+      .select({
+        totalSize: schema.images.size,
+      })
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true));
+
+    const totalStorage = storageResult.reduce((sum, item) => sum + (item.totalSize || 0), 0);
+
+    res.json({
+      success: true,
+      data: {
+        totalImages: totalImagesResult[0]?.count || 0,
+        categoryBreakdown: categoryStats,
+        totalStorageBytes: totalStorage,
+        totalStorageMB: Math.round(totalStorage / (1024 * 1024) * 100) / 100,
+      }
+    });
+  } catch (error) {
+    console.error('Error getting image stats:', error);
+    // Return empty stats if tables don't exist yet
+    res.json({
+      success: true,
+      data: {
+        totalImages: 0,
+        categoryBreakdown: [],
+        totalStorageBytes: 0,
+        totalStorageMB: 0,
+      }
+    });
+  }
+});
+
+/**
  * Get single image by ID
  * GET /api/images/:id
  */
