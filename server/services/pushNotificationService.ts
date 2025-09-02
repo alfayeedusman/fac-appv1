@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
-import { db } from '../database/connection';
-import { fcmTokens, pushNotifications, notificationDeliveries } from '../database/schema';
+import { neonDbService } from './neonDatabaseService';
+import * as schema from '../database/schema';
 import { eq, inArray, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
