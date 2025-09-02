@@ -529,6 +529,13 @@ router.post('/collections', async (req, res) => {
  */
 router.get('/collections', async (req, res) => {
   try {
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
     const { category, isPublic, createdBy } = req.query;
 
     const conditions = [];
