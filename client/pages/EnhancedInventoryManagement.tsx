@@ -1265,43 +1265,315 @@ export default function EnhancedInventoryManagement() {
             </TabsContent>
 
         {/* Other tabs remain the same... */}
-        <TabsContent value="movements">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stock Movements</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Stock movement tracking will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+        {/* Stock Movements Tab */}
+        <TabsContent value="movements" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Stock Movements</h2>
+              <p className="text-muted-foreground">Track all inventory movements and changes</p>
+            </div>
+          </div>
 
-        <TabsContent value="suppliers">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Suppliers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Supplier management will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Recent Stock Movements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {stockMovements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No stock movements recorded yet</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Performed By</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stockMovements.map((movement) => (
+                        <TableRow key={movement.id}>
+                          <TableCell className="font-medium">
+                            {movement.productName}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={movement.type === 'in' ? 'default' : 'destructive'}>
+                              {movement.type === 'in' ? 'Stock In' : 'Stock Out'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{movement.quantity}</TableCell>
+                          <TableCell>{movement.reason}</TableCell>
+                          <TableCell>
+                            {new Date(movement.timestamp).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{movement.performedBy}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <TabsContent value="analytics">
-              <Card>
+        {/* Suppliers Tab */}
+        <TabsContent value="suppliers" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Suppliers</h2>
+              <p className="text-muted-foreground">Manage your supplier network</p>
+            </div>
+            <Button onClick={() => setShowAddSupplierModal(true)} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Supplier
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {suppliers.map((supplier) => (
+              <Card key={supplier.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Analytics</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Building className="h-5 w-5 text-blue-500" />
+                      <span className="truncate">{supplier.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteSupplier(supplier.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Analytics and reports will be displayed here.
-                  </p>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-gray-500" />
+                    <span>{supplier.contactPerson}</span>
+                  </div>
+                  {supplier.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="truncate">{supplier.email}</span>
+                    </div>
+                  )}
+                  {supplier.phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-gray-500" />
+                      <span>{supplier.phone}</span>
+                    </div>
+                  )}
+                  {supplier.website && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-gray-500" />
+                      <a href={supplier.website} target="_blank" rel="noopener noreferrer"
+                         className="text-blue-500 hover:underline truncate">
+                        Website
+                      </a>
+                    </div>
+                  )}
+                  {supplier.notes && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                      <p className="line-clamp-2">{supplier.notes}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+            ))}
+          </div>
+
+          {suppliers.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Building className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No suppliers yet</h3>
+                <p className="text-gray-500 mb-4">Start by adding your first supplier to track your supply chain.</p>
+                <Button onClick={() => setShowAddSupplierModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Supplier
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Inventory Analytics</h2>
+            <p className="text-muted-foreground">Comprehensive inventory insights and reports</p>
+          </div>
+
+          {(() => {
+            const analytics = getInventoryAnalytics();
+            return (
+              <div className="space-y-6">
+                {/* Overview Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Package className="h-8 w-8 text-blue-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.totalProducts}</p>
+                          <p className="text-sm text-muted-foreground">Total Products</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-8 w-8 text-green-500" />
+                        <div>
+                          <p className="text-2xl font-bold">₱{analytics.totalValue.toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground">Inventory Value</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-8 w-8 text-orange-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.lowStockCount}</p>
+                          <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <TrendingDown className="h-8 w-8 text-red-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.outOfStockCount}</p>
+                          <p className="text-sm text-muted-foreground">Out of Stock</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Category Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Category Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.categoryBreakdown.map((cat) => (
+                        <div key={cat.category} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded"
+                              style={{ backgroundColor: cat.color }}
+                            ></div>
+                            <span className="font-medium">{cat.category}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">{cat.count} products</div>
+                            <div className="text-sm text-muted-foreground">₱{cat.value.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Low Stock Alert */}
+                {analytics.lowStockProducts.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-600">
+                        <AlertTriangle className="h-5 w-5" />
+                        Low Stock Alert
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Product</TableHead>
+                              <TableHead>Current Stock</TableHead>
+                              <TableHead>Min Level</TableHead>
+                              <TableHead>Action Needed</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {analytics.lowStockProducts.map((product) => (
+                              <TableRow key={product.id}>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>
+                                  <Badge variant="destructive">{product.currentStock}</Badge>
+                                </TableCell>
+                                <TableCell>{product.minStockLevel}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Reorder Soon</Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Top Products by Value */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Top Products by Inventory Value
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.topProducts.map((product, index) => (
+                        <div key={product.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">{product.currentStock} units</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">₱{((product.costPrice || 0) * product.currentStock).toLocaleString()}</div>
+                            <div className="text-sm text-muted-foreground">@₱{product.costPrice || 0} each</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })()}
         </TabsContent>
       </Tabs>
 
