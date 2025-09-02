@@ -78,6 +78,42 @@ export default function AdminCrewManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(null);
 
+  // Check authentication on mount and whenever storage changes
+  useEffect(() => {
+    const checkAuth = () => {
+      const role = localStorage.getItem("userRole");
+      const email = localStorage.getItem("userEmail");
+
+      console.log("🔐 Auth check - Role:", role, "Email:", email);
+
+      if (!role || !email) {
+        console.log("❌ No auth found, redirecting to login");
+        navigate("/login");
+        return;
+      }
+
+      if (role !== "admin" && role !== "superadmin") {
+        console.log("❌ Insufficient permissions, redirecting to login");
+        navigate("/login");
+        return;
+      }
+
+      console.log("✅ Auth valid, setting role:", role);
+      setUserRole(role);
+      setIsAuthLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (in case user logs out in another tab)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [navigate]);
+
   // API data fetching functions - using existing working endpoints
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
