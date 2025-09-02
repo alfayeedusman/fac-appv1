@@ -216,6 +216,17 @@ export default function AdminFACMap() {
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   Real-time location tracking and heat map visualization
                 </p>
+                {facMapStats?.realtime.lastUpdate && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Last updated: {facMapStats.realtime.lastUpdate}
+                    {statsLoading && (
+                      <span className="ml-2 inline-flex items-center">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>
+                        <span className="ml-1">updating...</span>
+                      </span>
+                    )}
+                  </p>
+                )}
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <AdminNotificationDropdown />
