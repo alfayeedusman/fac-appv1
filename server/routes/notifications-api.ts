@@ -365,34 +365,34 @@ router.get('/history', async (req, res) => {
     const conditions = [];
     
     if (type) {
-      conditions.push(eq(pushNotifications.notificationType, type as string));
+      conditions.push(eq(schema.pushNotifications.notificationType, type as string));
     }
-    
+
     if (status) {
-      conditions.push(eq(pushNotifications.status, status as string));
+      conditions.push(eq(schema.pushNotifications.status, status as string));
     }
-    
+
     if (startDate) {
-      conditions.push(gte(pushNotifications.createdAt, new Date(startDate as string)));
+      conditions.push(gte(schema.pushNotifications.createdAt, new Date(startDate as string)));
     }
-    
+
     if (endDate) {
-      conditions.push(lte(pushNotifications.createdAt, new Date(endDate as string)));
+      conditions.push(lte(schema.pushNotifications.createdAt, new Date(endDate as string)));
     }
 
     // Get notifications
-    const notifications = await db
+    const notifications = await neonDbService.db
       .select()
-      .from(pushNotifications)
+      .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(pushNotifications.createdAt))
+      .orderBy(desc(schema.pushNotifications.createdAt))
       .limit(limitNum)
       .offset(offset);
 
     // Get total count
-    const totalResult = await db
+    const totalResult = await neonDbService.db
       .select({ count: count() })
-      .from(pushNotifications)
+      .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
     const total = totalResult[0]?.count || 0;
@@ -428,21 +428,21 @@ router.get('/stats', async (req, res) => {
     startDate.setDate(startDate.getDate() - dayCount);
 
     // Get notification stats
-    const stats = await db
+    const stats = await neonDbService.db
       .select({
         count: count(),
-        type: pushNotifications.notificationType,
-        status: pushNotifications.status,
+        type: schema.pushNotifications.notificationType,
+        status: schema.pushNotifications.status,
       })
-      .from(pushNotifications)
-      .where(gte(pushNotifications.createdAt, startDate))
-      .groupBy(pushNotifications.notificationType, pushNotifications.status);
+      .from(schema.pushNotifications)
+      .where(gte(schema.pushNotifications.createdAt, startDate))
+      .groupBy(schema.pushNotifications.notificationType, schema.pushNotifications.status);
 
     // Get registered tokens count
-    const activeTokensResult = await db
+    const activeTokensResult = await neonDbService.db
       .select({ count: count() })
-      .from(fcmTokens)
-      .where(eq(fcmTokens.isActive, true));
+      .from(schema.fcmTokens)
+      .where(eq(schema.fcmTokens.isActive, true));
 
     const activeTokens = activeTokensResult[0]?.count || 0;
 
