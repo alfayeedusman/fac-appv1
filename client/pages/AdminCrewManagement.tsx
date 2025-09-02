@@ -57,6 +57,8 @@ interface RecentActivity {
 
 export default function AdminCrewManagement() {
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState<string>("");
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<CrewStats>({
     totalCrew: 0,
