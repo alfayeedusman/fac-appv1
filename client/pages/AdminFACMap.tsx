@@ -184,7 +184,7 @@ export default function AdminFACMap() {
   };
 
   const refreshData = () => {
-    window.location.reload();
+    loadFacMapStats();
   };
 
   return (
