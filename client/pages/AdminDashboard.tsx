@@ -1422,6 +1422,16 @@ export default function AdminDashboard() {
                       onClick={async () => {
                         console.log('🔄 Manual customer reload triggered');
                         await loadRealCustomers();
+
+                        await Swal.fire({
+                          title: 'Customers Reloaded!',
+                          text: 'Customer data has been refreshed',
+                          icon: 'success',
+                          timer: 2000,
+                          showConfirmButton: false,
+                          position: 'top-end',
+                          toast: true
+                        });
                       }}
                       variant="outline"
                       className="font-bold py-3 px-4 rounded-xl"
