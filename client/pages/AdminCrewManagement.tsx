@@ -126,11 +126,16 @@ export default function AdminCrewManagement() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setStats(generateMockStats());
-        setRecentActivity(generateMockActivity());
+        // Load real data from API
+        const [crewStats, crewActivity] = await Promise.all([
+          fetchCrewStats(),
+          fetchCrewActivity()
+        ]);
+
+        setStats(crewStats);
+        setRecentActivity(crewActivity);
       } catch (error) {
+        console.error('Error loading crew management data:', error);
         toast({
           title: "Error",
           description: "Failed to load crew management data",
