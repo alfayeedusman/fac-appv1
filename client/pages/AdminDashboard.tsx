@@ -87,7 +87,7 @@ import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
 import POS from "./POS";
-import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
+import AdminInventory from "./AdminInventory";
 import AdminUserManagement from "./AdminUserManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
