@@ -246,11 +246,12 @@ export default function RealTimeMap({
         timeoutId = setTimeout(() => {
           if (isMounted && initializingRef.current) {
             console.warn('⚠️ Map loading timeout');
-            setError('Map loading timeout. Please refresh the page.');
+            setError('Map loading timeout. Using fallback view.');
+            setShowFallback(true);
             setIsLoading(false);
             initializingRef.current = false;
           }
-        }, 15000);
+        }, 10000);
 
         if (!isMounted) return;
 
