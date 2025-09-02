@@ -246,14 +246,15 @@ export const getSuppliers = (): Supplier[] => {
 };
 
 export const addSupplier = (
-  supplierData: Omit<Supplier, "id" | "createdDate">,
+  supplierData: Omit<Supplier, "id" | "createdAt" | "updatedAt">,
 ): Supplier => {
   const suppliers = getSuppliers();
 
   const newSupplier: Supplier = {
     ...supplierData,
     id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
-    createdDate: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   suppliers.push(newSupplier);
