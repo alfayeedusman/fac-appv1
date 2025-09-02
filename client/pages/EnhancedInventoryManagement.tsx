@@ -2479,7 +2479,7 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
               Cancel
             </Button>
             <Button onClick={handleAddProduct}>
-              Add Product
+              {editingProductId ? "Update Product" : "Add Product"}
             </Button>
           </DialogFooter>
         </DialogContent>
