@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { neonDbService } from "../services/neonDatabaseService";
 import * as schema from "../database/schema";
 import { count, eq, and, sql, desc, avg, gte } from "drizzle-orm";
+import { seedCrewData } from "../database/seed-crew";
 
 // Get comprehensive crew statistics
 export const getCrewStats: RequestHandler = async (req, res) => {
