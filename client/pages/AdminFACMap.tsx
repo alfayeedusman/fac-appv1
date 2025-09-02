@@ -91,6 +91,30 @@ export default function AdminFACMap() {
   const [facMapStats, setFacMapStats] = useState<FacMapStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  // Load FAC MAP real-time statistics
+  const loadFacMapStats = async () => {
+    try {
+      setStatsLoading(true);
+      console.log("📊 Loading FAC MAP stats...");
+
+      const response = await fetch("/api/neon/fac-map-stats");
+      const data = await response.json();
+
+      if (data.success) {
+        console.log("✅ FAC MAP stats loaded:", data.stats);
+        setFacMapStats(data.stats);
+      } else {
+        console.error("❌ Failed to load FAC MAP stats:", data.error);
+        // Keep existing dummy data as fallback
+      }
+    } catch (error) {
+      console.error("❌ Error loading FAC MAP stats:", error);
+      // Keep existing dummy data as fallback
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
     const checkAuth = () => {
@@ -126,6 +150,17 @@ export default function AdminFACMap() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [navigate]);
+
+  // Load FAC MAP stats when component mounts and user is authenticated
+  useEffect(() => {
+    if (userRole && !isLoading) {
+      loadFacMapStats();
+
+      // Set up auto-refresh every 30 seconds
+      const interval = setInterval(loadFacMapStats, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [userRole, isLoading]);
 
   // Show loading while checking auth
   if (isLoading) {
