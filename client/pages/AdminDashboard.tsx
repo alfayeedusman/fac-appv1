@@ -294,6 +294,20 @@ export default function AdminDashboard() {
     try {
       setCustomersLoading(true);
       console.log('🔍 Loading customers from database...');
+
+      // Ensure database connection is ready
+      const connectionStatus = neonDbClient.getConnectionStatus();
+      console.log('🔗 Database connection status:', connectionStatus);
+
+      if (!connectionStatus) {
+        console.log('⚠️ Database not connected, attempting to connect...');
+        const connected = await neonDbClient.testConnection();
+        console.log('🔗 Connection test result:', connected);
+        if (!connected.connected) {
+          throw new Error('Database connection failed');
+        }
+      }
+
       const result = await neonDbClient.getUsers();
       console.log('👥 Customer load result:', result);
 
