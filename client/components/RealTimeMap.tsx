@@ -295,6 +295,7 @@ export default function RealTimeMap({
           setIsLoading(false);
         }
         if (timeoutId) clearTimeout(timeoutId);
+        initializingRef.current = false;
       }
     };
 
