@@ -198,8 +198,11 @@ export default function AdminCrewManagement() {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!userRole || isAuthLoading) return; // Don't load data until auth is complete
+
       setIsLoading(true);
       try {
+        console.log("📊 Loading crew management data...");
         // Load real data from API
         const [crewStats, crewActivity] = await Promise.all([
           fetchCrewStats(),
@@ -208,6 +211,7 @@ export default function AdminCrewManagement() {
 
         setStats(crewStats);
         setRecentActivity(crewActivity);
+        console.log("✅ Crew management data loaded successfully");
       } catch (error) {
         console.error('Error loading crew management data:', error);
         toast({
@@ -221,7 +225,7 @@ export default function AdminCrewManagement() {
     };
 
     loadData();
-  }, []);
+  }, [userRole, isAuthLoading]); // Depend on auth state
 
   const refreshData = async () => {
     try {
