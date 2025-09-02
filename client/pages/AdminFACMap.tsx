@@ -249,7 +249,7 @@ export default function AdminFACMap() {
                       Total Crew
                     </p>
                     <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      20
+                      {statsLoading ? "..." : (facMapStats?.crew.total || 20)}
                     </p>
                   </div>
                 </div>
