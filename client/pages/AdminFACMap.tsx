@@ -221,7 +221,7 @@ export default function AdminFACMap() {
                     Last updated: {facMapStats.realtime.lastUpdate}
                     {statsLoading && (
                       <span className="ml-2 inline-flex items-center">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>
+                        <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500 inline-block"></span>
                         <span className="ml-1">updating...</span>
                       </span>
                     )}
