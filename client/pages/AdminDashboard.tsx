@@ -374,7 +374,12 @@ export default function AdminDashboard() {
 
       // Load real customer data from database
       console.log('📋 About to call loadRealCustomers...');
-      loadRealCustomers();
+      try {
+        await loadRealCustomers();
+        console.log('✅ loadRealCustomers completed');
+      } catch (error) {
+        console.error('❌ loadRealCustomers failed:', error);
+      }
 
       // Load system notifications
       loadSystemNotifications();
@@ -1394,13 +1399,26 @@ export default function AdminDashboard() {
                       Customer Management
                     </span>
                   </div>
-                  <Button
-                    onClick={() => setIsAddCustomerModalOpen(true)}
-                    className="btn-futuristic font-bold w-full sm:w-auto py-3 px-6 rounded-xl"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Customer
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        console.log('🔄 Manual customer reload triggered');
+                        await loadRealCustomers();
+                      }}
+                      variant="outline"
+                      className="font-bold py-3 px-4 rounded-xl"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Reload
+                    </Button>
+                    <Button
+                      onClick={() => setIsAddCustomerModalOpen(true)}
+                      className="btn-futuristic font-bold py-3 px-6 rounded-xl"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Add Customer
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
