@@ -318,6 +318,81 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= SUPPLIERS SYSTEM =============
+
+    // Create suppliers table
+    await sql`
+      CREATE TABLE IF NOT EXISTS suppliers (
+        id TEXT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        contact_person VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        phone VARCHAR(20),
+        address TEXT,
+        website VARCHAR(255),
+        tax_id VARCHAR(100),
+        payment_terms VARCHAR(100) DEFAULT 'Net 30',
+        credit_limit DECIMAL(12,2) DEFAULT 0.00,
+        current_balance DECIMAL(12,2) DEFAULT 0.00,
+        rating DECIMAL(3,2) DEFAULT 0.00,
+        total_orders INTEGER DEFAULT 0,
+        total_value DECIMAL(12,2) DEFAULT 0.00,
+        status VARCHAR(20) DEFAULT 'active',
+        notes TEXT,
+        tags JSONB DEFAULT '[]',
+        average_lead_time INTEGER,
+        delivery_reliability DECIMAL(5,2) DEFAULT 100.00,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create purchase_orders table
+    await sql`
+      CREATE TABLE IF NOT EXISTS purchase_orders (
+        id TEXT PRIMARY KEY,
+        order_number VARCHAR(50) NOT NULL UNIQUE,
+        supplier_id TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'draft',
+        order_date TIMESTAMP NOT NULL DEFAULT NOW(),
+        expected_delivery TIMESTAMP,
+        actual_delivery TIMESTAMP,
+        subtotal DECIMAL(12,2) NOT NULL,
+        tax_amount DECIMAL(12,2) DEFAULT 0.00,
+        shipping_cost DECIMAL(12,2) DEFAULT 0.00,
+        discount_amount DECIMAL(12,2) DEFAULT 0.00,
+        total_amount DECIMAL(12,2) NOT NULL,
+        requested_by TEXT NOT NULL,
+        approved_by TEXT,
+        approved_at TIMESTAMP,
+        notes TEXT,
+        internal_reference VARCHAR(100),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create purchase_order_items table
+    await sql`
+      CREATE TABLE IF NOT EXISTS purchase_order_items (
+        id TEXT PRIMARY KEY,
+        purchase_order_id TEXT NOT NULL,
+        inventory_item_id TEXT NOT NULL,
+        item_name VARCHAR(255) NOT NULL,
+        item_sku VARCHAR(100),
+        quantity_ordered INTEGER NOT NULL,
+        quantity_received INTEGER DEFAULT 0,
+        quantity_pending INTEGER NOT NULL,
+        unit_cost DECIMAL(10,2) NOT NULL,
+        line_total DECIMAL(12,2) NOT NULL,
+        received_date TIMESTAMP,
+        received_by TEXT,
+        quality_status VARCHAR(50) DEFAULT 'pending',
+        quality_notes TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
     // ============= SERVICE PACKAGES SYSTEM =============
 
     // Create service_packages table
