@@ -701,7 +701,7 @@ router.get('/collections/:collectionId/images', async (req, res) => {
         createdAt: schema.images.createdAt,
       })
       .from(schema.imageCollectionItems)
-      .innerJoin(schema.images, eq(schema.imageCollectionItems.imageId, images.id))
+      .innerJoin(schema.images, eq(schema.imageCollectionItems.imageId, schema.images.id))
       .where(eq(schema.imageCollectionItems.collectionId, collectionId))
       .orderBy(schema.imageCollectionItems.sortOrder);
 
