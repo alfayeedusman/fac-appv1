@@ -517,7 +517,7 @@ router.put('/:id', async (req, res) => {
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
     const result = await neonDbService.db
-      .update(images)
+      .update(schema.images)
       .set(updateData)
       .where(eq(schema.images.id, id));
 
