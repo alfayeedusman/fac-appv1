@@ -544,8 +544,22 @@ export default function EnhancedInventoryManagement() {
 
   const handleDeleteProduct = (productId: string) => {
     if (confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== productId));
-      notificationManager.showSuccess("Product Deleted", "Product removed from inventory.");
+      const success = deleteProduct(productId);
+      if (success) {
+        // Refresh products from storage
+        const refreshedProducts = getProducts().map(product => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }));
+        setProducts(refreshedProducts);
+        notificationManager.showSuccess("Product Deleted", "Product removed from inventory.");
+      } else {
+        notificationManager.showError("Delete Failed", "Product not found or could not be deleted.");
+      }
     }
   };
 
