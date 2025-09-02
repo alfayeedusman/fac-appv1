@@ -409,6 +409,8 @@ export default function EnhancedInventoryManagement() {
   };
 
   // Product CRUD Functions
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
   const handleAddProduct = () => {
     if (!newProduct.name || !newProduct.categoryId) {
       alert("Please fill in all required fields (Name and Category)");
@@ -416,33 +418,78 @@ export default function EnhancedInventoryManagement() {
     }
 
     try {
-      const product: EnhancedProduct = {
-        id: `product_${Date.now()}`,
-        name: newProduct.name,
-        category: categories.find(c => c.id === newProduct.categoryId)?.name || "Unknown",
-        categoryId: newProduct.categoryId,
-        variantId: newProduct.variantId,
-        description: newProduct.description,
-        sku: newProduct.sku || `SKU-${Date.now()}`,
-        barcode: newProduct.barcode,
-        currentStock: newProduct.currentStock,
-        minStockLevel: newProduct.minStockLevel,
-        maxStockLevel: newProduct.maxStockLevel,
-        unitPrice: newProduct.unitPrice,
-        costPrice: newProduct.costPrice,
-        supplier: newProduct.supplier,
-        location: newProduct.location,
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tags: newProduct.tags ? newProduct.tags.split(',').map(t => t.trim()) : [],
-        images: [],
-        specifications: newProduct.specifications ? JSON.parse(newProduct.specifications || "{}") : {},
-        isService: newProduct.isService
-      };
+      if (editingProductId) {
+        // Update existing product
+        const updateData = {
+          name: newProduct.name,
+          category: categories.find(c => c.id === newProduct.categoryId)?.name || "Unknown",
+          description: newProduct.description,
+          sku: newProduct.sku || `SKU-${Date.now()}`,
+          barcode: newProduct.barcode,
+          currentStock: newProduct.currentStock,
+          minStockLevel: newProduct.minStockLevel,
+          maxStockLevel: newProduct.maxStockLevel,
+          unitPrice: newProduct.unitPrice,
+          costPrice: newProduct.costPrice,
+          supplier: newProduct.supplier,
+          location: newProduct.location,
+          status: "active" as const,
+        };
 
-      // Add to products array
-      setProducts([...products, product]);
+        const updatedProduct = updateProduct(editingProductId, updateData);
+        if (updatedProduct) {
+          // Refresh products from storage and convert to enhanced format
+          const refreshedProducts = getProducts().map(product => ({
+            ...product,
+            categoryId: product.category,
+            tags: [],
+            images: [],
+            specifications: {},
+            isService: false,
+          }));
+          setProducts(refreshedProducts);
+
+          notificationManager.showSuccess(
+            "Product Updated!",
+            `${updatedProduct.name} has been updated successfully.`
+          );
+        }
+        setEditingProductId(null);
+      } else {
+        // Create new product using utility
+        const productData = {
+          name: newProduct.name,
+          category: newProduct.categoryId as "car_care" | "accessories" | "tools" | "chemicals" | "parts",
+          description: newProduct.description,
+          sku: newProduct.sku || `SKU-${Date.now()}`,
+          barcode: newProduct.barcode,
+          currentStock: newProduct.currentStock,
+          minStockLevel: newProduct.minStockLevel,
+          maxStockLevel: newProduct.maxStockLevel,
+          unitPrice: newProduct.unitPrice,
+          costPrice: newProduct.costPrice,
+          supplier: newProduct.supplier,
+          location: newProduct.location,
+        };
+
+        const persistedProduct = addProduct(productData);
+
+        // Refresh products from storage and convert to enhanced format
+        const refreshedProducts = getProducts().map(product => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }));
+        setProducts(refreshedProducts);
+
+        notificationManager.showSuccess(
+          "Product Created!",
+          `${persistedProduct.name} has been added to inventory successfully.`
+        );
+      }
 
       // Clear form
       setNewProduct({
@@ -466,14 +513,9 @@ export default function EnhancedInventoryManagement() {
 
       setShowAddProductModal(false);
 
-      notificationManager.showSuccess(
-        "Product Created!",
-        `${product.name} has been added to inventory successfully.`
-      );
-
     } catch (error) {
-      console.error("Error adding product:", error);
-      alert("Error adding product. Please try again.");
+      console.error("Error saving product:", error);
+      alert("Error saving product. Please try again.");
     }
   };
 
