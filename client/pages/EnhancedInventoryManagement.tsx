@@ -117,6 +117,8 @@ export default function EnhancedInventoryManagement() {
   const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddProductModal, setShowAddProductModal] = useState(false);
