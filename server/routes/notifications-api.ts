@@ -348,13 +348,27 @@ router.post('/track/:action', async (req, res) => {
  */
 router.get('/history', async (req, res) => {
   try {
-    const { 
-      page = '1', 
-      limit = '20', 
-      type, 
-      status, 
-      startDate, 
-      endDate 
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.json({
+        success: true,
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          pages: 0
+        }
+      });
+    }
+
+    const {
+      page = '1',
+      limit = '20',
+      type,
+      status,
+      startDate,
+      endDate
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
