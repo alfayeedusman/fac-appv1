@@ -141,27 +141,51 @@ class NeonDatabaseClient {
   // Initialize and test connection
   async initialize(): Promise<boolean> {
     try {
+      console.log(`🔄 Initializing database connection to: ${this.baseUrl}/init`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(`${this.baseUrl}/init`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.error(`❌ Init request failed: ${response.status} ${response.statusText}`);
+        this.isConnected = false;
+        return false;
+      }
 
       const result = await response.json();
       this.isConnected = result.success;
 
       if (result.success) {
+        console.log("✅ Database initialized successfully");
         toast({
           title: "Database Connected",
           description: "Neon database initialized successfully",
         });
       } else {
-        console.error("Database initialization failed:", result.error);
+        console.error("❌ Database initialization failed:", result.error);
+        this.isConnected = false;
       }
 
       return result.success;
     } catch (error) {
-      console.error("Database initialization error:", error);
+      console.error("❌ Database initialization error:", error);
       this.isConnected = false;
+
+      // Provide more specific error feedback
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error("🌐 Network error - check if server is running");
+      } else if (error instanceof Error && error.name === 'AbortError') {
+        console.error("⏰ Request timeout - server may be slow");
+      }
+
       return false;
     }
   }
