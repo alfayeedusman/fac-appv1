@@ -274,29 +274,23 @@ export default function AdminCrewManagement() {
     }
   };
 
-  if (isLoading) {
+  // Show loading while checking auth or loading data
+  if (isAuthLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-background flex">
-        <AdminSidebar
-          activeTab="crew"
-          onTabChange={(tab) => {
-            if (tab === "overview") navigate("/admin-dashboard");
-            else if (tab === "cms") navigate("/admin-cms");
-          }}
-          userRole="admin"
-          notificationCount={0}
-        />
-        
-        <div className="flex-1 lg:ml-64 min-h-screen">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading crew management...</p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">
+            {isAuthLoading ? "Checking authentication..." : "Loading crew management..."}
+          </p>
         </div>
       </div>
     );
+  }
+
+  // Don't render if no valid role
+  if (!userRole) {
+    return null;
   }
 
   return (
