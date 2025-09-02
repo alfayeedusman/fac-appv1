@@ -757,6 +757,106 @@ export default function EnhancedInventoryManagement() {
     return variant ? basePrice * variant.priceMultiplier : basePrice;
   };
 
+  // Supplier Management Functions
+  const [newSupplier, setNewSupplier] = useState({
+    name: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    address: "",
+    website: "",
+    notes: ""
+  });
+  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+
+  const handleAddSupplier = () => {
+    if (!newSupplier.name || !newSupplier.contactPerson) {
+      alert("Please fill in required fields (Name and Contact Person)");
+      return;
+    }
+
+    try {
+      const supplier: Supplier = {
+        id: `supplier_${Date.now()}`,
+        name: newSupplier.name,
+        contactPerson: newSupplier.contactPerson,
+        email: newSupplier.email,
+        phone: newSupplier.phone,
+        address: newSupplier.address,
+        website: newSupplier.website,
+        notes: newSupplier.notes,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      setSuppliers([...suppliers, supplier]);
+
+      // Clear form
+      setNewSupplier({
+        name: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+        address: "",
+        website: "",
+        notes: ""
+      });
+
+      setShowAddSupplierModal(false);
+
+      notificationManager.showSuccess(
+        "Supplier Added!",
+        `${supplier.name} has been added to your supplier list.`
+      );
+
+    } catch (error) {
+      console.error("Error adding supplier:", error);
+      alert("Error adding supplier. Please try again.");
+    }
+  };
+
+  const handleDeleteSupplier = (supplierId: string) => {
+    if (confirm("Are you sure you want to delete this supplier?")) {
+      setSuppliers(suppliers.filter((s) => s.id !== supplierId));
+      notificationManager.showSuccess("Supplier Deleted", "Supplier removed from list.");
+    }
+  };
+
+  // Analytics Functions
+  const getInventoryAnalytics = () => {
+    const totalProducts = products.length;
+    const totalValue = products.reduce((sum, p) => sum + (p.currentStock * (p.costPrice || 0)), 0);
+    const lowStockProducts = products.filter(p => p.currentStock <= p.minStockLevel);
+    const outOfStockProducts = products.filter(p => p.currentStock === 0);
+    const topProducts = [...products]
+      .sort((a, b) => (b.currentStock * (b.unitPrice || 0)) - (a.currentStock * (a.unitPrice || 0)))
+      .slice(0, 5);
+
+    const categoryBreakdown = categories.map(category => {
+      const categoryProducts = products.filter(p => p.categoryId === category.id);
+      const categoryValue = categoryProducts.reduce((sum, p) => sum + (p.currentStock * (p.costPrice || 0)), 0);
+      return {
+        category: category.name,
+        count: categoryProducts.length,
+        value: categoryValue,
+        color: category.color
+      };
+    });
+
+    return {
+      totalProducts,
+      totalValue,
+      lowStockCount: lowStockProducts.length,
+      outOfStockCount: outOfStockProducts.length,
+      lowStockProducts,
+      outOfStockProducts,
+      topProducts,
+      categoryBreakdown,
+      recentMovements: stockMovements.slice(0, 10)
+    };
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="products" className="space-y-6">
