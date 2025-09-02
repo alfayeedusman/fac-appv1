@@ -1856,7 +1856,7 @@ export default function AdminDashboard() {
 
           {activeTab === "inventory" && (
             <div className="space-y-6">
-              <EnhancedInventoryManagement />
+              <AdminInventory />
             </div>
           )}
 
