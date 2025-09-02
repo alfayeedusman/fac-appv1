@@ -671,7 +671,7 @@ class NeonDatabaseClient {
       console.log('📥 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
-        console.error('❌ Response not OK:', response.status, response.statusText);
+        console.error('�� Response not OK:', response.status, response.statusText);
         const text = await response.text();
         console.error('Response body:', text);
         return { success: false, users: [] };
@@ -742,17 +742,50 @@ class NeonDatabaseClient {
     }
   }
 
+  // Helper: fetch JSON with timeout and same-origin fallback
+  private async fetchJsonWithFallback(path: string, timeoutMs = 8000): Promise<any> {
+    const makeUrl = (base: string) => `${base.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`;
+
+    const tryOnce = async (url: string) => {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: ac.signal });
+        clearTimeout(to);
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status}: ${text?.slice(0, 200)}`);
+        }
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return res.json();
+        const txt = await res.text();
+        try { return JSON.parse(txt); } catch {
+          throw new Error('Invalid JSON response');
+        }
+      } catch (e) {
+        clearTimeout(to);
+        throw e;
+      }
+    };
+
+    try {
+      return await tryOnce(makeUrl(this.baseUrl));
+    } catch (e1) {
+      return await tryOnce(makeUrl('/api/neon'));
+    }
+  }
+
   // === REAL-TIME STATS ===
 
   async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
-    if (!this.isConnected) {
+    const connected = await this.ensureConnection();
+    if (!connected) {
       return { success: false, stats: null };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/realtime-stats`);
-      const result = await response.json();
-      return result;
+      const result = await this.fetchJsonWithFallback('/realtime-stats');
+      return result?.success !== undefined ? result : { success: true, stats: result?.stats ?? result };
     } catch (error) {
       console.error('Database realtime stats fetch failed:', error);
       return { success: false, stats: null };
@@ -762,14 +795,14 @@ class NeonDatabaseClient {
   // === STATS ===
 
   async getStats(): Promise<{ success: boolean; stats?: any }> {
-    if (!this.isConnected) {
+    const connected = await this.ensureConnection();
+    if (!connected) {
       return { success: false, stats: null };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/stats`);
-      const result = await response.json();
-      return result;
+      const result = await this.fetchJsonWithFallback('/stats');
+      return result?.success !== undefined ? result : { success: true, stats: result?.stats ?? result };
     } catch (error) {
       console.error('Database stats fetch failed:', error);
       return { success: false, stats: null };
