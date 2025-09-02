@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import FallbackMap from './FallbackMap';
+import React, { useState, useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import FallbackMap from "./FallbackMap";
 import {
   MapPin,
   Users,
@@ -25,24 +25,26 @@ import {
   UserX,
   MapPinned,
   WifiOff,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+} from "lucide-react";
 
 // Set Mapbox access token
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg';
+const MAPBOX_TOKEN =
+  import.meta.env.VITE_MAPBOX_TOKEN ||
+  "pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg";
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
 // Philippines coordinates (Manila center)
 const MANILA_COORDINATES = {
   latitude: 14.5995,
-  longitude: 120.9842
+  longitude: 120.9842,
 };
 
 interface CrewMember {
   id: string;
   name: string;
   phone: string;
-  status: 'online' | 'offline' | 'busy' | 'available' | 'break';
+  status: "online" | "offline" | "busy" | "available" | "break";
   location: {
     latitude: number;
     longitude: number;
@@ -52,9 +54,9 @@ interface CrewMember {
   currentJob?: {
     id: string;
     customer: string;
-    vehicleType: 'car' | 'suv' | 'motorcycle' | 'truck';
-    serviceType: 'basic' | 'premium' | 'deluxe' | 'vip';
-    washType: 'exterior' | 'interior' | 'full' | 'detailing';
+    vehicleType: "car" | "suv" | "motorcycle" | "truck";
+    serviceType: "basic" | "premium" | "deluxe" | "vip";
+    washType: "exterior" | "interior" | "full" | "detailing";
     startTime: string;
     estimatedDuration: number;
     address: string;
@@ -75,13 +77,13 @@ interface Customer {
     longitude: number;
     address: string;
   };
-  status: 'online' | 'offline' | 'requesting' | 'being_served';
-  membership: 'basic' | 'silver' | 'gold' | 'platinum';
+  status: "online" | "offline" | "requesting" | "being_served";
+  membership: "basic" | "silver" | "gold" | "platinum";
   activeBooking?: {
     id: string;
     serviceType: string;
     crewId?: string;
-    status: 'pending' | 'assigned' | 'in_progress' | 'completed';
+    status: "pending" | "assigned" | "in_progress" | "completed";
   };
 }
 
@@ -101,44 +103,52 @@ interface RealTimeMapProps {
 // Mock data generator
 const generateMockCrewData = (): CrewMember[] => {
   const crews: CrewMember[] = [];
-  const serviceTypes = ['basic', 'premium', 'deluxe', 'vip'] as const;
-  const washTypes = ['exterior', 'interior', 'full', 'detailing'] as const;
-  const vehicleTypes = ['car', 'suv', 'motorcycle', 'truck'] as const;
-  const statuses = ['online', 'busy', 'available', 'break'] as const;
+  const serviceTypes = ["basic", "premium", "deluxe", "vip"] as const;
+  const washTypes = ["exterior", "interior", "full", "detailing"] as const;
+  const vehicleTypes = ["car", "suv", "motorcycle", "truck"] as const;
+  const statuses = ["online", "busy", "available", "break"] as const;
 
   for (let i = 1; i <= 20; i++) {
     const latOffset = (Math.random() - 0.5) * 0.02;
     const lngOffset = (Math.random() - 0.5) * 0.02;
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const isBusy = status === 'busy';
+    const isBusy = status === "busy";
 
     const crew: CrewMember = {
       id: `crew-${i}`,
       name: `Crew Member ${i}`,
-      phone: `+63 9${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}`,
+      phone: `+63 9${Math.floor(Math.random() * 1000000000)
+        .toString()
+        .padStart(9, "0")}`,
       status,
       location: {
         latitude: MANILA_COORDINATES.latitude + latOffset,
         longitude: MANILA_COORDINATES.longitude + lngOffset,
         accuracy: Math.floor(Math.random() * 10) + 3,
-        timestamp: new Date(Date.now() - Math.random() * 300000).toISOString()
+        timestamp: new Date(Date.now() - Math.random() * 300000).toISOString(),
       },
-      currentJob: isBusy ? {
-        id: `job-${i}`,
-        customer: `Customer ${Math.floor(Math.random() * 100) + 1}`,
-        vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)],
-        serviceType: serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
-        washType: washTypes[Math.floor(Math.random() * washTypes.length)],
-        startTime: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-        estimatedDuration: Math.floor(Math.random() * 120) + 30,
-        address: `Manila Area ${i}`,
-        progress: Math.floor(Math.random() * 100)
-      } : undefined,
+      currentJob: isBusy
+        ? {
+            id: `job-${i}`,
+            customer: `Customer ${Math.floor(Math.random() * 100) + 1}`,
+            vehicleType:
+              vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)],
+            serviceType:
+              serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
+            washType: washTypes[Math.floor(Math.random() * washTypes.length)],
+            startTime: new Date(
+              Date.now() - Math.random() * 3600000,
+            ).toISOString(),
+            estimatedDuration: Math.floor(Math.random() * 120) + 30,
+            address: `Manila Area ${i}`,
+            progress: Math.floor(Math.random() * 100),
+          }
+        : undefined,
       groupId: `group-${Math.ceil(i / 4)}`,
       groupName: `Team ${Math.ceil(i / 4)}`,
       rating: 3.5 + Math.random() * 1.5,
       completedJobs: Math.floor(Math.random() * 200) + 10,
-      lastActive: new Date(Date.now() - Math.random() * 1800000).toISOString()
+      lastActive: new Date(Date.now() - Math.random() * 1800000).toISOString(),
     };
 
     crews.push(crew);
@@ -149,8 +159,8 @@ const generateMockCrewData = (): CrewMember[] => {
 
 const generateMockCustomerData = (): Customer[] => {
   const customers: Customer[] = [];
-  const memberships = ['basic', 'silver', 'gold', 'platinum'] as const;
-  const statuses = ['online', 'offline', 'requesting', 'being_served'] as const;
+  const memberships = ["basic", "silver", "gold", "platinum"] as const;
+  const statuses = ["online", "offline", "requesting", "being_served"] as const;
 
   for (let i = 1; i <= 15; i++) {
     const latOffset = (Math.random() - 0.5) * 0.05;
@@ -163,16 +173,22 @@ const generateMockCustomerData = (): Customer[] => {
       location: {
         latitude: MANILA_COORDINATES.latitude + latOffset,
         longitude: MANILA_COORDINATES.longitude + lngOffset,
-        address: `Address ${i}, Metro Manila`
+        address: `Address ${i}, Metro Manila`,
       },
       status,
       membership: memberships[Math.floor(Math.random() * memberships.length)],
-      activeBooking: status === 'requesting' || status === 'being_served' ? {
-        id: `booking-${i}`,
-        serviceType: 'Premium Wash',
-        crewId: status === 'being_served' ? `crew-${Math.floor(Math.random() * 20) + 1}` : undefined,
-        status: status === 'requesting' ? 'pending' : 'in_progress'
-      } : undefined
+      activeBooking:
+        status === "requesting" || status === "being_served"
+          ? {
+              id: `booking-${i}`,
+              serviceType: "Premium Wash",
+              crewId:
+                status === "being_served"
+                  ? `crew-${Math.floor(Math.random() * 20) + 1}`
+                  : undefined,
+              status: status === "requesting" ? "pending" : "in_progress",
+            }
+          : undefined,
     };
 
     customers.push(customer);
@@ -182,12 +198,12 @@ const generateMockCustomerData = (): Customer[] => {
 };
 
 export default function RealTimeMap({
-  height = '600px',
+  height = "600px",
   onCrewSelect,
   onCustomerSelect,
   showCustomers = true,
   showCrew = true,
-  selectedFilters = {}
+  selectedFilters = {},
 }: RealTimeMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -197,28 +213,32 @@ export default function RealTimeMap({
   const [error, setError] = useState<string | null>(null);
   const [showFallback, setShowFallback] = useState(false);
   const [selectedCrew, setSelectedCrew] = useState<CrewMember | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
+  const [debugInfo, setDebugInfo] = useState<string>("");
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const initializingRef = useRef<boolean>(false);
 
   // Debug token and environment
   useEffect(() => {
     const token = MAPBOX_TOKEN;
-    const isValidToken = token && token.startsWith('pk.') && token.length > 50;
-    const info = `Token: ${token ? 'Present' : 'Missing'} | Valid: ${isValidToken ? 'Yes' : 'No'} | Length: ${token?.length || 0}`;
+    const isValidToken = token && token.startsWith("pk.") && token.length > 50;
+    const info = `Token: ${token ? "Present" : "Missing"} | Valid: ${isValidToken ? "Yes" : "No"} | Length: ${token?.length || 0}`;
     setDebugInfo(info);
-    console.log('🔍 Debug info:', info);
-    console.log('🔑 Full token:', token);
-    console.log('🌍 Environment vars:', {
-      VITE_MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN ? 'SET' : 'MISSING',
+    console.log("🔍 Debug info:", info);
+    console.log("🔑 Full token:", token);
+    console.log("🌍 Environment vars:", {
+      VITE_MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN ? "SET" : "MISSING",
       NODE_ENV: import.meta.env.NODE_ENV,
-      MODE: import.meta.env.MODE
+      MODE: import.meta.env.MODE,
     });
 
     if (!isValidToken) {
-      console.warn('⚠️ Invalid or missing Mapbox token - will use fallback map');
-      setError('Invalid Mapbox token configuration');
+      console.warn(
+        "⚠️ Invalid or missing Mapbox token - will use fallback map",
+      );
+      setError("Invalid Mapbox token configuration");
       setShowFallback(true);
       setIsLoading(false);
     }
@@ -233,14 +253,14 @@ export default function RealTimeMap({
     initializingRef.current = true;
 
     const initializeMap = async () => {
-      console.log('🗺️ Initializing Mapbox...');
-      console.log('🔑 Token:', MAPBOX_TOKEN ? 'Present' : 'Missing');
-      console.log('📦 Container:', mapContainer.current ? 'Found' : 'Missing');
+      console.log("🗺️ Initializing Mapbox...");
+      console.log("🔑 Token:", MAPBOX_TOKEN ? "Present" : "Missing");
+      console.log("📦 Container:", mapContainer.current ? "Found" : "Missing");
 
       if (!MAPBOX_TOKEN) {
-        console.error('❌ Mapbox token not found');
+        console.error("❌ Mapbox token not found");
         if (isMounted) {
-          setError('Mapbox token not configured. Using fallback map.');
+          setError("Mapbox token not configured. Using fallback map.");
           setShowFallback(true);
           setIsLoading(false);
         }
@@ -254,8 +274,8 @@ export default function RealTimeMap({
         // Set loading timeout
         timeoutId = setTimeout(() => {
           if (isMounted && initializingRef.current) {
-            console.warn('⚠️ Map loading timeout');
-            setError('Map loading timeout. Using fallback view.');
+            console.warn("⚠️ Map loading timeout");
+            setError("Map loading timeout. Using fallback view.");
             setShowFallback(true);
             setIsLoading(false);
             initializingRef.current = false;
@@ -266,14 +286,14 @@ export default function RealTimeMap({
 
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
-          style: 'mapbox://styles/mapbox/streets-v12',
+          style: "mapbox://styles/mapbox/streets-v12",
           center: [MANILA_COORDINATES.longitude, MANILA_COORDINATES.latitude],
           zoom: 12,
-          attributionControl: false
+          attributionControl: false,
         });
 
-        map.current.on('load', () => {
-          console.log('✅ Mapbox loaded successfully');
+        map.current.on("load", () => {
+          console.log("✅ Mapbox loaded successfully");
           if (isMounted) {
             setError(null);
             setIsLoading(false);
@@ -282,10 +302,10 @@ export default function RealTimeMap({
           initializingRef.current = false;
         });
 
-        map.current.on('error', (e) => {
-          console.error('❌ Mapbox error:', e);
+        map.current.on("error", (e) => {
+          console.error("❌ Mapbox error:", e);
           if (isMounted) {
-            setError('Map failed to load. Using fallback view.');
+            setError("Map failed to load. Using fallback view.");
             setShowFallback(true);
             setIsLoading(false);
           }
@@ -294,19 +314,21 @@ export default function RealTimeMap({
         });
 
         // Add controls
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
         map.current.addControl(
           new mapboxgl.AttributionControl({
-            compact: true
+            compact: true,
           }),
-          'bottom-right'
+          "bottom-right",
         );
 
-        console.log('✅ Mapbox initialized successfully');
+        console.log("✅ Mapbox initialized successfully");
       } catch (err: any) {
-        console.error('❌ Failed to initialize Mapbox:', err);
+        console.error("❌ Failed to initialize Mapbox:", err);
         if (isMounted) {
-          setError(`Failed to initialize map: ${err.message || 'Unknown error'}. Using fallback view.`);
+          setError(
+            `Failed to initialize map: ${err.message || "Unknown error"}. Using fallback view.`,
+          );
           setShowFallback(true);
           setIsLoading(false);
         }
@@ -332,17 +354,17 @@ export default function RealTimeMap({
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('📊 Loading map data...');
+        console.log("📊 Loading map data...");
         // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
-        console.log('✅ Map data loaded successfully');
+        console.log("✅ Map data loaded successfully");
       } catch (dataError) {
-        console.error('❌ Error loading map data:', dataError);
+        console.error("❌ Error loading map data:", dataError);
         // Don't override map errors, only set data loading error if no existing error
-        setError(prevError => prevError || 'Failed to load location data');
+        setError((prevError) => prevError || "Failed to load location data");
       }
     };
 
@@ -351,19 +373,19 @@ export default function RealTimeMap({
 
   // Create crew marker element
   const createCrewMarkerElement = (crew: CrewMember) => {
-    const el = document.createElement('div');
-    el.className = 'crew-marker';
-    el.style.width = '32px';
-    el.style.height = '32px';
-    el.style.borderRadius = '50%';
+    const el = document.createElement("div");
+    el.className = "crew-marker";
+    el.style.width = "32px";
+    el.style.height = "32px";
+    el.style.borderRadius = "50%";
     el.style.backgroundColor = getCrewMarkerColor(crew);
-    el.style.border = '2px solid white';
-    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
-    el.style.cursor = 'pointer';
-    el.style.position = 'relative';
+    el.style.border = "2px solid white";
+    el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.cursor = "pointer";
+    el.style.position = "relative";
 
     el.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -377,34 +399,34 @@ export default function RealTimeMap({
 
     // Add status indicator
     if (crew.currentJob) {
-      const indicator = document.createElement('div');
-      indicator.style.position = 'absolute';
-      indicator.style.top = '-2px';
-      indicator.style.right = '-2px';
-      indicator.style.width = '12px';
-      indicator.style.height = '12px';
-      indicator.style.backgroundColor = '#F59E0B';
-      indicator.style.borderRadius = '50%';
-      indicator.style.border = '2px solid white';
-      indicator.className = 'animate-pulse';
+      const indicator = document.createElement("div");
+      indicator.style.position = "absolute";
+      indicator.style.top = "-2px";
+      indicator.style.right = "-2px";
+      indicator.style.width = "12px";
+      indicator.style.height = "12px";
+      indicator.style.backgroundColor = "#F59E0B";
+      indicator.style.borderRadius = "50%";
+      indicator.style.border = "2px solid white";
+      indicator.className = "animate-pulse";
       el.appendChild(indicator);
     }
 
-    if (crew.status === 'online') {
-      const indicator = document.createElement('div');
-      indicator.style.position = 'absolute';
-      indicator.style.top = '-2px';
-      indicator.style.left = '-2px';
-      indicator.style.width = '12px';
-      indicator.style.height = '12px';
-      indicator.style.backgroundColor = '#10B981';
-      indicator.style.borderRadius = '50%';
-      indicator.style.border = '2px solid white';
-      indicator.className = 'animate-pulse';
+    if (crew.status === "online") {
+      const indicator = document.createElement("div");
+      indicator.style.position = "absolute";
+      indicator.style.top = "-2px";
+      indicator.style.left = "-2px";
+      indicator.style.width = "12px";
+      indicator.style.height = "12px";
+      indicator.style.backgroundColor = "#10B981";
+      indicator.style.borderRadius = "50%";
+      indicator.style.border = "2px solid white";
+      indicator.className = "animate-pulse";
       el.appendChild(indicator);
     }
 
-    el.addEventListener('click', () => {
+    el.addEventListener("click", () => {
       setSelectedCrew(crew);
       setSelectedCustomer(null);
       onCrewSelect?.(crew);
@@ -415,19 +437,19 @@ export default function RealTimeMap({
 
   // Create customer marker element
   const createCustomerMarkerElement = (customer: Customer) => {
-    const el = document.createElement('div');
-    el.className = 'customer-marker';
-    el.style.width = '24px';
-    el.style.height = '24px';
-    el.style.borderRadius = '50%';
+    const el = document.createElement("div");
+    el.className = "customer-marker";
+    el.style.width = "24px";
+    el.style.height = "24px";
+    el.style.borderRadius = "50%";
     el.style.backgroundColor = getCustomerMarkerColor(customer);
-    el.style.border = '2px solid white';
-    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
-    el.style.cursor = 'pointer';
-    el.style.position = 'relative';
+    el.style.border = "2px solid white";
+    el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.cursor = "pointer";
+    el.style.position = "relative";
 
     el.innerHTML = `
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -441,21 +463,21 @@ export default function RealTimeMap({
     `;
 
     // Add status indicator for requesting customers
-    if (customer.status === 'requesting') {
-      const indicator = document.createElement('div');
-      indicator.style.position = 'absolute';
-      indicator.style.top = '-2px';
-      indicator.style.right = '-2px';
-      indicator.style.width = '12px';
-      indicator.style.height = '12px';
-      indicator.style.backgroundColor = '#EF4444';
-      indicator.style.borderRadius = '50%';
-      indicator.style.border = '2px solid white';
-      indicator.className = 'animate-bounce';
+    if (customer.status === "requesting") {
+      const indicator = document.createElement("div");
+      indicator.style.position = "absolute";
+      indicator.style.top = "-2px";
+      indicator.style.right = "-2px";
+      indicator.style.width = "12px";
+      indicator.style.height = "12px";
+      indicator.style.backgroundColor = "#EF4444";
+      indicator.style.borderRadius = "50%";
+      indicator.style.border = "2px solid white";
+      indicator.className = "animate-bounce";
       el.appendChild(indicator);
     }
 
-    el.addEventListener('click', () => {
+    el.addEventListener("click", () => {
       setSelectedCustomer(customer);
       setSelectedCrew(null);
       onCustomerSelect?.(customer);
@@ -469,20 +491,27 @@ export default function RealTimeMap({
     if (!map.current) return;
 
     // Clear existing markers
-    Object.values(markersRef.current).forEach(marker => marker.remove());
+    Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
 
     // Filter crew data
-    const filteredCrew = crewData.filter(crew => {
-      if (selectedFilters.status && crew.status !== selectedFilters.status) return false;
-      if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId) return false;
-      if (selectedFilters.serviceType && (!crew.currentJob || crew.currentJob.serviceType !== selectedFilters.serviceType)) return false;
+    const filteredCrew = crewData.filter((crew) => {
+      if (selectedFilters.status && crew.status !== selectedFilters.status)
+        return false;
+      if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId)
+        return false;
+      if (
+        selectedFilters.serviceType &&
+        (!crew.currentJob ||
+          crew.currentJob.serviceType !== selectedFilters.serviceType)
+      )
+        return false;
       return true;
     });
 
     // Add crew markers
     if (showCrew) {
-      filteredCrew.forEach(crew => {
+      filteredCrew.forEach((crew) => {
         const el = createCrewMarkerElement(crew);
         const marker = new mapboxgl.Marker(el)
           .setLngLat([crew.location.longitude, crew.location.latitude])
@@ -494,7 +523,7 @@ export default function RealTimeMap({
 
     // Add customer markers
     if (showCustomers) {
-      customerData.forEach(customer => {
+      customerData.forEach((customer) => {
         const el = createCustomerMarkerElement(customer);
         const marker = new mapboxgl.Marker(el)
           .setLngLat([customer.location.longitude, customer.location.latitude])
@@ -508,19 +537,26 @@ export default function RealTimeMap({
   // Set up real-time updates (mock simulation)
   useEffect(() => {
     const interval = setInterval(() => {
-      setCrewData(prev => prev.map(crew => ({
-        ...crew,
-        location: {
-          ...crew.location,
-          latitude: crew.location.latitude + (Math.random() - 0.5) * 0.0001,
-          longitude: crew.location.longitude + (Math.random() - 0.5) * 0.0001,
-          timestamp: new Date().toISOString()
-        },
-        currentJob: crew.currentJob ? {
-          ...crew.currentJob,
-          progress: Math.min(100, crew.currentJob.progress + Math.random() * 5)
-        } : undefined
-      })));
+      setCrewData((prev) =>
+        prev.map((crew) => ({
+          ...crew,
+          location: {
+            ...crew.location,
+            latitude: crew.location.latitude + (Math.random() - 0.5) * 0.0001,
+            longitude: crew.location.longitude + (Math.random() - 0.5) * 0.0001,
+            timestamp: new Date().toISOString(),
+          },
+          currentJob: crew.currentJob
+            ? {
+                ...crew.currentJob,
+                progress: Math.min(
+                  100,
+                  crew.currentJob.progress + Math.random() * 5,
+                ),
+              }
+            : undefined,
+        })),
+      );
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(interval);
@@ -528,30 +564,48 @@ export default function RealTimeMap({
 
   const getCrewMarkerColor = (crew: CrewMember) => {
     switch (crew.status) {
-      case 'online': return '#10B981';
-      case 'busy': return '#F59E0B';
-      case 'available': return '#3B82F6';
-      case 'break': return '#8B5CF6';
-      case 'offline': return '#6B7280';
-      default: return '#6B7280';
+      case "online":
+        return "#10B981";
+      case "busy":
+        return "#F59E0B";
+      case "available":
+        return "#3B82F6";
+      case "break":
+        return "#8B5CF6";
+      case "offline":
+        return "#6B7280";
+      default:
+        return "#6B7280";
     }
   };
 
   const getCustomerMarkerColor = (customer: Customer) => {
     switch (customer.membership) {
-      case 'platinum': return '#E5E7EB';
-      case 'gold': return '#F59E0B';
-      case 'silver': return '#9CA3AF';
-      case 'basic': return '#3B82F6';
-      default: return '#3B82F6';
+      case "platinum":
+        return "#E5E7EB";
+      case "gold":
+        return "#F59E0B";
+      case "silver":
+        return "#9CA3AF";
+      case "basic":
+        return "#3B82F6";
+      default:
+        return "#3B82F6";
     }
   };
 
   // Filter crew based on selected filters
-  const filteredCrewData = crewData.filter(crew => {
-    if (selectedFilters.status && crew.status !== selectedFilters.status) return false;
-    if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId) return false;
-    if (selectedFilters.serviceType && (!crew.currentJob || crew.currentJob.serviceType !== selectedFilters.serviceType)) return false;
+  const filteredCrewData = crewData.filter((crew) => {
+    if (selectedFilters.status && crew.status !== selectedFilters.status)
+      return false;
+    if (selectedFilters.groupId && crew.groupId !== selectedFilters.groupId)
+      return false;
+    if (
+      selectedFilters.serviceType &&
+      (!crew.currentJob ||
+        crew.currentJob.serviceType !== selectedFilters.serviceType)
+    )
+      return false;
     return true;
   });
 
@@ -570,7 +624,7 @@ export default function RealTimeMap({
 
     // Force re-initialization
     setTimeout(() => {
-      console.log('🔄 Retrying map initialization...');
+      console.log("🔄 Retrying map initialization...");
     }, 100);
   };
 
@@ -592,7 +646,10 @@ export default function RealTimeMap({
   }
 
   return (
-    <div className="relative w-full rounded-lg overflow-hidden border" style={{ height }}>
+    <div
+      className="relative w-full rounded-lg overflow-hidden border"
+      style={{ height }}
+    >
       {/* Mapbox container */}
       <div
         ref={mapContainer}
@@ -619,7 +676,11 @@ export default function RealTimeMap({
               <span className="text-sm font-medium text-red-800 dark:text-red-200">
                 {error}
               </span>
-              <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Retry
               </Button>
@@ -679,7 +740,9 @@ export default function RealTimeMap({
                   <span className="text-gray-600">Rating:</span>
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                    <span className="font-medium">{selectedCrew.rating.toFixed(1)}</span>
+                    <span className="font-medium">
+                      {selectedCrew.rating.toFixed(1)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -692,16 +755,22 @@ export default function RealTimeMap({
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Customer:</span>
-                      <span className="font-medium">{selectedCrew.currentJob.customer}</span>
+                      <span className="font-medium">
+                        {selectedCrew.currentJob.customer}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Progress:</span>
-                      <span className="font-medium">{selectedCrew.currentJob.progress.toFixed(0)}%</span>
+                      <span className="font-medium">
+                        {selectedCrew.currentJob.progress.toFixed(0)}%
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${selectedCrew.currentJob.progress}%` }}
+                        style={{
+                          width: `${selectedCrew.currentJob.progress}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -713,7 +782,11 @@ export default function RealTimeMap({
                   <Phone className="h-3 w-3 mr-1" />
                   Call
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setSelectedCrew(null)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedCrew(null)}
+                >
                   Close
                 </Button>
               </div>
@@ -734,7 +807,9 @@ export default function RealTimeMap({
                 </div>
                 <Badge
                   className="text-xs text-white capitalize"
-                  style={{ backgroundColor: getCustomerMarkerColor(selectedCustomer) }}
+                  style={{
+                    backgroundColor: getCustomerMarkerColor(selectedCustomer),
+                  }}
                 >
                   {selectedCustomer.membership}
                 </Badge>
@@ -744,13 +819,15 @@ export default function RealTimeMap({
               <div className="text-xs">
                 <span className="text-gray-600">Status:</span>
                 <Badge variant="outline" className="ml-2 text-xs capitalize">
-                  {selectedCustomer.status.replace('_', ' ')}
+                  {selectedCustomer.status.replace("_", " ")}
                 </Badge>
               </div>
 
               <div className="text-xs">
                 <span className="text-gray-600">Address:</span>
-                <p className="font-medium mt-1">{selectedCustomer.location.address}</p>
+                <p className="font-medium mt-1">
+                  {selectedCustomer.location.address}
+                </p>
               </div>
 
               {selectedCustomer.activeBooking && (
@@ -761,19 +838,29 @@ export default function RealTimeMap({
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Service:</span>
-                      <span className="font-medium">{selectedCustomer.activeBooking.serviceType}</span>
+                      <span className="font-medium">
+                        {selectedCustomer.activeBooking.serviceType}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Status:</span>
                       <Badge variant="outline" className="text-xs capitalize">
-                        {selectedCustomer.activeBooking.status.replace('_', ' ')}
+                        {selectedCustomer.activeBooking.status.replace(
+                          "_",
+                          " ",
+                        )}
                       </Badge>
                     </div>
                   </div>
                 </div>
               )}
 
-              <Button size="sm" variant="outline" onClick={() => setSelectedCustomer(null)} className="w-full">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedCustomer(null)}
+                className="w-full"
+              >
                 Close
               </Button>
             </CardContent>
@@ -791,35 +878,59 @@ export default function RealTimeMap({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>Online ({filteredCrewData.filter(c => c.status === 'online').length})</span>
+              <span>
+                Online (
+                {filteredCrewData.filter((c) => c.status === "online").length})
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span>Busy ({filteredCrewData.filter(c => c.status === 'busy').length})</span>
+              <span>
+                Busy (
+                {filteredCrewData.filter((c) => c.status === "busy").length})
+              </span>
             </div>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span>Available ({filteredCrewData.filter(c => c.status === 'available').length})</span>
+              <span>
+                Available (
+                {
+                  filteredCrewData.filter((c) => c.status === "available")
+                    .length
+                }
+                )
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span>Break ({filteredCrewData.filter(c => c.status === 'break').length})</span>
+              <span>
+                Break (
+                {filteredCrewData.filter((c) => c.status === "break").length})
+              </span>
             </div>
           </div>
         </div>
         <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <Car className="h-3 w-3 text-purple-500" />
-            <span>Customers ({customerData.filter(c => c.status === 'online' || c.status === 'requesting').length})</span>
+            <span>
+              Customers (
+              {
+                customerData.filter(
+                  (c) => c.status === "online" || c.status === "requesting",
+                ).length
+              }
+              )
+            </span>
           </div>
         </div>
         {debugInfo && (
           <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500">
               <div>🔍 {debugInfo}</div>
-              <div>Map: {map.current ? 'Loaded' : 'Loading'}</div>
+              <div>Map: {map.current ? "Loaded" : "Loading"}</div>
             </div>
           </div>
         )}

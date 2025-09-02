@@ -43,9 +43,19 @@ interface AnalyticsChartsProps {
 
 // Real data interface
 interface AnalyticsData {
-  salesData: Array<{ name: string; sales: number; customers: number; washes: number }>;
+  salesData: Array<{
+    name: string;
+    sales: number;
+    customers: number;
+    washes: number;
+  }>;
   packageDistribution: Array<{ name: string; value: number; color: string }>;
-  branchPerformance: Array<{ name: string; revenue: number; customers: number; washes: number }>;
+  branchPerformance: Array<{
+    name: string;
+    revenue: number;
+    customers: number;
+    washes: number;
+  }>;
   totalSales: number;
   totalCustomers: number;
   totalWashes: number;
@@ -55,7 +65,9 @@ export default function AnalyticsCharts({
   timeFilter,
   onTimeFilterChange,
 }: AnalyticsChartsProps) {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,24 +76,26 @@ export default function AnalyticsCharts({
     try {
       setLoading(true);
       setError(null);
-      console.log('📊 Fetching analytics data for filter:', timeFilter);
+      console.log("📊 Fetching analytics data for filter:", timeFilter);
 
-      const response = await fetch(`/api/neon/analytics?timeFilter=${timeFilter}`);
+      const response = await fetch(
+        `/api/neon/analytics?timeFilter=${timeFilter}`,
+      );
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
-      console.log('✅ Analytics data received:', result);
+      console.log("✅ Analytics data received:", result);
 
       if (result.success && result.data) {
         setAnalyticsData(result.data);
       } else {
-        throw new Error(result.error || 'Failed to fetch analytics data');
+        throw new Error(result.error || "Failed to fetch analytics data");
       }
     } catch (err: any) {
-      console.error('❌ Analytics fetch error:', err);
-      setError(err.message || 'Failed to load analytics data');
+      console.error("❌ Analytics fetch error:", err);
+      setError(err.message || "Failed to load analytics data");
 
       // Fallback to empty data structure
       setAnalyticsData({
@@ -123,7 +137,9 @@ export default function AnalyticsCharts({
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading analytics data...</p>
+                <p className="text-muted-foreground">
+                  Loading analytics data...
+                </p>
               </div>
             </div>
           </CardContent>
@@ -140,7 +156,9 @@ export default function AnalyticsCharts({
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <p className="text-red-500 mb-4">❌ {error || 'No data available'}</p>
+                <p className="text-red-500 mb-4">
+                  ❌ {error || "No data available"}
+                </p>
                 <Button onClick={fetchAnalyticsData} variant="outline">
                   Retry
                 </Button>
@@ -152,7 +170,14 @@ export default function AnalyticsCharts({
     );
   }
 
-  const { salesData, packageDistribution, branchPerformance, totalSales, totalCustomers, totalWashes } = analyticsData;
+  const {
+    salesData,
+    packageDistribution,
+    branchPerformance,
+    totalSales,
+    totalCustomers,
+    totalWashes,
+  } = analyticsData;
 
   return (
     <div className="space-y-6">
@@ -186,7 +211,9 @@ export default function AnalyticsCharts({
                   <p className="text-2xl font-black">
                     {formatCurrency(totalSales)}
                   </p>
-                  <p className="text-green-200 text-xs">Connected to Database</p>
+                  <p className="text-green-200 text-xs">
+                    Connected to Database
+                  </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-200" />
               </div>

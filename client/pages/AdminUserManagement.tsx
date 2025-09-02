@@ -53,71 +53,137 @@ const roleDefinitions = {
     description: "Full system access",
     color: "bg-red-500",
     permissions: [
-      'dashboard', 'customers', 'user-management', 'ads', 'packages', 
-      'branches', 'analytics', 'sales', 'inventory', 'notifications',
-      'cms', 'push-notifications', 'gamification', 'subscription-approval',
-      'booking', 'pos', 'crew-management', 'images', 'database'
-    ]
+      "dashboard",
+      "customers",
+      "user-management",
+      "ads",
+      "packages",
+      "branches",
+      "analytics",
+      "sales",
+      "inventory",
+      "notifications",
+      "cms",
+      "push-notifications",
+      "gamification",
+      "subscription-approval",
+      "booking",
+      "pos",
+      "crew-management",
+      "images",
+      "database",
+    ],
   },
   admin: {
-    name: "Administrator", 
+    name: "Administrator",
     description: "Most system features",
     color: "bg-orange-500",
     permissions: [
-      'dashboard', 'customers', 'ads', 'packages', 'branches', 'analytics',
-      'sales', 'inventory', 'notifications', 'cms', 'push-notifications',
-      'gamification', 'subscription-approval', 'booking', 'pos', 'crew-management'
-    ]
+      "dashboard",
+      "customers",
+      "ads",
+      "packages",
+      "branches",
+      "analytics",
+      "sales",
+      "inventory",
+      "notifications",
+      "cms",
+      "push-notifications",
+      "gamification",
+      "subscription-approval",
+      "booking",
+      "pos",
+      "crew-management",
+    ],
   },
   manager: {
     name: "Manager",
     description: "Operations management",
-    color: "bg-blue-500", 
+    color: "bg-blue-500",
     permissions: [
-      'dashboard', 'customers', 'booking', 'crew-management', 'inventory', 'pos', 'analytics'
-    ]
+      "dashboard",
+      "customers",
+      "booking",
+      "crew-management",
+      "inventory",
+      "pos",
+      "analytics",
+    ],
   },
   cashier: {
     name: "Cashier",
     description: "POS and basic operations",
     color: "bg-green-500",
-    permissions: ['dashboard', 'pos', 'customers', 'booking']
+    permissions: ["dashboard", "pos", "customers", "booking"],
   },
   inventory_manager: {
     name: "Inventory Manager",
     description: "Inventory and supplies",
     color: "bg-purple-500",
-    permissions: ['dashboard', 'inventory', 'analytics']
+    permissions: ["dashboard", "inventory", "analytics"],
   },
   crew: {
     name: "Crew Member",
     description: "Field operations",
     color: "bg-gray-500",
-    permissions: ['dashboard', 'booking']
-  }
+    permissions: ["dashboard", "booking"],
+  },
 };
 
 // Available features/tabs for permission assignment
 const availableFeatures = [
-  { id: 'dashboard', name: 'Dashboard', description: 'Main dashboard view' },
-  { id: 'customers', name: 'Customer Hub', description: 'Manage customers' },
-  { id: 'user-management', name: 'User Management', description: 'Manage staff accounts' },
-  { id: 'ads', name: 'Ad Studio', description: 'Advertisement management' },
-  { id: 'packages', name: 'Package Studio', description: 'Service packages' },
-  { id: 'branches', name: 'Branch Network', description: 'Branch management' },
-  { id: 'analytics', name: 'Analytics Center', description: 'Business insights' },
-  { id: 'sales', name: 'Sales Dashboard', description: 'Sales tracking' },
-  { id: 'inventory', name: 'Inventory Dashboard', description: 'Stock management' },
-  { id: 'notifications', name: 'Notifications', description: 'System notifications' },
-  { id: 'cms', name: 'Content Management', description: 'Website content' },
-  { id: 'push-notifications', name: 'Push Notifications', description: 'Send notifications' },
-  { id: 'gamification', name: 'Gamification', description: 'Rewards system' },
-  { id: 'subscription-approval', name: 'Subscription Approval', description: 'Approve subscriptions' },
-  { id: 'booking', name: 'Booking Hub', description: 'Booking management' },
-  { id: 'pos', name: 'Point of Sale', description: 'POS system' },
-  { id: 'crew-management', name: 'Crew Management', description: 'Staff operations' },
-  { id: 'images', name: 'Image Manager', description: 'Media management' },
-  { id: 'database', name: 'Database Management', description: 'System database' },
+  { id: "dashboard", name: "Dashboard", description: "Main dashboard view" },
+  { id: "customers", name: "Customer Hub", description: "Manage customers" },
+  {
+    id: "user-management",
+    name: "User Management",
+    description: "Manage staff accounts",
+  },
+  { id: "ads", name: "Ad Studio", description: "Advertisement management" },
+  { id: "packages", name: "Package Studio", description: "Service packages" },
+  { id: "branches", name: "Branch Network", description: "Branch management" },
+  {
+    id: "analytics",
+    name: "Analytics Center",
+    description: "Business insights",
+  },
+  { id: "sales", name: "Sales Dashboard", description: "Sales tracking" },
+  {
+    id: "inventory",
+    name: "Inventory Dashboard",
+    description: "Stock management",
+  },
+  {
+    id: "notifications",
+    name: "Notifications",
+    description: "System notifications",
+  },
+  { id: "cms", name: "Content Management", description: "Website content" },
+  {
+    id: "push-notifications",
+    name: "Push Notifications",
+    description: "Send notifications",
+  },
+  { id: "gamification", name: "Gamification", description: "Rewards system" },
+  {
+    id: "subscription-approval",
+    name: "Subscription Approval",
+    description: "Approve subscriptions",
+  },
+  { id: "booking", name: "Booking Hub", description: "Booking management" },
+  { id: "pos", name: "Point of Sale", description: "POS system" },
+  {
+    id: "crew-management",
+    name: "Crew Management",
+    description: "Staff operations",
+  },
+  { id: "images", name: "Image Manager", description: "Media management" },
+  {
+    id: "database",
+    name: "Database Management",
+    description: "System database",
+  },
 ];
 
 export default function AdminUserManagement() {
@@ -126,7 +192,7 @@ export default function AdminUserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  
+
   // Form state for new user
   const [newUser, setNewUser] = useState({
     fullName: "",
@@ -134,25 +200,25 @@ export default function AdminUserManagement() {
     role: "",
     contactNumber: "",
     branchLocation: "",
-    permissions: [] as string[]
+    permissions: [] as string[],
   });
 
   // Load staff users
   const loadStaffUsers = async () => {
     try {
       setLoading(true);
-      console.log('👨‍💼 Loading staff users...');
+      console.log("👨‍💼 Loading staff users...");
       const result = await neonDbClient.getStaffUsers();
-      
+
       if (result.success && result.users) {
-        console.log('✅ Staff users loaded:', result.users);
+        console.log("✅ Staff users loaded:", result.users);
         setUsers(result.users);
       } else {
-        console.warn('⚠️ Failed to load staff users');
+        console.warn("⚠️ Failed to load staff users");
         setUsers([]);
       }
     } catch (error) {
-      console.error('❌ Error loading staff users:', error);
+      console.error("❌ Error loading staff users:", error);
       setUsers([]);
     } finally {
       setLoading(false);
@@ -165,20 +231,22 @@ export default function AdminUserManagement() {
 
   // Handle role change and auto-set permissions
   const handleRoleChange = (role: string) => {
-    setNewUser(prev => ({
+    setNewUser((prev) => ({
       ...prev,
       role,
-      permissions: roleDefinitions[role as keyof typeof roleDefinitions]?.permissions || []
+      permissions:
+        roleDefinitions[role as keyof typeof roleDefinitions]?.permissions ||
+        [],
     }));
   };
 
   // Handle permission toggle
   const handlePermissionToggle = (featureId: string, checked: boolean) => {
-    setNewUser(prev => ({
+    setNewUser((prev) => ({
       ...prev,
-      permissions: checked 
+      permissions: checked
         ? [...prev.permissions, featureId]
-        : prev.permissions.filter(p => p !== featureId)
+        : prev.permissions.filter((p) => p !== featureId),
     }));
   };
 
@@ -186,25 +254,25 @@ export default function AdminUserManagement() {
   const handleCreateUser = async () => {
     if (!newUser.fullName || !newUser.email || !newUser.role) {
       Swal.fire({
-        title: 'Validation Error',
-        text: 'Please fill in all required fields',
-        icon: 'error',
-        confirmButtonColor: '#f97316'
+        title: "Validation Error",
+        text: "Please fill in all required fields",
+        icon: "error",
+        confirmButtonColor: "#f97316",
       });
       return;
     }
 
     try {
       const result = await neonDbClient.createStaffUser(newUser);
-      
+
       if (result.success) {
         await Swal.fire({
-          title: 'User Created!',
+          title: "User Created!",
           text: `${newUser.fullName} has been added as ${roleDefinitions[newUser.role as keyof typeof roleDefinitions]?.name}`,
-          icon: 'success',
-          confirmButtonColor: '#f97316'
+          icon: "success",
+          confirmButtonColor: "#f97316",
         });
-        
+
         setIsAddModalOpen(false);
         setNewUser({
           fullName: "",
@@ -212,34 +280,37 @@ export default function AdminUserManagement() {
           role: "",
           contactNumber: "",
           branchLocation: "",
-          permissions: []
+          permissions: [],
         });
         loadStaffUsers(); // Refresh list
       } else {
-        throw new Error(result.error || 'Failed to create user');
+        throw new Error(result.error || "Failed to create user");
       }
     } catch (error) {
-      console.error('❌ Error creating user:', error);
+      console.error("❌ Error creating user:", error);
       Swal.fire({
-        title: 'Error',
-        text: 'Failed to create user. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#f97316'
+        title: "Error",
+        text: "Failed to create user. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#f97316",
       });
     }
   };
 
   // Filter users based on search
-  const filteredUsers = users.filter(user =>
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getRoleBadge = (role: string) => {
     const roleInfo = roleDefinitions[role as keyof typeof roleDefinitions];
     return (
-      <Badge className={`${roleInfo?.color || 'bg-gray-500'} text-white font-bold`}>
+      <Badge
+        className={`${roleInfo?.color || "bg-gray-500"} text-white font-bold`}
+      >
         {roleInfo?.name || role}
       </Badge>
     );
@@ -301,7 +372,9 @@ export default function AdminUserManagement() {
       <Card className="glass border-border shadow-2xl">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="text-xl font-bold">Staff Members ({filteredUsers.length})</span>
+            <span className="text-xl font-bold">
+              Staff Members ({filteredUsers.length})
+            </span>
             <Button
               onClick={loadStaffUsers}
               variant="outline"
@@ -323,7 +396,9 @@ export default function AdminUserManagement() {
             <div className="text-center py-12 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No staff members found</p>
-              <p className="text-sm">Add your first staff member to get started</p>
+              <p className="text-sm">
+                Add your first staff member to get started
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -347,17 +422,21 @@ export default function AdminUserManagement() {
                             <UserIcon className="h-4 w-4 text-white" />
                           </div>
                           <div>
-                            <p className="font-bold text-foreground">{user.fullName}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            <p className="font-bold text-foreground">
+                              {user.fullName}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {user.email}
+                            </p>
                             {user.contactNumber && (
-                              <p className="text-xs text-muted-foreground">{user.contactNumber}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {user.contactNumber}
+                              </p>
                             )}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {getRoleBadge(user.role)}
-                      </TableCell>
+                      <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Settings className="h-4 w-4 text-muted-foreground" />
@@ -367,16 +446,19 @@ export default function AdminUserManagement() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{user.branchLocation || 'All Branches'}</span>
+                        <span className="text-sm">
+                          {user.branchLocation || "All Branches"}
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <Badge 
-                          className={user.isActive 
-                            ? "bg-green-500 text-white" 
-                            : "bg-red-500 text-white"
+                        <Badge
+                          className={
+                            user.isActive
+                              ? "bg-green-500 text-white"
+                              : "bg-red-500 text-white"
                           }
                         >
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -424,13 +506,18 @@ export default function AdminUserManagement() {
             {/* Basic Info */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Basic Information</h3>
-              
+
               <div>
                 <Label htmlFor="fullName">Full Name *</Label>
                 <Input
                   id="fullName"
                   value={newUser.fullName}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, fullName: e.target.value }))}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({
+                      ...prev,
+                      fullName: e.target.value,
+                    }))
+                  }
                   placeholder="Enter full name"
                 />
               </div>
@@ -441,7 +528,9 @@ export default function AdminUserManagement() {
                   id="email"
                   type="email"
                   value={newUser.email}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   placeholder="Enter email address"
                 />
               </div>
@@ -451,7 +540,12 @@ export default function AdminUserManagement() {
                 <Input
                   id="phone"
                   value={newUser.contactNumber}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, contactNumber: e.target.value }))}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({
+                      ...prev,
+                      contactNumber: e.target.value,
+                    }))
+                  }
                   placeholder="Enter phone number"
                 />
               </div>
@@ -461,7 +555,12 @@ export default function AdminUserManagement() {
                 <Input
                   id="branch"
                   value={newUser.branchLocation}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, branchLocation: e.target.value }))}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({
+                      ...prev,
+                      branchLocation: e.target.value,
+                    }))
+                  }
                   placeholder="Enter branch location"
                 />
               </div>
@@ -476,7 +575,9 @@ export default function AdminUserManagement() {
                     {Object.entries(roleDefinitions).map(([key, role]) => (
                       <SelectItem key={key} value={key}>
                         <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${role.color}`}></div>
+                          <div
+                            className={`w-3 h-3 rounded-full ${role.color}`}
+                          ></div>
                           <span>{role.name}</span>
                         </div>
                       </SelectItem>
@@ -485,7 +586,11 @@ export default function AdminUserManagement() {
                 </Select>
                 {newUser.role && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {roleDefinitions[newUser.role as keyof typeof roleDefinitions]?.description}
+                    {
+                      roleDefinitions[
+                        newUser.role as keyof typeof roleDefinitions
+                      ]?.description
+                    }
                   </p>
                 )}
               </div>
@@ -495,21 +600,25 @@ export default function AdminUserManagement() {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Feature Permissions</h3>
               <p className="text-sm text-muted-foreground">
-                Select which features this user can access. Default permissions are set based on role.
+                Select which features this user can access. Default permissions
+                are set based on role.
               </p>
-              
+
               <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4">
                 {availableFeatures.map((feature) => (
                   <div key={feature.id} className="flex items-start space-x-3">
                     <Checkbox
                       id={feature.id}
                       checked={newUser.permissions.includes(feature.id)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handlePermissionToggle(feature.id, checked as boolean)
                       }
                     />
                     <div className="flex-1">
-                      <Label htmlFor={feature.id} className="text-sm font-medium">
+                      <Label
+                        htmlFor={feature.id}
+                        className="text-sm font-medium"
+                      >
                         {feature.name}
                       </Label>
                       <p className="text-xs text-muted-foreground">
@@ -519,7 +628,7 @@ export default function AdminUserManagement() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="text-sm text-muted-foreground">
                 <strong>Selected:</strong> {newUser.permissions.length} features
               </div>
@@ -527,10 +636,7 @@ export default function AdminUserManagement() {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
               Cancel
             </Button>
             <Button

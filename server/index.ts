@@ -51,24 +51,27 @@ export function createServer() {
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
-  
+
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
   app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
-  
+
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
-  
+
   // Notification endpoints
   app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
-  app.put("/api/neon/notifications/:notificationId/read", neonApiRoutes.markNotificationRead);
-  
+  app.put(
+    "/api/neon/notifications/:notificationId/read",
+    neonApiRoutes.markNotificationRead,
+  );
+
   // Admin settings endpoints
   app.get("/api/neon/settings", neonApiRoutes.getSettings);
   app.put("/api/neon/settings", neonApiRoutes.updateSetting);
-  
+
   // Ads endpoints
   app.get("/api/neon/ads", neonApiRoutes.getAds);
   app.post("/api/neon/ads", neonApiRoutes.createAd);
@@ -93,7 +96,10 @@ export function createServer() {
   app.get("/api/neon/inventory/items", neonApiRoutes.getInventoryItems);
   app.post("/api/neon/inventory/items", neonApiRoutes.createInventoryItem);
   app.put("/api/neon/inventory/items/:id", neonApiRoutes.updateInventoryItem);
-  app.delete("/api/neon/inventory/items/:id", neonApiRoutes.deleteInventoryItem);
+  app.delete(
+    "/api/neon/inventory/items/:id",
+    neonApiRoutes.deleteInventoryItem,
+  );
 
   // Stock movements endpoints
   app.get("/api/neon/inventory/movements", neonApiRoutes.getStockMovements);

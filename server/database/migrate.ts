@@ -1,36 +1,37 @@
-import { neon } from '@neondatabase/serverless';
-import { getDatabase, testConnection } from './connection';
-import bcrypt from 'bcryptjs';
+import { neon } from "@neondatabase/serverless";
+import { getDatabase, testConnection } from "./connection";
+import bcrypt from "bcryptjs";
 
 // Initialize Neon SQL client at module scope
-const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
-const sql = DATABASE_URL ? neon(DATABASE_URL) : null as any;
+const DATABASE_URL =
+  process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "";
+const sql = DATABASE_URL ? neon(DATABASE_URL) : (null as any);
 
 // Database migration script to create all tables
 export async function runMigrations() {
-  console.log('🚀 Starting database migrations...');
-  
+  console.log("🚀 Starting database migrations...");
+
   try {
     if (!sql) {
-      throw new Error('DATABASE_URL/NEON_DATABASE_URL is not configured');
+      throw new Error("DATABASE_URL/NEON_DATABASE_URL is not configured");
     }
 
     // Test connection first
     const isConnected = await testConnection();
     if (!isConnected) {
-      throw new Error('Database connection failed');
+      throw new Error("Database connection failed");
     }
 
     const db = getDatabase();
     if (!db) {
-      throw new Error('Database not initialized');
+      throw new Error("Database not initialized");
     }
 
     // Create CUID2 extension if needed (for better ID generation)
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     // Create crew tracking tables first
-    console.log('📊 Creating crew tracking tables...');
+    console.log("📊 Creating crew tracking tables...");
 
     // Create crew groups table
     await sql`
@@ -121,7 +122,7 @@ export async function runMigrations() {
       )
     `;
 
-    console.log('✅ Crew tracking tables created successfully');
+    console.log("✅ Crew tracking tables created successfully");
 
     // Create users table
     await sql`
@@ -857,27 +858,28 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification ON notification_deliveries(notification_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_user ON notification_deliveries(user_id);`;
 
-    console.log('✅ Database migrations completed successfully!');
+    console.log("✅ Database migrations completed successfully!");
     return true;
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error("❌ Migration failed:", error);
     throw error;
   }
 }
 
 // Function to seed initial data
 export async function seedInitialData() {
-  console.log('🌱 Seeding initial data...');
-  
+  console.log("🌱 Seeding initial data...");
+
   try {
     const db = getDatabase();
     if (!db) {
-      throw new Error('Database not initialized');
+      throw new Error("Database not initialized");
     }
 
     // Create or update superadmin user
-    const superAdminExists = await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
-    const superAdminPassword = await bcrypt.hash('SuperAdmin2025!', 10);
+    const superAdminExists =
+      await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
+    const superAdminPassword = await bcrypt.hash("SuperAdmin2025!", 10);
 
     if (superAdminExists.length === 0) {
       await sql`
@@ -896,19 +898,22 @@ export async function seedInitialData() {
           'vip'
         );
       `;
-      console.log('✅ Superadmin user created: superadmin@fayeedautocare.com / SuperAdmin2025!');
+      console.log(
+        "✅ Superadmin user created: superadmin@fayeedautocare.com / SuperAdmin2025!",
+      );
     } else {
       await sql`
         UPDATE users
         SET password = ${superAdminPassword}, role = 'superadmin', updated_at = NOW()
         WHERE email = 'superadmin@fayeedautocare.com';
       `;
-      console.log('✅ Superadmin user password updated');
+      console.log("✅ Superadmin user password updated");
     }
 
     // Create or update default admin user
-    const adminExists = await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const adminExists =
+      await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
+    const hashedPassword = await bcrypt.hash("admin123", 10);
 
     if (adminExists.length === 0) {
       await sql`
@@ -927,27 +932,55 @@ export async function seedInitialData() {
           'premium'
         );
       `;
-      console.log('✅ Default admin user created with properly hashed password');
+      console.log(
+        "✅ Default admin user created with properly hashed password",
+      );
     } else {
       await sql`
         UPDATE users
         SET password = ${hashedPassword}, updated_at = NOW()
         WHERE email = 'admin@fayeedautocare.com';
       `;
-      console.log('✅ Default admin user password updated with proper hash');
+      console.log("✅ Default admin user password updated with proper hash");
     }
 
     // Insert default admin settings
     const defaultSettings = [
-      { key: 'booking_advance_days', value: '7', description: 'How many days in advance bookings can be made', category: 'booking' },
-      { key: 'notification_sound_enabled', value: 'true', description: 'Enable sound notifications', category: 'notification' },
-      { key: 'loyalty_points_rate', value: '100', description: 'Points earned per 100 PHP spent', category: 'general' },
-      { key: 'business_hours_start', value: '08:00', description: 'Business opening time', category: 'general' },
-      { key: 'business_hours_end', value: '18:00', description: 'Business closing time', category: 'general' },
+      {
+        key: "booking_advance_days",
+        value: "7",
+        description: "How many days in advance bookings can be made",
+        category: "booking",
+      },
+      {
+        key: "notification_sound_enabled",
+        value: "true",
+        description: "Enable sound notifications",
+        category: "notification",
+      },
+      {
+        key: "loyalty_points_rate",
+        value: "100",
+        description: "Points earned per 100 PHP spent",
+        category: "general",
+      },
+      {
+        key: "business_hours_start",
+        value: "08:00",
+        description: "Business opening time",
+        category: "general",
+      },
+      {
+        key: "business_hours_end",
+        value: "18:00",
+        description: "Business closing time",
+        category: "general",
+      },
     ];
 
     for (const setting of defaultSettings) {
-      const exists = await sql`SELECT id FROM admin_settings WHERE key = ${setting.key} LIMIT 1`;
+      const exists =
+        await sql`SELECT id FROM admin_settings WHERE key = ${setting.key} LIMIT 1`;
       if (exists.length === 0) {
         await sql`
           INSERT INTO admin_settings (id, key, value, description, category)
@@ -962,10 +995,10 @@ export async function seedInitialData() {
       }
     }
 
-    console.log('✅ Initial data seeded successfully!');
+    console.log("✅ Initial data seeded successfully!");
     return true;
   } catch (error) {
-    console.error('❌ Seeding failed:', error);
+    console.error("❌ Seeding failed:", error);
     throw error;
   }
 }

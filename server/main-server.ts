@@ -53,8 +53,8 @@ export const createServer = () => {
   });
 
   // Request logging middleware for debugging
-  app.use('/api', (req, res, next) => {
-    if (req.url.includes('users')) {
+  app.use("/api", (req, res, next) => {
+    if (req.url.includes("users")) {
       console.log(`🌐 API Request: ${req.method} ${req.originalUrl}`);
     }
     next();
@@ -64,30 +64,33 @@ export const createServer = () => {
   app.use("/api", demoRoutes);
   app.use("/api", customerApiRoutes);
   app.use("/api", otpApiRoutes);
-  
+
   // Neon Database API Routes
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
-  
+
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
   app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
-  
+
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
-  
+
   // Notification endpoints
   app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
-  app.put("/api/neon/notifications/:notificationId/read", neonApiRoutes.markNotificationRead);
-  
+  app.put(
+    "/api/neon/notifications/:notificationId/read",
+    neonApiRoutes.markNotificationRead,
+  );
+
   // Admin settings endpoints
   app.get("/api/neon/settings", neonApiRoutes.getSettings);
   app.put("/api/neon/settings", neonApiRoutes.updateSetting);
-  
+
   // Ads endpoints
   app.get("/api/neon/ads", neonApiRoutes.getAds);
   app.post("/api/neon/ads", neonApiRoutes.createAd);
@@ -126,8 +129,8 @@ export const createServer = () => {
   // Only serve React app for non-API routes
   app.get("*", (req, res, next) => {
     // Skip if it's an API route
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
+    if (req.path.startsWith("/api/")) {
+      return res.status(404).json({ error: "API endpoint not found" });
     }
     res.sendFile(path.join(reactBuildPath, "index.html"));
   });
@@ -139,7 +142,7 @@ export const createServer = () => {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const app = createServer();
   const PORT = process.env.PORT || 3000;
-  
+
   app.listen(PORT, () => {
     console.log(`🚀 FAC Server running on port ${PORT}`);
     console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);

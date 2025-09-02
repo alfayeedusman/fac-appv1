@@ -1,12 +1,19 @@
 // Client-side service to interact with Neon database via API
-import { toast } from '@/hooks/use-toast';
+import { toast } from "@/hooks/use-toast";
 
 // Types based on our database schema
 export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew';
+  role:
+    | "user"
+    | "admin"
+    | "superadmin"
+    | "cashier"
+    | "inventory_manager"
+    | "manager"
+    | "crew";
   contactNumber?: string;
   address?: string;
   carUnit?: string;
@@ -17,10 +24,10 @@ export interface User {
   isActive: boolean;
   emailVerified: boolean;
   loyaltyPoints: number;
-  subscriptionStatus: 'free' | 'basic' | 'premium' | 'vip';
+  subscriptionStatus: "free" | "basic" | "premium" | "vip";
   subscriptionExpiry?: string;
   crewSkills?: string[];
-  crewStatus?: 'available' | 'busy' | 'offline';
+  crewStatus?: "available" | "busy" | "offline";
   currentAssignment?: string;
   crewRating?: number;
   crewExperience?: number;
@@ -38,11 +45,11 @@ export interface Booking {
     email: string;
     phone: string;
   };
-  type: 'registered' | 'guest';
+  type: "registered" | "guest";
   confirmationCode: string;
-  category: 'carwash' | 'auto_detailing' | 'graphene_coating';
+  category: "carwash" | "auto_detailing" | "graphene_coating";
   service: string;
-  unitType: 'car' | 'motorcycle';
+  unitType: "car" | "motorcycle";
   unitSize?: string;
   plateNumber?: string;
   vehicleModel?: string;
@@ -54,7 +61,7 @@ export interface Booking {
   basePrice: number;
   totalPrice: number;
   currency: string;
-  paymentMethod?: 'cash' | 'online' | 'gcash';
+  paymentMethod?: "cash" | "online" | "gcash";
   paymentStatus: string;
   receiptUrl?: string;
   status: string;
@@ -76,7 +83,7 @@ export interface SystemNotification {
   type: string;
   title: string;
   message: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
   targetRoles: string[];
   targetUsers?: string[];
   data?: any;
@@ -86,7 +93,7 @@ export interface SystemNotification {
   actions?: Array<{
     label: string;
     action: string;
-    variant?: 'default' | 'destructive' | 'secondary';
+    variant?: "default" | "destructive" | "secondary";
   }>;
   playSound?: boolean;
   soundType?: string;
@@ -109,7 +116,7 @@ export interface Ad {
   title: string;
   content: string;
   imageUrl?: string;
-  duration: 'weekly' | 'monthly' | 'yearly';
+  duration: "weekly" | "monthly" | "yearly";
   isActive: boolean;
   targetPages: string[];
   adminEmail: string;
@@ -120,7 +127,7 @@ export interface Ad {
 }
 
 class NeonDatabaseClient {
-  private baseUrl = `${import.meta.env.VITE_API_BASE_URL || '/api'}/neon`;
+  private baseUrl = `${import.meta.env.VITE_API_BASE_URL || "/api"}/neon`;
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
 
@@ -128,31 +135,35 @@ class NeonDatabaseClient {
   async initialize(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
-      
+
       const result = await response.json();
       this.isConnected = result.success;
-      
+
       if (result.success) {
         toast({
-          title: 'Database Connected',
-          description: 'Neon database initialized successfully',
+          title: "Database Connected",
+          description: "Neon database initialized successfully",
         });
       } else {
-        console.error('Database initialization failed:', result.error);
+        console.error("Database initialization failed:", result.error);
       }
-      
+
       return result.success;
     } catch (error) {
-      console.error('Database initialization error:', error);
+      console.error("Database initialization error:", error);
       this.isConnected = false;
       return false;
     }
   }
 
-  async testConnection(): Promise<{ connected: boolean; stats?: any; error?: string }> {
+  async testConnection(): Promise<{
+    connected: boolean;
+    stats?: any;
+    error?: string;
+  }> {
     const tryFetch = async (url: string, timeoutMs = 8000) => {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), timeoutMs);
@@ -175,15 +186,18 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log('✅ Database connection test successful');
+            console.log("✅ Database connection test successful");
           } else {
-            console.warn('⚠️ Database connection test returned false');
+            console.warn("⚠️ Database connection test returned false");
           }
           return result;
         }
         console.error(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        console.warn('Primary connection test failed:', (err as any).message || err);
+        console.warn(
+          "Primary connection test failed:",
+          (err as any).message || err,
+        );
       }
 
       // 2) Fallback to same-origin relative API
@@ -194,35 +208,40 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log('✅ Fallback connection test successful');
+            console.log("✅ Fallback connection test successful");
           } else {
-            console.warn('⚠️ Fallback connection test returned false');
+            console.warn("⚠️ Fallback connection test returned false");
           }
           return result;
         }
-        console.error(`Fallback connection test failed: HTTP ${response.status}`);
+        console.error(
+          `Fallback connection test failed: HTTP ${response.status}`,
+        );
       } catch (err) {
-        console.warn('Fallback connection test failed:', (err as any).message || err);
+        console.warn(
+          "Fallback connection test failed:",
+          (err as any).message || err,
+        );
       }
 
       // 3) Final: health check to distinguish server vs network
       try {
-        const health = await tryFetch('/api/health', 5000);
+        const health = await tryFetch("/api/health", 5000);
         if (health.ok) {
           this.isConnected = false;
-          return { connected: false, error: 'API reachable, Neon test failed' };
+          return { connected: false, error: "API reachable, Neon test failed" };
         }
       } catch (e) {
         // ignore
       }
 
       this.isConnected = false;
-      return { connected: false, error: 'Network error' };
+      return { connected: false, error: "Network error" };
     } catch (error: any) {
-      console.error('❌ Connection test failed:', error.message || error);
+      console.error("❌ Connection test failed:", error.message || error);
       this.isConnected = false;
-      if (error.name === 'AbortError') {
-        return { connected: false, error: 'Connection timeout' };
+      if (error.name === "AbortError") {
+        return { connected: false, error: "Connection timeout" };
       }
       return { connected: false, error: error.message };
     }
@@ -254,7 +273,7 @@ class NeonDatabaseClient {
   // Auto-initialize without user interaction
   private async autoInitialize(): Promise<boolean> {
     try {
-      console.log('🔄 Auto-initializing Neon database...');
+      console.log("🔄 Auto-initializing Neon database...");
 
       // First try test connection
       const testResult = await this.testConnection();
@@ -266,40 +285,60 @@ class NeonDatabaseClient {
       const initResult = await this.initialize();
       return initResult;
     } catch (error) {
-      console.error('❌ Auto-initialization failed:', error);
+      console.error("❌ Auto-initialization failed:", error);
       return false;
     }
   }
 
   // Database-only mode - no localStorage fallback
   private throwDatabaseError(operation: string): never {
-    throw new Error(`Database operation failed: ${operation}. Please ensure Neon database is connected.`);
+    throw new Error(
+      `Database operation failed: ${operation}. Please ensure Neon database is connected.`,
+    );
   }
 
   // === AUTHENTICATION ===
 
-  private async processLoginResponse(response: Response): Promise<{ success: boolean; user?: User; error?: string }> {
+  private async processLoginResponse(
+    response: Response,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
     if (!response) {
-      return { success: false, error: 'Network error: No response received from server' };
+      return {
+        success: false,
+        error: "Network error: No response received from server",
+      };
     }
 
-    if (response.type === 'opaque' || response.status === 0) {
-      return { success: false, error: 'Request blocked by CORS or network policy. Please use the same origin or enable CORS on the server.' };
+    if (response.type === "opaque" || response.status === 0) {
+      return {
+        success: false,
+        error:
+          "Request blocked by CORS or network policy. Please use the same origin or enable CORS on the server.",
+      };
     }
 
     try {
-      console.log('📝 Response status:', response.status, response.statusText);
-      console.log('📝 Response URL:', response.url);
-      console.log('��� Content-Type:', response.headers.get('content-type') || 'unknown');
+      console.log("📝 Response status:", response.status, response.statusText);
+      console.log("📝 Response URL:", response.url);
+      console.log(
+        "��� Content-Type:",
+        response.headers.get("content-type") || "unknown",
+      );
     } catch (_) {}
 
     // Read body ONCE as text to avoid bodyUsed/clone issues, then try JSON parse
-    let text = '';
+    let text = "";
     try {
       text = await response.text();
     } catch (readErr: any) {
-      console.error('❌ Failed to read response body:', readErr?.message || readErr);
-      return { success: false, error: `Unable to read server response (HTTP ${response.status}).` };
+      console.error(
+        "❌ Failed to read response body:",
+        readErr?.message || readErr,
+      );
+      return {
+        success: false,
+        error: `Unable to read server response (HTTP ${response.status}).`,
+      };
     }
 
     let json: any = null;
@@ -307,49 +346,65 @@ class NeonDatabaseClient {
       if (text) json = JSON.parse(text);
     } catch (_) {}
 
-    if (json && typeof json === 'object') {
+    if (json && typeof json === "object") {
       if (!response.ok || !json?.success) {
         const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
         return { success: false, error: errMsg };
       }
       try {
-        localStorage.setItem('userEmail', json.user.email);
-        localStorage.setItem('userRole', json.user.role);
-        localStorage.setItem('userId', json.user.id);
+        localStorage.setItem("userEmail", json.user.email);
+        localStorage.setItem("userRole", json.user.role);
+        localStorage.setItem("userId", json.user.id);
       } catch (e) {
-        console.warn('⚠️ Storage unavailable, proceeding without persisting session:', (e as any)?.message || e);
+        console.warn(
+          "⚠️ Storage unavailable, proceeding without persisting session:",
+          (e as any)?.message || e,
+        );
         try {
-          sessionStorage.setItem('userEmail', json.user.email);
-          sessionStorage.setItem('userRole', json.user.role);
-          sessionStorage.setItem('userId', json.user.id);
+          sessionStorage.setItem("userEmail", json.user.email);
+          sessionStorage.setItem("userRole", json.user.role);
+          sessionStorage.setItem("userId", json.user.id);
         } catch (_) {}
       }
       return json;
     }
 
-    const ct = response.headers.get('content-type') || '';
-    const why = ct.includes('text/html') ? 'HTML page returned instead of JSON.' : 'Invalid JSON response.';
-    const preview = text ? text.substring(0, 200) : '';
-    return { success: false, error: `${why} (HTTP ${response.status}). ${preview ? `Response: ${preview}` : ''}`.trim() };
+    const ct = response.headers.get("content-type") || "";
+    const why = ct.includes("text/html")
+      ? "HTML page returned instead of JSON."
+      : "Invalid JSON response.";
+    const preview = text ? text.substring(0, 200) : "";
+    return {
+      success: false,
+      error:
+        `${why} (HTTP ${response.status}). ${preview ? `Response: ${preview}` : ""}`.trim(),
+    };
   }
 
-  async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
     const connected = await this.ensureConnection();
     if (!connected) {
-      console.error('❌ Unable to establish database connection for login');
-      return { success: false, error: 'Database connection failed. Please check your internet connection and try again.' };
+      console.error("❌ Unable to establish database connection for login");
+      return {
+        success: false,
+        error:
+          "Database connection failed. Please check your internet connection and try again.",
+      };
     }
 
     try {
       const url = `${this.baseUrl}/auth/login`;
-      console.log('🔎 Login request URL:', url);
+      console.log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
 
       const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
         signal: ac.signal,
       });
@@ -358,14 +413,17 @@ class NeonDatabaseClient {
       const processed = await this.processLoginResponse(response);
       if (processed.success) return processed;
 
-      if (processed.error?.toLowerCase().includes('cors') || processed.error?.toLowerCase().includes('network')) {
-        console.log('🔄 Retrying login via same-origin fallback...');
+      if (
+        processed.error?.toLowerCase().includes("cors") ||
+        processed.error?.toLowerCase().includes("network")
+      ) {
+        console.log("🔄 Retrying login via same-origin fallback...");
         const ac2 = new AbortController();
         const to2 = setTimeout(() => ac2.abort(), 10000);
         try {
           const resp2 = await fetch(`/api/neon/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
             signal: ac2.signal,
           });
@@ -373,170 +431,235 @@ class NeonDatabaseClient {
           return await this.processLoginResponse(resp2);
         } catch (retryErr: any) {
           clearTimeout(to2);
-          console.error('❌ Retry login failed:', retryErr?.message || retryErr);
-          return { success: false, error: 'Login failed after retry. Please try again.' };
+          console.error(
+            "❌ Retry login failed:",
+            retryErr?.message || retryErr,
+          );
+          return {
+            success: false,
+            error: "Login failed after retry. Please try again.",
+          };
         }
       }
 
       return processed;
     } catch (error: any) {
-      console.error('Database login failed:', error);
+      console.error("Database login failed:", error);
 
-      if (error?.name === 'AbortError') {
-        return { success: false, error: 'Request timed out. Please try again.' };
+      if (error?.name === "AbortError") {
+        return {
+          success: false,
+          error: "Request timed out. Please try again.",
+        };
       }
 
-      if (error.message?.includes('NetworkError') || error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+      if (
+        error.message?.includes("NetworkError") ||
+        error.message?.includes("Failed to fetch") ||
+        error.name === "TypeError"
+      ) {
         try {
-          const health = await fetch('/api/health', { method: 'GET', signal: AbortSignal.timeout(5000) });
+          const health = await fetch("/api/health", {
+            method: "GET",
+            signal: AbortSignal.timeout(5000),
+          });
           if (health.ok) {
-            return { success: false, error: 'Network looks fine, but login failed. Please try again.' };
+            return {
+              success: false,
+              error: "Network looks fine, but login failed. Please try again.",
+            };
           }
         } catch {}
         this.isConnected = false;
         const recon = await this.testConnection();
         if (recon.connected) {
-          console.log('✅ Reconnected, retrying login once...');
+          console.log("✅ Reconnected, retrying login once...");
           try {
             const resp3 = await fetch(`/api/neon/auth/login`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
               signal: AbortSignal.timeout(10000),
             });
             return await this.processLoginResponse(resp3);
           } catch (e3: any) {
-            console.error('❌ Retry login also failed:', e3?.message || e3);
+            console.error("❌ Retry login also failed:", e3?.message || e3);
           }
         }
-        return { success: false, error: 'Network connection error. Please check your internet and try again.' };
+        return {
+          success: false,
+          error:
+            "Network connection error. Please check your internet and try again.",
+        };
       }
 
-      return { success: false, error: `Login failed: ${error.message || 'Unknown error'}` };
+      return {
+        success: false,
+        error: `Login failed: ${error.message || "Unknown error"}`,
+      };
     }
   }
 
-  async register(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; user?: User; error?: string }> {
+  async register(
+    userData: Omit<User, "id" | "createdAt" | "updatedAt">,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
     if (!this.isConnected) {
-      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
+      return {
+        success: false,
+        error: "Database not connected. Please connect to Neon database first.",
+      };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database registration failed:', error);
-      return { success: false, error: 'Registration failed. Please check your connection.' };
+      console.error("Database registration failed:", error);
+      return {
+        success: false,
+        error: "Registration failed. Please check your connection.",
+      };
     }
   }
 
   // === BOOKINGS ===
 
-  async createBooking(bookingData: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'confirmationCode'>): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+  async createBooking(
+    bookingData: Omit<
+      Booking,
+      "id" | "createdAt" | "updatedAt" | "confirmationCode"
+    >,
+  ): Promise<{ success: boolean; booking?: Booking; error?: string }> {
     if (!this.isConnected) {
-      return { success: false, error: 'Database not connected. Please connect to Neon database first.' };
+      return {
+        success: false,
+        error: "Database not connected. Please connect to Neon database first.",
+      };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database booking creation failed:', error);
-      return { success: false, error: 'Failed to create booking. Please check your connection.' };
+      console.error("Database booking creation failed:", error);
+      return {
+        success: false,
+        error: "Failed to create booking. Please check your connection.",
+      };
     }
   }
 
-  async getBookings(params?: { userId?: string; status?: string }): Promise<{ success: boolean; bookings?: Booking[] }> {
+  async getBookings(params?: {
+    userId?: string;
+    status?: string;
+  }): Promise<{ success: boolean; bookings?: Booking[] }> {
     if (!this.isConnected) {
       return { success: false, bookings: [] };
     }
 
     try {
       const queryParams = new URLSearchParams();
-      if (params?.userId) queryParams.append('userId', params.userId);
-      if (params?.status) queryParams.append('status', params.status);
+      if (params?.userId) queryParams.append("userId", params.userId);
+      if (params?.status) queryParams.append("status", params.status);
 
       const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`);
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database booking fetch failed:', error);
+      console.error("Database booking fetch failed:", error);
       return { success: false, bookings: [] };
     }
   }
 
-  async updateBooking(id: string, updates: Partial<Booking>): Promise<{ success: boolean; booking?: Booking }> {
+  async updateBooking(
+    id: string,
+    updates: Partial<Booking>,
+  ): Promise<{ success: boolean; booking?: Booking }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database booking update failed:', error);
+      console.error("Database booking update failed:", error);
       return { success: false };
     }
   }
 
   // === NOTIFICATIONS ===
 
-  async getNotifications(userId: string, userRole: string): Promise<{ success: boolean; notifications?: SystemNotification[] }> {
+  async getNotifications(
+    userId: string,
+    userRole: string,
+  ): Promise<{ success: boolean; notifications?: SystemNotification[] }> {
     if (!this.isConnected) {
       return { success: false, notifications: [] };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`);
+      const response = await fetch(
+        `${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`,
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database notification fetch failed:', error);
+      console.error("Database notification fetch failed:", error);
       return { success: false, notifications: [] };
     }
   }
 
-  async markNotificationAsRead(notificationId: string, userId: string): Promise<{ success: boolean }> {
+  async markNotificationAsRead(
+    notificationId: string,
+    userId: string,
+  ): Promise<{ success: boolean }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/notifications/${notificationId}/read`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/notifications/${notificationId}/read`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        },
+      );
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database notification update failed:', error);
+      console.error("Database notification update failed:", error);
       return { success: false };
     }
   }
 
   // === ADMIN SETTINGS ===
 
-  async getSettings(): Promise<{ success: boolean; settings?: AdminSetting[] }> {
+  async getSettings(): Promise<{
+    success: boolean;
+    settings?: AdminSetting[];
+  }> {
     if (!this.isConnected) {
       return { success: false, settings: [] };
     }
@@ -546,27 +669,32 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database settings fetch failed:', error);
+      console.error("Database settings fetch failed:", error);
       return { success: false, settings: [] };
     }
   }
 
-  async updateSetting(key: string, value: any, description?: string, category?: string): Promise<{ success: boolean; setting?: AdminSetting }> {
+  async updateSetting(
+    key: string,
+    value: any,
+    description?: string,
+    category?: string,
+  ): Promise<{ success: boolean; setting?: AdminSetting }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value, description, category }),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database setting update failed:', error);
+      console.error("Database setting update failed:", error);
       return { success: false };
     }
   }
@@ -583,47 +711,52 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database ads fetch failed:', error);
+      console.error("Database ads fetch failed:", error);
       return { success: false, ads: [] };
     }
   }
 
-  async createAd(adData: Omit<Ad, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; ad?: Ad }> {
+  async createAd(
+    adData: Omit<Ad, "id" | "createdAt" | "updatedAt">,
+  ): Promise<{ success: boolean; ad?: Ad }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/ads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(adData),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database ad creation failed:', error);
+      console.error("Database ad creation failed:", error);
       return { success: false };
     }
   }
 
-  async dismissAd(adId: string, userEmail: string): Promise<{ success: boolean }> {
+  async dismissAd(
+    adId: string,
+    userEmail: string,
+  ): Promise<{ success: boolean }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/ads/${adId}/dismiss`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail }),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Database ad dismissal failed:', error);
+      console.error("Database ad dismissal failed:", error);
       return { success: false };
     }
   }
@@ -631,57 +764,68 @@ class NeonDatabaseClient {
   // === USERS ===
 
   async getCustomers(): Promise<{ success: boolean; users?: User[] }> {
-    console.log('🔗 getCustomers called, connection status:', this.isConnected);
+    console.log("🔗 getCustomers called, connection status:", this.isConnected);
     if (!this.isConnected) {
-      console.warn('⚠️ Database not connected for getCustomers');
+      console.warn("⚠️ Database not connected for getCustomers");
       return { success: false, users: [] };
     }
 
     try {
-      console.log('📞 Making request to /api/neon/customers...');
-      const response = await fetch('/api/neon/customers');
-      console.log('📥 Response status:', response.status, response.statusText);
+      console.log("📞 Making request to /api/neon/customers...");
+      const response = await fetch("/api/neon/customers");
+      console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
-        console.error('❌ Response not OK:', response.status, response.statusText);
+        console.error(
+          "❌ Response not OK:",
+          response.status,
+          response.statusText,
+        );
         const text = await response.text();
-        console.error('Response body:', text);
+        console.error("Response body:", text);
         return { success: false, users: [] };
       }
 
       const result = await response.json();
-      console.log('✅ getCustomers result:', result);
+      console.log("✅ getCustomers result:", result);
       return result;
     } catch (error) {
-      console.error('❌ Database customers fetch failed:', error);
+      console.error("❌ Database customers fetch failed:", error);
       return { success: false, users: [] };
     }
   }
 
   async getStaffUsers(): Promise<{ success: boolean; users?: User[] }> {
-    console.log('🔗 getStaffUsers called, connection status:', this.isConnected);
+    console.log(
+      "🔗 getStaffUsers called, connection status:",
+      this.isConnected,
+    );
     if (!this.isConnected) {
-      console.warn('⚠️ Database not connected for getStaffUsers');
+      console.warn("⚠️ Database not connected for getStaffUsers");
       return { success: false, users: [] };
     }
 
     try {
-      console.log('📞 Making request to /api/neon/staff...');
-      const response = await fetch('/api/neon/staff');
-      console.log('📥 Response status:', response.status, response.statusText);
+      console.log("📞 Making request to /api/neon/staff...");
+      const response = await fetch("/api/neon/staff");
+      console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
-        console.error('�� Response not OK:', response.status, response.statusText);
+        console.error(
+          "�� Response not OK:",
+          response.status,
+          response.statusText,
+        );
         const text = await response.text();
-        console.error('Response body:', text);
+        console.error("Response body:", text);
         return { success: false, users: [] };
       }
 
       const result = await response.json();
-      console.log('✅ getStaffUsers result:', result);
+      console.log("✅ getStaffUsers result:", result);
       return result;
     } catch (error) {
-      console.error('❌ Database staff users fetch failed:', error);
+      console.error("❌ Database staff users fetch failed:", error);
       return { success: false, users: [] };
     }
   }
@@ -695,56 +839,64 @@ class NeonDatabaseClient {
     branchLocation: string;
   }): Promise<{ success: boolean; user?: User; error?: string }> {
     if (!this.isConnected) {
-      return { success: false, error: 'Database not connected' };
+      return { success: false, error: "Database not connected" };
     }
 
     try {
-      const response = await fetch('/api/neon/staff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/neon/staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('❌ Database staff user creation failed:', error);
-      return { success: false, error: 'Failed to create staff user' };
+      console.error("❌ Database staff user creation failed:", error);
+      return { success: false, error: "Failed to create staff user" };
     }
   }
 
   // Backward compatibility - now fetches all users (customers + staff)
   async getUsers(): Promise<{ success: boolean; users?: User[] }> {
-    console.log('🔗 getUsers called, connection status:', this.isConnected);
+    console.log("🔗 getUsers called, connection status:", this.isConnected);
     if (!this.isConnected) {
-      console.warn('���️ Database not connected for getUsers');
+      console.warn("���️ Database not connected for getUsers");
       return { success: false, users: [] };
     }
 
     try {
-      console.log('📞 Making request to /api/neon/users...');
-      const response = await fetch('/api/neon/users');
-      console.log('📥 Response status:', response.status, response.statusText);
+      console.log("📞 Making request to /api/neon/users...");
+      const response = await fetch("/api/neon/users");
+      console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
-        console.error('❌ Response not OK:', response.status, response.statusText);
+        console.error(
+          "❌ Response not OK:",
+          response.status,
+          response.statusText,
+        );
         const text = await response.text();
-        console.error('Response body:', text);
+        console.error("Response body:", text);
         return { success: false, users: [] };
       }
 
       const result = await response.json();
-      console.log('✅ getUsers result:', result);
+      console.log("✅ getUsers result:", result);
       return result;
     } catch (error) {
-      console.error('❌ Database users fetch failed:', error);
+      console.error("❌ Database users fetch failed:", error);
       return { success: false, users: [] };
     }
   }
 
   // Helper: fetch JSON with timeout and same-origin fallback
-  private async fetchJsonWithFallback(path: string, timeoutMs = 8000): Promise<any> {
-    const makeUrl = (base: string) => `${base.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`;
+  private async fetchJsonWithFallback(
+    path: string,
+    timeoutMs = 8000,
+  ): Promise<any> {
+    const makeUrl = (base: string) =>
+      `${base.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
 
     const tryOnce = async (url: string) => {
       const ac = new AbortController();
@@ -753,14 +905,16 @@ class NeonDatabaseClient {
         const res = await fetch(url, { signal: ac.signal });
         clearTimeout(to);
         if (!res.ok) {
-          const text = await res.text().catch(() => '');
+          const text = await res.text().catch(() => "");
           throw new Error(`HTTP ${res.status}: ${text?.slice(0, 200)}`);
         }
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) return res.json();
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) return res.json();
         const txt = await res.text();
-        try { return JSON.parse(txt); } catch {
-          throw new Error('Invalid JSON response');
+        try {
+          return JSON.parse(txt);
+        } catch {
+          throw new Error("Invalid JSON response");
         }
       } catch (e) {
         clearTimeout(to);
@@ -771,7 +925,7 @@ class NeonDatabaseClient {
     try {
       return await tryOnce(makeUrl(this.baseUrl));
     } catch (e1) {
-      return await tryOnce(makeUrl('/api/neon'));
+      return await tryOnce(makeUrl("/api/neon"));
     }
   }
 
@@ -784,10 +938,12 @@ class NeonDatabaseClient {
     }
 
     try {
-      const result = await this.fetchJsonWithFallback('/realtime-stats');
-      return result?.success !== undefined ? result : { success: true, stats: result?.stats ?? result };
+      const result = await this.fetchJsonWithFallback("/realtime-stats");
+      return result?.success !== undefined
+        ? result
+        : { success: true, stats: result?.stats ?? result };
     } catch (error) {
-      console.error('Database realtime stats fetch failed:', error);
+      console.error("Database realtime stats fetch failed:", error);
       return { success: false, stats: null };
     }
   }
@@ -801,10 +957,12 @@ class NeonDatabaseClient {
     }
 
     try {
-      const result = await this.fetchJsonWithFallback('/stats');
-      return result?.success !== undefined ? result : { success: true, stats: result?.stats ?? result };
+      const result = await this.fetchJsonWithFallback("/stats");
+      return result?.success !== undefined
+        ? result
+        : { success: true, stats: result?.stats ?? result };
     } catch (error) {
-      console.error('Database stats fetch failed:', error);
+      console.error("Database stats fetch failed:", error);
       return { success: false, stats: null };
     }
   }
@@ -822,7 +980,7 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory items fetch failed:', error);
+      console.error("Inventory items fetch failed:", error);
       return { success: false, items: [] };
     }
   }
@@ -844,33 +1002,36 @@ class NeonDatabaseClient {
 
     try {
       const response = await fetch(`${this.baseUrl}/inventory/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itemData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(itemData),
       });
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory item creation failed:', error);
+      console.error("Inventory item creation failed:", error);
       return { success: false };
     }
   }
 
-  async updateInventoryItem(id: string, updates: any): Promise<{ success: boolean; item?: any }> {
+  async updateInventoryItem(
+    id: string,
+    updates: any,
+  ): Promise<{ success: boolean; item?: any }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
       const response = await fetch(`${this.baseUrl}/inventory/items/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
       });
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory item update failed:', error);
+      console.error("Inventory item update failed:", error);
       return { success: false };
     }
   }
@@ -882,63 +1043,76 @@ class NeonDatabaseClient {
 
     try {
       const response = await fetch(`${this.baseUrl}/inventory/items/${id}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory item deletion failed:', error);
+      console.error("Inventory item deletion failed:", error);
       return { success: false };
     }
   }
 
-  async updateInventoryStock(id: string, newStock: number, reason: string, notes?: string): Promise<{ success: boolean }> {
+  async updateInventoryStock(
+    id: string,
+    newStock: number,
+    reason: string,
+    notes?: string,
+  ): Promise<{ success: boolean }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/inventory/items/${id}/stock`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          newStock,
-          reason,
-          notes,
-          performedBy: localStorage.getItem('userEmail') || 'unknown'
-        })
-      });
+      const response = await fetch(
+        `${this.baseUrl}/inventory/items/${id}/stock`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            newStock,
+            reason,
+            notes,
+            performedBy: localStorage.getItem("userEmail") || "unknown",
+          }),
+        },
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory stock update failed:', error);
+      console.error("Inventory stock update failed:", error);
       return { success: false };
     }
   }
 
   // Stock movements
-  async getStockMovements(itemId?: string, limit?: number): Promise<{ success: boolean; movements?: any[] }> {
+  async getStockMovements(
+    itemId?: string,
+    limit?: number,
+  ): Promise<{ success: boolean; movements?: any[] }> {
     if (!this.isConnected) {
       return { success: false, movements: [] };
     }
 
     try {
       const params = new URLSearchParams();
-      if (itemId) params.append('itemId', itemId);
-      if (limit) params.append('limit', limit.toString());
+      if (itemId) params.append("itemId", itemId);
+      if (limit) params.append("limit", limit.toString());
 
-      const response = await fetch(`${this.baseUrl}/inventory/movements?${params}`);
+      const response = await fetch(
+        `${this.baseUrl}/inventory/movements?${params}`,
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Stock movements fetch failed:', error);
+      console.error("Stock movements fetch failed:", error);
       return { success: false, movements: [] };
     }
   }
 
   async createStockMovement(movementData: {
     itemId: string;
-    type: 'in' | 'out' | 'adjustment';
+    type: "in" | "out" | "adjustment";
     quantity: number;
     reason: string;
     reference?: string;
@@ -950,17 +1124,17 @@ class NeonDatabaseClient {
 
     try {
       const response = await fetch(`${this.baseUrl}/inventory/movements`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...movementData,
-          performedBy: localStorage.getItem('userEmail') || 'unknown'
-        })
+          performedBy: localStorage.getItem("userEmail") || "unknown",
+        }),
       });
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Stock movement creation failed:', error);
+      console.error("Stock movement creation failed:", error);
       return { success: false };
     }
   }
@@ -976,7 +1150,7 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Suppliers fetch failed:', error);
+      console.error("Suppliers fetch failed:", error);
       return { success: false, suppliers: [] };
     }
   }
@@ -997,33 +1171,39 @@ class NeonDatabaseClient {
 
     try {
       const response = await fetch(`${this.baseUrl}/inventory/suppliers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(supplierData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(supplierData),
       });
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Supplier creation failed:', error);
+      console.error("Supplier creation failed:", error);
       return { success: false };
     }
   }
 
-  async updateSupplier(id: string, updates: any): Promise<{ success: boolean; supplier?: any }> {
+  async updateSupplier(
+    id: string,
+    updates: any,
+  ): Promise<{ success: boolean; supplier?: any }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/inventory/suppliers/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
+      const response = await fetch(
+        `${this.baseUrl}/inventory/suppliers/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updates),
+        },
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Supplier update failed:', error);
+      console.error("Supplier update failed:", error);
       return { success: false };
     }
   }
@@ -1034,19 +1214,25 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/inventory/suppliers/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `${this.baseUrl}/inventory/suppliers/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Supplier deletion failed:', error);
+      console.error("Supplier deletion failed:", error);
       return { success: false };
     }
   }
 
   // Analytics
-  async getInventoryAnalytics(): Promise<{ success: boolean; analytics?: any }> {
+  async getInventoryAnalytics(): Promise<{
+    success: boolean;
+    analytics?: any;
+  }> {
     if (!this.isConnected) {
       return { success: false };
     }
@@ -1056,7 +1242,7 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Inventory analytics fetch failed:', error);
+      console.error("Inventory analytics fetch failed:", error);
       return { success: false };
     }
   }
@@ -1071,7 +1257,7 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Low stock items fetch failed:', error);
+      console.error("Low stock items fetch failed:", error);
       return { success: false, items: [] };
     }
   }

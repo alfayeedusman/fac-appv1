@@ -95,7 +95,7 @@ import {
   getUserSystemNotifications,
   markSystemNotificationAsRead,
   getAllBookings,
-  type SystemNotification
+  type SystemNotification,
 } from "@/utils/databaseSchema";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
@@ -280,10 +280,10 @@ export default function AdminDashboard() {
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
         });
       } else {
-        console.warn('Failed to load real stats, using defaults');
+        console.warn("Failed to load real stats, using defaults");
       }
     } catch (error) {
-      console.error('Error loading statistics:', error);
+      console.error("Error loading statistics:", error);
     } finally {
       setStatsLoading(false);
     }
@@ -293,53 +293,64 @@ export default function AdminDashboard() {
   const loadRealCustomers = async () => {
     try {
       setCustomersLoading(true);
-      console.log('🔍 Loading customers from database...');
+      console.log("🔍 Loading customers from database...");
 
       // Ensure database connection is ready
       const connectionStatus = neonDbClient.getConnectionStatus();
-      console.log('🔗 Database connection status:', connectionStatus);
+      console.log("🔗 Database connection status:", connectionStatus);
 
       if (!connectionStatus) {
-        console.log('⚠️ Database not connected, attempting to connect...');
+        console.log("⚠️ Database not connected, attempting to connect...");
         const connected = await neonDbClient.testConnection();
-        console.log('🔗 Connection test result:', connected);
+        console.log("🔗 Connection test result:", connected);
         if (!connected.connected) {
-          throw new Error('Database connection failed');
+          throw new Error("Database connection failed");
         }
       }
 
       const result = await neonDbClient.getCustomers();
-      console.log('👥 Customer load result:', result);
+      console.log("👥 Customer load result:", result);
 
       if (result.success && result.users) {
-        console.log('📋 Raw users from database:', result.users);
+        console.log("📋 Raw users from database:", result.users);
         // Transform database users to Customer interface
-        const transformedCustomers: Customer[] = result.users.map((user: any) => ({
-          id: user.id,
-          name: user.fullName,
-          email: user.email,
-          phone: user.contactNumber || 'N/A',
-          carUnit: user.carUnit || 'N/A',
-          plateNumber: user.carPlateNumber || 'N/A',
-          membershipType: user.subscriptionStatus === 'free' ? 'Classic' :
-                         user.subscriptionStatus === 'basic' ? 'VIP Silver' :
-                         user.subscriptionStatus === 'premium' ? 'VIP Gold' :
-                         user.subscriptionStatus === 'vip' ? 'VIP Gold Ultimate' : 'Classic',
-          joinDate: new Date(user.createdAt).toISOString().split('T')[0],
-          totalWashes: 0, // This would need to be calculated from bookings
-          totalSpent: 0, // This would need to be calculated from bookings
-          status: user.isActive ? "active" : "inactive",
-          approvalStatus: user.isActive ? "approved" : "pending",
-        }));
+        const transformedCustomers: Customer[] = result.users.map(
+          (user: any) => ({
+            id: user.id,
+            name: user.fullName,
+            email: user.email,
+            phone: user.contactNumber || "N/A",
+            carUnit: user.carUnit || "N/A",
+            plateNumber: user.carPlateNumber || "N/A",
+            membershipType:
+              user.subscriptionStatus === "free"
+                ? "Classic"
+                : user.subscriptionStatus === "basic"
+                  ? "VIP Silver"
+                  : user.subscriptionStatus === "premium"
+                    ? "VIP Gold"
+                    : user.subscriptionStatus === "vip"
+                      ? "VIP Gold Ultimate"
+                      : "Classic",
+            joinDate: new Date(user.createdAt).toISOString().split("T")[0],
+            totalWashes: 0, // This would need to be calculated from bookings
+            totalSpent: 0, // This would need to be calculated from bookings
+            status: user.isActive ? "active" : "inactive",
+            approvalStatus: user.isActive ? "approved" : "pending",
+          }),
+        );
 
-        console.log('✅ Transformed customers:', transformedCustomers);
+        console.log("✅ Transformed customers:", transformedCustomers);
         setCustomers(transformedCustomers);
       } else {
-        console.warn('⚠️ Failed to load real customers, using empty array. Result:', result);
+        console.warn(
+          "⚠️ Failed to load real customers, using empty array. Result:",
+          result,
+        );
         setCustomers([]);
       }
     } catch (error) {
-      console.error('❌ Error loading customers:', error);
+      console.error("❌ Error loading customers:", error);
       setCustomers([]);
     } finally {
       setCustomersLoading(false);
@@ -360,10 +371,10 @@ export default function AdminDashboard() {
           activeGroups: result.stats.activeGroups || 0,
         });
       } else {
-        console.warn('Failed to load realtime stats, using defaults');
+        console.warn("Failed to load realtime stats, using defaults");
       }
     } catch (error) {
-      console.error('Error loading realtime statistics:', error);
+      console.error("Error loading realtime statistics:", error);
     } finally {
       setRealtimeLoading(false);
     }
@@ -372,10 +383,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
-    console.log('🔐 Admin Dashboard useEffect - Role:', role, 'Email:', email);
+    console.log("🔐 Admin Dashboard useEffect - Role:", role, "Email:", email);
 
     if (role === "admin" || role === "superadmin") {
-      console.log('✅ User authorized, setting up dashboard...');
+      console.log("✅ User authorized, setting up dashboard...");
       setUserRole(role);
       // Initialize sample ads for demonstration
       initializeSampleAds();
@@ -387,10 +398,10 @@ export default function AdminDashboard() {
       loadRealtimeStats();
 
       // Load real customer data from database
-      console.log('📋 About to call loadRealCustomers...');
+      console.log("📋 About to call loadRealCustomers...");
       loadRealCustomers()
-        .then(() => console.log('✅ loadRealCustomers completed'))
-        .catch(error => console.error('❌ loadRealCustomers failed:', error));
+        .then(() => console.log("✅ loadRealCustomers completed"))
+        .catch((error) => console.error("❌ loadRealCustomers failed:", error));
 
       // Load system notifications
       loadSystemNotifications();
@@ -412,32 +423,47 @@ export default function AdminDashboard() {
 
   const loadSystemNotifications = () => {
     try {
-      const userRole = localStorage.getItem("userRole") as "admin" | "superadmin";
+      const userRole = localStorage.getItem("userRole") as
+        | "admin"
+        | "superadmin";
       const userEmail = localStorage.getItem("userEmail") || "";
 
       if (userRole && userEmail) {
-        const systemNotifications = getUserSystemNotifications(userEmail, userRole);
+        const systemNotifications = getUserSystemNotifications(
+          userEmail,
+          userRole,
+        );
 
         // Convert system notifications to the format expected by the UI with extra safety checks
         const formattedNotifications = Array.isArray(systemNotifications)
-          ? systemNotifications.map((notification: SystemNotification) => {
-              try {
-                return {
-                  id: notification?.id || '',
-                  type: notification?.type || 'system',
-                  title: notification?.title || 'Notification',
-                  message: notification?.message || '',
-                  timestamp: notification?.createdAt ? new Date(notification.createdAt) : new Date(),
-                  read: Array.isArray(notification?.readBy) ? notification.readBy.some(r => r?.userId === userEmail) : false,
-                  priority: notification?.priority || 'medium',
-                  data: notification?.data || {},
-                  actionRequired: notification?.type === 'new_booking',
-                };
-              } catch (mapError) {
-                console.error('Error formatting notification:', mapError, notification);
-                return null;
-              }
-            }).filter(Boolean) // Remove any null entries
+          ? systemNotifications
+              .map((notification: SystemNotification) => {
+                try {
+                  return {
+                    id: notification?.id || "",
+                    type: notification?.type || "system",
+                    title: notification?.title || "Notification",
+                    message: notification?.message || "",
+                    timestamp: notification?.createdAt
+                      ? new Date(notification.createdAt)
+                      : new Date(),
+                    read: Array.isArray(notification?.readBy)
+                      ? notification.readBy.some((r) => r?.userId === userEmail)
+                      : false,
+                    priority: notification?.priority || "medium",
+                    data: notification?.data || {},
+                    actionRequired: notification?.type === "new_booking",
+                  };
+                } catch (mapError) {
+                  console.error(
+                    "Error formatting notification:",
+                    mapError,
+                    notification,
+                  );
+                  return null;
+                }
+              })
+              .filter(Boolean) // Remove any null entries
           : [];
 
         setNotifications(formattedNotifications);
@@ -445,7 +471,7 @@ export default function AdminDashboard() {
         setNotifications([]);
       }
     } catch (error) {
-      console.error('Error loading system notifications:', error);
+      console.error("Error loading system notifications:", error);
       // Ensure notifications is always an array even on error
       setNotifications([]);
     }
@@ -496,10 +522,10 @@ export default function AdminDashboard() {
       });
 
       Swal.fire({
-        title: 'Customer Added!',
+        title: "Customer Added!",
         text: `${newCustomer.name} has been added successfully and is awaiting approval.`,
-        icon: 'success',
-        confirmButtonColor: '#f97316'
+        icon: "success",
+        confirmButtonColor: "#f97316",
       });
     }
   };
@@ -535,22 +561,22 @@ export default function AdminDashboard() {
 
   const handleDeletePackage = (pkg: ServicePackage) => {
     Swal.fire({
-      title: 'Delete Package?',
+      title: "Delete Package?",
       text: `Are you sure you want to delete ${pkg.name}?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
         setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
         Swal.fire({
-          title: 'Deleted!',
-          text: 'Package deleted successfully!',
-          icon: 'success',
+          title: "Deleted!",
+          text: "Package deleted successfully!",
+          icon: "success",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       }
     });
@@ -559,10 +585,10 @@ export default function AdminDashboard() {
   const handleSavePackage = () => {
     if (!newPackage.name || newPackage.basePrice <= 0) {
       Swal.fire({
-        title: 'Validation Error',
-        text: 'Please fill in all required fields',
-        icon: 'error',
-        confirmButtonColor: '#f97316'
+        title: "Validation Error",
+        text: "Please fill in all required fields",
+        icon: "error",
+        confirmButtonColor: "#f97316",
       });
       return;
     }
@@ -583,10 +609,10 @@ export default function AdminDashboard() {
       };
       setPackages((prev) => [...prev, pkg]);
       Swal.fire({
-        title: 'Package Created!',
-        text: 'Package created successfully!',
-        icon: 'success',
-        confirmButtonColor: '#f97316'
+        title: "Package Created!",
+        text: "Package created successfully!",
+        icon: "success",
+        confirmButtonColor: "#f97316",
       });
     } else if (currentPackage) {
       const updatedPackage: ServicePackage = {
@@ -601,10 +627,10 @@ export default function AdminDashboard() {
         prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
       );
       Swal.fire({
-        title: 'Package Updated!',
-        text: 'Package updated successfully!',
-        icon: 'success',
-        confirmButtonColor: '#f97316'
+        title: "Package Updated!",
+        text: "Package updated successfully!",
+        icon: "success",
+        confirmButtonColor: "#f97316",
       });
     }
 
@@ -658,13 +684,13 @@ export default function AdminDashboard() {
     );
 
     Swal.fire({
-      title: 'Customer Approved!',
-      text: 'Customer approved successfully!',
-      icon: 'success',
+      title: "Customer Approved!",
+      text: "Customer approved successfully!",
+      icon: "success",
       timer: 2000,
       showConfirmButton: false,
-      position: 'top-end',
-      toast: true
+      position: "top-end",
+      toast: true,
     });
   };
 
@@ -707,17 +733,19 @@ export default function AdminDashboard() {
     );
 
     Swal.fire({
-      title: 'Customer Rejected',
-      text: 'Customer registration rejected.',
-      icon: 'info',
+      title: "Customer Rejected",
+      text: "Customer registration rejected.",
+      icon: "info",
       timer: 2000,
       showConfirmButton: false,
-      position: 'top-end',
-      toast: true
+      position: "top-end",
+      toast: true,
     });
   };
 
-  const unreadNotificationCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
+  const unreadNotificationCount = Array.isArray(notifications)
+    ? notifications.filter((n) => !n.read).length
+    : 0;
 
   if (!userRole) return null;
 
@@ -759,7 +787,8 @@ export default function AdminDashboard() {
                   {activeTab === "cms" && "Content Management"}
                   {activeTab === "push-notifications" && "Push Notifications"}
                   {activeTab === "gamification" && "Gamification"}
-                  {activeTab === "subscription-approval" && "Subscription Approval"}
+                  {activeTab === "subscription-approval" &&
+                    "Subscription Approval"}
                   {activeTab === "booking" && "Booking Settings"}
                   {activeTab === "pos" && "Point of Sale"}
                   {activeTab === "user-management" && "User Management"}
@@ -783,13 +812,16 @@ export default function AdminDashboard() {
                     "Track stock levels and inventory value"}
                   {activeTab === "notifications" && "System alerts"}
                   {activeTab === "cms" && "Manage content and pages"}
-                  {activeTab === "push-notifications" && "Send push notifications"}
+                  {activeTab === "push-notifications" &&
+                    "Send push notifications"}
                   {activeTab === "gamification" && "Manage rewards and levels"}
-                  {activeTab === "subscription-approval" && "Approve payment plans"}
+                  {activeTab === "subscription-approval" &&
+                    "Approve payment plans"}
                   {activeTab === "booking" && "Configure booking settings"}
                   {activeTab === "pos" && "Point of sale system"}
                   {activeTab === "user-management" && "Manage staff and users"}
-                  {activeTab === "images" && "Manage media assets and galleries"}
+                  {activeTab === "images" &&
+                    "Manage media assets and galleries"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
@@ -811,210 +843,268 @@ export default function AdminDashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
-                    <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Error loading notifications</div>}>
-                    <div className="p-6 border-b border-border">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-foreground">
-                          Notifications
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          {unreadNotificationCount > 0 && (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="p-4 text-center text-red-500">
+                          Error loading notifications
+                        </div>
+                      }
+                    >
+                      <div className="p-6 border-b border-border">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-foreground">
+                            Notifications
+                          </h3>
+                          <div className="flex items-center space-x-2">
+                            {unreadNotificationCount > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7"
+                                onClick={() => {
+                                  try {
+                                    const userEmail =
+                                      localStorage.getItem("userEmail") || "";
+                                    // Mark all unread notifications as read with safety checks
+                                    if (
+                                      Array.isArray(notifications) &&
+                                      notifications.length > 0
+                                    ) {
+                                      notifications.forEach((notification) => {
+                                        if (
+                                          notification &&
+                                          !notification.read &&
+                                          notification.id &&
+                                          userEmail
+                                        ) {
+                                          markSystemNotificationAsRead(
+                                            notification.id,
+                                            userEmail,
+                                          );
+                                        }
+                                      });
+                                    }
+                                    loadSystemNotifications(); // Refresh notifications
+                                  } catch (error) {
+                                    console.error(
+                                      "Error marking all notifications as read:",
+                                      error,
+                                    );
+                                  }
+                                }}
+                              >
+                                Mark all read
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-xs h-7"
                               onClick={() => {
-                                try {
-                                  const userEmail = localStorage.getItem("userEmail") || "";
-                                  // Mark all unread notifications as read with safety checks
-                                  if (Array.isArray(notifications) && notifications.length > 0) {
-                                    notifications.forEach(notification => {
-                                      if (notification && !notification.read && notification.id && userEmail) {
-                                        markSystemNotificationAsRead(notification.id, userEmail);
-                                      }
-                                    });
-                                  }
-                                  loadSystemNotifications(); // Refresh notifications
-                                } catch (error) {
-                                  console.error('Error marking all notifications as read:', error);
-                                }
+                                setActiveTab("notifications");
+                                setIsNotificationDropdownOpen(false);
                               }}
+                              className="text-xs h-7"
                             >
-                              Mark all read
+                              View all
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setActiveTab("notifications");
-                              setIsNotificationDropdownOpen(false);
-                            }}
-                            className="text-xs h-7"
-                          >
-                            View all
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <ScrollArea className="h-96">
-                      <div className="p-4">
-                        {!Array.isArray(notifications) || notifications.slice(0, 5).length === 0 ? (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p className="text-base">No notifications</p>
-                          </div>
-                        ) : (
-                          notifications.slice(0, 5).map((notification) => {
-                            try {
-                            // Add safety checks for notification properties
-                            if (!notification || typeof notification !== 'object') {
-                              return null;
-                            }
+                      <ScrollArea className="h-96">
+                        <div className="p-4">
+                          {!Array.isArray(notifications) ||
+                          notifications.slice(0, 5).length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                              <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                              <p className="text-base">No notifications</p>
+                            </div>
+                          ) : (
+                            notifications.slice(0, 5).map((notification) => {
+                              try {
+                                // Add safety checks for notification properties
+                                if (
+                                  !notification ||
+                                  typeof notification !== "object"
+                                ) {
+                                  return null;
+                                }
 
-                            const notificationType = notification.type || 'system';
-                            const isRead = Boolean(notification.read);
-                            const notificationId = notification.id || Math.random().toString();
+                                const notificationType =
+                                  notification.type || "system";
+                                const isRead = Boolean(notification.read);
+                                const notificationId =
+                                  notification.id || Math.random().toString();
 
-                              return (
-                                <div
-                                key={notificationId}
-                                className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
-                                  notificationType === "new_customer"
-                                    ? "border-l-blue-500"
-                                    : notificationType === "subscription"
-                                      ? "border-l-green-500"
-                                      : notificationType === "approval_request"
-                                        ? "border-l-yellow-500"
-                                        : notificationType === "payment"
+                                return (
+                                  <div
+                                    key={notificationId}
+                                    className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
+                                      notificationType === "new_customer"
+                                        ? "border-l-blue-500"
+                                        : notificationType === "subscription"
                                           ? "border-l-green-500"
-                                          : "border-l-purple-500"
-                                } ${
-                                  isRead
-                                    ? "bg-muted opacity-75"
-                                    : "bg-card"
-                                }`}
-                                onClick={() => {
-                                  try {
-                                    if (notification && !isRead && notificationId) {
-                                      const userEmail = localStorage.getItem("userEmail") || "";
-                                      if (userEmail) {
-                                        markSystemNotificationAsRead(notificationId, userEmail);
-                                        loadSystemNotifications(); // Refresh notifications
+                                          : notificationType ===
+                                              "approval_request"
+                                            ? "border-l-yellow-500"
+                                            : notificationType === "payment"
+                                              ? "border-l-green-500"
+                                              : "border-l-purple-500"
+                                    } ${
+                                      isRead ? "bg-muted opacity-75" : "bg-card"
+                                    }`}
+                                    onClick={() => {
+                                      try {
+                                        if (
+                                          notification &&
+                                          !isRead &&
+                                          notificationId
+                                        ) {
+                                          const userEmail =
+                                            localStorage.getItem("userEmail") ||
+                                            "";
+                                          if (userEmail) {
+                                            markSystemNotificationAsRead(
+                                              notificationId,
+                                              userEmail,
+                                            );
+                                            loadSystemNotifications(); // Refresh notifications
 
-                                        // If it's a booking notification, navigate to bookings tab
-                                        if (notificationType === 'new_booking') {
-                                          try {
-                                            setActiveTab('bookings');
-                                            setIsNotificationDropdownOpen(false);
-                                          } catch (error) {
-                                            console.error('Error navigating to bookings tab:', error);
+                                            // If it's a booking notification, navigate to bookings tab
+                                            if (
+                                              notificationType === "new_booking"
+                                            ) {
+                                              try {
+                                                setActiveTab("bookings");
+                                                setIsNotificationDropdownOpen(
+                                                  false,
+                                                );
+                                              } catch (error) {
+                                                console.error(
+                                                  "Error navigating to bookings tab:",
+                                                  error,
+                                                );
+                                              }
+                                            }
                                           }
                                         }
+                                      } catch (error) {
+                                        console.error(
+                                          "Error marking notification as read:",
+                                          error,
+                                        );
                                       }
-                                    }
-                                  } catch (error) {
-                                    console.error('Error marking notification as read:', error);
-                                  }
-                                }}
-                            >
-                              <div className="flex items-start space-x-4">
-                                <div className="flex-shrink-0 mt-1">
-                                  {notificationType === "new_booking" && (
-                                    <Calendar className="h-5 w-5 text-fac-orange-500" />
-                                  )}
-                                  {notificationType === "new_customer" && (
-                                    <UserPlus className="h-5 w-5 text-blue-500" />
-                                  )}
-                                  {notificationType === "subscription" && (
-                                    <CreditCard className="h-5 w-5 text-green-500" />
-                                  )}
-                                  {notificationType === "approval_request" && (
-                                    <Clock className="h-5 w-5 text-yellow-500" />
-                                  )}
-                                  {notificationType === "status_update" && (
-                                    <CheckCircle className="h-5 w-5 text-blue-500" />
-                                  )}
-                                  {notificationType === "crew_update" && (
-                                    <Wrench className="h-5 w-5 text-purple-500" />
-                                  )}
-                                  {notificationType === "payment_received" && (
-                                    <DollarSign className="h-5 w-5 text-green-500" />
-                                  )}
-                                  {notificationType === "system_alert" && (
-                                    <AlertCircle className="h-5 w-5 text-red-500" />
-                                  )}
-                                  {notificationType === "payment" && (
-                                    <DollarSign className="h-5 w-5 text-green-500" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2 mb-2">
-                                    <h4 className="text-base font-bold text-foreground truncate">
-                                      {notification?.title || 'Notification'}
-                                    </h4>
-                                    {!isRead && (
-                                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {notification?.message || ''}
-                                  </p>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-muted-foreground">
-                                      {notification?.timestamp ? formatDistanceToNow(
-                                        notification.timestamp,
-                                        {
-                                          addSuffix: true,
-                                        },
-                                      ) : 'Unknown time'}
-                                    </span>
-                                    {(notificationType === "new_customer" ||
-                                      notificationType ===
-                                        "approval_request") && (
-                                      <div className="flex gap-2">
-                                        <Button
-                                          size="sm"
-                                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleApproveCustomer(
-                                              notificationId,
-                                            );
-                                          }}
-                                        >
-                                          <UserCheck className="h-3 w-3 mr-1" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="destructive"
-                                          className="text-xs px-2 py-1 h-6"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRejectCustomer(
-                                              notificationId,
-                                            );
-                                          }}
-                                        >
-                                          <UserX className="h-3 w-3 mr-1" />
-                                          Reject
-                                        </Button>
+                                    }}
+                                  >
+                                    <div className="flex items-start space-x-4">
+                                      <div className="flex-shrink-0 mt-1">
+                                        {notificationType === "new_booking" && (
+                                          <Calendar className="h-5 w-5 text-fac-orange-500" />
+                                        )}
+                                        {notificationType ===
+                                          "new_customer" && (
+                                          <UserPlus className="h-5 w-5 text-blue-500" />
+                                        )}
+                                        {notificationType ===
+                                          "subscription" && (
+                                          <CreditCard className="h-5 w-5 text-green-500" />
+                                        )}
+                                        {notificationType ===
+                                          "approval_request" && (
+                                          <Clock className="h-5 w-5 text-yellow-500" />
+                                        )}
+                                        {notificationType ===
+                                          "status_update" && (
+                                          <CheckCircle className="h-5 w-5 text-blue-500" />
+                                        )}
+                                        {notificationType === "crew_update" && (
+                                          <Wrench className="h-5 w-5 text-purple-500" />
+                                        )}
+                                        {notificationType ===
+                                          "payment_received" && (
+                                          <DollarSign className="h-5 w-5 text-green-500" />
+                                        )}
+                                        {notificationType ===
+                                          "system_alert" && (
+                                          <AlertCircle className="h-5 w-5 text-red-500" />
+                                        )}
+                                        {notificationType === "payment" && (
+                                          <DollarSign className="h-5 w-5 text-green-500" />
+                                        )}
                                       </div>
-                                    )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                          <h4 className="text-base font-bold text-foreground truncate">
+                                            {notification?.title ||
+                                              "Notification"}
+                                          </h4>
+                                          {!isRead && (
+                                            <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                                          )}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                          {notification?.message || ""}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs text-muted-foreground">
+                                            {notification?.timestamp
+                                              ? formatDistanceToNow(
+                                                  notification.timestamp,
+                                                  {
+                                                    addSuffix: true,
+                                                  },
+                                                )
+                                              : "Unknown time"}
+                                          </span>
+                                          {(notificationType ===
+                                            "new_customer" ||
+                                            notificationType ===
+                                              "approval_request") && (
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleApproveCustomer(
+                                                    notificationId,
+                                                  );
+                                                }}
+                                              >
+                                                <UserCheck className="h-3 w-3 mr-1" />
+                                                Approve
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                className="text-xs px-2 py-1 h-6"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleRejectCustomer(
+                                                    notificationId,
+                                                  );
+                                                }}
+                                              >
+                                                <UserX className="h-3 w-3 mr-1" />
+                                                Reject
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                                </div>
-                              );
-                            } catch (error) {
-                              console.error('Error rendering notification:', error);
-                              return null;
-                            }
-                          })
-                        )}
-                      </div>
-                    </ScrollArea>
+                                );
+                              } catch (error) {
+                                console.error(
+                                  "Error rendering notification:",
+                                  error,
+                                );
+                                return null;
+                              }
+                            })
+                          )}
+                        </div>
+                      </ScrollArea>
                     </ErrorBoundary>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1040,28 +1130,32 @@ export default function AdminDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={async () => {
-                    console.log('🔄 Refresh button clicked!');
+                    console.log("🔄 Refresh button clicked!");
                     loadRealStats();
                     loadRealtimeStats();
                     loadSystemNotifications();
 
                     // Force customer loading with debug
-                    console.log('🚀 Force loading customers from refresh button...');
+                    console.log(
+                      "🚀 Force loading customers from refresh button...",
+                    );
                     await loadRealCustomers();
 
                     await Swal.fire({
-                      title: 'Refreshed!',
-                      text: 'Dashboard data has been refreshed successfully',
-                      icon: 'success',
+                      title: "Refreshed!",
+                      text: "Dashboard data has been refreshed successfully",
+                      icon: "success",
                       timer: 2000,
                       showConfirmButton: false,
-                      position: 'top-end',
-                      toast: true
+                      position: "top-end",
+                      toast: true,
                     });
                   }}
                   disabled={statsLoading || realtimeLoading}
                 >
-                  <RefreshCw className={`h-4 w-4 mr-1 ${statsLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 mr-1 ${statsLoading ? "animate-spin" : ""}`}
+                  />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
@@ -1183,8 +1277,12 @@ export default function AdminDashboard() {
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">Location Summary</h3>
-                        <p className="text-sm text-muted-foreground">Crew and customer overview</p>
+                        <h3 className="text-xl font-bold text-foreground">
+                          Location Summary
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Crew and customer overview
+                        </p>
                       </div>
                     </div>
                     <Button
@@ -1206,8 +1304,12 @@ export default function AdminDashboard() {
                           realtimeStats.onlineCrew
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">Online Crew</div>
-                      <div className="text-xs text-green-600 mt-1">Real-time tracking</div>
+                      <div className="text-sm text-muted-foreground">
+                        Online Crew
+                      </div>
+                      <div className="text-xs text-green-600 mt-1">
+                        Real-time tracking
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
                       <div className="text-3xl font-bold text-orange-600">
@@ -1217,8 +1319,12 @@ export default function AdminDashboard() {
                           realtimeStats.busyCrew
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">Busy Crew</div>
-                      <div className="text-xs text-orange-600 mt-1">Currently working</div>
+                      <div className="text-sm text-muted-foreground">
+                        Busy Crew
+                      </div>
+                      <div className="text-xs text-orange-600 mt-1">
+                        Currently working
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
                       <div className="text-3xl font-bold text-purple-600">
@@ -1228,8 +1334,12 @@ export default function AdminDashboard() {
                           realtimeStats.activeCustomers
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">Active Customers</div>
-                      <div className="text-xs text-purple-600 mt-1">Online now</div>
+                      <div className="text-sm text-muted-foreground">
+                        Active Customers
+                      </div>
+                      <div className="text-xs text-purple-600 mt-1">
+                        Online now
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
                       <div className="text-3xl font-bold text-blue-600">
@@ -1239,8 +1349,12 @@ export default function AdminDashboard() {
                           realtimeStats.activeGroups
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">Active Groups</div>
-                      <div className="text-xs text-blue-600 mt-1">Crew teams</div>
+                      <div className="text-sm text-muted-foreground">
+                        Active Groups
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        Crew teams
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-center mt-6">
@@ -1401,9 +1515,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === "user-management" && (
-            <AdminUserManagement />
-          )}
+          {activeTab === "user-management" && <AdminUserManagement />}
 
           {activeTab === "customers" && (
             <Card className="glass border-border shadow-2xl">
@@ -1420,17 +1532,17 @@ export default function AdminDashboard() {
                   <div className="flex gap-2">
                     <Button
                       onClick={async () => {
-                        console.log('🔄 Manual customer reload triggered');
+                        console.log("🔄 Manual customer reload triggered");
                         await loadRealCustomers();
 
                         await Swal.fire({
-                          title: 'Customers Reloaded!',
-                          text: 'Customer data has been refreshed',
-                          icon: 'success',
+                          title: "Customers Reloaded!",
+                          text: "Customer data has been refreshed",
+                          icon: "success",
                           timer: 2000,
                           showConfirmButton: false,
-                          position: 'top-end',
-                          toast: true
+                          position: "top-end",
+                          toast: true,
                         });
                       }}
                       variant="outline"
@@ -1454,13 +1566,17 @@ export default function AdminDashboard() {
                   {customersLoading ? (
                     <div className="text-center py-12">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
-                      <p className="text-muted-foreground">Loading customers...</p>
+                      <p className="text-muted-foreground">
+                        Loading customers...
+                      </p>
                     </div>
                   ) : customers.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p className="text-lg font-medium">No customers found</p>
-                      <p className="text-sm">Start by adding your first customer</p>
+                      <p className="text-sm">
+                        Start by adding your first customer
+                      </p>
                     </div>
                   ) : (
                     customers.map((customer, index) => (
@@ -1577,7 +1693,9 @@ export default function AdminDashboard() {
                           variant="outline"
                           className="text-xs sm:text-sm border-fac-orange-500 text-fac-orange-500 w-fit"
                         >
-                          <span className="hidden sm:inline">Role: {userRole} | Editing: </span>
+                          <span className="hidden sm:inline">
+                            Role: {userRole} | Editing:{" "}
+                          </span>
                           <span className="sm:hidden">{userRole} - </span>
                           {userRole === "superadmin" || userRole === "admin"
                             ? "Enabled"
@@ -1613,9 +1731,7 @@ export default function AdminDashboard() {
                         </span>
                         <Badge
                           className={`${
-                            pkg.active
-                              ? "bg-green-500"
-                              : "bg-gray-400"
+                            pkg.active ? "bg-green-500" : "bg-gray-400"
                           } text-white font-bold px-3 py-1 rounded-full`}
                         >
                           {pkg.active ? "ACTIVE" : "INACTIVE"}
@@ -1795,12 +1911,12 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <AdminImageManager />
               <ImageUploadManager
-                allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
+                allowedTypes={["before", "after", "receipt", "damage", "other"]}
                 maxFileSize={10}
                 currentUser={{
-                  id: localStorage.getItem('userEmail'),
-                  email: localStorage.getItem('userEmail'),
-                  role: userRole
+                  id: localStorage.getItem("userEmail"),
+                  email: localStorage.getItem("userEmail"),
+                  role: userRole,
                 }}
               />
             </div>
@@ -1810,9 +1926,9 @@ export default function AdminDashboard() {
             <div>
               <NotificationService
                 userRole={userRole}
-                userId={localStorage.getItem('userEmail') || 'unknown'}
+                userId={localStorage.getItem("userEmail") || "unknown"}
                 onNotificationReceived={(notification) => {
-                  console.log('New notification received:', notification);
+                  console.log("New notification received:", notification);
                 }}
               />
             </div>
