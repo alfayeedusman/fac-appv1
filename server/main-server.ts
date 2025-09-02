@@ -107,18 +107,25 @@ export const createServer = () => {
   // POS endpoints
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
 
+  // Analytics endpoints
+  app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
+
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
 
   // ============= IMAGE MANAGEMENT API =============
   app.use("/api/images", imagesApiRoutes);
 
-  // Serve React admin app for everything
+  // Serve React admin app for everything that's NOT an API route
   const reactBuildPath = path.join(__dirname, "../dist/spa");
   app.use(express.static(reactBuildPath));
 
-  // All routes serve React app
-  app.get("*", (req, res) => {
+  // Only serve React app for non-API routes
+  app.get("*", (req, res, next) => {
+    // Skip if it's an API route
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
     res.sendFile(path.join(reactBuildPath, "index.html"));
   });
 
