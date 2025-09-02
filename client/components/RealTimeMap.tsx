@@ -303,6 +303,7 @@ export default function RealTimeMap({
 
     return () => {
       isMounted = false;
+      initializingRef.current = false;
       if (timeoutId) clearTimeout(timeoutId);
       if (map.current) {
         map.current.remove();
