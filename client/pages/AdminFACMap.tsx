@@ -542,7 +542,9 @@ export default function AdminFACMap() {
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         <span className="text-sm font-medium">Online</span>
                       </div>
-                      <Badge className="bg-green-500 text-white">18 Crew</Badge>
+                      <Badge className="bg-green-500 text-white">
+                        {statsLoading ? "..." : (facMapStats?.crew.online || 18)} Crew
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-orange-50 dark:bg-orange-950 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -550,7 +552,7 @@ export default function AdminFACMap() {
                         <span className="text-sm font-medium">Busy</span>
                       </div>
                       <Badge className="bg-orange-500 text-white">
-                        12 Crew
+                        {statsLoading ? "..." : (facMapStats?.crew.busy || 12)} Crew
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-purple-50 dark:bg-purple-950 rounded-lg">
@@ -559,7 +561,7 @@ export default function AdminFACMap() {
                         <span className="text-sm font-medium">Customers</span>
                       </div>
                       <Badge className="bg-purple-500 text-white">
-                        47 Active
+                        {statsLoading ? "..." : (facMapStats?.customers.active || 47)} Active
                       </Badge>
                     </div>
                   </div>
