@@ -858,6 +858,27 @@ export default function EnhancedInventoryManagement() {
     };
   };
 
+  // Debug function to test database connection
+  const handleDebugConnection = async () => {
+    try {
+      console.log('🔍 Starting database debug...');
+      const debugResult = await neonDbClient.debugConnection();
+
+      const message = `
+Base URL: ${debugResult.baseUrl}
+Connected: ${debugResult.isConnected}
+Test: ${JSON.stringify(debugResult.testResults, null, 2)}
+Init: ${JSON.stringify(debugResult.initResults, null, 2)}
+      `;
+
+      alert(`Database Debug Results:\n${message}`);
+      console.log('🔍 Full debug result:', debugResult);
+    } catch (error) {
+      console.error('❌ Debug failed:', error);
+      alert(`Debug failed: ${error}`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="products" className="space-y-6">
