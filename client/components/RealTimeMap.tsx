@@ -309,19 +309,20 @@ export default function RealTimeMap({
   // Load initial data
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
       try {
+        console.log('📊 Loading map data...');
         // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
-        setError(null);
+        console.log('✅ Map data loaded successfully');
       } catch (error) {
-        console.error('Error loading map data:', error);
-        setError('Failed to load location data');
-      } finally {
-        setIsLoading(false);
+        console.error('❌ Error loading map data:', error);
+        // Don't set loading state here, only set error if no map error exists
+        if (!error) {
+          setError('Failed to load location data');
+        }
       }
     };
 
