@@ -54,12 +54,7 @@ import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
-import NeonConnectionTest from "./components/NeonConnectionTest";
-import LoginDebugger from "./components/LoginDebugger";
-import FixAdminPassword from "./components/FixAdminPassword";
-import SuperAdminSetup from "./components/SuperAdminSetup";
 import QuickSuperAdminLogin from "./components/QuickSuperAdminLogin";
-import NetworkDiagnostics from "./components/NetworkDiagnostics";
 import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
@@ -372,50 +367,10 @@ const AppComponent = () => {
                   }
                 />
                 <Route
-                  path="/neon-test"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <NeonConnectionTest />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/login-debug"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <LoginDebugger />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/fix-admin"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <FixAdminPassword />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/superadmin-setup"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <SuperAdminSetup />
-                    </div>
-                  }
-                />
-                <Route
                   path="/quick-superadmin"
                   element={
                     <div className="min-h-screen bg-background flex items-center justify-center p-4">
                       <QuickSuperAdminLogin />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/network-test"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <NetworkDiagnostics />
                     </div>
                   }
                 />
