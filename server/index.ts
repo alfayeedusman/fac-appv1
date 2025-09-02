@@ -51,6 +51,7 @@ export function createServer() {
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
+  app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
 
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
