@@ -2232,7 +2232,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       </Dialog>
 
       {/* Add Product Modal */}
-      <Dialog open={showAddProductModal} onOpenChange={setShowAddProductModal}>
+      <Dialog open={showAddProductModal} onOpenChange={(open) => {
+        setShowAddProductModal(open);
+        if (!open) {
+          setEditingProductId(null);
+        }
+      }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingProductId ? "Edit Product" : "Add New Product"}</DialogTitle>
