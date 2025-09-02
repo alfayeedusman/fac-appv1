@@ -2132,7 +2132,7 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   onChange={(e) =>
                     setNewService({
                       ...newService,
-                      basePrice: parseInt(e.target.value) || 0,
+                      basePrice: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
