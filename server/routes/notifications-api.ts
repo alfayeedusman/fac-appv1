@@ -1,7 +1,7 @@
 import express from 'express';
-import { db } from '../database/connection';
+import { neonDbService } from '../services/neonDatabaseService';
 import { pushNotificationService } from '../services/pushNotificationService';
-import { fcmTokens, pushNotifications, notificationDeliveries, images } from '../database/schema';
+import * as schema from '../database/schema';
 import { eq, desc, and, gte, lte, count } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
