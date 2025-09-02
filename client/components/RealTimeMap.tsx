@@ -231,7 +231,8 @@ export default function RealTimeMap({
       if (!MAPBOX_TOKEN) {
         console.error('❌ Mapbox token not found');
         if (isMounted) {
-          setError('Mapbox token not configured. Please check environment variables.');
+          setError('Mapbox token not configured. Using fallback map.');
+          setShowFallback(true);
           setIsLoading(false);
         }
         return;
