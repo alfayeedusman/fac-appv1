@@ -304,7 +304,7 @@ export default function AdminDashboard() {
   const loadRealCustomers = async () => {
     try {
       setCustomersLoading(true);
-      console.log("���� Loading customers from database...");
+      console.log("������ Loading customers from database...");
 
       // Ensure database connection is ready
       const connectionStatus = neonDbClient.getConnectionStatus();
@@ -372,20 +372,27 @@ export default function AdminDashboard() {
   const loadRealtimeStats = async () => {
     try {
       setRealtimeLoading(true);
+      console.log('📡 Loading realtime stats...');
+
       const result = await neonDbClient.getRealtimeStats();
+      console.log('🔄 Realtime stats result:', result);
 
       if (result.success && result.stats) {
-        setRealtimeStats({
+        const newRealtimeStats = {
           onlineCrew: result.stats.onlineCrew || 0,
           busyCrew: result.stats.busyCrew || 0,
           activeCustomers: result.stats.activeCustomers || 0,
           activeGroups: result.stats.activeGroups || 0,
-        });
+        };
+        console.log('✅ Setting new realtime stats:', newRealtimeStats);
+        setRealtimeStats(newRealtimeStats);
       } else {
-        console.warn("Failed to load realtime stats, using defaults");
+        console.warn("⚠️ Failed to load realtime stats, using defaults. Result:", result);
+        // Keep existing stats instead of resetting
       }
     } catch (error) {
-      console.error("Error loading realtime statistics:", error);
+      console.error("❌ Error loading realtime statistics:", error);
+      // Don't crash the component, just log the error
     } finally {
       setRealtimeLoading(false);
     }
