@@ -388,12 +388,9 @@ export default function AdminDashboard() {
 
       // Load real customer data from database
       console.log('📋 About to call loadRealCustomers...');
-      try {
-        await loadRealCustomers();
-        console.log('✅ loadRealCustomers completed');
-      } catch (error) {
-        console.error('❌ loadRealCustomers failed:', error);
-      }
+      loadRealCustomers()
+        .then(() => console.log('✅ loadRealCustomers completed'))
+        .catch(error => console.error('❌ loadRealCustomers failed:', error));
 
       // Load system notifications
       loadSystemNotifications();
