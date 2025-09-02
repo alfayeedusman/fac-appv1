@@ -267,22 +267,34 @@ export default function AdminDashboard() {
   const loadRealStats = async () => {
     try {
       setStatsLoading(true);
+      console.log('📊 Loading real stats...');
+
       const result = await neonDbClient.getStats();
+      console.log('📈 Stats result:', result);
 
       if (result.success && result.stats) {
-        setStats({
+        const newStats = {
           totalCustomers: result.stats.totalUsers || 0,
           totalRevenue: result.stats.totalRevenue || 0,
           totalWashes: result.stats.totalWashes || 0,
           activeSubscriptions: result.stats.activeSubscriptions || 0,
           monthlyGrowth: result.stats.monthlyGrowth || 0,
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
-        });
+        };
+        console.log('✅ Setting new stats:', newStats);
+        setStats(newStats);
       } else {
-        console.warn("Failed to load real stats, using defaults");
+        console.warn("⚠️ Failed to load real stats, using defaults. Result:", result);
+        // Keep existing stats instead of resetting
       }
     } catch (error) {
-      console.error("Error loading statistics:", error);
+      console.error("❌ Error loading statistics:", error);
+      // Don't crash the component, just log the error and continue with existing stats
+      toast({
+        title: "Stats Loading Issue",
+        description: "Using cached data. Check console for details.",
+        variant: "destructive",
+      });
     } finally {
       setStatsLoading(false);
     }
@@ -311,7 +323,7 @@ export default function AdminDashboard() {
       console.log("👥 Customer load result:", result);
 
       if (result.success && result.users) {
-        console.log("���� Raw users from database:", result.users);
+        console.log("📋 Raw users from database:", result.users);
         // Transform database users to Customer interface
         const transformedCustomers: Customer[] = result.users.map(
           (user: any) => ({
