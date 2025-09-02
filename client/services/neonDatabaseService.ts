@@ -1014,19 +1014,27 @@ class NeonDatabaseClient {
   // === STATS ===
 
   async getStats(): Promise<{ success: boolean; stats?: any }> {
-    const connected = await this.ensureConnection();
-    if (!connected) {
-      return { success: false, stats: null };
-    }
-
     try {
+      const connected = await this.ensureConnection();
+      if (!connected) {
+        console.warn('⚠️ getStats: Database not connected');
+        return { success: false, stats: null };
+      }
+
+      console.log('📈 Fetching stats...');
       const result = await this.fetchJsonWithFallback("/stats");
+      console.log('✅ Stats received:', result);
+
       return result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
     } catch (error) {
-      console.error("Database stats fetch failed:", error);
-      return { success: false, stats: null };
+      console.error("❌ Database stats fetch failed:", error);
+      return {
+        success: false,
+        stats: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
