@@ -297,7 +297,8 @@ export default function RealTimeMap({
       } catch (err: any) {
         console.error('❌ Failed to initialize Mapbox:', err);
         if (isMounted) {
-          setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
+          setError(`Failed to initialize map: ${err.message || 'Unknown error'}. Using fallback view.`);
+          setShowFallback(true);
           setIsLoading(false);
         }
         if (timeoutId) clearTimeout(timeoutId);
