@@ -267,7 +267,7 @@ export default function AdminFACMap() {
                       Online Crew
                     </p>
                     <p className="text-xl font-bold text-green-900 dark:text-green-100">
-                      18
+                      {statsLoading ? "..." : (facMapStats?.crew.online || 18)}
                     </p>
                   </div>
                 </div>
@@ -285,7 +285,7 @@ export default function AdminFACMap() {
                       Busy Crew
                     </p>
                     <p className="text-xl font-bold text-orange-900 dark:text-orange-100">
-                      12
+                      {statsLoading ? "..." : (facMapStats?.crew.busy || 12)}
                     </p>
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export default function AdminFACMap() {
                       Customers
                     </p>
                     <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
-                      50
+                      {statsLoading ? "..." : (facMapStats?.customers.total || 50)}
                     </p>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export default function AdminFACMap() {
                       Active
                     </p>
                     <p className="text-xl font-bold text-indigo-900 dark:text-indigo-100">
-                      47
+                      {statsLoading ? "..." : (facMapStats?.customers.active || 47)}
                     </p>
                   </div>
                 </div>
@@ -339,7 +339,7 @@ export default function AdminFACMap() {
                       Available
                     </p>
                     <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">
-                      8
+                      {statsLoading ? "..." : (facMapStats?.crew.available || 8)}
                     </p>
                   </div>
                 </div>
