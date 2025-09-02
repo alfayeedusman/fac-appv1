@@ -392,6 +392,137 @@ export default function EnhancedInventoryManagement() {
     setShowServicePricingModal(true);
   };
 
+  // Product CRUD Functions
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.categoryId) {
+      alert("Please fill in all required fields (Name and Category)");
+      return;
+    }
+
+    try {
+      const product: EnhancedProduct = {
+        id: `product_${Date.now()}`,
+        name: newProduct.name,
+        category: categories.find(c => c.id === newProduct.categoryId)?.name || "Unknown",
+        categoryId: newProduct.categoryId,
+        variantId: newProduct.variantId,
+        description: newProduct.description,
+        sku: newProduct.sku || `SKU-${Date.now()}`,
+        barcode: newProduct.barcode,
+        currentStock: newProduct.currentStock,
+        minStockLevel: newProduct.minStockLevel,
+        maxStockLevel: newProduct.maxStockLevel,
+        unitPrice: newProduct.unitPrice,
+        costPrice: newProduct.costPrice,
+        supplier: newProduct.supplier,
+        location: newProduct.location,
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tags: newProduct.tags ? newProduct.tags.split(',').map(t => t.trim()) : [],
+        images: [],
+        specifications: newProduct.specifications ? JSON.parse(newProduct.specifications || "{}") : {},
+        isService: newProduct.isService
+      };
+
+      // Add to products array
+      setProducts([...products, product]);
+
+      // Clear form
+      setNewProduct({
+        name: "",
+        categoryId: "",
+        variantId: "",
+        description: "",
+        sku: "",
+        barcode: "",
+        currentStock: 0,
+        minStockLevel: 5,
+        maxStockLevel: 100,
+        unitPrice: 0,
+        costPrice: 0,
+        supplier: "",
+        location: "",
+        tags: "",
+        specifications: "",
+        isService: false,
+      });
+
+      setShowAddProductModal(false);
+
+      notificationManager.showSuccess(
+        "Product Created!",
+        `${product.name} has been added to inventory successfully.`
+      );
+
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("Error adding product. Please try again.");
+    }
+  };
+
+  const handleEditProduct = (product: EnhancedProduct) => {
+    setNewProduct({
+      name: product.name,
+      categoryId: product.categoryId,
+      variantId: product.variantId || "",
+      description: product.description || "",
+      sku: product.sku,
+      barcode: product.barcode || "",
+      currentStock: product.currentStock,
+      minStockLevel: product.minStockLevel,
+      maxStockLevel: product.maxStockLevel,
+      unitPrice: product.unitPrice || 0,
+      costPrice: product.costPrice || 0,
+      supplier: product.supplier || "",
+      location: product.location || "",
+      tags: product.tags.join(', '),
+      specifications: JSON.stringify(product.specifications),
+      isService: product.isService,
+    });
+    setShowAddProductModal(true);
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      setProducts(products.filter((p) => p.id !== productId));
+      notificationManager.showSuccess("Product Deleted", "Product removed from inventory.");
+    }
+  };
+
+  const handleStockAdjustment = (productId: string, newStock: number, reason: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const updatedProducts = products.map(p =>
+      p.id === productId
+        ? { ...p, currentStock: newStock, updatedAt: new Date().toISOString() }
+        : p
+    );
+    setProducts(updatedProducts);
+
+    // Add stock movement record
+    const movement: StockMovement = {
+      id: `movement_${Date.now()}`,
+      productId: productId,
+      productName: product.name,
+      type: newStock > product.currentStock ? "in" : "out",
+      quantity: Math.abs(newStock - product.currentStock),
+      reason: reason,
+      performedBy: "Admin",
+      timestamp: new Date().toISOString(),
+      newBalance: newStock,
+      notes: `Stock adjusted from ${product.currentStock} to ${newStock}`
+    };
+
+    setStockMovements([movement, ...stockMovements]);
+
+    notificationManager.showSuccess(
+      "Stock Updated",
+      `${product.name} stock updated to ${newStock} units`
+    );
+  };
+
   // Category CRUD Functions
   const handleAddCategory = () => {
     if (!newCategory.name || !newCategory.description) {
