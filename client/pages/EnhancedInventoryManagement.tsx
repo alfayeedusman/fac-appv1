@@ -520,6 +520,7 @@ export default function EnhancedInventoryManagement() {
   };
 
   const handleEditProduct = (product: EnhancedProduct) => {
+    setEditingProductId(product.id);
     setNewProduct({
       name: product.name,
       categoryId: product.categoryId,
