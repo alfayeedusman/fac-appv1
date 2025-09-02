@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 
 // Set Mapbox access token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg';
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg';
+mapboxgl.accessToken = MAPBOX_TOKEN;
 
 // Philippines coordinates (Manila center)
 const MANILA_COORDINATES = {
