@@ -283,6 +283,46 @@ class NeonDatabaseClient {
     return this.isConnected;
   }
 
+  // Debug function to test connectivity and diagnose issues
+  async debugConnection(): Promise<{
+    baseUrl: string;
+    isConnected: boolean;
+    testResults: any;
+    initResults: any;
+  }> {
+    console.log('🔍 Starting database connection debug...');
+
+    const debug = {
+      baseUrl: this.baseUrl,
+      isConnected: this.isConnected,
+      testResults: null as any,
+      initResults: null as any,
+    };
+
+    try {
+      // Test basic connectivity
+      console.log('🧪 Testing connection...');
+      debug.testResults = await this.testConnection();
+      console.log('✅ Test connection result:', debug.testResults);
+    } catch (error) {
+      console.error('❌ Test connection failed:', error);
+      debug.testResults = { error: error instanceof Error ? error.message : 'Unknown test error' };
+    }
+
+    try {
+      // Try initialization
+      console.log('🚀 Testing initialization...');
+      debug.initResults = await this.initialize();
+      console.log('✅ Init result:', debug.initResults);
+    } catch (error) {
+      console.error('❌ Initialization failed:', error);
+      debug.initResults = { error: error instanceof Error ? error.message : 'Unknown init error' };
+    }
+
+    console.log('🔍 Debug completed:', debug);
+    return debug;
+  }
+
   // Ensure connection with auto-initialization
   private async ensureConnection(): Promise<boolean> {
     if (this.isConnected) {
