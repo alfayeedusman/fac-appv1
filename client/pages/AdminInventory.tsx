@@ -550,7 +550,7 @@ export default function AdminInventory() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <StickyHeader
         showBack={true}
         title="Inventory Management"
@@ -573,8 +573,8 @@ export default function AdminInventory() {
         notificationCount={0}
       />
 
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 mt-16">
+      <div className="lg:ml-64 min-h-screen">
+        <div className="p-4 sm:p-6 pt-20">
           <Tabs defaultValue="products" className="space-y-6">
             <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm">
               <TabsTrigger value="products" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
