@@ -198,6 +198,7 @@ export default function RealTimeMap({
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const initializingRef = useRef<boolean>(false);
 
   // Debug token and environment
   useEffect(() => {
