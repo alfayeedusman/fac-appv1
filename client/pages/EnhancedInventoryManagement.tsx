@@ -567,33 +567,39 @@ export default function EnhancedInventoryManagement() {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    const updatedProducts = products.map(p =>
-      p.id === productId
-        ? { ...p, currentStock: newStock, updatedAt: new Date().toISOString() }
-        : p
-    );
-    setProducts(updatedProducts);
+    // Prevent unnecessary movements for same stock level
+    if (newStock === product.currentStock) {
+      notificationManager.showWarning("No Change", "Stock level is already at the specified amount.");
+      return;
+    }
 
-    // Add stock movement record
-    const movement: StockMovement = {
-      id: `movement_${Date.now()}`,
-      productId: productId,
-      productName: product.name,
-      type: newStock > product.currentStock ? "in" : "out",
-      quantity: Math.abs(newStock - product.currentStock),
-      reason: reason,
-      performedBy: "Admin",
-      timestamp: new Date().toISOString(),
-      newBalance: newStock,
-      notes: `Stock adjusted from ${product.currentStock} to ${newStock}`
-    };
+    try {
+      // Use utility function to persist stock update and log movement
+      updateProductStock(productId, newStock, reason);
 
-    setStockMovements([movement, ...stockMovements]);
+      // Refresh products from storage
+      const refreshedProducts = getProducts().map(product => ({
+        ...product,
+        categoryId: product.category,
+        tags: [],
+        images: [],
+        specifications: {},
+        isService: false,
+      }));
+      setProducts(refreshedProducts);
 
-    notificationManager.showSuccess(
-      "Stock Updated",
-      `${product.name} stock updated to ${newStock} units`
-    );
+      // Refresh stock movements from storage
+      setStockMovements(getStockMovements());
+
+      notificationManager.showSuccess(
+        "Stock Updated",
+        `${product.name} stock updated to ${newStock} units`
+      );
+
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      notificationManager.showError("Update Failed", "Could not update stock level.");
+    }
   };
 
   // Category CRUD Functions
