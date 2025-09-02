@@ -36,6 +36,7 @@ import {
   Edit,
   AlertTriangle,
   TrendingDown,
+  TrendingUp,
   BarChart3,
   Eye,
   History,
@@ -46,6 +47,10 @@ import {
   Settings,
   Trash2,
   Save,
+  DollarSign,
+  Mail,
+  Phone,
+  Globe,
 } from "lucide-react";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
 import {
@@ -992,7 +997,7 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
-                {process.env.NODE_ENV === 'development' && (
+                {import.meta.env.DEV && (
                   <Button
                     onClick={handleDebugConnection}
                     variant="outline"
