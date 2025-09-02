@@ -636,54 +636,6 @@ router.post('/collections', async (req, res) => {
 });
 
 /**
- * Get all image collections
- * GET /api/images/collections
- */
-router.get('/collections', async (req, res) => {
-  try {
-    // Check if database is available
-    if (!neonDbService.db) {
-      return res.json({
-        success: true,
-        data: []
-      });
-    }
-    const { category, isPublic, createdBy } = req.query;
-
-    const conditions = [];
-
-    if (category) {
-      conditions.push(eq(schema.imageCollections.category, category as string));
-    }
-
-    if (isPublic !== undefined) {
-      conditions.push(eq(schema.imageCollections.isPublic, isPublic === 'true'));
-    }
-
-    if (createdBy) {
-      conditions.push(eq(schema.imageCollections.createdBy, createdBy as string));
-    }
-
-    const collections = await neonDbService.db
-      .select()
-      .from(schema.imageCollections)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(schema.imageCollections.sortOrder, desc(schema.imageCollections.createdAt));
-
-    res.json({
-      success: true,
-      data: collections
-    });
-  } catch (error) {
-    console.error('Error getting image collections:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get image collections'
-    });
-  }
-});
-
-/**
  * Add images to collection
  * POST /api/images/collections/:collectionId/images
  */
