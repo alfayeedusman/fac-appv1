@@ -619,7 +619,10 @@ export default function EnhancedInventoryManagement() {
       isActive: true,
     };
 
-    setCategories([...categories, category]);
+    const updatedCategories = [...categories, category];
+    setCategories(updatedCategories);
+    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+
     setNewCategory({
       name: "",
       description: "",
