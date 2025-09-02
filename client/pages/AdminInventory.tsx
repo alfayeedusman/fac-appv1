@@ -456,38 +456,40 @@ export default function AdminInventory() {
   const renderProductCard = (item: InventoryItem) => {
     const categoryInfo = getCategoryInfo(item.category);
     const stockProgress = getStockProgress(item);
-    
+
     return (
-      <Card key={item.id} className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`w-12 h-12 rounded-lg ${categoryInfo.color} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
+      <Card key={item.id} className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500 h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <div className="flex items-start justify-between min-h-[60px]">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
+              <div className={`w-12 h-12 rounded-lg ${categoryInfo.color} flex items-center justify-center text-white text-xl font-bold shadow-lg flex-shrink-0`}>
                 {categoryInfo.icon}
               </div>
-              <div>
-                <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight line-clamp-2">
                   {item.name}
                 </CardTitle>
-                <p className="text-sm text-gray-500 capitalize">{categoryInfo.label}</p>
+                <p className="text-sm text-gray-500 capitalize truncate">{categoryInfo.label}</p>
               </div>
             </div>
-            {getStockBadge(item)}
+            <div className="flex-shrink-0 ml-2">
+              {getStockBadge(item)}
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex-1 flex flex-col">
           {item.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+            <p className="text-sm text-gray-600 line-clamp-2 flex-shrink-0">{item.description}</p>
           )}
-          
+
           {/* Stock Progress */}
-          <div className="space-y-2">
+          <div className="space-y-2 flex-shrink-0">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Stock Level</span>
               <span className="font-medium">{item.currentStock} / {item.maxStockLevel}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className={`h-2 rounded-full transition-all duration-300 ${stockProgress.colorClass}`}
                 style={{ width: `${stockProgress.percentage}%` }}
               />
@@ -499,21 +501,25 @@ export default function AdminInventory() {
           </div>
 
           {/* Price and Supplier */}
-          <div className="flex justify-between items-center pt-2 border-t">
-            <div>
-              {item.unitPrice && (
-                <p className="text-lg font-bold text-green-600">{formatCurrency(item.unitPrice)}</p>
+          <div className="flex justify-between items-end pt-2 border-t mt-auto">
+            <div className="flex-1 min-w-0">
+              {item.unitPrice ? (
+                <p className="text-lg font-bold text-green-600 truncate">{formatCurrency(item.unitPrice)}</p>
+              ) : (
+                <p className="text-lg font-medium text-gray-400">No price</p>
               )}
-              {item.supplier && (
-                <p className="text-xs text-gray-500">by {item.supplier}</p>
+              {item.supplier ? (
+                <p className="text-xs text-gray-500 truncate">by {item.supplier}</p>
+              ) : (
+                <p className="text-xs text-gray-400">No supplier</p>
               )}
             </div>
-            <div className="flex space-x-1">
+            <div className="flex space-x-1 flex-shrink-0 ml-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleStockAdjustment(item)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
                 title="Adjust Stock"
               >
                 <ShoppingCart className="h-3 w-3" />
@@ -522,7 +528,7 @@ export default function AdminInventory() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditItem(item)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
                 title="Edit Product"
               >
                 <Edit className="h-3 w-3" />
@@ -531,7 +537,7 @@ export default function AdminInventory() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleDeleteItem(item)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 h-8 w-8 p-0"
                 title="Delete Product"
               >
                 <Trash2 className="h-3 w-3" />
