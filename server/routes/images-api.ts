@@ -428,7 +428,7 @@ router.delete('/:id', async (req, res) => {
     const image = imageList[0];
 
     // Delete from database
-    await neonDbService.db.delete(images).where(eq(schema.images.id, id));
+    await neonDbService.db.delete(schema.images).where(eq(schema.images.id, id));
 
     // Delete physical file if requested and it's local storage
     if (deleteFile === 'true' && image.storageType === 'local') {
@@ -487,7 +487,7 @@ router.post('/collections', async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await neonDbService.db.insert(imageCollections).values(collectionData);
+    await neonDbService.db.insert(schema.imageCollections).values(collectionData);
 
     res.json({
       success: true,
@@ -569,7 +569,7 @@ router.post('/collections/:collectionId/images', async (req, res) => {
       addedAt: new Date(),
     }));
 
-    await neonDbService.db.insert(imageCollectionItems).values(collectionItems);
+    await neonDbService.db.insert(schema.imageCollectionItems).values(collectionItems);
 
     res.json({
       success: true,
@@ -604,7 +604,7 @@ router.get('/collections/:collectionId/images', async (req, res) => {
         publicUrl: images.publicUrl,
         mimeType: images.mimeType,
         size: images.size,
-        category: images.category,
+        category: schema.images.category,
         altText: images.altText,
         description: images.description,
         createdAt: images.createdAt,
@@ -642,17 +642,17 @@ router.get('/stats', async (req, res) => {
     // Get images by category
     const categoryStats = await neonDbService.db
       .select({
-        category: images.category,
+        category: schema.images.category,
         count: count(),
       })
       .from(schema.images)
       .where(eq(schema.images.isActive, true))
-      .groupBy(images.category);
+      .groupBy(schema.images.category);
 
     // Get storage usage
     const storageResult = await neonDbService.db
       .select({
-        totalSize: images.size,
+        totalSize: schema.images.size,
       })
       .from(schema.images)
       .where(eq(schema.images.isActive, true));
