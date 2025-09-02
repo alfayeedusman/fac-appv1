@@ -176,7 +176,7 @@ export default function EnhancedInventoryManagement() {
   // Default categories with variants
   const defaultCategories: ProductCategory[] = [
     {
-      id: "car_care_products",
+      id: "car_care",
       name: "Car Care Products",
       description: "Cleaning and maintenance products",
       icon: "🧴",
