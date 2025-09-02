@@ -474,17 +474,17 @@ router.get('/preferences/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const userTokens = await db
+    const userTokens = await neonDbService.db
       .select({
-        notificationTypes: fcmTokens.notificationTypes,
-        deviceType: fcmTokens.deviceType,
-        isActive: fcmTokens.isActive,
+        notificationTypes: schema.fcmTokens.notificationTypes,
+        deviceType: schema.fcmTokens.deviceType,
+        isActive: schema.fcmTokens.isActive,
       })
-      .from(fcmTokens)
+      .from(schema.fcmTokens)
       .where(
         and(
-          eq(fcmTokens.userId, userId),
-          eq(fcmTokens.isActive, true)
+          eq(schema.fcmTokens.userId, userId),
+          eq(schema.fcmTokens.isActive, true)
         )
       );
 
@@ -521,16 +521,16 @@ router.put('/preferences/:userId', async (req, res) => {
     }
 
     // Update all user's tokens
-    await db
-      .update(fcmTokens)
+    await neonDbService.db
+      .update(schema.fcmTokens)
       .set({
         notificationTypes,
         updatedAt: new Date(),
       })
       .where(
         and(
-          eq(fcmTokens.userId, userId),
-          eq(fcmTokens.isActive, true)
+          eq(schema.fcmTokens.userId, userId),
+          eq(schema.fcmTokens.isActive, true)
         )
       );
 
