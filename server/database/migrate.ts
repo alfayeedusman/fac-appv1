@@ -879,7 +879,10 @@ export async function seedInitialData() {
     // Create or update superadmin user
     const superAdminExists =
       await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
-    const superAdminPassword = await bcrypt.hash("SuperAdmin2025!", 10);
+
+    // Use environment variable for superadmin password, fallback to secure default
+    const defaultPassword = process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
+    const superAdminPassword = await bcrypt.hash(defaultPassword, 10);
 
     if (superAdminExists.length === 0) {
       await sql`
@@ -898,9 +901,7 @@ export async function seedInitialData() {
           'vip'
         );
       `;
-      console.log(
-        "✅ Superadmin user created: superadmin@fayeedautocare.com / SuperAdmin2025!",
-      );
+      console.log("✅ Superadmin user created: superadmin@fayeedautocare.com");
     } else {
       await sql`
         UPDATE users
