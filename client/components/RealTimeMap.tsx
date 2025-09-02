@@ -216,22 +216,38 @@ export default function RealTimeMap({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     const initializeMap = async () => {
       console.log('🗺️ Initializing Mapbox...');
-      console.log('🔑 Token:', mapboxgl.accessToken ? 'Present' : 'Missing');
+      console.log('🔑 Token:', MAPBOX_TOKEN ? 'Present' : 'Missing');
       console.log('📦 Container:', mapContainer.current ? 'Found' : 'Missing');
 
-      if (!mapboxgl.accessToken) {
+      if (!MAPBOX_TOKEN) {
         console.error('❌ Mapbox token not found');
-        setError('Mapbox token not configured. Please check environment variables.');
-        setIsLoading(false);
+        if (isMounted) {
+          setError('Mapbox token not configured. Please check environment variables.');
+          setIsLoading(false);
+        }
         return;
       }
 
-      // Add a small delay to ensure DOM is ready
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       try {
+        // Clear any existing timeout
+        if (timeoutId) clearTimeout(timeoutId);
+
+        // Set loading timeout
+        timeoutId = setTimeout(() => {
+          if (isMounted && isLoading) {
+            console.warn('⚠️ Map loading timeout');
+            setError('Map loading timeout. Please refresh the page.');
+            setIsLoading(false);
+          }
+        }, 15000);
+
+        if (!isMounted) return;
+
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: 'mapbox://styles/mapbox/streets-v12',
@@ -242,25 +258,23 @@ export default function RealTimeMap({
 
         map.current.on('load', () => {
           console.log('✅ Mapbox loaded successfully');
-          setError(null);
-          setIsLoading(false);
+          if (isMounted) {
+            setError(null);
+            setIsLoading(false);
+          }
+          if (timeoutId) clearTimeout(timeoutId);
         });
 
         map.current.on('error', (e) => {
           console.error('❌ Mapbox error:', e);
-          setError('Map failed to load. Please check your internet connection.');
-          setIsLoading(false);
-        });
-
-        // Set a timeout for map loading
-        setTimeout(() => {
-          if (isLoading) {
-            console.warn('⚠️ Map loading timeout');
-            setError('Map loading timeout. Please refresh the page.');
+          if (isMounted) {
+            setError('Map failed to load. Please check your internet connection.');
             setIsLoading(false);
           }
-        }, 10000);
+          if (timeoutId) clearTimeout(timeoutId);
+        });
 
+        // Add controls
         map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
         map.current.addControl(
           new mapboxgl.AttributionControl({
@@ -272,14 +286,19 @@ export default function RealTimeMap({
         console.log('✅ Mapbox initialized successfully');
       } catch (err: any) {
         console.error('❌ Failed to initialize Mapbox:', err);
-        setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
-        setIsLoading(false);
+        if (isMounted) {
+          setError(`Failed to initialize map: ${err.message || 'Unknown error'}`);
+          setIsLoading(false);
+        }
+        if (timeoutId) clearTimeout(timeoutId);
       }
     };
 
     initializeMap();
 
     return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
       if (map.current) {
         map.current.remove();
         map.current = null;
