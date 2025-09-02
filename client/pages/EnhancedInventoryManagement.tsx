@@ -335,25 +335,37 @@ export default function EnhancedInventoryManagement() {
     }
   };
 
-  const loadData = () => {
-    // Load regular products and convert to enhanced format
-    const regularProducts = getProducts();
-    const enhancedProducts: EnhancedProduct[] = regularProducts.map(
-      (product) => ({
-        ...product,
-        categoryId: product.category,
-        tags: [],
-        images: [],
-        specifications: {},
-        isService: false,
-      }),
-    );
-    setProducts(enhancedProducts);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Load car wash services
-    setCarWashServices(getCarWashServices());
-    setStockMovements(getStockMovements());
-    setSuppliers(getSuppliers());
+      // Load regular products and convert to enhanced format
+      const regularProducts = getProducts();
+      const enhancedProducts: EnhancedProduct[] = regularProducts.map(
+        (product) => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }),
+      );
+      setProducts(enhancedProducts);
+
+      // Load car wash services
+      setCarWashServices(getCarWashServices());
+      setStockMovements(getStockMovements());
+      setSuppliers(getSuppliers());
+
+    } catch (error) {
+      console.error("Error loading inventory data:", error);
+      setError("Failed to load inventory data. Please refresh the page.");
+      notificationManager.showError("Data Load Failed", "Could not load inventory data.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filterProducts = () => {
