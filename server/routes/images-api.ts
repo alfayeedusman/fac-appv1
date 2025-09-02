@@ -468,7 +468,7 @@ router.get('/:id', async (req, res) => {
     // Increment view count if requested
     if (incrementView === 'true') {
       await neonDbService.db
-        .update(images)
+        .update(schema.images)
         .set({
           viewCount: (image.viewCount || 0) + 1,
           updatedAt: new Date()
