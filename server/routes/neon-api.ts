@@ -595,6 +595,19 @@ function calculateBranchPerformance(bookings: any[], users: any[]) {
   }));
 }
 
+// Users endpoint
+export const getAllUsers: RequestHandler = async (req, res) => {
+  try {
+    console.log('👥 Getting all users...');
+    const users = await neonDbService.getAllUsers();
+    console.log('✅ Users retrieved:', users.length, 'users found');
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error('❌ Error fetching users:', error);
+    res.status(500).json({ success: false, error: 'Failed to get users' });
+  }
+};
+
 // ============= NEW FEATURES API ENDPOINTS =============
 
 // Branches endpoints

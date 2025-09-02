@@ -638,8 +638,8 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log('📞 Making request to /api/users...');
-      const response = await fetch('/api/users');
+      console.log('📞 Making request to /api/neon/users...');
+      const response = await fetch('/api/neon/users');
       console.log('📥 Response status:', response.status, response.statusText);
 
       if (!response.ok) {

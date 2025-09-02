@@ -110,6 +110,9 @@ export const createServer = () => {
   // Analytics endpoints
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
+  // Users endpoints (for customer management)
+  app.get("/api/neon/users", neonApiRoutes.getAllUsers);
+
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
 
