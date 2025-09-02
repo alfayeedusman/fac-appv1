@@ -75,7 +75,6 @@ import { formatDistanceToNow } from "date-fns";
 import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
 import SalesDashboard from "@/components/SalesDashboard";
-import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
@@ -312,7 +311,7 @@ export default function AdminDashboard() {
       console.log("👥 Customer load result:", result);
 
       if (result.success && result.users) {
-        console.log("📋 Raw users from database:", result.users);
+        console.log("���� Raw users from database:", result.users);
         // Transform database users to Customer interface
         const transformedCustomers: Customer[] = result.users.map(
           (user: any) => ({
