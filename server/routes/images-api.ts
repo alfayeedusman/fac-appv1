@@ -633,6 +633,14 @@ router.get('/collections/:collectionId/images', async (req, res) => {
  */
 router.get('/stats', async (req, res) => {
   try {
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection not available'
+      });
+    }
+
     // Get total images count
     const totalImagesResult = await neonDbService.db
       .select({ count: count() })
