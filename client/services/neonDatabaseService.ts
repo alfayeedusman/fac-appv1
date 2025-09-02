@@ -127,9 +127,16 @@ export interface Ad {
 }
 
 class NeonDatabaseClient {
-  private baseUrl = `${import.meta.env.VITE_API_BASE_URL || "/api"}/neon`;
+  private baseUrl: string;
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
+
+  constructor() {
+    // Ensure baseUrl is properly constructed
+    const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
+    this.baseUrl = `${apiBase}/neon`;
+    console.log('🔗 NeonDatabaseClient baseUrl:', this.baseUrl);
+  }
 
   // Initialize and test connection
   async initialize(): Promise<boolean> {
