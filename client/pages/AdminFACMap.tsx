@@ -360,7 +360,7 @@ export default function AdminFACMap() {
                       Champions
                     </p>
                     <p className="text-xl font-bold text-yellow-900 dark:text-yellow-100">
-                      5
+                      {statsLoading ? "..." : (facMapStats?.customers.champions || 5)}
                     </p>
                   </div>
                 </div>
@@ -378,7 +378,7 @@ export default function AdminFACMap() {
                       VIP
                     </p>
                     <p className="text-xl font-bold text-red-900 dark:text-red-100">
-                      12
+                      {statsLoading ? "..." : (facMapStats?.customers.vip || 12)}
                     </p>
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export default function AdminFACMap() {
                       Loyal
                     </p>
                     <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
-                      18
+                      {statsLoading ? "..." : (facMapStats?.customers.loyal || 18)}
                     </p>
                   </div>
                 </div>
@@ -414,7 +414,7 @@ export default function AdminFACMap() {
                       Regular
                     </p>
                     <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      10
+                      {statsLoading ? "..." : (facMapStats?.customers.regular || 10)}
                     </p>
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export default function AdminFACMap() {
                       New
                     </p>
                     <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                      5
+                      {statsLoading ? "..." : (facMapStats?.customers.new || 5)}
                     </p>
                   </div>
                 </div>
