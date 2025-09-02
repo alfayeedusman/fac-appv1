@@ -308,7 +308,7 @@ export default function AdminDashboard() {
         }
       }
 
-      const result = await neonDbClient.getUsers();
+      const result = await neonDbClient.getCustomers();
       console.log('👥 Customer load result:', result);
 
       if (result.success && result.users) {
