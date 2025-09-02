@@ -987,19 +987,27 @@ class NeonDatabaseClient {
   // === REAL-TIME STATS ===
 
   async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
-    const connected = await this.ensureConnection();
-    if (!connected) {
-      return { success: false, stats: null };
-    }
-
     try {
+      const connected = await this.ensureConnection();
+      if (!connected) {
+        console.warn('⚠️ getRealtimeStats: Database not connected');
+        return { success: false, stats: null };
+      }
+
+      console.log('📊 Fetching realtime stats...');
       const result = await this.fetchJsonWithFallback("/realtime-stats");
+      console.log('✅ Realtime stats received:', result);
+
       return result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
     } catch (error) {
-      console.error("Database realtime stats fetch failed:", error);
-      return { success: false, stats: null };
+      console.error("❌ Database realtime stats fetch failed:", error);
+      return {
+        success: false,
+        stats: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
