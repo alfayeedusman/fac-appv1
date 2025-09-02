@@ -275,7 +275,8 @@ export default function RealTimeMap({
         map.current.on('error', (e) => {
           console.error('❌ Mapbox error:', e);
           if (isMounted) {
-            setError('Map failed to load. Please check your internet connection.');
+            setError('Map failed to load. Using fallback view.');
+            setShowFallback(true);
             setIsLoading(false);
           }
           if (timeoutId) clearTimeout(timeoutId);
