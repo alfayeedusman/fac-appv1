@@ -594,23 +594,23 @@ router.get('/collections/:collectionId/images', async (req, res) => {
 
     const collectionImages = await neonDbService.db
       .select({
-        id: imageCollectionItems.id,
+        id: schema.imageCollectionItems.id,
         sortOrder: schema.imageCollectionItems.sortOrder,
-        caption: imageCollectionItems.caption,
-        addedAt: imageCollectionItems.addedAt,
-        imageId: images.id,
-        originalName: images.originalName,
-        fileName: images.fileName,
-        publicUrl: images.publicUrl,
-        mimeType: images.mimeType,
-        size: images.size,
+        caption: schema.imageCollectionItems.caption,
+        addedAt: schema.imageCollectionItems.addedAt,
+        imageId: schema.images.id,
+        originalName: schema.images.originalName,
+        fileName: schema.images.fileName,
+        publicUrl: schema.images.publicUrl,
+        mimeType: schema.images.mimeType,
+        size: schema.images.size,
         category: schema.images.category,
-        altText: images.altText,
-        description: images.description,
-        createdAt: images.createdAt,
+        altText: schema.images.altText,
+        description: schema.images.description,
+        createdAt: schema.images.createdAt,
       })
       .from(schema.imageCollectionItems)
-      .innerJoin(images, eq(schema.imageCollectionItems.imageId, images.id))
+      .innerJoin(schema.images, eq(schema.imageCollectionItems.imageId, images.id))
       .where(eq(schema.imageCollectionItems.collectionId, collectionId))
       .orderBy(schema.imageCollectionItems.sortOrder);
 
