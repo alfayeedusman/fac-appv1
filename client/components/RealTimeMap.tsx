@@ -265,6 +265,7 @@ export default function RealTimeMap({
             setIsLoading(false);
           }
           if (timeoutId) clearTimeout(timeoutId);
+          initializingRef.current = false;
         });
 
         map.current.on('error', (e) => {
@@ -274,6 +275,7 @@ export default function RealTimeMap({
             setIsLoading(false);
           }
           if (timeoutId) clearTimeout(timeoutId);
+          initializingRef.current = false;
         });
 
         // Add controls
