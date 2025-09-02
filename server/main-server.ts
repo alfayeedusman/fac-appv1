@@ -117,6 +117,12 @@ export const createServer = () => {
   // Users endpoints (for customer management)
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
 
+  // ============= CREW MANAGEMENT API =============
+  app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
+  app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
+  app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
+  app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
 
