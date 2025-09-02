@@ -747,6 +747,7 @@ export default function AdminDashboard() {
                 <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                   {activeTab === "overview" && "Admin Dashboard"}
                   {activeTab === "customers" && "Customer Management"}
+                  {activeTab === "user-management" && "User Management"}
                   {activeTab === "roles" && "User & Role Management"}
                   {activeTab === "ads" && "Advertisement Management"}
                   {activeTab === "packages" && "Package Management"}
@@ -770,6 +771,8 @@ export default function AdminDashboard() {
                     "Monitor your business performance"}
                   {activeTab === "customers" &&
                     "Manage customer accounts and approvals"}
+                  {activeTab === "user-management" &&
+                    "Manage staff accounts and permissions"}
                   {activeTab === "roles" && "Manage user roles and permissions"}
                   {activeTab === "ads" && "Create and manage advertisements"}
                   {activeTab === "packages" && "Configure service packages"}
@@ -1396,6 +1399,10 @@ export default function AdminDashboard() {
                 </Card>
               </div>
             </div>
+          )}
+
+          {activeTab === "user-management" && (
+            <AdminUserManagement />
           )}
 
           {activeTab === "customers" && (
