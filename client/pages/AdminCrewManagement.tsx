@@ -304,7 +304,7 @@ export default function AdminCrewManagement() {
       <AdminSidebar
         activeTab="crew"
         onTabChange={(tab) => {
-          if (tab === "crew") return; // Already on this page
+          if (tab === "crew") navigate("/admin-crew-management"); // Navigate to crew management
           else if (tab === "overview") navigate("/admin-dashboard");
           else if (tab === "cms") navigate("/admin-cms");
           else if (tab === "fac-map") navigate("/admin-fac-map");
