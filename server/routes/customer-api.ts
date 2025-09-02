@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from "express";
-import { MockMySQLService } from "../services/mock-mysql.js";
+import { neonDbService } from "../services/neonDatabaseService.js";
 
 const router = Router();
 
@@ -11,23 +11,49 @@ const mockAuth: RequestHandler = (req, res, next) => {
 };
 
 // Health check for new system
-router.get("/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    system: "flutter-mysql-firebase",
-    timestamp: new Date().toISOString(),
-    services: {
-      mysql: "mock-connected",
-      firebase: "mock-connected",
-      flutter: "ready",
-    },
-  });
+router.get("/health", async (req, res) => {
+  try {
+    const stats = await neonDbService.getStats();
+    res.json({
+      status: "healthy",
+      system: "neon-database",
+      timestamp: new Date().toISOString(),
+      services: {
+        neon: "connected",
+        firebase: "mock-connected",
+        stats
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "unhealthy",
+      system: "neon-database",
+      timestamp: new Date().toISOString(),
+      error: "Database connection failed"
+    });
+  }
 });
 
 // User routes
+router.get("/users", async (req, res) => {
+  console.log('🔍 GET /api/users endpoint called');
+  try {
+    console.log('📋 Fetching users from database...');
+    const users = await neonDbService.getAllUsers();
+    console.log('✅ Users retrieved:', users);
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error("❌ Error fetching users:", error);
+    res.status(500).json({ success: false, error: "Failed to get users" });
+  }
+});
+
 router.get("/user/profile", mockAuth, async (req, res) => {
   try {
-    const profile = await MockMySQLService.getUserProfile(req.user.uid);
+    const profile = await neonDbService.getUserById(req.user.uid);
+    if (!profile) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json(profile);
   } catch (error) {
     res.status(500).json({ error: "Failed to get profile" });
@@ -36,27 +62,43 @@ router.get("/user/profile", mockAuth, async (req, res) => {
 
 router.get("/user/analytics", mockAuth, async (req, res) => {
   try {
-    const analytics = await MockMySQLService.getUserAnalytics(req.user.uid);
+    const bookings = await neonDbService.getBookingsByUserId(req.user.uid);
+    const analytics = {
+      totalBookings: bookings.length,
+      pendingBookings: bookings.filter(b => b.status === 'pending').length,
+      completedBookings: bookings.filter(b => b.status === 'completed').length,
+      recentBookings: bookings.slice(0, 5)
+    };
     res.json(analytics);
   } catch (error) {
     res.status(500).json({ error: "Failed to get analytics" });
   }
 });
 
-// Services routes
+// Services routes - mock data for now
 router.get("/services", async (req, res) => {
   try {
-    const services = await MockMySQLService.getServices();
+    // Mock services data since we don't have a services table yet
+    const services = [
+      { id: "1", name: "Basic Wash", price: 15, duration: 30 },
+      { id: "2", name: "Premium Wash", price: 25, duration: 45 },
+      { id: "3", name: "Full Detail", price: 50, duration: 90 }
+    ];
     res.json(services);
   } catch (error) {
     res.status(500).json({ error: "Failed to get services" });
   }
 });
 
-// Branches routes
+// Branches routes - mock data for now
 router.get("/branches", async (req, res) => {
   try {
-    const branches = await MockMySQLService.getBranches();
+    // Mock branches data since we don't have a branches table yet
+    const branches = [
+      { id: "1", name: "Downtown Branch", address: "123 Main St", phone: "+1234567890" },
+      { id: "2", name: "Mall Branch", address: "456 Mall Ave", phone: "+1234567891" },
+      { id: "3", name: "Airport Branch", address: "789 Airport Rd", phone: "+1234567892" }
+    ];
     res.json(branches);
   } catch (error) {
     res.status(500).json({ error: "Failed to get branches" });
@@ -66,7 +108,7 @@ router.get("/branches", async (req, res) => {
 // Bookings routes
 router.get("/bookings", mockAuth, async (req, res) => {
   try {
-    const bookings = await MockMySQLService.getUserBookings(req.user.uid);
+    const bookings = await neonDbService.getBookingsByUserId(req.user.uid);
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ error: "Failed to get bookings" });
@@ -75,22 +117,22 @@ router.get("/bookings", mockAuth, async (req, res) => {
 
 router.post("/bookings", mockAuth, async (req, res) => {
   try {
-    const bookingId = await MockMySQLService.createBooking({
-      user_id: req.user.uid,
+    const booking = await neonDbService.createBooking({
+      userId: req.user.uid,
       ...req.body,
     });
-    res.status(201).json({ booking_id: bookingId, success: true });
+    res.status(201).json({ booking_id: booking.id, success: true, booking });
   } catch (error) {
     res.status(500).json({ error: "Failed to create booking" });
   }
 });
 
-// QR routes
+// QR routes - mock implementation
 router.post("/qr/checkin", mockAuth, async (req, res) => {
   try {
     const { branch_id } = req.body;
-    const success = await MockMySQLService.checkIn(req.user.uid, branch_id);
-    res.json({ success, message: "Checked in successfully!" });
+    // Mock check-in logic - in real app this would update a check-in table
+    res.json({ success: true, message: "Checked in successfully!", branch_id });
   } catch (error) {
     res.status(500).json({ error: "Failed to check in" });
   }

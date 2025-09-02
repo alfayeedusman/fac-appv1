@@ -13,8 +13,15 @@ import {
   Lock,
   Zap,
   Crown,
+  Database,
+  AlertCircle,
+  Wifi,
+  Shield,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import SuperAdminStatus from "@/components/SuperAdminStatus";
+import { authService } from "@/services/authService";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,46 +32,36 @@ export default function Login() {
     password: "",
   });
 
-  // Check for auto-login on component mount
+  // Check Neon database connection on component mount
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const autoLogin = urlParams.get("auto");
-    const userEmail = urlParams.get("email");
+    const checkNeonConnection = async () => {
+      try {
+        const connected = await neonDbClient.testConnection();
+        if (connected.connected) {
+          console.log('✅ Neon database connected');
+        } else {
+          console.warn('⚠️ Neon database not connected');
+        }
+      } catch (error) {
+        console.error('❌ Failed to check Neon connection:', error);
+      }
+    };
 
-    // Auto-login for superadmin
-    if (autoLogin === "true" && userEmail === "fffayeed@gmail.com") {
-      setFormData({
-        email: "fffayeed@gmail.com",
-        password: "Fayeed22beats"
-      });
-
-      // Trigger auto-login after a short delay
-      setTimeout(() => {
-        const event = new Event('submit');
-        document.querySelector('form')?.dispatchEvent(event);
-      }, 1000);
-    }
+    checkNeonConnection();
   }, []);
 
-  // Auto-login function for superadmin
-  const triggerAutoLogin = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", "fffayeed@gmail.com");
-    localStorage.setItem("userRole", "superadmin");
-    localStorage.setItem("justLoggedIn", "true");
-    localStorage.setItem("hasSeenWelcome", "true"); // Bypass welcome screen
-    localStorage.setItem(`welcomed_fffayeed@gmail.com`, "true"); // Mark user as welcomed
-
-    toast({
-      title: "Auto-Login Successful! 🎉",
-      description: "Welcome back, Superadmin!",
-      variant: "default",
-      className: "bg-green-50 border-green-200 text-green-800",
+  // Test login with Neon admin credentials
+  const testNeonAdminLogin = async () => {
+    setFormData({
+      email: "admin@fayeedautocare.com",
+      password: "admin123"
     });
 
+    // Auto-submit after setting credentials
     setTimeout(() => {
-      navigate("/admin-dashboard");
-    }, 1000);
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      document.querySelector('form')?.dispatchEvent(submitEvent);
+    }, 100);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -98,101 +95,68 @@ export default function Login() {
       return;
     }
 
-    // Simulate API call with modern loading
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Check database connection first
+      const isConnected = await neonDbClient.testConnection();
 
-    // Secure database validation - only allow registered users
-    const validUsers = [
-      { email: "admin@fac.com", password: "admin123", role: "admin" },
-      { email: "superadmin@fac.com", password: "super123", role: "superadmin" },
-      { email: "fffayeed@gmail.com", password: "Fayeed22beats", role: "superadmin" },
-      { email: "manager@fayeedautocare.com", password: "manager123", role: "manager" },
-      { email: "juan.cruz@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "maria.santos@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "carlos.mendoza@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "ana.reyes@fayeedautocare.com", password: "crew123", role: "crew" },
-      { email: "user@fac.com", password: "user123", role: "user" },
-      { email: "demo@fac.com", password: "demo123", role: "user" },
-      { email: "fayeedtest@g.com", password: "test101", role: "user" },
-    ];
+      if (!isConnected.connected) {
+        toast({
+          title: "Database Connection Required",
+          description: "Please connect to Neon database first. Check the Database Setup in Admin Dashboard.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    // Get saved registration data
-    const savedRegistrations = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-    const allValidUsers = [...validUsers, ...savedRegistrations];
+      // Attempt login with Neon database
+      const result = await authService.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    // Find matching user
-    const authenticatedUser = allValidUsers.find(
-      (user) =>
-        user.email === formData.email && user.password === formData.password,
-    );
+      if (result.success && result.user) {
+        // Set authentication flags
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("justLoggedIn", "true");
 
-    if (authenticatedUser) {
-      // Clear any cached user-specific data to prevent data leakage
-      const keysToCheck = Object.keys(localStorage);
-      keysToCheck.forEach((key) => {
-        if (key.startsWith("subscription_") || key.startsWith("washLogs_")) {
-          // Only keep data for the current user
-          if (!key.includes(authenticatedUser.email)) {
-            localStorage.removeItem(key);
+        // Check if this is a returning user
+        const hasCompletedWelcome = localStorage.getItem(
+          `welcomed_${result.user.email}`,
+        );
+
+        setTimeout(() => {
+          if (
+            result.user.role === "admin" ||
+            result.user.role === "superadmin"
+          ) {
+            // Set welcome flags for admin users to bypass welcome screen
+            localStorage.setItem("hasSeenWelcome", "true");
+            localStorage.setItem(`welcomed_${result.user.email}`, "true");
+            navigate("/admin-dashboard");
+          } else if (result.user.role === "manager") {
+            navigate("/manager-dashboard");
+          } else if (result.user.role === "crew") {
+            navigate("/crew-dashboard");
+          } else if (result.user.role === "cashier") {
+            navigate("/pos");
+          } else if (result.user.role === "inventory_manager") {
+            navigate("/inventory-management");
+          } else if (hasCompletedWelcome) {
+            // Returning user - go straight to dashboard
+            navigate("/dashboard");
+          } else {
+            // New user - show welcome flow
+            localStorage.setItem("showSplashScreen", "true");
+            navigate("/welcome");
           }
-        }
-      });
-
-      // Successful login
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", authenticatedUser.email);
-      localStorage.setItem("userRole", authenticatedUser.role);
-
-      // Success notification
-      toast({
-        title: "Login Successful! 🎉",
-        description: `Welcome back, ${authenticatedUser.email}!`,
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
-
-      // Set splash screen flag and navigate
-      localStorage.setItem("justLoggedIn", "true");
-
-      // Check if this is a returning user or first time
-      const hasCompletedWelcome = localStorage.getItem(
-        `welcomed_${authenticatedUser.email}`,
-      );
-
-      setTimeout(() => {
-        if (
-          authenticatedUser.role === "admin" ||
-          authenticatedUser.role === "superadmin"
-        ) {
-          // Set welcome flags for admin users to bypass welcome screen
-          localStorage.setItem("hasSeenWelcome", "true");
-          localStorage.setItem(`welcomed_${authenticatedUser.email}`, "true");
-          navigate("/admin-dashboard");
-        } else if (authenticatedUser.role === "manager") {
-          navigate("/manager-dashboard");
-        } else if (authenticatedUser.role === "crew") {
-          navigate("/crew-dashboard");
-        } else if (authenticatedUser.role === "cashier") {
-          navigate("/pos");
-        } else if (authenticatedUser.role === "inventory_manager") {
-          navigate("/inventory-management");
-        } else if (hasCompletedWelcome) {
-          // Returning user - go straight to dashboard
-          navigate("/dashboard");
-        } else {
-          // New user - show welcome flow
-          localStorage.setItem("showSplashScreen", "true");
-          navigate("/welcome");
-        }
-      }, 1000);
-    } else {
-      // Failed login
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
-        description:
-          "Invalid email or password. Please check your credentials.",
+        description: "Unable to connect to database. Please try again.",
         variant: "destructive",
       });
     }
@@ -338,6 +302,52 @@ export default function Login() {
                 )}
               </Button>
 
+              {/* Test Neon Admin Login Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={testNeonAdminLogin}
+                disabled={isLoading}
+                className="w-full py-3 text-sm rounded-xl font-bold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 transition-all group"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Test Neon Admin Login
+                <span className="text-xs ml-2 opacity-70">(admin@fayeedautocare.com)</span>
+              </Button>
+
+              {/* SuperAdmin Setup Button */}
+              <div className="grid grid-cols-1 gap-2">
+                <Link to="/admin-login-test">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-green-200 text-green-600 hover:bg-green-50 transition-all group"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Login Test Suite
+                  </Button>
+                </Link>
+                <Link to="/superadmin-setup">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 transition-all group"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    SuperAdmin Setup
+                  </Button>
+                </Link>
+                <Link to="/network-test">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all group"
+                  >
+                    <Wifi className="h-4 w-4 mr-2" />
+                    Network Diagnostics
+                  </Button>
+                </Link>
+              </div>
 
               {/* Forgot Password Link */}
               <div className="text-center">
@@ -366,6 +376,36 @@ export default function Login() {
             </p>
           </div>
         </div>
+
+        {/* SuperAdmin Status */}
+        <div className="mt-6 animate-fade-in-up animate-delay-450">
+          <SuperAdminStatus />
+        </div>
+
+        {/* SuperAdmin Quick Access */}
+        <Card className="mt-6 glass border-yellow-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 animate-fade-in-up animate-delay-500">
+          <CardContent className="p-6">
+            <h3 className="font-black text-foreground text-base mb-4 flex items-center">
+              <Crown className="h-5 w-5 mr-2 text-yellow-500" />
+              SuperAdmin Access
+            </h3>
+            <div className="space-y-3">
+              <Link to="/quick-superadmin">
+                <Button
+                  variant="default"
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl transition-all group shadow-lg"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Quick SuperAdmin Login
+                  <span className="text-sm ml-2 opacity-90">→ Admin Dashboard</span>
+                </Button>
+              </Link>
+              <div className="text-xs text-muted-foreground text-center">
+                One-click setup & login with SuperAdmin privileges
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Guest Booking Option */}
         <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">

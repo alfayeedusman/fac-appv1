@@ -38,6 +38,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Swal from 'sweetalert2';
 
 interface User {
   id: string;
@@ -719,7 +720,13 @@ export default function UserRoleManagement() {
   const handleCreateUser = () => {
     try {
       if (!formData.fullName || !formData.email || !formData.password) {
-        alert("Please fill in all required fields");
+        Swal.fire({
+          title: 'Validation Error',
+          text: 'Please fill in all required fields',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b'
+        });
         return;
       }
 
@@ -739,7 +746,13 @@ export default function UserRoleManagement() {
         (user: any) => user && user.email === formData.email,
       );
       if (userExists) {
-        alert("User with this email already exists");
+        Swal.fire({
+          title: 'Duplicate Email',
+          text: 'User with this email already exists',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b'
+        });
         return;
       }
 
@@ -785,10 +798,26 @@ export default function UserRoleManagement() {
       loadUsers();
       setIsCreateModalOpen(false);
       resetForm();
-      alert("User created successfully!");
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'User created successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981',
+        timer: 3000,
+        timerProgressBar: true
+      });
     } catch (error) {
       console.error("Error creating user:", error);
-      alert("Failed to create user. Please try again.");
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create user. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
@@ -826,41 +855,90 @@ export default function UserRoleManagement() {
       loadUsers();
       setIsEditModalOpen(false);
       resetForm();
-      alert("User updated successfully!");
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'User updated successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981',
+        timer: 3000,
+        timerProgressBar: true
+      });
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("Failed to update user. Please try again.");
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to update user. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
   const handleDeleteUser = (user: User) => {
     if (user.role === "superadmin") {
-      alert("Cannot delete superadmin users");
+      Swal.fire({
+        title: 'Access Denied',
+        text: 'Cannot delete superadmin users',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      });
       return;
     }
 
-    if (confirm(`Are you sure you want to delete ${user.fullName}?`)) {
-      try {
-        const existingUsers = JSON.parse(
-          localStorage.getItem("registeredUsers") || "[]",
-        );
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to delete ${user.fullName}? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          const existingUsers = JSON.parse(
+            localStorage.getItem("registeredUsers") || "[]",
+          );
 
-        const filteredUsers = existingUsers.filter(
-          (u: any) => u.email !== user.email,
-        );
-        localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+          const filteredUsers = existingUsers.filter(
+            (u: any) => u.email !== user.email,
+          );
+          localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
 
-        // Clean up user data
-        localStorage.removeItem(`subscription_${user.email}`);
-        localStorage.removeItem(`washLogs_${user.email}`);
+          // Clean up user data
+          localStorage.removeItem(`subscription_${user.email}`);
+          localStorage.removeItem(`washLogs_${user.email}`);
 
-        loadUsers();
-        alert("User deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        alert("Failed to delete user. Please try again.");
+          loadUsers();
+
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'User deleted successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#10b981',
+            timer: 3000,
+            timerProgressBar: true
+          });
+        } catch (error) {
+          console.error("Error deleting user:", error);
+
+          Swal.fire({
+            title: 'Error!',
+            text: 'Failed to delete user. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#ef4444'
+          });
+        }
       }
-    }
+    });
   };
 
   const handleEditClick = (user: User) => {

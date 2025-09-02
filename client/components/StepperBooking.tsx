@@ -40,7 +40,7 @@ import { toast } from "@/hooks/use-toast";
 import { notificationManager } from "@/components/NotificationModal";
 import Swal from 'sweetalert2';
 import { getAdminConfig, generateTimeSlots, isSlotAvailable } from "@/utils/adminConfig";
-import { createBooking, getSlotAvailability, createSystemNotification, type Booking } from "@/utils/databaseSchema";
+import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
 import { getCarWashServices } from "@/utils/carWashServices";
 
 interface BookingData {
@@ -562,8 +562,12 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         pointsEarned: isGuest ? 0 : Math.floor(bookingData.totalPrice / 100), // 1 point per 100 pesos
       };
 
-      // Create booking using advanced database system
-      const createdBooking = await createBooking(bookingPayload);
+      // Create booking using Neon database
+      const bookingResult = await neonDbClient.createBooking(bookingPayload);
+      if (!bookingResult.success || !bookingResult.booking) {
+        throw new Error(bookingResult.error || 'Failed to create booking');
+      }
+      const createdBooking = bookingResult.booking;
 
       // Send system notification to admin and manager about new booking
       const customerName = isGuest ? `${bookingData.fullName}` : 'Registered Customer';
@@ -573,24 +577,8 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         `Amount: ₱${bookingData.totalPrice.toLocaleString()}\n` +
         `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
 
-      createSystemNotification({
-        type: 'new_booking',
-        title: '🎯 New Booking Received',
-        message: notificationMessage,
-        priority: 'high',
-        targetRoles: ['admin', 'superadmin', 'manager'],
-        data: {
-          bookingId: createdBooking.id,
-          customerId: createdBooking.userId,
-          guestInfo: createdBooking.guestInfo,
-          service: bookingData.service,
-          totalPrice: bookingData.totalPrice,
-          date: bookingData.date,
-          timeSlot: bookingData.timeSlot
-        },
-        playSound: true,
-        soundType: 'new_booking'
-      });
+      // Create system notification through API (this happens automatically in the API)
+      console.log('🎯 New booking created:', createdBooking.id);
 
       notificationManager.success(
         "Booking Confirmed! 🎉",

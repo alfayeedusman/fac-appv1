@@ -79,13 +79,15 @@ import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
+import NeonDatabaseSetup from "@/components/NeonDatabaseSetup";
 import AdminCMS from "./AdminCMS";
 import AdminPushNotifications from "./AdminPushNotifications";
 import AdminGamification from "./AdminGamification";
+import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
 import POS from "./POS";
-import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
+import AdminInventory from "./AdminInventory";
 import AdminUserManagement from "./AdminUserManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
@@ -93,8 +95,11 @@ import {
   getUserSystemNotifications,
   markSystemNotificationAsRead,
   getAllBookings,
-  type SystemNotification
+  type SystemNotification,
 } from "@/utils/databaseSchema";
+import { neonDbClient } from "@/services/neonDatabaseService";
+import { toast } from "@/hooks/use-toast";
+import Swal from "sweetalert2";
 
 interface Customer {
   id: string;
@@ -160,93 +165,27 @@ export default function AdminDashboard() {
   >("monthly");
 
   const [stats, setStats] = useState<DashboardStats>({
-    totalCustomers: 1247,
-    totalRevenue: 156780,
-    totalWashes: 3456,
-    activeSubscriptions: 892,
-    monthlyGrowth: 12.5,
+    totalCustomers: 0,
+    totalRevenue: 0,
+    totalWashes: 0,
+    activeSubscriptions: 0,
+    monthlyGrowth: 0,
     topPackage: "VIP Gold Ultimate",
   });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "approval_request",
-      title: "New Customer Approval",
-      message:
-        "Ana Rodriguez is requesting account approval for VIP Silver membership.",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-      read: false,
-      customerName: "Ana Rodriguez",
-      actionRequired: true,
-    },
-    {
-      id: "2",
-      type: "new_customer",
-      title: "New Registration",
-      message:
-        "Carlos Reyes has completed registration and is awaiting approval.",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: false,
-      customerName: "Carlos Reyes",
-      actionRequired: true,
-    },
-    {
-      id: "3",
-      type: "subscription",
-      title: "VIP Gold Subscription",
-      message: "John Dela Cruz upgraded to VIP Gold membership.",
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      read: false,
-      customerName: "John Dela Cruz",
-      amount: 3000,
-    },
-  ]);
+  const [realtimeStats, setRealtimeStats] = useState({
+    onlineCrew: 0,
+    busyCrew: 0,
+    activeCustomers: 0,
+    activeGroups: 0,
+  });
+  const [realtimeLoading, setRealtimeLoading] = useState(true);
 
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: "1",
-      name: "John Dela Cruz",
-      email: "john@email.com",
-      phone: "+63 912 345 6789",
-      carUnit: "Toyota Vios 2020",
-      plateNumber: "ABC 1234",
-      membershipType: "VIP Gold",
-      joinDate: "2024-01-15",
-      totalWashes: 24,
-      totalSpent: 12000,
-      status: "active",
-      approvalStatus: "approved",
-    },
-    {
-      id: "2",
-      name: "Maria Santos",
-      email: "maria@email.com",
-      phone: "+63 918 765 4321",
-      carUnit: "Honda Civic 2019",
-      plateNumber: "XYZ 5678",
-      membershipType: "VIP Silver",
-      joinDate: "2024-02-01",
-      totalWashes: 15,
-      totalSpent: 7500,
-      status: "active",
-      approvalStatus: "approved",
-    },
-    {
-      id: "3",
-      name: "Ana Rodriguez",
-      email: "ana@email.com",
-      phone: "+63 920 123 4567",
-      carUnit: "Ford EcoSport 2021",
-      plateNumber: "DEF 9012",
-      membershipType: "Classic",
-      joinDate: "2024-03-10",
-      totalWashes: 0,
-      totalSpent: 0,
-      status: "pending",
-      approvalStatus: "pending",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
 
   const [packages, setPackages] = useState<ServicePackage[]>([
     {
@@ -325,22 +264,158 @@ export default function AdminDashboard() {
 
   const [editingFeatures, setEditingFeatures] = useState("");
 
+  // Function to load real statistics from database
+  const loadRealStats = async () => {
+    try {
+      setStatsLoading(true);
+      const result = await neonDbClient.getStats();
+
+      if (result.success && result.stats) {
+        setStats({
+          totalCustomers: result.stats.totalUsers || 0,
+          totalRevenue: result.stats.totalRevenue || 0,
+          totalWashes: result.stats.totalWashes || 0,
+          activeSubscriptions: result.stats.activeSubscriptions || 0,
+          monthlyGrowth: result.stats.monthlyGrowth || 0,
+          topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
+        });
+      } else {
+        console.warn("Failed to load real stats, using defaults");
+      }
+    } catch (error) {
+      console.error("Error loading statistics:", error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  // Function to load real customer data from database
+  const loadRealCustomers = async () => {
+    try {
+      setCustomersLoading(true);
+      console.log("🔍 Loading customers from database...");
+
+      // Ensure database connection is ready
+      const connectionStatus = neonDbClient.getConnectionStatus();
+      console.log("🔗 Database connection status:", connectionStatus);
+
+      if (!connectionStatus) {
+        console.log("⚠️ Database not connected, attempting to connect...");
+        const connected = await neonDbClient.testConnection();
+        console.log("🔗 Connection test result:", connected);
+        if (!connected.connected) {
+          throw new Error("Database connection failed");
+        }
+      }
+
+      const result = await neonDbClient.getCustomers();
+      console.log("👥 Customer load result:", result);
+
+      if (result.success && result.users) {
+        console.log("📋 Raw users from database:", result.users);
+        // Transform database users to Customer interface
+        const transformedCustomers: Customer[] = result.users.map(
+          (user: any) => ({
+            id: user.id,
+            name: user.fullName,
+            email: user.email,
+            phone: user.contactNumber || "N/A",
+            carUnit: user.carUnit || "N/A",
+            plateNumber: user.carPlateNumber || "N/A",
+            membershipType:
+              user.subscriptionStatus === "free"
+                ? "Classic"
+                : user.subscriptionStatus === "basic"
+                  ? "VIP Silver"
+                  : user.subscriptionStatus === "premium"
+                    ? "VIP Gold"
+                    : user.subscriptionStatus === "vip"
+                      ? "VIP Gold Ultimate"
+                      : "Classic",
+            joinDate: new Date(user.createdAt).toISOString().split("T")[0],
+            totalWashes: 0, // This would need to be calculated from bookings
+            totalSpent: 0, // This would need to be calculated from bookings
+            status: user.isActive ? "active" : "inactive",
+            approvalStatus: user.isActive ? "approved" : "pending",
+          }),
+        );
+
+        console.log("✅ Transformed customers:", transformedCustomers);
+        setCustomers(transformedCustomers);
+      } else {
+        console.warn(
+          "⚠️ Failed to load real customers, using empty array. Result:",
+          result,
+        );
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading customers:", error);
+      setCustomers([]);
+    } finally {
+      setCustomersLoading(false);
+    }
+  };
+
+  // Function to load real-time crew and customer statistics
+  const loadRealtimeStats = async () => {
+    try {
+      setRealtimeLoading(true);
+      const result = await neonDbClient.getRealtimeStats();
+
+      if (result.success && result.stats) {
+        setRealtimeStats({
+          onlineCrew: result.stats.onlineCrew || 0,
+          busyCrew: result.stats.busyCrew || 0,
+          activeCustomers: result.stats.activeCustomers || 0,
+          activeGroups: result.stats.activeGroups || 0,
+        });
+      } else {
+        console.warn("Failed to load realtime stats, using defaults");
+      }
+    } catch (error) {
+      console.error("Error loading realtime statistics:", error);
+    } finally {
+      setRealtimeLoading(false);
+    }
+  };
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     const email = localStorage.getItem("userEmail");
+    console.log("🔐 Admin Dashboard useEffect - Role:", role, "Email:", email);
 
     if (role === "admin" || role === "superadmin") {
+      console.log("✅ User authorized, setting up dashboard...");
       setUserRole(role);
       // Initialize sample ads for demonstration
       initializeSampleAds();
 
+      // Load real statistics from database
+      loadRealStats();
+
+      // Load real-time crew and customer statistics
+      loadRealtimeStats();
+
+      // Load real customer data from database
+      console.log("📋 About to call loadRealCustomers...");
+      loadRealCustomers()
+        .then(() => console.log("✅ loadRealCustomers completed"))
+        .catch((error) => console.error("❌ loadRealCustomers failed:", error));
+
       // Load system notifications
       loadSystemNotifications();
 
-      // Set up polling for new notifications every 10 seconds
+      // Set up polling for new notifications and stats every 10 seconds
       const notificationInterval = setInterval(loadSystemNotifications, 10000);
+      const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
+      const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
 
-      return () => clearInterval(notificationInterval);
+      return () => {
+        clearInterval(notificationInterval);
+        clearInterval(statsInterval);
+        clearInterval(realtimeInterval);
+      };
     } else {
       navigate("/login");
     }
@@ -348,32 +423,47 @@ export default function AdminDashboard() {
 
   const loadSystemNotifications = () => {
     try {
-      const userRole = localStorage.getItem("userRole") as "admin" | "superadmin";
+      const userRole = localStorage.getItem("userRole") as
+        | "admin"
+        | "superadmin";
       const userEmail = localStorage.getItem("userEmail") || "";
 
       if (userRole && userEmail) {
-        const systemNotifications = getUserSystemNotifications(userEmail, userRole);
+        const systemNotifications = getUserSystemNotifications(
+          userEmail,
+          userRole,
+        );
 
         // Convert system notifications to the format expected by the UI with extra safety checks
         const formattedNotifications = Array.isArray(systemNotifications)
-          ? systemNotifications.map((notification: SystemNotification) => {
-              try {
-                return {
-                  id: notification?.id || '',
-                  type: notification?.type || 'system',
-                  title: notification?.title || 'Notification',
-                  message: notification?.message || '',
-                  timestamp: notification?.createdAt ? new Date(notification.createdAt) : new Date(),
-                  read: Array.isArray(notification?.readBy) ? notification.readBy.some(r => r?.userId === userEmail) : false,
-                  priority: notification?.priority || 'medium',
-                  data: notification?.data || {},
-                  actionRequired: notification?.type === 'new_booking',
-                };
-              } catch (mapError) {
-                console.error('Error formatting notification:', mapError, notification);
-                return null;
-              }
-            }).filter(Boolean) // Remove any null entries
+          ? systemNotifications
+              .map((notification: SystemNotification) => {
+                try {
+                  return {
+                    id: notification?.id || "",
+                    type: notification?.type || "system",
+                    title: notification?.title || "Notification",
+                    message: notification?.message || "",
+                    timestamp: notification?.createdAt
+                      ? new Date(notification.createdAt)
+                      : new Date(),
+                    read: Array.isArray(notification?.readBy)
+                      ? notification.readBy.some((r) => r?.userId === userEmail)
+                      : false,
+                    priority: notification?.priority || "medium",
+                    data: notification?.data || {},
+                    actionRequired: notification?.type === "new_booking",
+                  };
+                } catch (mapError) {
+                  console.error(
+                    "Error formatting notification:",
+                    mapError,
+                    notification,
+                  );
+                  return null;
+                }
+              })
+              .filter(Boolean) // Remove any null entries
           : [];
 
         setNotifications(formattedNotifications);
@@ -381,7 +471,7 @@ export default function AdminDashboard() {
         setNotifications([]);
       }
     } catch (error) {
-      console.error('Error loading system notifications:', error);
+      console.error("Error loading system notifications:", error);
       // Ensure notifications is always an array even on error
       setNotifications([]);
     }
@@ -430,7 +520,13 @@ export default function AdminDashboard() {
         vehicleType: "car",
         motorcycleType: "",
       });
-      alert("Customer added successfully!");
+
+      Swal.fire({
+        title: "Customer Added!",
+        text: `${newCustomer.name} has been added successfully and is awaiting approval.`,
+        icon: "success",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 
@@ -464,15 +560,36 @@ export default function AdminDashboard() {
   };
 
   const handleDeletePackage = (pkg: ServicePackage) => {
-    if (confirm(`Are you sure you want to delete ${pkg.name}?`)) {
-      setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
-      alert("Package deleted successfully!");
-    }
+    Swal.fire({
+      title: "Delete Package?",
+      text: `Are you sure you want to delete ${pkg.name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
+        Swal.fire({
+          title: "Deleted!",
+          text: "Package deleted successfully!",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    });
   };
 
   const handleSavePackage = () => {
     if (!newPackage.name || newPackage.basePrice <= 0) {
-      alert("Please fill in all required fields");
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please fill in all required fields",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
       return;
     }
 
@@ -491,7 +608,12 @@ export default function AdminDashboard() {
         active: newPackage.active,
       };
       setPackages((prev) => [...prev, pkg]);
-      alert("Package created successfully!");
+      Swal.fire({
+        title: "Package Created!",
+        text: "Package created successfully!",
+        icon: "success",
+        confirmButtonColor: "#f97316",
+      });
     } else if (currentPackage) {
       const updatedPackage: ServicePackage = {
         ...currentPackage,
@@ -504,7 +626,12 @@ export default function AdminDashboard() {
       setPackages((prev) =>
         prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
       );
-      alert("Package updated successfully!");
+      Swal.fire({
+        title: "Package Updated!",
+        text: "Package updated successfully!",
+        icon: "success",
+        confirmButtonColor: "#f97316",
+      });
     }
 
     setIsPackageModalOpen(false);
@@ -556,7 +683,15 @@ export default function AdminDashboard() {
       JSON.stringify(updatedNotifications),
     );
 
-    alert(`Customer approved successfully!`);
+    Swal.fire({
+      title: "Customer Approved!",
+      text: "Customer approved successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+      position: "top-end",
+      toast: true,
+    });
   };
 
   const handleRejectCustomer = (notificationId: string) => {
@@ -597,10 +732,20 @@ export default function AdminDashboard() {
       JSON.stringify(updatedNotifications),
     );
 
-    alert(`Customer registration rejected.`);
+    Swal.fire({
+      title: "Customer Rejected",
+      text: "Customer registration rejected.",
+      icon: "info",
+      timer: 2000,
+      showConfirmButton: false,
+      position: "top-end",
+      toast: true,
+    });
   };
 
-  const unreadNotificationCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
+  const unreadNotificationCount = Array.isArray(notifications)
+    ? notifications.filter((n) => !n.read).length
+    : 0;
 
   if (!userRole) return null;
 
@@ -630,6 +775,7 @@ export default function AdminDashboard() {
                 <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                   {activeTab === "overview" && "Admin Dashboard"}
                   {activeTab === "customers" && "Customer Management"}
+                  {activeTab === "user-management" && "User Management"}
                   {activeTab === "roles" && "User & Role Management"}
                   {activeTab === "ads" && "Advertisement Management"}
                   {activeTab === "packages" && "Package Management"}
@@ -641,16 +787,21 @@ export default function AdminDashboard() {
                   {activeTab === "cms" && "Content Management"}
                   {activeTab === "push-notifications" && "Push Notifications"}
                   {activeTab === "gamification" && "Gamification"}
-                  {activeTab === "subscription-approval" && "Subscription Approval"}
+                  {activeTab === "subscription-approval" &&
+                    "Subscription Approval"}
                   {activeTab === "booking" && "Booking Settings"}
                   {activeTab === "pos" && "Point of Sale"}
                   {activeTab === "user-management" && "User Management"}
+                  {activeTab === "images" && "Image Manager"}
+                  {activeTab === "database" && "Database Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
                     "Monitor your business performance"}
                   {activeTab === "customers" &&
                     "Manage customer accounts and approvals"}
+                  {activeTab === "user-management" &&
+                    "Manage staff accounts and permissions"}
                   {activeTab === "roles" && "Manage user roles and permissions"}
                   {activeTab === "ads" && "Create and manage advertisements"}
                   {activeTab === "packages" && "Configure service packages"}
@@ -661,12 +812,16 @@ export default function AdminDashboard() {
                     "Track stock levels and inventory value"}
                   {activeTab === "notifications" && "System alerts"}
                   {activeTab === "cms" && "Manage content and pages"}
-                  {activeTab === "push-notifications" && "Send push notifications"}
+                  {activeTab === "push-notifications" &&
+                    "Send push notifications"}
                   {activeTab === "gamification" && "Manage rewards and levels"}
-                  {activeTab === "subscription-approval" && "Approve payment plans"}
+                  {activeTab === "subscription-approval" &&
+                    "Approve payment plans"}
                   {activeTab === "booking" && "Configure booking settings"}
                   {activeTab === "pos" && "Point of sale system"}
                   {activeTab === "user-management" && "Manage staff and users"}
+                  {activeTab === "images" &&
+                    "Manage media assets and galleries"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
@@ -688,210 +843,268 @@ export default function AdminDashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
-                    <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Error loading notifications</div>}>
-                    <div className="p-6 border-b border-border">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-foreground">
-                          Notifications
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          {unreadNotificationCount > 0 && (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="p-4 text-center text-red-500">
+                          Error loading notifications
+                        </div>
+                      }
+                    >
+                      <div className="p-6 border-b border-border">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-foreground">
+                            Notifications
+                          </h3>
+                          <div className="flex items-center space-x-2">
+                            {unreadNotificationCount > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7"
+                                onClick={() => {
+                                  try {
+                                    const userEmail =
+                                      localStorage.getItem("userEmail") || "";
+                                    // Mark all unread notifications as read with safety checks
+                                    if (
+                                      Array.isArray(notifications) &&
+                                      notifications.length > 0
+                                    ) {
+                                      notifications.forEach((notification) => {
+                                        if (
+                                          notification &&
+                                          !notification.read &&
+                                          notification.id &&
+                                          userEmail
+                                        ) {
+                                          markSystemNotificationAsRead(
+                                            notification.id,
+                                            userEmail,
+                                          );
+                                        }
+                                      });
+                                    }
+                                    loadSystemNotifications(); // Refresh notifications
+                                  } catch (error) {
+                                    console.error(
+                                      "Error marking all notifications as read:",
+                                      error,
+                                    );
+                                  }
+                                }}
+                              >
+                                Mark all read
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-xs h-7"
                               onClick={() => {
-                                try {
-                                  const userEmail = localStorage.getItem("userEmail") || "";
-                                  // Mark all unread notifications as read with safety checks
-                                  if (Array.isArray(notifications) && notifications.length > 0) {
-                                    notifications.forEach(notification => {
-                                      if (notification && !notification.read && notification.id && userEmail) {
-                                        markSystemNotificationAsRead(notification.id, userEmail);
-                                      }
-                                    });
-                                  }
-                                  loadSystemNotifications(); // Refresh notifications
-                                } catch (error) {
-                                  console.error('Error marking all notifications as read:', error);
-                                }
+                                setActiveTab("notifications");
+                                setIsNotificationDropdownOpen(false);
                               }}
+                              className="text-xs h-7"
                             >
-                              Mark all read
+                              View all
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setActiveTab("notifications");
-                              setIsNotificationDropdownOpen(false);
-                            }}
-                            className="text-xs h-7"
-                          >
-                            View all
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <ScrollArea className="h-96">
-                      <div className="p-4">
-                        {!Array.isArray(notifications) || notifications.slice(0, 5).length === 0 ? (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p className="text-base">No notifications</p>
-                          </div>
-                        ) : (
-                          notifications.slice(0, 5).map((notification) => {
-                            try {
-                            // Add safety checks for notification properties
-                            if (!notification || typeof notification !== 'object') {
-                              return null;
-                            }
+                      <ScrollArea className="h-96">
+                        <div className="p-4">
+                          {!Array.isArray(notifications) ||
+                          notifications.slice(0, 5).length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                              <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                              <p className="text-base">No notifications</p>
+                            </div>
+                          ) : (
+                            notifications.slice(0, 5).map((notification) => {
+                              try {
+                                // Add safety checks for notification properties
+                                if (
+                                  !notification ||
+                                  typeof notification !== "object"
+                                ) {
+                                  return null;
+                                }
 
-                            const notificationType = notification.type || 'system';
-                            const isRead = Boolean(notification.read);
-                            const notificationId = notification.id || Math.random().toString();
+                                const notificationType =
+                                  notification.type || "system";
+                                const isRead = Boolean(notification.read);
+                                const notificationId =
+                                  notification.id || Math.random().toString();
 
-                              return (
-                                <div
-                                key={notificationId}
-                                className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
-                                  notificationType === "new_customer"
-                                    ? "border-l-blue-500"
-                                    : notificationType === "subscription"
-                                      ? "border-l-green-500"
-                                      : notificationType === "approval_request"
-                                        ? "border-l-yellow-500"
-                                        : notificationType === "payment"
+                                return (
+                                  <div
+                                    key={notificationId}
+                                    className={`p-4 rounded-2xl border-l-4 mb-4 transition-all hover:bg-accent cursor-pointer ${
+                                      notificationType === "new_customer"
+                                        ? "border-l-blue-500"
+                                        : notificationType === "subscription"
                                           ? "border-l-green-500"
-                                          : "border-l-purple-500"
-                                } ${
-                                  isRead
-                                    ? "bg-muted opacity-75"
-                                    : "bg-card"
-                                }`}
-                                onClick={() => {
-                                  try {
-                                    if (notification && !isRead && notificationId) {
-                                      const userEmail = localStorage.getItem("userEmail") || "";
-                                      if (userEmail) {
-                                        markSystemNotificationAsRead(notificationId, userEmail);
-                                        loadSystemNotifications(); // Refresh notifications
+                                          : notificationType ===
+                                              "approval_request"
+                                            ? "border-l-yellow-500"
+                                            : notificationType === "payment"
+                                              ? "border-l-green-500"
+                                              : "border-l-purple-500"
+                                    } ${
+                                      isRead ? "bg-muted opacity-75" : "bg-card"
+                                    }`}
+                                    onClick={() => {
+                                      try {
+                                        if (
+                                          notification &&
+                                          !isRead &&
+                                          notificationId
+                                        ) {
+                                          const userEmail =
+                                            localStorage.getItem("userEmail") ||
+                                            "";
+                                          if (userEmail) {
+                                            markSystemNotificationAsRead(
+                                              notificationId,
+                                              userEmail,
+                                            );
+                                            loadSystemNotifications(); // Refresh notifications
 
-                                        // If it's a booking notification, navigate to bookings tab
-                                        if (notificationType === 'new_booking') {
-                                          try {
-                                            setActiveTab('bookings');
-                                            setIsNotificationDropdownOpen(false);
-                                          } catch (error) {
-                                            console.error('Error navigating to bookings tab:', error);
+                                            // If it's a booking notification, navigate to bookings tab
+                                            if (
+                                              notificationType === "new_booking"
+                                            ) {
+                                              try {
+                                                setActiveTab("bookings");
+                                                setIsNotificationDropdownOpen(
+                                                  false,
+                                                );
+                                              } catch (error) {
+                                                console.error(
+                                                  "Error navigating to bookings tab:",
+                                                  error,
+                                                );
+                                              }
+                                            }
                                           }
                                         }
+                                      } catch (error) {
+                                        console.error(
+                                          "Error marking notification as read:",
+                                          error,
+                                        );
                                       }
-                                    }
-                                  } catch (error) {
-                                    console.error('Error marking notification as read:', error);
-                                  }
-                                }}
-                            >
-                              <div className="flex items-start space-x-4">
-                                <div className="flex-shrink-0 mt-1">
-                                  {notificationType === "new_booking" && (
-                                    <Calendar className="h-5 w-5 text-fac-orange-500" />
-                                  )}
-                                  {notificationType === "new_customer" && (
-                                    <UserPlus className="h-5 w-5 text-blue-500" />
-                                  )}
-                                  {notificationType === "subscription" && (
-                                    <CreditCard className="h-5 w-5 text-green-500" />
-                                  )}
-                                  {notificationType === "approval_request" && (
-                                    <Clock className="h-5 w-5 text-yellow-500" />
-                                  )}
-                                  {notificationType === "status_update" && (
-                                    <CheckCircle className="h-5 w-5 text-blue-500" />
-                                  )}
-                                  {notificationType === "crew_update" && (
-                                    <Wrench className="h-5 w-5 text-purple-500" />
-                                  )}
-                                  {notificationType === "payment_received" && (
-                                    <DollarSign className="h-5 w-5 text-green-500" />
-                                  )}
-                                  {notificationType === "system_alert" && (
-                                    <AlertCircle className="h-5 w-5 text-red-500" />
-                                  )}
-                                  {notificationType === "payment" && (
-                                    <DollarSign className="h-5 w-5 text-green-500" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2 mb-2">
-                                    <h4 className="text-base font-bold text-foreground truncate">
-                                      {notification?.title || 'Notification'}
-                                    </h4>
-                                    {!isRead && (
-                                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {notification?.message || ''}
-                                  </p>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-muted-foreground">
-                                      {notification?.timestamp ? formatDistanceToNow(
-                                        notification.timestamp,
-                                        {
-                                          addSuffix: true,
-                                        },
-                                      ) : 'Unknown time'}
-                                    </span>
-                                    {(notificationType === "new_customer" ||
-                                      notificationType ===
-                                        "approval_request") && (
-                                      <div className="flex gap-2">
-                                        <Button
-                                          size="sm"
-                                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleApproveCustomer(
-                                              notificationId,
-                                            );
-                                          }}
-                                        >
-                                          <UserCheck className="h-3 w-3 mr-1" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="destructive"
-                                          className="text-xs px-2 py-1 h-6"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRejectCustomer(
-                                              notificationId,
-                                            );
-                                          }}
-                                        >
-                                          <UserX className="h-3 w-3 mr-1" />
-                                          Reject
-                                        </Button>
+                                    }}
+                                  >
+                                    <div className="flex items-start space-x-4">
+                                      <div className="flex-shrink-0 mt-1">
+                                        {notificationType === "new_booking" && (
+                                          <Calendar className="h-5 w-5 text-fac-orange-500" />
+                                        )}
+                                        {notificationType ===
+                                          "new_customer" && (
+                                          <UserPlus className="h-5 w-5 text-blue-500" />
+                                        )}
+                                        {notificationType ===
+                                          "subscription" && (
+                                          <CreditCard className="h-5 w-5 text-green-500" />
+                                        )}
+                                        {notificationType ===
+                                          "approval_request" && (
+                                          <Clock className="h-5 w-5 text-yellow-500" />
+                                        )}
+                                        {notificationType ===
+                                          "status_update" && (
+                                          <CheckCircle className="h-5 w-5 text-blue-500" />
+                                        )}
+                                        {notificationType === "crew_update" && (
+                                          <Wrench className="h-5 w-5 text-purple-500" />
+                                        )}
+                                        {notificationType ===
+                                          "payment_received" && (
+                                          <DollarSign className="h-5 w-5 text-green-500" />
+                                        )}
+                                        {notificationType ===
+                                          "system_alert" && (
+                                          <AlertCircle className="h-5 w-5 text-red-500" />
+                                        )}
+                                        {notificationType === "payment" && (
+                                          <DollarSign className="h-5 w-5 text-green-500" />
+                                        )}
                                       </div>
-                                    )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                          <h4 className="text-base font-bold text-foreground truncate">
+                                            {notification?.title ||
+                                              "Notification"}
+                                          </h4>
+                                          {!isRead && (
+                                            <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                                          )}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                          {notification?.message || ""}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs text-muted-foreground">
+                                            {notification?.timestamp
+                                              ? formatDistanceToNow(
+                                                  notification.timestamp,
+                                                  {
+                                                    addSuffix: true,
+                                                  },
+                                                )
+                                              : "Unknown time"}
+                                          </span>
+                                          {(notificationType ===
+                                            "new_customer" ||
+                                            notificationType ===
+                                              "approval_request") && (
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleApproveCustomer(
+                                                    notificationId,
+                                                  );
+                                                }}
+                                              >
+                                                <UserCheck className="h-3 w-3 mr-1" />
+                                                Approve
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                className="text-xs px-2 py-1 h-6"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleRejectCustomer(
+                                                    notificationId,
+                                                  );
+                                                }}
+                                              >
+                                                <UserX className="h-3 w-3 mr-1" />
+                                                Reject
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                                </div>
-                              );
-                            } catch (error) {
-                              console.error('Error rendering notification:', error);
-                              return null;
-                            }
-                          })
-                        )}
-                      </div>
-                    </ScrollArea>
+                                );
+                              } catch (error) {
+                                console.error(
+                                  "Error rendering notification:",
+                                  error,
+                                );
+                                return null;
+                              }
+                            })
+                          )}
+                        </div>
+                      </ScrollArea>
                     </ErrorBoundary>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -913,8 +1126,36 @@ export default function AdminDashboard() {
                   <span className="hidden sm:inline">Receipt Designer</span>
                 </Button>
                 <ThemeToggle />
-                <Button variant="outline" size="sm">
-                  <RefreshCw className="h-4 w-4 mr-1" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    console.log("🔄 Refresh button clicked!");
+                    loadRealStats();
+                    loadRealtimeStats();
+                    loadSystemNotifications();
+
+                    // Force customer loading with debug
+                    console.log(
+                      "🚀 Force loading customers from refresh button...",
+                    );
+                    await loadRealCustomers();
+
+                    await Swal.fire({
+                      title: "Refreshed!",
+                      text: "Dashboard data has been refreshed successfully",
+                      icon: "success",
+                      timer: 2000,
+                      showConfirmButton: false,
+                      position: "top-end",
+                      toast: true,
+                    });
+                  }}
+                  disabled={statsLoading || realtimeLoading}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-1 ${statsLoading ? "animate-spin" : ""}`}
+                  />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
@@ -936,9 +1177,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Customers
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {stats.totalCustomers.toLocaleString()}
-                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalCustomers.toLocaleString()
+                          )}
+                        </div>
                       </div>
                       <div className="bg-fac-orange-500 p-3 rounded-lg">
                         <Users className="h-6 w-6 text-white" />
@@ -957,9 +1202,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Revenue
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {formatCurrency(stats.totalRevenue)}
-                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalRevenue)
+                          )}
+                        </div>
                       </div>
                       <div className="bg-green-500 p-3 rounded-lg">
                         <DollarSign className="h-6 w-6 text-white" />
@@ -978,9 +1227,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Total Washes
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {stats.totalWashes.toLocaleString()}
-                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalWashes.toLocaleString()
+                          )}
+                        </div>
                       </div>
                       <div className="bg-blue-500 p-3 rounded-lg">
                         <Car className="h-6 w-6 text-white" />
@@ -999,9 +1252,13 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Active Subscriptions
                         </p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {stats.activeSubscriptions}
-                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.activeSubscriptions.toLocaleString()
+                          )}
+                        </div>
                       </div>
                       <div className="bg-purple-500 p-3 rounded-lg">
                         <Crown className="h-6 w-6 text-white" />
@@ -1020,8 +1277,12 @@ export default function AdminDashboard() {
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">Location Summary</h3>
-                        <p className="text-sm text-muted-foreground">Crew and customer overview</p>
+                        <h3 className="text-xl font-bold text-foreground">
+                          Location Summary
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Crew and customer overview
+                        </p>
                       </div>
                     </div>
                     <Button
@@ -1036,24 +1297,64 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <div className="text-3xl font-bold text-green-600">18</div>
-                      <div className="text-sm text-muted-foreground">Online Crew</div>
-                      <div className="text-xs text-green-600 mt-1">Real-time tracking</div>
+                      <div className="text-3xl font-bold text-green-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.onlineCrew
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Online Crew
+                      </div>
+                      <div className="text-xs text-green-600 mt-1">
+                        Real-time tracking
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <div className="text-3xl font-bold text-orange-600">12</div>
-                      <div className="text-sm text-muted-foreground">Busy Crew</div>
-                      <div className="text-xs text-orange-600 mt-1">Currently working</div>
+                      <div className="text-3xl font-bold text-orange-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.busyCrew
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Busy Crew
+                      </div>
+                      <div className="text-xs text-orange-600 mt-1">
+                        Currently working
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                      <div className="text-3xl font-bold text-purple-600">47</div>
-                      <div className="text-sm text-muted-foreground">Active Customers</div>
-                      <div className="text-xs text-purple-600 mt-1">Online now</div>
+                      <div className="text-3xl font-bold text-purple-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.activeCustomers
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Active Customers
+                      </div>
+                      <div className="text-xs text-purple-600 mt-1">
+                        Online now
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <div className="text-3xl font-bold text-blue-600">5</div>
-                      <div className="text-sm text-muted-foreground">Active Groups</div>
-                      <div className="text-xs text-blue-600 mt-1">Crew teams</div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        {realtimeLoading ? (
+                          <div className="animate-pulse">-</div>
+                        ) : (
+                          realtimeStats.activeGroups
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Active Groups
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        Crew teams
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-center mt-6">
@@ -1214,6 +1515,8 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "user-management" && <AdminUserManagement />}
+
           {activeTab === "customers" && (
             <Card className="glass border-border shadow-2xl">
               <CardHeader>
@@ -1226,107 +1529,147 @@ export default function AdminDashboard() {
                       Customer Management
                     </span>
                   </div>
-                  <Button
-                    onClick={() => setIsAddCustomerModalOpen(true)}
-                    className="btn-futuristic font-bold w-full sm:w-auto py-3 px-6 rounded-xl"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Customer
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        console.log("🔄 Manual customer reload triggered");
+                        await loadRealCustomers();
+
+                        await Swal.fire({
+                          title: "Customers Reloaded!",
+                          text: "Customer data has been refreshed",
+                          icon: "success",
+                          timer: 2000,
+                          showConfirmButton: false,
+                          position: "top-end",
+                          toast: true,
+                        });
+                      }}
+                      variant="outline"
+                      className="font-bold py-3 px-4 rounded-xl"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Reload
+                    </Button>
+                    <Button
+                      onClick={() => setIsAddCustomerModalOpen(true)}
+                      className="btn-futuristic font-bold py-3 px-6 rounded-xl"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Add Customer
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {customers.map((customer, index) => (
-                    <div
-                      key={customer.id}
-                      className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
-                    >
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-black text-foreground text-lg truncate">
-                                {customer.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground font-medium truncate">
-                                {customer.email} • {customer.phone}
-                              </p>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {customer.carUnit} • {customer.plateNumber}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Badge
-                                className={`${
-                                  customer.membershipType === "VIP Gold"
-                                    ? "bg-gradient-to-r from-yellow-500 to-fac-orange-500"
-                                    : customer.membershipType === "VIP Silver"
-                                      ? "bg-gradient-to-r from-gray-400 to-gray-600"
-                                      : "bg-gradient-to-r from-blue-500 to-cyan-500"
-                                } text-white font-bold px-4 py-2 rounded-full`}
-                              >
-                                {customer.membershipType}
-                              </Badge>
-                              <Badge
-                                className={`${
-                                  customer.approvalStatus === "approved"
-                                    ? "bg-green-500"
-                                    : customer.approvalStatus === "pending"
-                                      ? "bg-yellow-500"
-                                      : customer.approvalStatus === "banned"
-                                        ? "bg-red-500"
-                                        : "bg-gray-500"
-                                } text-white font-bold px-4 py-2 rounded-full`}
-                              >
-                                {customer.approvalStatus.toUpperCase()}
-                              </Badge>
+                  {customersLoading ? (
+                    <div className="text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">
+                        Loading customers...
+                      </p>
+                    </div>
+                  ) : customers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">No customers found</p>
+                      <p className="text-sm">
+                        Start by adding your first customer
+                      </p>
+                    </div>
+                  ) : (
+                    customers.map((customer, index) => (
+                      <div
+                        key={customer.id}
+                        className="glass rounded-2xl p-6 hover-lift transition-all duration-300"
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-black text-foreground text-lg truncate">
+                                  {customer.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground font-medium truncate">
+                                  {customer.email} • {customer.phone}
+                                </p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {customer.carUnit} • {customer.plateNumber}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge
+                                  className={`${
+                                    customer.membershipType === "VIP Gold"
+                                      ? "bg-gradient-to-r from-yellow-500 to-fac-orange-500"
+                                      : customer.membershipType === "VIP Silver"
+                                        ? "bg-gradient-to-r from-gray-400 to-gray-600"
+                                        : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                                  } text-white font-bold px-4 py-2 rounded-full`}
+                                >
+                                  {customer.membershipType}
+                                </Badge>
+                                <Badge
+                                  className={`${
+                                    customer.approvalStatus === "approved"
+                                      ? "bg-green-500"
+                                      : customer.approvalStatus === "pending"
+                                        ? "bg-yellow-500"
+                                        : customer.approvalStatus === "banned"
+                                          ? "bg-red-500"
+                                          : "bg-gray-500"
+                                  } text-white font-bold px-4 py-2 rounded-full`}
+                                >
+                                  {customer.approvalStatus.toUpperCase()}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                          <div className="text-left sm:text-right">
-                            <p className="text-base font-bold text-foreground">
-                              {customer.totalWashes} washes
-                            </p>
-                            <p className="text-base text-green-600 font-bold">
-                              {formatCurrency(customer.totalSpent)}
-                            </p>
-                          </div>
-                          <div className="flex items-center flex-wrap gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              title="Edit Customer"
-                              className="glass hover-lift"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            {customer.approvalStatus === "pending" && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
-                                  title="Approve User"
-                                >
-                                  <UserCheck className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
-                                  title="Reject User"
-                                >
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="text-left sm:text-right">
+                              <p className="text-base font-bold text-foreground">
+                                {customer.totalWashes} washes
+                              </p>
+                              <p className="text-base text-green-600 font-bold">
+                                {formatCurrency(customer.totalSpent)}
+                              </p>
+                            </div>
+                            <div className="flex items-center flex-wrap gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                title="Edit Customer"
+                                className="glass hover-lift"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              {customer.approvalStatus === "pending" && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
+                                    title="Approve User"
+                                  >
+                                    <UserCheck className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
+                                    title="Reject User"
+                                  >
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1350,7 +1693,9 @@ export default function AdminDashboard() {
                           variant="outline"
                           className="text-xs sm:text-sm border-fac-orange-500 text-fac-orange-500 w-fit"
                         >
-                          <span className="hidden sm:inline">Role: {userRole} | Editing: </span>
+                          <span className="hidden sm:inline">
+                            Role: {userRole} | Editing:{" "}
+                          </span>
                           <span className="sm:hidden">{userRole} - </span>
                           {userRole === "superadmin" || userRole === "admin"
                             ? "Enabled"
@@ -1386,9 +1731,7 @@ export default function AdminDashboard() {
                         </span>
                         <Badge
                           className={`${
-                            pkg.active
-                              ? "bg-green-500"
-                              : "bg-gray-400"
+                            pkg.active ? "bg-green-500" : "bg-gray-400"
                           } text-white font-bold px-3 py-1 rounded-full`}
                         >
                           {pkg.active ? "ACTIVE" : "INACTIVE"}
@@ -1565,14 +1908,15 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "images" && (
-            <div>
+            <div className="space-y-6">
+              <AdminImageManager />
               <ImageUploadManager
-                allowedTypes={['before', 'after', 'receipt', 'damage', 'other']}
+                allowedTypes={["before", "after", "receipt", "damage", "other"]}
                 maxFileSize={10}
                 currentUser={{
-                  id: localStorage.getItem('userEmail'),
-                  email: localStorage.getItem('userEmail'),
-                  role: userRole
+                  id: localStorage.getItem("userEmail"),
+                  email: localStorage.getItem("userEmail"),
+                  role: userRole,
                 }}
               />
             </div>
@@ -1582,9 +1926,9 @@ export default function AdminDashboard() {
             <div>
               <NotificationService
                 userRole={userRole}
-                userId={localStorage.getItem('userEmail') || 'unknown'}
+                userId={localStorage.getItem("userEmail") || "unknown"}
                 onNotificationReceived={(notification) => {
-                  console.log('New notification received:', notification);
+                  console.log("New notification received:", notification);
                 }}
               />
             </div>
@@ -1628,13 +1972,19 @@ export default function AdminDashboard() {
 
           {activeTab === "inventory" && (
             <div className="space-y-6">
-              <EnhancedInventoryManagement />
+              <AdminInventory />
             </div>
           )}
 
           {activeTab === "user-management" && (
             <div className="space-y-6">
               <AdminUserManagement />
+            </div>
+          )}
+
+          {activeTab === "database" && (
+            <div className="space-y-6">
+              <NeonDatabaseSetup />
             </div>
           )}
         </div>
