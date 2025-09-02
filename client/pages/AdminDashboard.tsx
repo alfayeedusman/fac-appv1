@@ -77,6 +77,7 @@ import UserRoleManagement from "@/components/UserRoleManagement";
 import SalesDashboard from "@/components/SalesDashboard";
 import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
+import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
 import NeonDatabaseSetup from "@/components/NeonDatabaseSetup";
