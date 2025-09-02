@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import {
   Package,
   Plus,
@@ -36,6 +37,7 @@ import {
   Edit,
   AlertTriangle,
   TrendingDown,
+  TrendingUp,
   BarChart3,
   Eye,
   History,
@@ -44,7 +46,18 @@ import {
   Car,
   Trash2,
   RefreshCw,
-  ShoppingCart
+  ShoppingCart,
+  Filter,
+  Download,
+  Upload,
+  Boxes,
+  DollarSign,
+  Calendar,
+  Star,
+  MapPin,
+  Phone,
+  Mail,
+  Globe
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import { swalHelpers } from "@/utils/swalHelpers";
@@ -108,6 +121,7 @@ export default function AdminInventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   
   // Modal states
   const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -147,12 +161,12 @@ export default function AdminInventory() {
   });
 
   const categories = [
-    { value: "car_care", label: "Car Care Products" },
-    { value: "accessories", label: "Car Accessories" },
-    { value: "tools", label: "Tools & Equipment" },
-    { value: "chemicals", label: "Chemicals" },
-    { value: "parts", label: "Spare Parts" },
-    { value: "services", label: "Service Items" },
+    { value: "car_care", label: "Car Care Products", icon: "🧴", color: "bg-blue-500" },
+    { value: "accessories", label: "Car Accessories", icon: "🔧", color: "bg-purple-500" },
+    { value: "tools", label: "Tools & Equipment", icon: "🛠️", color: "bg-green-500" },
+    { value: "chemicals", label: "Chemicals", icon: "⚗️", color: "bg-yellow-500" },
+    { value: "parts", label: "Spare Parts", icon: "⚙️", color: "bg-red-500" },
+    { value: "services", label: "Service Items", icon: "🚗", color: "bg-orange-500" },
   ];
 
   useEffect(() => {
@@ -254,7 +268,7 @@ export default function AdminInventory() {
   const handleEditItem = async (item: InventoryItem) => {
     const formData = await swalHelpers.showInventoryForm('Edit Product', [
       { id: 'name', label: 'Product Name', type: 'text', value: item.name, required: true },
-      { id: 'category', label: 'Category', type: 'select', value: item.category, options: categories, required: true },
+      { id: 'category', label: 'Category', type: 'select', value: item.category, options: categories.map(c => ({ value: c.value, label: c.label })), required: true },
       { id: 'description', label: 'Description', type: 'textarea', value: item.description },
       { id: 'minStockLevel', label: 'Minimum Stock Level', type: 'number', value: item.minStockLevel, required: true },
       { id: 'maxStockLevel', label: 'Maximum Stock Level', type: 'number', value: item.maxStockLevel, required: true },
@@ -414,18 +428,123 @@ export default function AdminInventory() {
 
     switch (status) {
       case "out-of-stock":
-        return <Badge variant="destructive">Out of Stock</Badge>;
+        return <Badge variant="destructive" className="animate-pulse">Out of Stock</Badge>;
       case "low-stock":
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Low Stock</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">Low Stock</Badge>;
       default:
-        return <Badge variant="default" className="bg-green-100 text-green-800">In Stock</Badge>;
+        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-300">In Stock</Badge>;
     }
+  };
+
+  const getStockProgress = (item: InventoryItem) => {
+    const percentage = Math.min((item.currentStock / item.maxStockLevel) * 100, 100);
+    const status = getStockStatus(item);
+    
+    let colorClass = "bg-green-500";
+    if (status === "low-stock") colorClass = "bg-yellow-500";
+    if (status === "out-of-stock") colorClass = "bg-red-500";
+    
+    return { percentage, colorClass };
   };
 
   const formatCurrency = (amount: number) => `₱${amount.toLocaleString()}`;
 
+  const getCategoryInfo = (categoryValue: string) => {
+    return categories.find(c => c.value === categoryValue) || categories[0];
+  };
+
+  const renderProductCard = (item: InventoryItem) => {
+    const categoryInfo = getCategoryInfo(item.category);
+    const stockProgress = getStockProgress(item);
+    
+    return (
+      <Card key={item.id} className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={`w-12 h-12 rounded-lg ${categoryInfo.color} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
+                {categoryInfo.icon}
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {item.name}
+                </CardTitle>
+                <p className="text-sm text-gray-500 capitalize">{categoryInfo.label}</p>
+              </div>
+            </div>
+            {getStockBadge(item)}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {item.description && (
+            <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+          )}
+          
+          {/* Stock Progress */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Stock Level</span>
+              <span className="font-medium">{item.currentStock} / {item.maxStockLevel}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-300 ${stockProgress.colorClass}`}
+                style={{ width: `${stockProgress.percentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Min: {item.minStockLevel}</span>
+              <span>Max: {item.maxStockLevel}</span>
+            </div>
+          </div>
+
+          {/* Price and Supplier */}
+          <div className="flex justify-between items-center pt-2 border-t">
+            <div>
+              {item.unitPrice && (
+                <p className="text-lg font-bold text-green-600">{formatCurrency(item.unitPrice)}</p>
+              )}
+              {item.supplier && (
+                <p className="text-xs text-gray-500">by {item.supplier}</p>
+              )}
+            </div>
+            <div className="flex space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStockAdjustment(item)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Adjust Stock"
+              >
+                <ShoppingCart className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEditItem(item)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Edit Product"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteItem(item)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
+                title="Delete Product"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
       <StickyHeader
         showBack={true}
         title="Inventory Management"
@@ -451,258 +570,384 @@ export default function AdminInventory() {
       <div className="flex-1 lg:ml-64 min-h-screen">
         <div className="p-6 mt-16">
           <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="services">Car Wash Services</TabsTrigger>
-              <TabsTrigger value="movements">Stock Movements</TabsTrigger>
-              <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm">
+              <TabsTrigger value="products" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Package className="h-4 w-4 mr-2" />
+                Products
+              </TabsTrigger>
+              <TabsTrigger value="services" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                <Car className="h-4 w-4 mr-2" />
+                Services
+              </TabsTrigger>
+              <TabsTrigger value="movements" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+                <History className="h-4 w-4 mr-2" />
+                Movements
+              </TabsTrigger>
+              <TabsTrigger value="suppliers" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                <Building className="h-4 w-4 mr-2" />
+                Suppliers
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </TabsTrigger>
             </TabsList>
 
             {/* Products Tab */}
             <TabsContent value="products" className="space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-8 w-8 text-blue-500" />
+              {/* Enhanced Stats Cards with Gradients */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-2xl font-bold">{inventoryItems.length}</p>
-                        <p className="text-sm text-muted-foreground">Total Products</p>
+                        <p className="text-blue-100 text-sm font-medium">Total Products</p>
+                        <p className="text-3xl font-bold">{inventoryItems.length}</p>
+                        <p className="text-blue-100 text-xs mt-1">Active inventory items</p>
+                      </div>
+                      <div className="bg-white bg-opacity-20 rounded-full p-3">
+                        <Package className="h-8 w-8" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <AlertTriangle className="h-8 w-8 text-yellow-500" />
+                
+                <Card className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-2xl font-bold">{lowStockItems.length}</p>
-                        <p className="text-sm text-muted-foreground">Low Stock</p>
+                        <p className="text-yellow-100 text-sm font-medium">Low Stock</p>
+                        <p className="text-3xl font-bold">{lowStockItems.length}</p>
+                        <p className="text-yellow-100 text-xs mt-1">Needs attention</p>
+                      </div>
+                      <div className="bg-white bg-opacity-20 rounded-full p-3">
+                        <AlertTriangle className="h-8 w-8" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <TrendingDown className="h-8 w-8 text-red-500" />
+                
+                <Card className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-2xl font-bold">
+                        <p className="text-red-100 text-sm font-medium">Out of Stock</p>
+                        <p className="text-3xl font-bold">
                           {inventoryItems.filter(item => item.currentStock === 0).length}
                         </p>
-                        <p className="text-sm text-muted-foreground">Out of Stock</p>
+                        <p className="text-red-100 text-xs mt-1">Urgent restock</p>
+                      </div>
+                      <div className="bg-white bg-opacity-20 rounded-full p-3">
+                        <TrendingDown className="h-8 w-8" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <BarChart3 className="h-8 w-8 text-green-500" />
+                
+                <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-2xl font-bold">
+                        <p className="text-green-100 text-sm font-medium">Total Value</p>
+                        <p className="text-3xl font-bold">
                           {formatCurrency(
                             inventoryItems.reduce((sum, item) => 
                               sum + (item.currentStock * (item.unitPrice || 0)), 0
                             )
                           )}
                         </p>
-                        <p className="text-sm text-muted-foreground">Total Value</p>
+                        <p className="text-green-100 text-xs mt-1">Inventory worth</p>
+                      </div>
+                      <div className="bg-white bg-opacity-20 rounded-full p-3">
+                        <DollarSign className="h-8 w-8" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={loadData} variant="outline" disabled={loading}>
-                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-                <Button onClick={() => setShowAddItemModal(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </Button>
-              </div>
+              {/* Enhanced Controls */}
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                    <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                      <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Search products, categories, suppliers..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-48 border-gray-300">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Filter by category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.value} value={category.value}>
+                              <div className="flex items-center">
+                                <span className="mr-2">{category.icon}</span>
+                                {category.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              {/* Products Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Products Inventory</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Current Stock</TableHead>
-                        <TableHead>Unit Price</TableHead>
-                        <TableHead>Supplier</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredItems.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{item.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {item.description}
-                              </p>
-                              {item.barcode && (
-                                <p className="text-xs font-mono text-muted-foreground">
-                                  {item.barcode}
-                                </p>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="capitalize">
-                            {item.category.replace("_", " ")}
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{item.currentStock}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Min: {item.minStockLevel}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {item.unitPrice ? formatCurrency(item.unitPrice) : "—"}
-                          </TableCell>
-                          <TableCell>{item.supplier || "—"}</TableCell>
-                          <TableCell>{getStockBadge(item)}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleStockAdjustment(item)}
-                                title="Adjust Stock"
-                              >
-                                <ShoppingCart className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditItem(item)}
-                                title="Edit Product"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteItem(item)}
-                                title="Delete Product"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={loadData} disabled={loading}>
+                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
+                      
+                      <Button variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => setShowAddItemModal(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Product
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* View Mode Toggle */}
+                  <div className="flex justify-end mt-4">
+                    <div className="bg-gray-100 rounded-lg p-1">
+                      <Button
+                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        className="text-xs"
+                      >
+                        <Boxes className="h-3 w-3 mr-1" />
+                        Grid
+                      </Button>
+                      <Button
+                        variant={viewMode === "table" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("table")}
+                        className="text-xs"
+                      >
+                        <BarChart3 className="h-3 w-3 mr-1" />
+                        Table
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+
+              {/* Products Display */}
+              {viewMode === "grid" ? (
+                // Grid View
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredItems.map(renderProductCard)}
+                </div>
+              ) : (
+                // Enhanced Table View
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="bg-gray-50 border-b">
+                    <CardTitle className="text-lg font-semibold text-gray-900">Products Inventory</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-semibold">Product</TableHead>
+                            <TableHead className="font-semibold">Category</TableHead>
+                            <TableHead className="font-semibold">Stock Level</TableHead>
+                            <TableHead className="font-semibold">Price</TableHead>
+                            <TableHead className="font-semibold">Supplier</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold text-center">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredItems.map((item) => {
+                            const categoryInfo = getCategoryInfo(item.category);
+                            const stockProgress = getStockProgress(item);
+                            
+                            return (
+                              <TableRow key={item.id} className="hover:bg-gray-50 transition-colors">
+                                <TableCell>
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`w-10 h-10 rounded-lg ${categoryInfo.color} flex items-center justify-center text-white text-sm font-bold shadow-sm`}>
+                                      {categoryInfo.icon}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900">{item.name}</p>
+                                      <p className="text-sm text-gray-500">{item.description}</p>
+                                      {item.barcode && (
+                                        <p className="text-xs font-mono text-gray-400">{item.barcode}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="capitalize">
+                                    {categoryInfo.label}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="font-medium">{item.currentStock}</span>
+                                      <span className="text-gray-500">/ {item.maxStockLevel}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                      <div 
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${stockProgress.colorClass}`}
+                                        style={{ width: `${stockProgress.percentage}%` }}
+                                      />
+                                    </div>
+                                    <p className="text-xs text-gray-500">Min: {item.minStockLevel}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {item.unitPrice ? (
+                                    <span className="font-medium text-green-600">
+                                      {formatCurrency(item.unitPrice)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <span className="text-sm">{item.supplier || "—"}</span>
+                                </TableCell>
+                                <TableCell>{getStockBadge(item)}</TableCell>
+                                <TableCell>
+                                  <div className="flex justify-center space-x-1">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleStockAdjustment(item)}
+                                      title="Adjust Stock"
+                                      className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+                                    >
+                                      <ShoppingCart className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditItem(item)}
+                                      title="Edit Product"
+                                      className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDeleteItem(item)}
+                                      title="Delete Product"
+                                      className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Car Wash Services Tab */}
             <TabsContent value="services" className="space-y-6">
-              <CarWashServiceManager />
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                  <CardTitle className="flex items-center">
+                    <Car className="h-6 w-6 mr-3" />
+                    Car Wash Services Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <CarWashServiceManager />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Stock Movements Tab */}
             <TabsContent value="movements" className="space-y-6">
-              <Card>
-                <CardHeader>
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
                   <CardTitle className="flex items-center">
-                    <History className="h-5 w-5 mr-2" />
+                    <History className="h-6 w-6 mr-3" />
                     Recent Stock Movements
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Item</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead>Reason</TableHead>
-                        <TableHead>Performed By</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {stockMovements.slice(0, 20).map((movement) => {
-                        const item = inventoryItems.find(i => i.id === movement.itemId);
-                        return (
-                          <TableRow key={movement.id}>
-                            <TableCell>
-                              {item ? item.name : movement.itemId}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  movement.type === "in"
-                                    ? "default"
-                                    : movement.type === "out"
-                                      ? "secondary"
-                                      : "outline"
-                                }
-                                className={
-                                  movement.type === "in"
-                                    ? "bg-green-100 text-green-800"
-                                    : movement.type === "out"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-blue-100 text-blue-800"
-                                }
-                              >
-                                {movement.type.toUpperCase()}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{movement.quantity}</TableCell>
-                            <TableCell>{movement.reason}</TableCell>
-                            <TableCell>{movement.performedBy}</TableCell>
-                            <TableCell>
-                              {new Date(movement.createdAt).toLocaleDateString()}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                <CardContent className="p-6">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="font-semibold">Item</TableHead>
+                          <TableHead className="font-semibold">Type</TableHead>
+                          <TableHead className="font-semibold">Quantity</TableHead>
+                          <TableHead className="font-semibold">Reason</TableHead>
+                          <TableHead className="font-semibold">Performed By</TableHead>
+                          <TableHead className="font-semibold">Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {stockMovements.slice(0, 20).map((movement) => {
+                          const item = inventoryItems.find(i => i.id === movement.itemId);
+                          return (
+                            <TableRow key={movement.id} className="hover:bg-gray-50">
+                              <TableCell>
+                                <div className="font-medium">{item ? item.name : movement.itemId}</div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={
+                                    movement.type === "in"
+                                      ? "bg-green-100 text-green-800 border-green-300"
+                                      : movement.type === "out"
+                                        ? "bg-red-100 text-red-800 border-red-300"
+                                        : "bg-blue-100 text-blue-800 border-blue-300"
+                                  }
+                                >
+                                  <div className="flex items-center">
+                                    {movement.type === "in" && <TrendingUp className="h-3 w-3 mr-1" />}
+                                    {movement.type === "out" && <TrendingDown className="h-3 w-3 mr-1" />}
+                                    {movement.type === "adjustment" && <RefreshCw className="h-3 w-3 mr-1" />}
+                                    {movement.type.toUpperCase()}
+                                  </div>
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-medium">{movement.quantity}</TableCell>
+                              <TableCell>{movement.reason}</TableCell>
+                              <TableCell>{movement.performedBy}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <Calendar className="h-3 w-3 mr-1" />
+                                  {new Date(movement.createdAt).toLocaleDateString()}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -710,48 +955,75 @@ export default function AdminInventory() {
             {/* Suppliers Tab */}
             <TabsContent value="suppliers" className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Suppliers</h2>
-                <Button onClick={() => setShowAddSupplierModal(true)}>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Suppliers Management</h2>
+                  <p className="text-gray-600">Manage your supplier relationships and contacts</p>
+                </div>
+                <Button 
+                  onClick={() => setShowAddSupplierModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Supplier
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {suppliers.map((supplier) => (
-                  <Card key={supplier.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Building className="h-5 w-5 mr-2" />
-                          {supplier.name}
-                        </span>
+                  <Card key={supplier.id} className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center text-white shadow-lg">
+                            <Building className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg font-semibold text-gray-900">
+                              {supplier.name}
+                            </CardTitle>
+                            <p className="text-sm text-gray-500">{supplier.contactPerson}</p>
+                          </div>
+                        </div>
                         <Badge variant={supplier.status === "active" ? "default" : "secondary"}>
                           {supplier.status}
                         </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-sm">
-                          <strong>Contact:</strong> {supplier.contactPerson}
-                        </p>
-                        {supplier.email && (
-                          <p className="text-sm">
-                            <strong>Email:</strong> {supplier.email}
-                          </p>
-                        )}
-                        {supplier.phone && (
-                          <p className="text-sm">
-                            <strong>Phone:</strong> {supplier.phone}
-                          </p>
-                        )}
-                        {supplier.paymentTerms && (
-                          <p className="text-sm">
-                            <strong>Terms:</strong> {supplier.paymentTerms}
-                          </p>
-                        )}
                       </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {supplier.email && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                          {supplier.email}
+                        </div>
+                      )}
+                      {supplier.phone && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                          {supplier.phone}
+                        </div>
+                      )}
+                      {supplier.website && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Globe className="h-4 w-4 mr-2 text-gray-400" />
+                          <a href={supplier.website} target="_blank" rel="noopener noreferrer" 
+                             className="text-blue-600 hover:underline">
+                            {supplier.website}
+                          </a>
+                        </div>
+                      )}
+                      {supplier.address && (
+                        <div className="flex items-start text-sm text-gray-600">
+                          <MapPin className="h-4 w-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
+                          <span className="line-clamp-2">{supplier.address}</span>
+                        </div>
+                      )}
+                      {supplier.paymentTerms && (
+                        <div className="pt-2 border-t">
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700">Payment Terms:</span> {supplier.paymentTerms}
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -760,72 +1032,98 @@ export default function AdminInventory() {
 
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Low Stock Alert */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-yellow-600">
+                <Card className="border-l-4 border-l-yellow-500">
+                  <CardHeader className="bg-yellow-50">
+                    <CardTitle className="flex items-center text-yellow-800">
                       <AlertTriangle className="h-5 w-5 mr-2" />
                       Low Stock Alert
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     {lowStockItems.length === 0 ? (
-                      <p className="text-muted-foreground">
-                        All products are well stocked
-                      </p>
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
+                          <Package className="h-8 w-8 text-green-600" />
+                        </div>
+                        <p className="text-gray-600 font-medium">All products are well stocked!</p>
+                        <p className="text-gray-500 text-sm">No items require immediate attention</p>
+                      </div>
                     ) : (
-                      <div className="space-y-2">
-                        {lowStockItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex justify-between items-center p-2 bg-yellow-50 rounded"
-                          >
-                            <div>
-                              <p className="font-medium">{item.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Category: {item.category.replace("_", " ")}
-                              </p>
+                      <div className="space-y-3">
+                        {lowStockItems.map((item) => {
+                          const categoryInfo = getCategoryInfo(item.category);
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-8 h-8 rounded ${categoryInfo.color} flex items-center justify-center text-white text-xs`}>
+                                  {categoryInfo.icon}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900">{item.name}</p>
+                                  <p className="text-sm text-gray-600">
+                                    {categoryInfo.label}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="bg-yellow-200 text-yellow-800">
+                                {item.currentStock} left
+                              </Badge>
                             </div>
-                            <Badge variant="secondary">
-                              {item.currentStock} left
-                            </Badge>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Out of Stock */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-red-600">
+                <Card className="border-l-4 border-l-red-500">
+                  <CardHeader className="bg-red-50">
+                    <CardTitle className="flex items-center text-red-800">
                       <TrendingDown className="h-5 w-5 mr-2" />
                       Out of Stock
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     {inventoryItems.filter(item => item.currentStock === 0).length === 0 ? (
-                      <p className="text-muted-foreground">
-                        No products out of stock
-                      </p>
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
+                          <Star className="h-8 w-8 text-green-600" />
+                        </div>
+                        <p className="text-gray-600 font-medium">No products out of stock</p>
+                        <p className="text-gray-500 text-sm">Excellent inventory management!</p>
+                      </div>
                     ) : (
-                      <div className="space-y-2">
-                        {inventoryItems.filter(item => item.currentStock === 0).map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex justify-between items-center p-2 bg-red-50 rounded"
-                          >
-                            <div>
-                              <p className="font-medium">{item.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Category: {item.category.replace("_", " ")}
-                              </p>
+                      <div className="space-y-3">
+                        {inventoryItems.filter(item => item.currentStock === 0).map((item) => {
+                          const categoryInfo = getCategoryInfo(item.category);
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-8 h-8 rounded ${categoryInfo.color} flex items-center justify-center text-white text-xs`}>
+                                  {categoryInfo.icon}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900">{item.name}</p>
+                                  <p className="text-sm text-gray-600">
+                                    {categoryInfo.label}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge variant="destructive" className="animate-pulse">
+                                Out of Stock
+                              </Badge>
                             </div>
-                            <Badge variant="destructive">Out of Stock</Badge>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </CardContent>
@@ -835,40 +1133,48 @@ export default function AdminInventory() {
           </Tabs>
         </div>
 
-        {/* Add Item Modal */}
+        {/* Enhanced Add Item Modal */}
         <Dialog open={showAddItemModal} onOpenChange={setShowAddItemModal}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
+              <DialogTitle className="text-xl font-semibold text-gray-900">Add New Product</DialogTitle>
               <DialogDescription>
-                Add a new product to your inventory
+                Add a new product to your inventory with detailed information
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="itemName">Product Name *</Label>
+                  <Label htmlFor="itemName" className="text-sm font-medium text-gray-700">
+                    Product Name *
+                  </Label>
                   <Input
                     id="itemName"
-                    placeholder="Product name"
+                    placeholder="Enter product name"
                     value={newItem.name}
                     onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                    Category *
+                  </Label>
                   <Select
                     value={newItem.category}
                     onValueChange={(value) => setNewItem({ ...newItem, category: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category.value} value={category.value}>
-                          {category.label}
+                          <div className="flex items-center">
+                            <span className="mr-2">{category.icon}</span>
+                            {category.label}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -877,18 +1183,24 @@ export default function AdminInventory() {
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                  Description
+                </Label>
                 <Textarea
                   id="description"
-                  placeholder="Product description"
+                  placeholder="Enter product description"
                   value={newItem.description}
                   onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                  className="mt-1"
+                  rows={3}
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="currentStock">Initial Stock</Label>
+                  <Label htmlFor="currentStock" className="text-sm font-medium text-gray-700">
+                    Initial Stock
+                  </Label>
                   <Input
                     id="currentStock"
                     type="number"
@@ -900,10 +1212,13 @@ export default function AdminInventory() {
                         currentStock: parseInt(e.target.value) || 0,
                       })
                     }
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="minStock">Min Stock</Label>
+                  <Label htmlFor="minStock" className="text-sm font-medium text-gray-700">
+                    Min Stock Level
+                  </Label>
                   <Input
                     id="minStock"
                     type="number"
@@ -915,10 +1230,13 @@ export default function AdminInventory() {
                         minStockLevel: parseInt(e.target.value) || 0,
                       })
                     }
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="maxStock">Max Stock</Label>
+                  <Label htmlFor="maxStock" className="text-sm font-medium text-gray-700">
+                    Max Stock Level
+                  </Label>
                   <Input
                     id="maxStock"
                     type="number"
@@ -930,13 +1248,16 @@ export default function AdminInventory() {
                         maxStockLevel: parseInt(e.target.value) || 0,
                       })
                     }
+                    className="mt-1"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="unitPrice">Unit Price (₱)</Label>
+                  <Label htmlFor="unitPrice" className="text-sm font-medium text-gray-700">
+                    Unit Price (₱)
+                  </Label>
                   <Input
                     id="unitPrice"
                     type="number"
@@ -949,141 +1270,181 @@ export default function AdminInventory() {
                         unitPrice: parseFloat(e.target.value) || 0,
                       })
                     }
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="supplier">Supplier</Label>
+                  <Label htmlFor="supplier" className="text-sm font-medium text-gray-700">
+                    Supplier
+                  </Label>
                   <Input
                     id="supplier"
                     placeholder="Supplier name"
                     value={newItem.supplier}
                     onChange={(e) => setNewItem({ ...newItem, supplier: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="barcode">Barcode</Label>
+                <Label htmlFor="barcode" className="text-sm font-medium text-gray-700">
+                  Barcode
+                </Label>
                 <Input
                   id="barcode"
                   placeholder="Product barcode"
                   value={newItem.barcode}
                   onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
+                  className="mt-1"
                 />
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex gap-3">
               <Button variant="outline" onClick={() => setShowAddItemModal(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddItem}>Add Product</Button>
+              <Button onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Add Supplier Modal */}
+        {/* Enhanced Add Supplier Modal */}
         <Dialog open={showAddSupplierModal} onOpenChange={setShowAddSupplierModal}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Supplier</DialogTitle>
+              <DialogTitle className="text-xl font-semibold text-gray-900">Add New Supplier</DialogTitle>
               <DialogDescription>
-                Add a new supplier to your database
+                Add a new supplier to your vendor database
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="supplierName">Supplier Name *</Label>
-                <Input
-                  id="supplierName"
-                  placeholder="Supplier name"
-                  value={newSupplier.name}
-                  onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="contactPerson">Contact Person *</Label>
-                <Input
-                  id="contactPerson"
-                  placeholder="Contact person"
-                  value={newSupplier.contactPerson}
-                  onChange={(e) =>
-                    setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="supplierEmail">Email</Label>
+                  <Label htmlFor="supplierName" className="text-sm font-medium text-gray-700">
+                    Supplier Name *
+                  </Label>
+                  <Input
+                    id="supplierName"
+                    placeholder="Company name"
+                    value={newSupplier.name}
+                    onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contactPerson" className="text-sm font-medium text-gray-700">
+                    Contact Person *
+                  </Label>
+                  <Input
+                    id="contactPerson"
+                    placeholder="Primary contact name"
+                    value={newSupplier.contactPerson}
+                    onChange={(e) =>
+                      setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="supplierEmail" className="text-sm font-medium text-gray-700">
+                    Email Address
+                  </Label>
                   <Input
                     id="supplierEmail"
                     type="email"
                     placeholder="email@example.com"
                     value={newSupplier.email}
                     onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="supplierPhone">Phone</Label>
+                  <Label htmlFor="supplierPhone" className="text-sm font-medium text-gray-700">
+                    Phone Number
+                  </Label>
                   <Input
                     id="supplierPhone"
                     placeholder="+63 xxx xxx xxxx"
                     value={newSupplier.phone}
                     onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="supplierAddress">Address</Label>
+                <Label htmlFor="supplierAddress" className="text-sm font-medium text-gray-700">
+                  Address
+                </Label>
                 <Textarea
                   id="supplierAddress"
-                  placeholder="Complete address"
+                  placeholder="Complete business address"
                   value={newSupplier.address}
                   onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
+                  className="mt-1"
+                  rows={3}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="website">Website</Label>
+                  <Label htmlFor="website" className="text-sm font-medium text-gray-700">
+                    Website
+                  </Label>
                   <Input
                     id="website"
                     placeholder="https://example.com"
                     value={newSupplier.website}
                     onChange={(e) => setNewSupplier({ ...newSupplier, website: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="paymentTerms">Payment Terms</Label>
+                  <Label htmlFor="paymentTerms" className="text-sm font-medium text-gray-700">
+                    Payment Terms
+                  </Label>
                   <Input
                     id="paymentTerms"
                     placeholder="Net 30"
                     value={newSupplier.paymentTerms}
                     onChange={(e) => setNewSupplier({ ...newSupplier, paymentTerms: e.target.value })}
+                    className="mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
+                  Additional Notes
+                </Label>
                 <Textarea
                   id="notes"
-                  placeholder="Additional notes"
+                  placeholder="Any additional information about this supplier"
                   value={newSupplier.notes}
                   onChange={(e) => setNewSupplier({ ...newSupplier, notes: e.target.value })}
+                  className="mt-1"
+                  rows={2}
                 />
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex gap-3">
               <Button variant="outline" onClick={() => setShowAddSupplierModal(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddSupplier}>Add Supplier</Button>
+              <Button onClick={handleAddSupplier} className="bg-green-600 hover:bg-green-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Supplier
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
