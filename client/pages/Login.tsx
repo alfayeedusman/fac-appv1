@@ -127,15 +127,31 @@ export default function Login() {
             navigate("/welcome");
           }
         }, 1000);
+      } else {
+        // Login failed with specific error message
+        toast({
+          title: "Login Failed",
+          description: result.error || "Invalid email or password. Please check your credentials and try again.",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast({
-        title: "Login Failed",
-        description:
-          "Invalid email or password. Please check your credentials and try again.",
-        variant: "destructive",
-      });
+
+      // Check if it's a network/connection error
+      if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('connection')) {
+        toast({
+          title: "Connection Error",
+          description: "Unable to connect to the server. Please check your internet connection and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
 
     setIsLoading(false);
