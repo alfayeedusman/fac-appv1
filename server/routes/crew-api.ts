@@ -329,3 +329,22 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Seed crew data (for development/testing)
+export const seedCrew: RequestHandler = async (req, res) => {
+  try {
+    await seedCrewData();
+
+    res.json({
+      success: true,
+      message: "Crew data seeded successfully"
+    });
+
+  } catch (error) {
+    console.error("Error seeding crew data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to seed crew data"
+    });
+  }
+};
