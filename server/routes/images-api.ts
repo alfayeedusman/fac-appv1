@@ -248,44 +248,44 @@ router.get('/', async (req, res) => {
     const conditions = [];
 
     if (category) {
-      conditions.push(eq(images.category, category as string));
+      conditions.push(eq(schema.images.category, category as string));
     }
 
     if (associatedWith) {
-      conditions.push(eq(images.associatedWith, associatedWith as string));
+      conditions.push(eq(schema.images.associatedWith, associatedWith as string));
     }
 
     if (associatedId) {
-      conditions.push(eq(images.associatedId, associatedId as string));
+      conditions.push(eq(schema.images.associatedId, associatedId as string));
     }
 
     if (uploadedBy) {
-      conditions.push(eq(images.uploadedBy, uploadedBy as string));
+      conditions.push(eq(schema.images.uploadedBy, uploadedBy as string));
     }
 
     if (isActive !== 'all') {
-      conditions.push(eq(images.isActive, isActive === 'true'));
+      conditions.push(eq(schema.images.isActive, isActive === 'true'));
     }
 
     if (search) {
       conditions.push(
-        like(images.originalName, `%${search}%`)
+        like(schema.images.originalName, `%${search}%`)
       );
     }
 
     // Get images
-    const imageList = await db
+    const imageList = await neonDbService.db
       .select()
-      .from(images)
+      .from(schema.images)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(images.createdAt))
+      .orderBy(desc(schema.images.createdAt))
       .limit(limitNum)
       .offset(offset);
 
     // Get total count
-    const totalResult = await db
+    const totalResult = await neonDbService.db
       .select({ count: count() })
-      .from(images)
+      .from(schema.images)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
     const total = totalResult[0]?.count || 0;
@@ -318,10 +318,10 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     const { incrementView = 'true' } = req.query;
 
-    const imageList = await db
+    const imageList = await neonDbService.db
       .select()
-      .from(images)
-      .where(eq(images.id, id))
+      .from(schema.images)
+      .where(eq(schema.images.id, id))
       .limit(1);
 
     if (imageList.length === 0) {
@@ -335,13 +335,13 @@ router.get('/:id', async (req, res) => {
 
     // Increment view count if requested
     if (incrementView === 'true') {
-      await db
+      await neonDbService.db
         .update(images)
         .set({
           viewCount: (image.viewCount || 0) + 1,
           updatedAt: new Date()
         })
-        .where(eq(images.id, id));
+        .where(eq(schema.images.id, id));
     }
 
     res.json({
@@ -384,10 +384,10 @@ router.put('/:id', async (req, res) => {
     if (isActive !== undefined) updateData.isActive = isActive;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
-    const result = await db
+    const result = await neonDbService.db
       .update(images)
       .set(updateData)
-      .where(eq(images.id, id));
+      .where(eq(schema.images.id, id));
 
     res.json({
       success: true,
@@ -412,10 +412,10 @@ router.delete('/:id', async (req, res) => {
     const { deleteFile = 'true' } = req.query;
 
     // Get image info first
-    const imageList = await db
+    const imageList = await neonDbService.db
       .select()
-      .from(images)
-      .where(eq(images.id, id))
+      .from(schema.images)
+      .where(eq(schema.images.id, id))
       .limit(1);
 
     if (imageList.length === 0) {
@@ -428,7 +428,7 @@ router.delete('/:id', async (req, res) => {
     const image = imageList[0];
 
     // Delete from database
-    await db.delete(images).where(eq(images.id, id));
+    await neonDbService.db.delete(images).where(eq(schema.images.id, id));
 
     // Delete physical file if requested and it's local storage
     if (deleteFile === 'true' && image.storageType === 'local') {
@@ -487,7 +487,7 @@ router.post('/collections', async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await db.insert(imageCollections).values(collectionData);
+    await neonDbService.db.insert(imageCollections).values(collectionData);
 
     res.json({
       success: true,
@@ -514,22 +514,22 @@ router.get('/collections', async (req, res) => {
     const conditions = [];
 
     if (category) {
-      conditions.push(eq(imageCollections.category, category as string));
+      conditions.push(eq(schema.imageCollections.category, category as string));
     }
 
     if (isPublic !== undefined) {
-      conditions.push(eq(imageCollections.isPublic, isPublic === 'true'));
+      conditions.push(eq(schema.imageCollections.isPublic, isPublic === 'true'));
     }
 
     if (createdBy) {
-      conditions.push(eq(imageCollections.createdBy, createdBy as string));
+      conditions.push(eq(schema.imageCollections.createdBy, createdBy as string));
     }
 
-    const collections = await db
+    const collections = await neonDbService.db
       .select()
-      .from(imageCollections)
+      .from(schema.imageCollections)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(imageCollections.sortOrder, desc(imageCollections.createdAt));
+      .orderBy(schema.imageCollections.sortOrder, desc(schema.imageCollections.createdAt));
 
     res.json({
       success: true,
@@ -569,7 +569,7 @@ router.post('/collections/:collectionId/images', async (req, res) => {
       addedAt: new Date(),
     }));
 
-    await db.insert(imageCollectionItems).values(collectionItems);
+    await neonDbService.db.insert(imageCollectionItems).values(collectionItems);
 
     res.json({
       success: true,
@@ -592,10 +592,10 @@ router.get('/collections/:collectionId/images', async (req, res) => {
   try {
     const { collectionId } = req.params;
 
-    const collectionImages = await db
+    const collectionImages = await neonDbService.db
       .select({
         id: imageCollectionItems.id,
-        sortOrder: imageCollectionItems.sortOrder,
+        sortOrder: schema.imageCollectionItems.sortOrder,
         caption: imageCollectionItems.caption,
         addedAt: imageCollectionItems.addedAt,
         imageId: images.id,
@@ -609,10 +609,10 @@ router.get('/collections/:collectionId/images', async (req, res) => {
         description: images.description,
         createdAt: images.createdAt,
       })
-      .from(imageCollectionItems)
-      .innerJoin(images, eq(imageCollectionItems.imageId, images.id))
-      .where(eq(imageCollectionItems.collectionId, collectionId))
-      .orderBy(imageCollectionItems.sortOrder);
+      .from(schema.imageCollectionItems)
+      .innerJoin(images, eq(schema.imageCollectionItems.imageId, images.id))
+      .where(eq(schema.imageCollectionItems.collectionId, collectionId))
+      .orderBy(schema.imageCollectionItems.sortOrder);
 
     res.json({
       success: true,
@@ -634,28 +634,28 @@ router.get('/collections/:collectionId/images', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     // Get total images count
-    const totalImagesResult = await db
+    const totalImagesResult = await neonDbService.db
       .select({ count: count() })
-      .from(images)
-      .where(eq(images.isActive, true));
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true));
 
     // Get images by category
-    const categoryStats = await db
+    const categoryStats = await neonDbService.db
       .select({
         category: images.category,
         count: count(),
       })
-      .from(images)
-      .where(eq(images.isActive, true))
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true))
       .groupBy(images.category);
 
     // Get storage usage
-    const storageResult = await db
+    const storageResult = await neonDbService.db
       .select({
         totalSize: images.size,
       })
-      .from(images)
-      .where(eq(images.isActive, true));
+      .from(schema.images)
+      .where(eq(schema.images.isActive, true));
 
     const totalStorage = storageResult.reduce((sum, item) => sum + (item.totalSize || 0), 0);
 
