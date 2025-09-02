@@ -76,68 +76,51 @@ export default function AdminCrewManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(null);
 
-  // Mock data generation
-  const generateMockStats = (): CrewStats => ({
-    totalCrew: 25,
-    onlineCrew: 18,
-    offlineCrew: 7,
-    busyCrew: 12,
-    availableCrew: 6,
-    totalGroups: 5,
-    activeGroups: 4,
-    unassignedCrew: 5,
-    avgRating: 4.3,
-    todayJobs: 47,
-    todayRevenue: 125000
-  });
+  // API data fetching functions
+  const fetchCrewStats = async (): Promise<CrewStats> => {
+    try {
+      const response = await fetch('/api/neon/crew/stats');
+      const data = await response.json();
 
-  const generateMockActivity = (): RecentActivity[] => [
-    {
-      id: '1',
-      type: 'status_change',
-      crewId: 'crew-1',
-      crewName: 'John Santos',
-      message: 'Changed status from Available to Busy',
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-      severity: 'info'
-    },
-    {
-      id: '2',
-      type: 'assignment',
-      crewId: 'crew-2',
-      crewName: 'Maria Garcia',
-      message: 'Accepted new assignment #BK-2024-0145',
-      timestamp: new Date(Date.now() - 600000).toISOString(),
-      severity: 'success'
-    },
-    {
-      id: '3',
-      type: 'location_update',
-      crewId: 'crew-3',
-      crewName: 'Carlos Reyes',
-      message: 'Location updated - Makati City',
-      timestamp: new Date(Date.now() - 900000).toISOString(),
-      severity: 'info'
-    },
-    {
-      id: '4',
-      type: 'group_change',
-      crewId: 'crew-4',
-      crewName: 'Ana Lopez',
-      message: 'Added to Alpha Team',
-      timestamp: new Date(Date.now() - 1200000).toISOString(),
-      severity: 'success'
-    },
-    {
-      id: '5',
-      type: 'status_change',
-      crewId: 'crew-5',
-      crewName: 'David Tan',
-      message: 'Went offline',
-      timestamp: new Date(Date.now() - 1500000).toISOString(),
-      severity: 'warning'
+      if (data.success) {
+        return data.stats;
+      } else {
+        throw new Error(data.error || 'Failed to fetch crew stats');
+      }
+    } catch (error) {
+      console.error('Error fetching crew stats:', error);
+      // Return default values on error
+      return {
+        totalCrew: 0,
+        onlineCrew: 0,
+        offlineCrew: 0,
+        busyCrew: 0,
+        availableCrew: 0,
+        totalGroups: 0,
+        activeGroups: 0,
+        unassignedCrew: 0,
+        avgRating: 0,
+        todayJobs: 0,
+        todayRevenue: 0
+      };
     }
-  ];
+  };
+
+  const fetchCrewActivity = async (): Promise<RecentActivity[]> => {
+    try {
+      const response = await fetch('/api/neon/crew/activity?limit=10');
+      const data = await response.json();
+
+      if (data.success) {
+        return data.activities;
+      } else {
+        throw new Error(data.error || 'Failed to fetch crew activity');
+      }
+    } catch (error) {
+      console.error('Error fetching crew activity:', error);
+      return [];
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
