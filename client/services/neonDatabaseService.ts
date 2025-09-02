@@ -630,10 +630,94 @@ class NeonDatabaseClient {
 
   // === USERS ===
 
+  async getCustomers(): Promise<{ success: boolean; users?: User[] }> {
+    console.log('🔗 getCustomers called, connection status:', this.isConnected);
+    if (!this.isConnected) {
+      console.warn('⚠️ Database not connected for getCustomers');
+      return { success: false, users: [] };
+    }
+
+    try {
+      console.log('📞 Making request to /api/neon/customers...');
+      const response = await fetch('/api/neon/customers');
+      console.log('📥 Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        console.error('❌ Response not OK:', response.status, response.statusText);
+        const text = await response.text();
+        console.error('Response body:', text);
+        return { success: false, users: [] };
+      }
+
+      const result = await response.json();
+      console.log('✅ getCustomers result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Database customers fetch failed:', error);
+      return { success: false, users: [] };
+    }
+  }
+
+  async getStaffUsers(): Promise<{ success: boolean; users?: User[] }> {
+    console.log('🔗 getStaffUsers called, connection status:', this.isConnected);
+    if (!this.isConnected) {
+      console.warn('⚠️ Database not connected for getStaffUsers');
+      return { success: false, users: [] };
+    }
+
+    try {
+      console.log('📞 Making request to /api/neon/staff...');
+      const response = await fetch('/api/neon/staff');
+      console.log('📥 Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        console.error('❌ Response not OK:', response.status, response.statusText);
+        const text = await response.text();
+        console.error('Response body:', text);
+        return { success: false, users: [] };
+      }
+
+      const result = await response.json();
+      console.log('✅ getStaffUsers result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Database staff users fetch failed:', error);
+      return { success: false, users: [] };
+    }
+  }
+
+  async createStaffUser(userData: {
+    fullName: string;
+    email: string;
+    role: string;
+    permissions: string[];
+    contactNumber?: string;
+    branchLocation: string;
+  }): Promise<{ success: boolean; user?: User; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false, error: 'Database not connected' };
+    }
+
+    try {
+      const response = await fetch('/api/neon/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('❌ Database staff user creation failed:', error);
+      return { success: false, error: 'Failed to create staff user' };
+    }
+  }
+
+  // Backward compatibility - now fetches all users (customers + staff)
   async getUsers(): Promise<{ success: boolean; users?: User[] }> {
     console.log('🔗 getUsers called, connection status:', this.isConnected);
     if (!this.isConnected) {
-      console.warn('⚠️ Database not connected for getUsers');
+      console.warn('���️ Database not connected for getUsers');
       return { success: false, users: [] };
     }
 

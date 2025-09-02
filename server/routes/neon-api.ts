@@ -595,7 +595,7 @@ function calculateBranchPerformance(bookings: any[], users: any[]) {
   }));
 }
 
-// Users endpoint
+// Users endpoint - returns all users
 export const getAllUsers: RequestHandler = async (req, res) => {
   try {
     console.log('👥 Getting all users...');
@@ -605,6 +605,64 @@ export const getAllUsers: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching users:', error);
     res.status(500).json({ success: false, error: 'Failed to get users' });
+  }
+};
+
+// Customers endpoint - returns only customer users (role='user')
+export const getCustomers: RequestHandler = async (req, res) => {
+  try {
+    console.log('🛒 Getting customer users...');
+    const allUsers = await neonDbService.getAllUsers();
+    const customers = allUsers.filter(user => user.role === 'user');
+    console.log('✅ Customers retrieved:', customers.length, 'customers found');
+    res.json({ success: true, users: customers });
+  } catch (error) {
+    console.error('❌ Error fetching customers:', error);
+    res.status(500).json({ success: false, error: 'Failed to get customers' });
+  }
+};
+
+// Staff endpoint - returns admin/staff users (role != 'user')
+export const getStaffUsers: RequestHandler = async (req, res) => {
+  try {
+    console.log('👨‍💼 Getting staff users...');
+    const allUsers = await neonDbService.getAllUsers();
+    const staff = allUsers.filter(user => user.role !== 'user');
+    console.log('✅ Staff retrieved:', staff.length, 'staff members found');
+    res.json({ success: true, users: staff });
+  } catch (error) {
+    console.error('❌ Error fetching staff:', error);
+    res.status(500).json({ success: false, error: 'Failed to get staff' });
+  }
+};
+
+// Create staff user endpoint
+export const createStaffUser: RequestHandler = async (req, res) => {
+  try {
+    console.log('👨‍💼 Creating new staff user...');
+    const { fullName, email, role, permissions, contactNumber, branchLocation } = req.body;
+
+    // Create user with staff role
+    const userData = {
+      email,
+      fullName,
+      role,
+      contactNumber: contactNumber || null,
+      branchLocation,
+      isActive: true,
+      emailVerified: true,
+      subscriptionStatus: 'free',
+      loyaltyPoints: 0,
+      // Store permissions in a JSON field or handle separately
+      crewSkills: permissions || [],
+    };
+
+    const user = await neonDbService.createUser(userData);
+    console.log('✅ Staff user created:', user.id);
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('❌ Error creating staff user:', error);
+    res.status(500).json({ success: false, error: 'Failed to create staff user' });
   }
 };
 

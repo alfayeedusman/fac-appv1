@@ -83,8 +83,11 @@ export function createServer() {
   // Analytics endpoints
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
-  // Users endpoints (for customer management)
+  // Users endpoints
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
+  app.get("/api/neon/customers", neonApiRoutes.getCustomers);
+  app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
+  app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
 
   return app;
 }
