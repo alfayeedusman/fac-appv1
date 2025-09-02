@@ -299,6 +299,28 @@ export default function EnhancedInventoryManagement() {
       ],
       isActive: true,
     },
+    {
+      id: "parts",
+      name: "Car Parts",
+      description: "Vehicle parts and components",
+      icon: "⚙️",
+      color: "#EF4444",
+      variants: [
+        {
+          id: "oem",
+          name: "OEM",
+          priceMultiplier: 1.5,
+          description: "Original equipment manufacturer",
+        },
+        {
+          id: "aftermarket",
+          name: "Aftermarket",
+          priceMultiplier: 1.0,
+          description: "Third-party parts",
+        },
+      ],
+      isActive: true,
+    },
   ];
 
   useEffect(() => {
