@@ -661,11 +661,12 @@ export default function EnhancedInventoryManagement() {
       variants: newCategory.variants,
     };
 
-    setCategories(
-      categories.map((c) =>
-        c.id === editingCategory.id ? updatedCategory : c,
-      ),
+    const updatedCategories = categories.map((c) =>
+      c.id === editingCategory.id ? updatedCategory : c,
     );
+    setCategories(updatedCategories);
+    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+
     setNewCategory({
       name: "",
       description: "",
@@ -679,8 +680,17 @@ export default function EnhancedInventoryManagement() {
   };
 
   const handleDeleteCategory = (categoryId: string) => {
+    // Check if any products use this category
+    const categoryProducts = products.filter(p => p.categoryId === categoryId);
+    if (categoryProducts.length > 0) {
+      alert(`Cannot delete category. ${categoryProducts.length} products are using this category. Please reassign or delete those products first.`);
+      return;
+    }
+
     if (confirm("Are you sure you want to delete this category?")) {
-      setCategories(categories.filter((c) => c.id !== categoryId));
+      const updatedCategories = categories.filter((c) => c.id !== categoryId);
+      setCategories(updatedCategories);
+      localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
       alert("Category deleted successfully!");
     }
   };
