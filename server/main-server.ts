@@ -8,6 +8,7 @@ import demoRoutes from "./routes/demo.js";
 import customerApiRoutes from "./routes/customer-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
+import * as crewApiRoutes from "./routes/crew-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
 
