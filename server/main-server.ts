@@ -122,6 +122,7 @@ export const createServer = () => {
   app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
   app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
   app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew); // For development only
 
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
