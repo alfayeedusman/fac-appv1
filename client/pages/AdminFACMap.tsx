@@ -57,6 +57,29 @@ interface LocationData {
   };
 }
 
+interface FacMapStats {
+  crew: {
+    total: number;
+    online: number;
+    busy: number;
+    available: number;
+    offline: number;
+  };
+  customers: {
+    total: number;
+    active: number;
+    champions: number;
+    vip: number;
+    loyal: number;
+    regular: number;
+    new: number;
+  };
+  realtime: {
+    timestamp: string;
+    lastUpdate: string;
+  };
+}
+
 export default function AdminFACMap() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
@@ -65,6 +88,8 @@ export default function AdminFACMap() {
     null,
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [facMapStats, setFacMapStats] = useState<FacMapStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
