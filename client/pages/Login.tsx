@@ -80,21 +80,7 @@ export default function Login() {
     }
 
     try {
-      // Check database connection first
-      const isConnected = await neonDbClient.testConnection();
-
-      if (!isConnected.connected) {
-        toast({
-          title: "Service Temporarily Unavailable",
-          description:
-            "We're experiencing technical difficulties. Please try again in a moment.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Attempt login with Neon database
+      // Attempt login directly - connection issues will be handled by the auth service
       const result = await authService.login({
         email: formData.email,
         password: formData.password,
