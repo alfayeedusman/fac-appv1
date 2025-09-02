@@ -268,11 +268,28 @@ export default function AdminCrewManagement() {
       <AdminSidebar
         activeTab="crew"
         onTabChange={(tab) => {
-          if (tab === "overview") navigate("/admin-dashboard");
+          if (tab === "crew") return; // Already on this page
+          else if (tab === "overview") navigate("/admin-dashboard");
           else if (tab === "cms") navigate("/admin-cms");
+          else if (tab === "fac-map") navigate("/admin-fac-map");
+          else if (tab === "customers") navigate("/admin-customer-hub");
+          else if (tab === "analytics") navigate("/admin-analytics");
+          else if (tab === "bookings") navigate("/admin-booking-management");
+          else if (tab === "packages") navigate("/admin-packages");
+          else if (tab === "pos") navigate("/pos");
           else if (tab === "inventory") navigate("/inventory-management");
+          else if (tab === "user-management") navigate("/admin-user-management");
+          else if (tab === "images") navigate("/admin-image-manager");
+          else if (tab === "notifications") navigate("/admin-notifications");
+          else if (tab === "ads") navigate("/admin-ads");
+          else if (tab === "booking") navigate("/admin-booking-settings");
+          else if (tab === "gamification") navigate("/admin-gamification");
+          else {
+            // Fallback to dashboard for unknown tabs
+            navigate("/admin-dashboard");
+          }
         }}
-        userRole="admin"
+        userRole={userRole}
         notificationCount={5}
       />
 
