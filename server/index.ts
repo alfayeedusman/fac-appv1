@@ -89,5 +89,25 @@ export function createServer() {
   app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
   app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
 
+  // Inventory endpoints
+  app.get("/api/neon/inventory/items", neonApiRoutes.getInventoryItems);
+  app.post("/api/neon/inventory/items", neonApiRoutes.createInventoryItem);
+  app.put("/api/neon/inventory/items/:id", neonApiRoutes.updateInventoryItem);
+  app.delete("/api/neon/inventory/items/:id", neonApiRoutes.deleteInventoryItem);
+
+  // Stock movements endpoints
+  app.get("/api/neon/inventory/movements", neonApiRoutes.getStockMovements);
+  app.post("/api/neon/inventory/movements", neonApiRoutes.createStockMovement);
+
+  // Suppliers endpoints
+  app.get("/api/neon/inventory/suppliers", neonApiRoutes.getSuppliers);
+  app.post("/api/neon/inventory/suppliers", neonApiRoutes.createSupplier);
+  app.put("/api/neon/inventory/suppliers/:id", neonApiRoutes.updateSupplier);
+  app.delete("/api/neon/inventory/suppliers/:id", neonApiRoutes.deleteSupplier);
+
+  // Inventory analytics endpoints
+  app.get("/api/neon/inventory/analytics", neonApiRoutes.getInventoryAnalytics);
+  app.get("/api/neon/inventory/low-stock", neonApiRoutes.getLowStockItems);
+
   return app;
 }
