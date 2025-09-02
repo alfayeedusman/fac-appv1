@@ -63,7 +63,7 @@ interface HomepageContent {
       id: string;
       text: string;
       link: string;
-      variant: 'primary' | 'secondary' | 'outline';
+      variant: "primary" | "secondary" | "outline";
       enabled: boolean;
     }>;
   };
@@ -132,31 +132,70 @@ const defaultContent: HomepageContent = {
     mainTitle: "Smart Auto Care",
     highlightedTitle: "for Modern Drivers",
     subtitle: "Premium Quality • Affordable Prices",
-    description: "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
+    description:
+      "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
     features: [
-      { id: "feature1", icon: "Droplets", title: "Premium", subtitle: "Car Wash", color: "#ff6b1f" },
-      { id: "feature2", icon: "Clock", title: "Quick", subtitle: "Service", color: "#8b5cf6" },
-      { id: "feature3", icon: "Smartphone", title: "Smart", subtitle: "Booking", color: "#3b82f6" }
+      {
+        id: "feature1",
+        icon: "Droplets",
+        title: "Premium",
+        subtitle: "Car Wash",
+        color: "#ff6b1f",
+      },
+      {
+        id: "feature2",
+        icon: "Clock",
+        title: "Quick",
+        subtitle: "Service",
+        color: "#8b5cf6",
+      },
+      {
+        id: "feature3",
+        icon: "Smartphone",
+        title: "Smart",
+        subtitle: "Booking",
+        color: "#3b82f6",
+      },
     ],
     ctaButtons: [
-      { id: "cta1", text: "Get Started Free", link: "/signup", variant: "primary", enabled: true },
-      { id: "cta2", text: "Login", link: "/login", variant: "outline", enabled: true },
-      { id: "cta3", text: "Book Now", link: "/guest-booking", variant: "outline", enabled: true }
-    ]
+      {
+        id: "cta1",
+        text: "Get Started Free",
+        link: "/signup",
+        variant: "primary",
+        enabled: true,
+      },
+      {
+        id: "cta2",
+        text: "Login",
+        link: "/login",
+        variant: "outline",
+        enabled: true,
+      },
+      {
+        id: "cta3",
+        text: "Book Now",
+        link: "/guest-booking",
+        variant: "outline",
+        enabled: true,
+      },
+    ],
   },
   services: {
     badge: "Our Services",
     title: "Premium Auto Care",
     highlightedTitle: "",
-    description: "Professional services designed to keep your vehicle in perfect condition",
+    description:
+      "Professional services designed to keep your vehicle in perfect condition",
     items: [
       {
         id: "service1",
         icon: "Car",
         title: "Car & Motor Wash",
-        description: "Premium cleaning with eco-friendly products for a spotless finish",
+        description:
+          "Premium cleaning with eco-friendly products for a spotless finish",
         gradient: "from-fac-orange-500 to-fac-orange-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service2",
@@ -164,15 +203,16 @@ const defaultContent: HomepageContent = {
         title: "Auto Detailing",
         description: "Comprehensive interior and exterior detailing services",
         gradient: "from-purple-500 to-purple-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service3",
         icon: "Sparkles",
         title: "Headlight Restoration",
-        description: "Crystal clear headlights for enhanced visibility and safety",
+        description:
+          "Crystal clear headlights for enhanced visibility and safety",
         gradient: "from-blue-500 to-blue-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service4",
@@ -180,9 +220,9 @@ const defaultContent: HomepageContent = {
         title: "Graphene Coating",
         description: "Advanced protection with long-lasting durability",
         gradient: "from-yellow-500 to-orange-500",
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
   visionMission: {
     badge: "About Us",
@@ -190,16 +230,18 @@ const defaultContent: HomepageContent = {
     highlightedTitle: "",
     vision: {
       title: "Our Vision",
-      content: "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
+      content:
+        "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
       icon: "Crown",
-      gradient: "from-fac-orange-500 to-fac-orange-600"
+      gradient: "from-fac-orange-500 to-fac-orange-600",
     },
     mission: {
       title: "Our Mission",
-      content: "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
+      content:
+        "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
       icon: "Star",
-      gradient: "from-purple-500 to-purple-600"
-    }
+      gradient: "from-purple-500 to-purple-600",
+    },
   },
   locations: {
     badge: "Locations",
@@ -212,28 +254,28 @@ const defaultContent: HomepageContent = {
         name: "Tumaga Branch",
         location: "Air Bell Subdivision",
         gradient: "from-fac-orange-500 to-fac-orange-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "branch2",
         name: "Boalan Branch",
         location: "Besides Divisoria Checkpoint",
         gradient: "from-purple-500 to-purple-600",
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
   footer: {
     companyName: "Fayeed Auto Care",
     tagline: "Zamboanga's First Smart Carwash & Auto Detailing Service",
     poweredBy: "Fdigitals",
-    copyright: "© 2025 Fayeed Auto Care"
+    copyright: "© 2025 Fayeed Auto Care",
   },
   theme: {
     primaryColor: "#ff6b1f",
     secondaryColor: "#8b5cf6",
-    accentColor: "#3b82f6"
-  }
+    accentColor: "#3b82f6",
+  },
 };
 
 export default function Index() {
@@ -289,16 +331,19 @@ export default function Index() {
 
   const loadCMSContent = () => {
     try {
-      const savedContent = localStorage.getItem('homepage_content');
+      const savedContent = localStorage.getItem("homepage_content");
       if (savedContent) {
         const parsedContent = JSON.parse(savedContent);
         setContent(parsedContent);
       } else {
         // Initialize with default content
-        localStorage.setItem('homepage_content', JSON.stringify(defaultContent));
+        localStorage.setItem(
+          "homepage_content",
+          JSON.stringify(defaultContent),
+        );
       }
     } catch (error) {
-      console.error('Error loading CMS content:', error);
+      console.error("Error loading CMS content:", error);
       // Use default content on error
       setContent(defaultContent);
     }
@@ -307,17 +352,21 @@ export default function Index() {
   // Helper function to render icons dynamically
   const renderIcon = (iconName: string, className: string = "h-6 w-6") => {
     const IconComponent = iconMap[iconName];
-    return IconComponent ? <IconComponent className={className} /> : <Star className={className} />;
+    return IconComponent ? (
+      <IconComponent className={className} />
+    ) : (
+      <Star className={className} />
+    );
   };
 
   // Helper function to get button variant styles
   const getButtonVariantClass = (variant: string) => {
     switch (variant) {
-      case 'primary':
+      case "primary":
         return "w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300";
-      case 'secondary':
+      case "secondary":
         return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-secondary hover:border-secondary-foreground transition-all duration-300";
-      case 'outline':
+      case "outline":
       default:
         return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-fac-orange-50 hover:border-fac-orange-200 dark:hover:bg-fac-orange-950 transition-all duration-300";
     }
@@ -379,7 +428,7 @@ export default function Index() {
               )}
             </span>
           </h1>
-          
+
           {content.hero.subtitle && (
             <div className="flex items-center justify-center gap-2 animate-fade-in-up animate-delay-200">
               <CheckCircle className="h-5 w-5 text-green-500" />
@@ -388,7 +437,7 @@ export default function Index() {
               </p>
             </div>
           )}
-          
+
           {content.hero.description && (
             <p className="text-base text-muted-foreground animate-fade-in-up animate-delay-300 max-w-sm mx-auto leading-relaxed">
               {content.hero.description}
@@ -406,8 +455,12 @@ export default function Index() {
                     {renderIcon(feature.icon, "h-6 w-6")}
                   </div>
                 </div>
-                <p className="text-xs font-bold text-foreground mb-1">{feature.title}</p>
-                <p className="text-xs text-muted-foreground">{feature.subtitle}</p>
+                <p className="text-xs font-bold text-foreground mb-1">
+                  {feature.title}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {feature.subtitle}
+                </p>
               </div>
             ))}
           </div>
@@ -416,28 +469,39 @@ export default function Index() {
         {/* Enhanced CTA Buttons */}
         <div className="space-y-4 max-w-sm mx-auto">
           {content.hero.ctaButtons
-            .filter(button => button.enabled)
+            .filter((button) => button.enabled)
             .map((button, index) => (
               <Link
                 key={button.id}
                 to={button.link}
-                className={`block animate-fade-in-up animate-delay-${500 + (index * 100)}`}
+                className={`block animate-fade-in-up animate-delay-${500 + index * 100}`}
               >
                 <Button className={getButtonVariantClass(button.variant)}>
                   <span className="flex items-center justify-center">
-                    {button.variant === 'primary' && <CheckCircle className="h-5 w-5 mr-2" />}
+                    {button.variant === "primary" && (
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                    )}
                     {button.text}
-                    {button.variant === 'primary' && <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />}
-                    {button.variant === 'outline' && <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>}
+                    {button.variant === "primary" && (
+                      <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
+                    )}
+                    {button.variant === "outline" && (
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">
+                        →
+                      </span>
+                    )}
                   </span>
                 </Button>
               </Link>
             ))}
 
-          {content.hero.ctaButtons.filter(button => button.enabled).length > 1 && (
+          {content.hero.ctaButtons.filter((button) => button.enabled).length >
+            1 && (
             <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-border"></div>
-              <span className="text-xs text-muted-foreground font-medium px-3">or</span>
+              <span className="text-xs text-muted-foreground font-medium px-3">
+                or
+              </span>
               <div className="flex-1 h-px bg-border"></div>
             </div>
           )}
@@ -469,12 +533,17 @@ export default function Index() {
 
         <div className="space-y-4 max-w-md mx-auto">
           {content.services.items
-            .filter(service => service.enabled)
+            .filter((service) => service.enabled)
             .map((service, index) => (
-              <Card key={service.id} className={`glass border-border/50 shadow-md hover:shadow-xl hover-lift animate-fade-in-up animate-delay-${100 + (index * 100)} group transition-all duration-300`}>
+              <Card
+                key={service.id}
+                className={`glass border-border/50 shadow-md hover:shadow-xl hover-lift animate-fade-in-up animate-delay-${100 + index * 100} group transition-all duration-300`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center bg-gradient-to-r ${service.gradient} flex-shrink-0`}>
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center bg-gradient-to-r ${service.gradient} flex-shrink-0`}
+                    >
                       {renderIcon(service.icon, "h-6 w-6 text-white")}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -514,10 +583,17 @@ export default function Index() {
           <div className="space-y-6">
             <Card className="glass border-border/50 shadow-md hover-lift animate-fade-in-up animate-delay-100">
               <CardContent className="p-8 text-center">
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${content.visionMission.vision.gradient} flex items-center justify-center mx-auto mb-6`}>
-                  {renderIcon(content.visionMission.vision.icon, "h-8 w-8 text-white")}
+                <div
+                  className={`w-16 h-16 rounded-full bg-gradient-to-r ${content.visionMission.vision.gradient} flex items-center justify-center mx-auto mb-6`}
+                >
+                  {renderIcon(
+                    content.visionMission.vision.icon,
+                    "h-8 w-8 text-white",
+                  )}
                 </div>
-                <h3 className="font-black text-foreground text-lg mb-4">{content.visionMission.vision.title}</h3>
+                <h3 className="font-black text-foreground text-lg mb-4">
+                  {content.visionMission.vision.title}
+                </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {content.visionMission.vision.content}
                 </p>
@@ -526,10 +602,17 @@ export default function Index() {
 
             <Card className="glass border-border/50 shadow-md hover-lift animate-fade-in-up animate-delay-200">
               <CardContent className="p-8 text-center">
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${content.visionMission.mission.gradient} flex items-center justify-center mx-auto mb-6`}>
-                  {renderIcon(content.visionMission.mission.icon, "h-8 w-8 text-white")}
+                <div
+                  className={`w-16 h-16 rounded-full bg-gradient-to-r ${content.visionMission.mission.gradient} flex items-center justify-center mx-auto mb-6`}
+                >
+                  {renderIcon(
+                    content.visionMission.mission.icon,
+                    "h-8 w-8 text-white",
+                  )}
                 </div>
-                <h3 className="font-black text-foreground text-lg mb-4">{content.visionMission.mission.title}</h3>
+                <h3 className="font-black text-foreground text-lg mb-4">
+                  {content.visionMission.mission.title}
+                </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {content.visionMission.mission.content}
                 </p>
@@ -557,21 +640,32 @@ export default function Index() {
               )}
             </h2>
             {content.locations.description && (
-              <p className="text-muted-foreground mt-2">{content.locations.description}</p>
+              <p className="text-muted-foreground mt-2">
+                {content.locations.description}
+              </p>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
             {content.locations.branches
-              .filter(branch => branch.enabled)
+              .filter((branch) => branch.enabled)
               .map((branch, index) => (
-                <Card key={branch.id} className={`glass border-border/50 shadow-md hover-lift animate-fade-in-up animate-delay-${100 + (index * 100)} group`}>
+                <Card
+                  key={branch.id}
+                  className={`glass border-border/50 shadow-md hover-lift animate-fade-in-up animate-delay-${100 + index * 100} group`}
+                >
                   <CardContent className="p-6 text-center">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${branch.gradient} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`w-14 h-14 rounded-xl bg-gradient-to-r ${branch.gradient} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
+                    >
                       <MapPin className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className="font-bold text-foreground text-base mb-2">{branch.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{branch.location}</p>
+                    <h3 className="font-bold text-foreground text-base mb-2">
+                      {branch.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {branch.location}
+                    </p>
                     <Button size="sm" variant="ghost" className="text-xs">
                       <Phone className="h-3 w-3 mr-1" />
                       Contact
@@ -592,7 +686,9 @@ export default function Index() {
                 <Badge className="bg-fac-orange-100 text-fac-orange-700 dark:bg-fac-orange-900 dark:text-fac-orange-200 mb-2">
                   Est. 2025
                 </Badge>
-                <h3 className="font-bold text-foreground mb-2">{content.footer.companyName}</h3>
+                <h3 className="font-bold text-foreground mb-2">
+                  {content.footer.companyName}
+                </h3>
               </>
             )}
             {content.footer.tagline && (
@@ -601,7 +697,7 @@ export default function Index() {
               </p>
             )}
           </div>
-          
+
           <div className="border-t border-border/50 pt-4">
             <p className="text-xs text-muted-foreground">
               {content.footer.copyright}
@@ -609,7 +705,9 @@ export default function Index() {
             {content.footer.poweredBy && (
               <p className="text-xs text-muted-foreground mt-1">
                 Powered by{" "}
-                <span className="font-medium text-fac-orange-600">{content.footer.poweredBy}</span>
+                <span className="font-medium text-fac-orange-600">
+                  {content.footer.poweredBy}
+                </span>
                 <span className="inline-block ml-1 animate-pulse">🧡</span>
               </p>
             )}

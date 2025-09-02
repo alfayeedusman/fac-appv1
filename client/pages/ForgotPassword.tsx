@@ -205,9 +205,9 @@ export default function ForgotPassword() {
       {/* Back Button */}
       <div className="absolute top-6 left-6 z-20">
         <Link to="/login">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-all animate-fade-in-up"
           >
             <ArrowLeft className="h-5 w-5" />

@@ -36,12 +36,12 @@ export default function Login() {
       try {
         const connected = await neonDbClient.testConnection();
         if (connected.connected) {
-          console.log('✅ Neon database connected');
+          console.log("✅ Neon database connected");
         } else {
-          console.warn('⚠️ Neon database not connected');
+          console.warn("⚠️ Neon database not connected");
         }
       } catch (error) {
-        console.error('❌ Failed to check Neon connection:', error);
+        console.error("❌ Failed to check Neon connection:", error);
       }
     };
 
@@ -86,7 +86,8 @@ export default function Login() {
       if (!isConnected.connected) {
         toast({
           title: "Service Temporarily Unavailable",
-          description: "We're experiencing technical difficulties. Please try again in a moment.",
+          description:
+            "We're experiencing technical difficulties. Please try again in a moment.",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -142,10 +143,11 @@ export default function Login() {
         }, 1000);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: "Invalid email or password. Please check your credentials and try again.",
+        description:
+          "Invalid email or password. Please check your credentials and try again.",
         variant: "destructive",
       });
     }
@@ -173,9 +175,9 @@ export default function Login() {
       {/* Back Button */}
       <div className="absolute top-6 left-6 z-20">
         <Link to="/">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-all"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -217,7 +219,9 @@ export default function Login() {
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 flex items-center justify-center mx-auto mb-4">
                   <Lock className="h-7 w-7 text-white" />
                 </div>
-                <span className="text-xl font-bold text-foreground">Sign In</span>
+                <span className="text-xl font-bold text-foreground">
+                  Sign In
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -238,7 +242,9 @@ export default function Login() {
                       type="email"
                       placeholder="your.email@example.com"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
                       required
                     />
@@ -351,7 +357,9 @@ export default function Login() {
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Book as Guest
-                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">
+                      →
+                    </span>
                   </Button>
                 </Link>
               </div>

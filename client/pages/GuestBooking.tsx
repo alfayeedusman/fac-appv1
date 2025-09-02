@@ -2,7 +2,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, UserPlus, Info, Sparkles, Clock, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  UserPlus,
+  Info,
+  Sparkles,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StepperBooking from "@/components/StepperBooking";
 
@@ -62,7 +69,9 @@ export default function GuestBooking() {
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 flex items-center justify-center mx-auto mb-4">
                   <UserPlus className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="font-bold text-foreground text-lg mb-2">Guest Booking</h3>
+                <h3 className="font-bold text-foreground text-lg mb-2">
+                  Guest Booking
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Book your service in just a few steps. No account required!
                 </p>
@@ -72,15 +81,21 @@ export default function GuestBooking() {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm text-foreground">Instant confirmation via email</span>
+                  <span className="text-sm text-foreground">
+                    Instant confirmation via email
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                  <span className="text-sm text-foreground">Quick 3-step process</span>
+                  <span className="text-sm text-foreground">
+                    Quick 3-step process
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                  <span className="text-sm text-foreground">Premium service guaranteed</span>
+                  <span className="text-sm text-foreground">
+                    Premium service guaranteed
+                  </span>
                 </div>
               </div>
 
@@ -89,9 +104,12 @@ export default function GuestBooking() {
                 <div className="flex items-start space-x-3">
                   <Info className="h-4 w-4 text-fac-orange-500 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
-                    <p className="font-semibold text-foreground mb-1">💡 Want more benefits?</p>
+                    <p className="font-semibold text-foreground mb-1">
+                      💡 Want more benefits?
+                    </p>
                     <p className="text-muted-foreground text-xs">
-                      Create an account to track bookings, earn loyalty points, get exclusive offers, and enjoy faster checkout!
+                      Create an account to track bookings, earn loyalty points,
+                      get exclusive offers, and enjoy faster checkout!
                     </p>
                   </div>
                 </div>

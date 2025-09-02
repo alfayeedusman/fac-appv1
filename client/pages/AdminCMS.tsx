@@ -80,7 +80,7 @@ interface HomepageContent {
       id: string;
       text: string;
       link: string;
-      variant: 'primary' | 'secondary' | 'outline';
+      variant: "primary" | "secondary" | "outline";
       enabled: boolean;
     }>;
   };
@@ -148,31 +148,70 @@ const defaultHomepageContent: HomepageContent = {
     mainTitle: "Smart Auto Care",
     highlightedTitle: "for Modern Drivers",
     subtitle: "Premium Quality • Affordable Prices",
-    description: "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
+    description:
+      "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
     features: [
-      { id: "feature1", icon: "Droplets", title: "Premium", subtitle: "Car Wash", color: "#ff6b1f" },
-      { id: "feature2", icon: "Clock", title: "Quick", subtitle: "Service", color: "#8b5cf6" },
-      { id: "feature3", icon: "Smartphone", title: "Smart", subtitle: "Booking", color: "#3b82f6" }
+      {
+        id: "feature1",
+        icon: "Droplets",
+        title: "Premium",
+        subtitle: "Car Wash",
+        color: "#ff6b1f",
+      },
+      {
+        id: "feature2",
+        icon: "Clock",
+        title: "Quick",
+        subtitle: "Service",
+        color: "#8b5cf6",
+      },
+      {
+        id: "feature3",
+        icon: "Smartphone",
+        title: "Smart",
+        subtitle: "Booking",
+        color: "#3b82f6",
+      },
     ],
     ctaButtons: [
-      { id: "cta1", text: "Get Started Free", link: "/signup", variant: "primary", enabled: true },
-      { id: "cta2", text: "Login", link: "/login", variant: "outline", enabled: true },
-      { id: "cta3", text: "Book Now", link: "/guest-booking", variant: "outline", enabled: true }
-    ]
+      {
+        id: "cta1",
+        text: "Get Started Free",
+        link: "/signup",
+        variant: "primary",
+        enabled: true,
+      },
+      {
+        id: "cta2",
+        text: "Login",
+        link: "/login",
+        variant: "outline",
+        enabled: true,
+      },
+      {
+        id: "cta3",
+        text: "Book Now",
+        link: "/guest-booking",
+        variant: "outline",
+        enabled: true,
+      },
+    ],
   },
   services: {
     badge: "Our Services",
     title: "Premium Auto Care",
     highlightedTitle: "",
-    description: "Professional services designed to keep your vehicle in perfect condition",
+    description:
+      "Professional services designed to keep your vehicle in perfect condition",
     items: [
       {
         id: "service1",
         icon: "Car",
         title: "Car & Motor Wash",
-        description: "Premium cleaning with eco-friendly products for a spotless finish",
+        description:
+          "Premium cleaning with eco-friendly products for a spotless finish",
         gradient: "from-fac-orange-500 to-fac-orange-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service2",
@@ -180,15 +219,16 @@ const defaultHomepageContent: HomepageContent = {
         title: "Auto Detailing",
         description: "Comprehensive interior and exterior detailing services",
         gradient: "from-purple-500 to-purple-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service3",
         icon: "Sparkles",
         title: "Headlight Restoration",
-        description: "Crystal clear headlights for enhanced visibility and safety",
+        description:
+          "Crystal clear headlights for enhanced visibility and safety",
         gradient: "from-blue-500 to-blue-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "service4",
@@ -196,9 +236,9 @@ const defaultHomepageContent: HomepageContent = {
         title: "Graphene Coating",
         description: "Advanced protection with long-lasting durability",
         gradient: "from-yellow-500 to-orange-500",
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
   visionMission: {
     badge: "About Us",
@@ -206,16 +246,18 @@ const defaultHomepageContent: HomepageContent = {
     highlightedTitle: "",
     vision: {
       title: "Our Vision",
-      content: "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
+      content:
+        "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
       icon: "Crown",
-      gradient: "from-fac-orange-500 to-fac-orange-600"
+      gradient: "from-fac-orange-500 to-fac-orange-600",
     },
     mission: {
       title: "Our Mission",
-      content: "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
+      content:
+        "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
       icon: "Star",
-      gradient: "from-purple-500 to-purple-600"
-    }
+      gradient: "from-purple-500 to-purple-600",
+    },
   },
   locations: {
     badge: "Locations",
@@ -228,33 +270,45 @@ const defaultHomepageContent: HomepageContent = {
         name: "Tumaga Branch",
         location: "Air Bell Subdivision",
         gradient: "from-fac-orange-500 to-fac-orange-600",
-        enabled: true
+        enabled: true,
       },
       {
         id: "branch2",
         name: "Boalan Branch",
         location: "Besides Divisoria Checkpoint",
         gradient: "from-purple-500 to-purple-600",
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
   footer: {
     companyName: "Fayeed Auto Care",
     tagline: "Zamboanga's First Smart Carwash & Auto Detailing Service",
     poweredBy: "Fdigitals",
-    copyright: "© 2025 Fayeed Auto Care"
+    copyright: "© 2025 Fayeed Auto Care",
   },
   theme: {
     primaryColor: "#ff6b1f",
     secondaryColor: "#8b5cf6",
-    accentColor: "#3b82f6"
-  }
+    accentColor: "#3b82f6",
+  },
 };
 
 const iconOptions = [
-  "Car", "Droplets", "Star", "MapPin", "Shield", "Crown", "Gift", "Sparkles", 
-  "Smartphone", "Clock", "CheckCircle", "Calendar", "Settings", "Zap"
+  "Car",
+  "Droplets",
+  "Star",
+  "MapPin",
+  "Shield",
+  "Crown",
+  "Gift",
+  "Sparkles",
+  "Smartphone",
+  "Clock",
+  "CheckCircle",
+  "Calendar",
+  "Settings",
+  "Zap",
 ];
 
 const gradientOptions = [
@@ -265,12 +319,14 @@ const gradientOptions = [
   "from-yellow-500 to-orange-500",
   "from-pink-500 to-rose-500",
   "from-indigo-500 to-purple-500",
-  "from-cyan-500 to-blue-500"
+  "from-cyan-500 to-blue-500",
 ];
 
 export default function AdminCMS() {
   const navigate = useNavigate();
-  const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
+  const [content, setContent] = useState<HomepageContent>(
+    defaultHomepageContent,
+  );
   const [editingSection, setEditingSection] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [previewMode, setPreviewMode] = useState<boolean>(false);
@@ -281,15 +337,18 @@ export default function AdminCMS() {
 
   const loadHomepageContent = () => {
     try {
-      const savedContent = localStorage.getItem('homepage_content');
+      const savedContent = localStorage.getItem("homepage_content");
       if (savedContent) {
         setContent(JSON.parse(savedContent));
       } else {
         // Initialize with default content
-        localStorage.setItem('homepage_content', JSON.stringify(defaultHomepageContent));
+        localStorage.setItem(
+          "homepage_content",
+          JSON.stringify(defaultHomepageContent),
+        );
       }
     } catch (error) {
-      console.error('Error loading homepage content:', error);
+      console.error("Error loading homepage content:", error);
       toast({
         title: "Loading Error",
         description: "Failed to load content. Using default values.",
@@ -301,18 +360,21 @@ export default function AdminCMS() {
   const saveHomepageContent = () => {
     try {
       setIsLoading(true);
-      localStorage.setItem('homepage_content', JSON.stringify(content));
-      
+      localStorage.setItem("homepage_content", JSON.stringify(content));
+
       // Also save to separate backup
       const timestamp = new Date().toISOString();
-      localStorage.setItem(`homepage_backup_${timestamp}`, JSON.stringify(content));
-      
+      localStorage.setItem(
+        `homepage_backup_${timestamp}`,
+        JSON.stringify(content),
+      );
+
       toast({
         title: "Content Saved! 🎉",
         description: "All homepage content has been successfully updated.",
       });
     } catch (error) {
-      console.error('Error saving homepage content:', error);
+      console.error("Error saving homepage content:", error);
       toast({
         title: "Save Failed",
         description: "Failed to save content. Please try again.",
@@ -326,14 +388,14 @@ export default function AdminCMS() {
   const exportContent = () => {
     try {
       const dataStr = JSON.stringify(content, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `homepage-content-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `homepage-content-${new Date().toISOString().split("T")[0]}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Content Exported! 📄",
         description: "Homepage content has been exported to JSON file.",
@@ -381,78 +443,86 @@ export default function AdminCMS() {
 
   const addNewItem = (section: string) => {
     const newContent = { ...content };
-    
+
     switch (section) {
-      case 'heroFeatures':
+      case "heroFeatures":
         newContent.hero.features.push({
           id: `feature_${Date.now()}`,
           icon: "Star",
           title: "New Feature",
           subtitle: "Description",
-          color: "#3b82f6"
+          color: "#3b82f6",
         });
         break;
-      case 'ctaButtons':
+      case "ctaButtons":
         newContent.hero.ctaButtons.push({
           id: `cta_${Date.now()}`,
           text: "New Button",
           link: "/",
           variant: "outline",
-          enabled: true
+          enabled: true,
         });
         break;
-      case 'services':
+      case "services":
         newContent.services.items.push({
           id: `service_${Date.now()}`,
           icon: "Car",
           title: "New Service",
           description: "Service description",
           gradient: "from-blue-500 to-blue-600",
-          enabled: true
+          enabled: true,
         });
         break;
-      case 'branches':
+      case "branches":
         newContent.locations.branches.push({
           id: `branch_${Date.now()}`,
           name: "New Branch",
           location: "Branch Location",
           gradient: "from-fac-orange-500 to-fac-orange-600",
-          enabled: true
+          enabled: true,
         });
         break;
     }
-    
+
     setContent(newContent);
   };
 
   const removeItem = (section: string, id: string) => {
     const newContent = { ...content };
-    
+
     switch (section) {
-      case 'heroFeatures':
-        newContent.hero.features = newContent.hero.features.filter(item => item.id !== id);
+      case "heroFeatures":
+        newContent.hero.features = newContent.hero.features.filter(
+          (item) => item.id !== id,
+        );
         break;
-      case 'ctaButtons':
-        newContent.hero.ctaButtons = newContent.hero.ctaButtons.filter(item => item.id !== id);
+      case "ctaButtons":
+        newContent.hero.ctaButtons = newContent.hero.ctaButtons.filter(
+          (item) => item.id !== id,
+        );
         break;
-      case 'services':
-        newContent.services.items = newContent.services.items.filter(item => item.id !== id);
+      case "services":
+        newContent.services.items = newContent.services.items.filter(
+          (item) => item.id !== id,
+        );
         break;
-      case 'branches':
-        newContent.locations.branches = newContent.locations.branches.filter(item => item.id !== id);
+      case "branches":
+        newContent.locations.branches = newContent.locations.branches.filter(
+          (item) => item.id !== id,
+        );
         break;
     }
-    
+
     setContent(newContent);
   };
 
   const previewHomepage = () => {
     // Save current content
-    localStorage.setItem('homepage_content', JSON.stringify(content));
-    
+    localStorage.setItem("homepage_content", JSON.stringify(content));
+
     // Open homepage in new tab
-    window.open('/', '_blank');
-    
+    window.open("/", "_blank");
+
     toast({
       title: "Preview Opened! 👀",
       description: "Homepage preview opened in new tab.",
@@ -465,9 +535,11 @@ export default function AdminCMS() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Advanced CMS</h1>
-          <p className="text-muted-foreground">Complete homepage content management</p>
+          <p className="text-muted-foreground">
+            Complete homepage content management
+          </p>
         </div>
-        
+
         <div className="flex flex-wrap gap-2">
           <Button
             onClick={previewHomepage}
@@ -477,7 +549,7 @@ export default function AdminCMS() {
             <Eye className="h-4 w-4" />
             Preview
           </Button>
-          
+
           <Button
             onClick={exportContent}
             variant="outline"
@@ -486,7 +558,7 @@ export default function AdminCMS() {
             <Download className="h-4 w-4" />
             Export
           </Button>
-          
+
           <div className="relative">
             <input
               type="file"
@@ -499,7 +571,7 @@ export default function AdminCMS() {
               Import
             </Button>
           </div>
-          
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
@@ -511,18 +583,22 @@ export default function AdminCMS() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Reset to Defaults</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will reset all content to default values. This action cannot be undone.
+                  This will reset all content to default values. This action
+                  cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={resetToDefaults} className="bg-red-600 hover:bg-red-700">
+                <AlertDialogAction
+                  onClick={resetToDefaults}
+                  className="bg-red-600 hover:bg-red-700"
+                >
                   Reset All Content
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          
+
           <Button
             onClick={saveHomepageContent}
             disabled={isLoading}
@@ -565,75 +641,92 @@ export default function AdminCMS() {
                   <Input
                     id="heroLogo"
                     value={content.hero.logo}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, logo: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: { ...content.hero, logo: e.target.value },
+                      })
+                    }
                     placeholder="Enter logo URL"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="heroBadge">Badge Text</Label>
                   <Input
                     id="heroBadge"
                     value={content.hero.badge}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, badge: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: { ...content.hero, badge: e.target.value },
+                      })
+                    }
                     placeholder="Premium"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="heroMainTitle">Main Title</Label>
                   <Input
                     id="heroMainTitle"
                     value={content.hero.mainTitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, mainTitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: { ...content.hero, mainTitle: e.target.value },
+                      })
+                    }
                     placeholder="Smart Auto Care"
                   />
                 </div>
-                
+
                 <div>
-                  <Label htmlFor="heroHighlightedTitle">Highlighted Title</Label>
+                  <Label htmlFor="heroHighlightedTitle">
+                    Highlighted Title
+                  </Label>
                   <Input
                     id="heroHighlightedTitle"
                     value={content.hero.highlightedTitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, highlightedTitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: {
+                          ...content.hero,
+                          highlightedTitle: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="for Modern Drivers"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="heroSubtitle">Subtitle</Label>
                   <Input
                     id="heroSubtitle"
                     value={content.hero.subtitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, subtitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: { ...content.hero, subtitle: e.target.value },
+                      })
+                    }
                     placeholder="Premium Quality • Affordable Prices"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="heroDescription">Description</Label>
                   <Textarea
                     id="heroDescription"
                     value={content.hero.description}
-                    onChange={(e) => setContent({
-                      ...content,
-                      hero: { ...content.hero, description: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        hero: { ...content.hero, description: e.target.value },
+                      })
+                    }
                     placeholder="Enter hero description"
                     className="min-h-[80px]"
                   />
@@ -650,7 +743,7 @@ export default function AdminCMS() {
                     Feature Highlights
                   </span>
                   <Button
-                    onClick={() => addNewItem('heroFeatures')}
+                    onClick={() => addNewItem("heroFeatures")}
                     size="sm"
                     className="bg-fac-orange-500 hover:bg-fac-orange-600"
                   >
@@ -667,7 +760,9 @@ export default function AdminCMS() {
                         <div className="flex items-center justify-between mb-3">
                           <Badge variant="outline">Feature {index + 1}</Badge>
                           <Button
-                            onClick={() => removeItem('heroFeatures', feature.id)}
+                            onClick={() =>
+                              removeItem("heroFeatures", feature.id)
+                            }
                             size="sm"
                             variant="outline"
                             className="text-red-600"
@@ -675,19 +770,25 @@ export default function AdminCMS() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        
+
                         <div className="space-y-3">
                           <div>
                             <Label>Icon</Label>
                             <Select
                               value={feature.icon}
                               onValueChange={(value) => {
-                                const updatedFeatures = content.hero.features.map(f =>
-                                  f.id === feature.id ? { ...f, icon: value } : f
-                                );
+                                const updatedFeatures =
+                                  content.hero.features.map((f) =>
+                                    f.id === feature.id
+                                      ? { ...f, icon: value }
+                                      : f,
+                                  );
                                 setContent({
                                   ...content,
-                                  hero: { ...content.hero, features: updatedFeatures }
+                                  hero: {
+                                    ...content.hero,
+                                    features: updatedFeatures,
+                                  },
                                 });
                               }}
                             >
@@ -695,45 +796,59 @@ export default function AdminCMS() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {iconOptions.map(icon => (
-                                  <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                                {iconOptions.map((icon) => (
+                                  <SelectItem key={icon} value={icon}>
+                                    {icon}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div>
                             <Label>Title</Label>
                             <Input
                               value={feature.title}
                               onChange={(e) => {
-                                const updatedFeatures = content.hero.features.map(f =>
-                                  f.id === feature.id ? { ...f, title: e.target.value } : f
-                                );
+                                const updatedFeatures =
+                                  content.hero.features.map((f) =>
+                                    f.id === feature.id
+                                      ? { ...f, title: e.target.value }
+                                      : f,
+                                  );
                                 setContent({
                                   ...content,
-                                  hero: { ...content.hero, features: updatedFeatures }
+                                  hero: {
+                                    ...content.hero,
+                                    features: updatedFeatures,
+                                  },
                                 });
                               }}
                             />
                           </div>
-                          
+
                           <div>
                             <Label>Subtitle</Label>
                             <Input
                               value={feature.subtitle}
                               onChange={(e) => {
-                                const updatedFeatures = content.hero.features.map(f =>
-                                  f.id === feature.id ? { ...f, subtitle: e.target.value } : f
-                                );
+                                const updatedFeatures =
+                                  content.hero.features.map((f) =>
+                                    f.id === feature.id
+                                      ? { ...f, subtitle: e.target.value }
+                                      : f,
+                                  );
                                 setContent({
                                   ...content,
-                                  hero: { ...content.hero, features: updatedFeatures }
+                                  hero: {
+                                    ...content.hero,
+                                    features: updatedFeatures,
+                                  },
                                 });
                               }}
                             />
                           </div>
-                          
+
                           <div>
                             <Label>Color</Label>
                             <div className="flex items-center gap-2">
@@ -741,17 +856,25 @@ export default function AdminCMS() {
                                 type="color"
                                 value={feature.color}
                                 onChange={(e) => {
-                                  const updatedFeatures = content.hero.features.map(f =>
-                                    f.id === feature.id ? { ...f, color: e.target.value } : f
-                                  );
+                                  const updatedFeatures =
+                                    content.hero.features.map((f) =>
+                                      f.id === feature.id
+                                        ? { ...f, color: e.target.value }
+                                        : f,
+                                    );
                                   setContent({
                                     ...content,
-                                    hero: { ...content.hero, features: updatedFeatures }
+                                    hero: {
+                                      ...content.hero,
+                                      features: updatedFeatures,
+                                    },
                                   });
                                 }}
                                 className="w-16"
                               />
-                              <span className="text-sm text-muted-foreground">{feature.color}</span>
+                              <span className="text-sm text-muted-foreground">
+                                {feature.color}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -772,7 +895,7 @@ export default function AdminCMS() {
                   Call-to-Action Buttons
                 </span>
                 <Button
-                  onClick={() => addNewItem('ctaButtons')}
+                  onClick={() => addNewItem("ctaButtons")}
                   size="sm"
                   className="bg-fac-orange-500 hover:bg-fac-orange-600"
                 >
@@ -791,17 +914,23 @@ export default function AdminCMS() {
                         <Switch
                           checked={button.enabled}
                           onCheckedChange={(checked) => {
-                            const updatedButtons = content.hero.ctaButtons.map(b =>
-                              b.id === button.id ? { ...b, enabled: checked } : b
+                            const updatedButtons = content.hero.ctaButtons.map(
+                              (b) =>
+                                b.id === button.id
+                                  ? { ...b, enabled: checked }
+                                  : b,
                             );
                             setContent({
                               ...content,
-                              hero: { ...content.hero, ctaButtons: updatedButtons }
+                              hero: {
+                                ...content.hero,
+                                ctaButtons: updatedButtons,
+                              },
                             });
                           }}
                         />
                         <Button
-                          onClick={() => removeItem('ctaButtons', button.id)}
+                          onClick={() => removeItem("ctaButtons", button.id)}
                           size="sm"
                           variant="outline"
                           className="text-red-600"
@@ -810,51 +939,71 @@ export default function AdminCMS() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div>
                         <Label>Button Text</Label>
                         <Input
                           value={button.text}
                           onChange={(e) => {
-                            const updatedButtons = content.hero.ctaButtons.map(b =>
-                              b.id === button.id ? { ...b, text: e.target.value } : b
+                            const updatedButtons = content.hero.ctaButtons.map(
+                              (b) =>
+                                b.id === button.id
+                                  ? { ...b, text: e.target.value }
+                                  : b,
                             );
                             setContent({
                               ...content,
-                              hero: { ...content.hero, ctaButtons: updatedButtons }
+                              hero: {
+                                ...content.hero,
+                                ctaButtons: updatedButtons,
+                              },
                             });
                           }}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Link</Label>
                         <Input
                           value={button.link}
                           onChange={(e) => {
-                            const updatedButtons = content.hero.ctaButtons.map(b =>
-                              b.id === button.id ? { ...b, link: e.target.value } : b
+                            const updatedButtons = content.hero.ctaButtons.map(
+                              (b) =>
+                                b.id === button.id
+                                  ? { ...b, link: e.target.value }
+                                  : b,
                             );
                             setContent({
                               ...content,
-                              hero: { ...content.hero, ctaButtons: updatedButtons }
+                              hero: {
+                                ...content.hero,
+                                ctaButtons: updatedButtons,
+                              },
                             });
                           }}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Variant</Label>
                         <Select
                           value={button.variant}
-                          onValueChange={(value: 'primary' | 'secondary' | 'outline') => {
-                            const updatedButtons = content.hero.ctaButtons.map(b =>
-                              b.id === button.id ? { ...b, variant: value } : b
+                          onValueChange={(
+                            value: "primary" | "secondary" | "outline",
+                          ) => {
+                            const updatedButtons = content.hero.ctaButtons.map(
+                              (b) =>
+                                b.id === button.id
+                                  ? { ...b, variant: value }
+                                  : b,
                             );
                             setContent({
                               ...content,
-                              hero: { ...content.hero, ctaButtons: updatedButtons }
+                              hero: {
+                                ...content.hero,
+                                ctaButtons: updatedButtons,
+                              },
                             });
                           }}
                         >
@@ -893,49 +1042,71 @@ export default function AdminCMS() {
                   <Input
                     id="servicesBadge"
                     value={content.services.badge}
-                    onChange={(e) => setContent({
-                      ...content,
-                      services: { ...content.services, badge: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        services: {
+                          ...content.services,
+                          badge: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Our Services"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="servicesTitle">Section Title</Label>
                   <Input
                     id="servicesTitle"
                     value={content.services.title}
-                    onChange={(e) => setContent({
-                      ...content,
-                      services: { ...content.services, title: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        services: {
+                          ...content.services,
+                          title: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Premium Auto Care"
                   />
                 </div>
-                
+
                 <div>
-                  <Label htmlFor="servicesHighlightedTitle">Highlighted Title</Label>
+                  <Label htmlFor="servicesHighlightedTitle">
+                    Highlighted Title
+                  </Label>
                   <Input
                     id="servicesHighlightedTitle"
                     value={content.services.highlightedTitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      services: { ...content.services, highlightedTitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        services: {
+                          ...content.services,
+                          highlightedTitle: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="(Optional highlighted part)"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="servicesDescription">Description</Label>
                   <Textarea
                     id="servicesDescription"
                     value={content.services.description}
-                    onChange={(e) => setContent({
-                      ...content,
-                      services: { ...content.services, description: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        services: {
+                          ...content.services,
+                          description: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Section description"
                     className="min-h-[80px]"
                   />
@@ -952,7 +1123,7 @@ export default function AdminCMS() {
                     Service Items
                   </span>
                   <Button
-                    onClick={() => addNewItem('services')}
+                    onClick={() => addNewItem("services")}
                     size="sm"
                     className="bg-fac-orange-500 hover:bg-fac-orange-600"
                   >
@@ -972,17 +1143,23 @@ export default function AdminCMS() {
                             <Switch
                               checked={service.enabled}
                               onCheckedChange={(checked) => {
-                                const updatedServices = content.services.items.map(s =>
-                                  s.id === service.id ? { ...s, enabled: checked } : s
-                                );
+                                const updatedServices =
+                                  content.services.items.map((s) =>
+                                    s.id === service.id
+                                      ? { ...s, enabled: checked }
+                                      : s,
+                                  );
                                 setContent({
                                   ...content,
-                                  services: { ...content.services, items: updatedServices }
+                                  services: {
+                                    ...content.services,
+                                    items: updatedServices,
+                                  },
                                 });
                               }}
                             />
                             <Button
-                              onClick={() => removeItem('services', service.id)}
+                              onClick={() => removeItem("services", service.id)}
                               size="sm"
                               variant="outline"
                               className="text-red-600"
@@ -991,19 +1168,25 @@ export default function AdminCMS() {
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-3">
                           <div>
                             <Label>Icon</Label>
                             <Select
                               value={service.icon}
                               onValueChange={(value) => {
-                                const updatedServices = content.services.items.map(s =>
-                                  s.id === service.id ? { ...s, icon: value } : s
-                                );
+                                const updatedServices =
+                                  content.services.items.map((s) =>
+                                    s.id === service.id
+                                      ? { ...s, icon: value }
+                                      : s,
+                                  );
                                 setContent({
                                   ...content,
-                                  services: { ...content.services, items: updatedServices }
+                                  services: {
+                                    ...content.services,
+                                    items: updatedServices,
+                                  },
                                 });
                               }}
                             >
@@ -1011,57 +1194,77 @@ export default function AdminCMS() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {iconOptions.map(icon => (
-                                  <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                                {iconOptions.map((icon) => (
+                                  <SelectItem key={icon} value={icon}>
+                                    {icon}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div>
                             <Label>Service Title</Label>
                             <Input
                               value={service.title}
                               onChange={(e) => {
-                                const updatedServices = content.services.items.map(s =>
-                                  s.id === service.id ? { ...s, title: e.target.value } : s
-                                );
+                                const updatedServices =
+                                  content.services.items.map((s) =>
+                                    s.id === service.id
+                                      ? { ...s, title: e.target.value }
+                                      : s,
+                                  );
                                 setContent({
                                   ...content,
-                                  services: { ...content.services, items: updatedServices }
+                                  services: {
+                                    ...content.services,
+                                    items: updatedServices,
+                                  },
                                 });
                               }}
                             />
                           </div>
-                          
+
                           <div>
                             <Label>Description</Label>
                             <Textarea
                               value={service.description}
                               onChange={(e) => {
-                                const updatedServices = content.services.items.map(s =>
-                                  s.id === service.id ? { ...s, description: e.target.value } : s
-                                );
+                                const updatedServices =
+                                  content.services.items.map((s) =>
+                                    s.id === service.id
+                                      ? { ...s, description: e.target.value }
+                                      : s,
+                                  );
                                 setContent({
                                   ...content,
-                                  services: { ...content.services, items: updatedServices }
+                                  services: {
+                                    ...content.services,
+                                    items: updatedServices,
+                                  },
                                 });
                               }}
                               className="min-h-[60px]"
                             />
                           </div>
-                          
+
                           <div>
                             <Label>Gradient</Label>
                             <Select
                               value={service.gradient}
                               onValueChange={(value) => {
-                                const updatedServices = content.services.items.map(s =>
-                                  s.id === service.id ? { ...s, gradient: value } : s
-                                );
+                                const updatedServices =
+                                  content.services.items.map((s) =>
+                                    s.id === service.id
+                                      ? { ...s, gradient: value }
+                                      : s,
+                                  );
                                 setContent({
                                   ...content,
-                                  services: { ...content.services, items: updatedServices }
+                                  services: {
+                                    ...content.services,
+                                    items: updatedServices,
+                                  },
                                 });
                               }}
                             >
@@ -1069,11 +1272,15 @@ export default function AdminCMS() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {gradientOptions.map(gradient => (
+                                {gradientOptions.map((gradient) => (
                                   <SelectItem key={gradient} value={gradient}>
                                     <div className="flex items-center gap-2">
-                                      <div className={`w-4 h-4 rounded bg-gradient-to-r ${gradient}`}></div>
-                                      {gradient.replace('from-', '').replace('to-', ' → ')}
+                                      <div
+                                        className={`w-4 h-4 rounded bg-gradient-to-r ${gradient}`}
+                                      ></div>
+                                      {gradient
+                                        .replace("from-", "")
+                                        .replace("to-", " → ")}
                                     </div>
                                   </SelectItem>
                                 ))}
@@ -1107,36 +1314,51 @@ export default function AdminCMS() {
                   <Input
                     id="vmBadge"
                     value={content.visionMission.badge}
-                    onChange={(e) => setContent({
-                      ...content,
-                      visionMission: { ...content.visionMission, badge: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        visionMission: {
+                          ...content.visionMission,
+                          badge: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="About Us"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="vmTitle">Section Title</Label>
                   <Input
                     id="vmTitle"
                     value={content.visionMission.title}
-                    onChange={(e) => setContent({
-                      ...content,
-                      visionMission: { ...content.visionMission, title: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        visionMission: {
+                          ...content.visionMission,
+                          title: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Our Story"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="vmHighlightedTitle">Highlighted Title</Label>
                   <Input
                     id="vmHighlightedTitle"
                     value={content.visionMission.highlightedTitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      visionMission: { ...content.visionMission, highlightedTitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        visionMission: {
+                          ...content.visionMission,
+                          highlightedTitle: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="(Optional highlighted part)"
                   />
                 </div>
@@ -1163,51 +1385,68 @@ export default function AdminCMS() {
                       <Label>Title</Label>
                       <Input
                         value={content.visionMission.vision.title}
-                        onChange={(e) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            vision: { ...content.visionMission.vision, title: e.target.value }
-                          }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              vision: {
+                                ...content.visionMission.vision,
+                                title: e.target.value,
+                              },
+                            },
+                          })
+                        }
                         placeholder="Our Vision"
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Content</Label>
                       <Textarea
                         value={content.visionMission.vision.content}
-                        onChange={(e) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            vision: { ...content.visionMission.vision, content: e.target.value }
-                          }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              vision: {
+                                ...content.visionMission.vision,
+                                content: e.target.value,
+                              },
+                            },
+                          })
+                        }
                         className="min-h-[80px]"
                         placeholder="Vision statement"
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Icon</Label>
                       <Select
                         value={content.visionMission.vision.icon}
-                        onValueChange={(value) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            vision: { ...content.visionMission.vision, icon: value }
-                          }
-                        })}
+                        onValueChange={(value) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              vision: {
+                                ...content.visionMission.vision,
+                                icon: value,
+                              },
+                            },
+                          })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {iconOptions.map(icon => (
-                            <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                          {iconOptions.map((icon) => (
+                            <SelectItem key={icon} value={icon}>
+                              {icon}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1226,51 +1465,68 @@ export default function AdminCMS() {
                       <Label>Title</Label>
                       <Input
                         value={content.visionMission.mission.title}
-                        onChange={(e) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            mission: { ...content.visionMission.mission, title: e.target.value }
-                          }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              mission: {
+                                ...content.visionMission.mission,
+                                title: e.target.value,
+                              },
+                            },
+                          })
+                        }
                         placeholder="Our Mission"
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Content</Label>
                       <Textarea
                         value={content.visionMission.mission.content}
-                        onChange={(e) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            mission: { ...content.visionMission.mission, content: e.target.value }
-                          }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              mission: {
+                                ...content.visionMission.mission,
+                                content: e.target.value,
+                              },
+                            },
+                          })
+                        }
                         className="min-h-[80px]"
                         placeholder="Mission statement"
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Icon</Label>
                       <Select
                         value={content.visionMission.mission.icon}
-                        onValueChange={(value) => setContent({
-                          ...content,
-                          visionMission: {
-                            ...content.visionMission,
-                            mission: { ...content.visionMission.mission, icon: value }
-                          }
-                        })}
+                        onValueChange={(value) =>
+                          setContent({
+                            ...content,
+                            visionMission: {
+                              ...content.visionMission,
+                              mission: {
+                                ...content.visionMission.mission,
+                                icon: value,
+                              },
+                            },
+                          })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {iconOptions.map(icon => (
-                            <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                          {iconOptions.map((icon) => (
+                            <SelectItem key={icon} value={icon}>
+                              {icon}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1299,49 +1555,71 @@ export default function AdminCMS() {
                   <Input
                     id="locationsBadge"
                     value={content.locations.badge}
-                    onChange={(e) => setContent({
-                      ...content,
-                      locations: { ...content.locations, badge: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        locations: {
+                          ...content.locations,
+                          badge: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Locations"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="locationsTitle">Section Title</Label>
                   <Input
                     id="locationsTitle"
                     value={content.locations.title}
-                    onChange={(e) => setContent({
-                      ...content,
-                      locations: { ...content.locations, title: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        locations: {
+                          ...content.locations,
+                          title: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Visit Our Branches"
                   />
                 </div>
-                
+
                 <div>
-                  <Label htmlFor="locationsHighlightedTitle">Highlighted Title</Label>
+                  <Label htmlFor="locationsHighlightedTitle">
+                    Highlighted Title
+                  </Label>
                   <Input
                     id="locationsHighlightedTitle"
                     value={content.locations.highlightedTitle}
-                    onChange={(e) => setContent({
-                      ...content,
-                      locations: { ...content.locations, highlightedTitle: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        locations: {
+                          ...content.locations,
+                          highlightedTitle: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="(Optional highlighted part)"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="locationsDescription">Description</Label>
                   <Textarea
                     id="locationsDescription"
                     value={content.locations.description}
-                    onChange={(e) => setContent({
-                      ...content,
-                      locations: { ...content.locations, description: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        locations: {
+                          ...content.locations,
+                          description: e.target.value,
+                        },
+                      })
+                    }
                     placeholder="Section description"
                     className="min-h-[80px]"
                   />
@@ -1358,7 +1636,7 @@ export default function AdminCMS() {
                     Branch Locations
                   </span>
                   <Button
-                    onClick={() => addNewItem('branches')}
+                    onClick={() => addNewItem("branches")}
                     size="sm"
                     className="bg-fac-orange-500 hover:bg-fac-orange-600"
                   >
@@ -1377,17 +1655,23 @@ export default function AdminCMS() {
                           <Switch
                             checked={branch.enabled}
                             onCheckedChange={(checked) => {
-                              const updatedBranches = content.locations.branches.map(b =>
-                                b.id === branch.id ? { ...b, enabled: checked } : b
-                              );
+                              const updatedBranches =
+                                content.locations.branches.map((b) =>
+                                  b.id === branch.id
+                                    ? { ...b, enabled: checked }
+                                    : b,
+                                );
                               setContent({
                                 ...content,
-                                locations: { ...content.locations, branches: updatedBranches }
+                                locations: {
+                                  ...content.locations,
+                                  branches: updatedBranches,
+                                },
                               });
                             }}
                           />
                           <Button
-                            onClick={() => removeItem('branches', branch.id)}
+                            onClick={() => removeItem("branches", branch.id)}
                             size="sm"
                             variant="outline"
                             className="text-red-600"
@@ -1396,53 +1680,71 @@ export default function AdminCMS() {
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3">
                         <div>
                           <Label>Branch Name</Label>
                           <Input
                             value={branch.name}
                             onChange={(e) => {
-                              const updatedBranches = content.locations.branches.map(b =>
-                                b.id === branch.id ? { ...b, name: e.target.value } : b
-                              );
+                              const updatedBranches =
+                                content.locations.branches.map((b) =>
+                                  b.id === branch.id
+                                    ? { ...b, name: e.target.value }
+                                    : b,
+                                );
                               setContent({
                                 ...content,
-                                locations: { ...content.locations, branches: updatedBranches }
+                                locations: {
+                                  ...content.locations,
+                                  branches: updatedBranches,
+                                },
                               });
                             }}
                             placeholder="Branch Name"
                           />
                         </div>
-                        
+
                         <div>
                           <Label>Location</Label>
                           <Input
                             value={branch.location}
                             onChange={(e) => {
-                              const updatedBranches = content.locations.branches.map(b =>
-                                b.id === branch.id ? { ...b, location: e.target.value } : b
-                              );
+                              const updatedBranches =
+                                content.locations.branches.map((b) =>
+                                  b.id === branch.id
+                                    ? { ...b, location: e.target.value }
+                                    : b,
+                                );
                               setContent({
                                 ...content,
-                                locations: { ...content.locations, branches: updatedBranches }
+                                locations: {
+                                  ...content.locations,
+                                  branches: updatedBranches,
+                                },
                               });
                             }}
                             placeholder="Branch location/address"
                           />
                         </div>
-                        
+
                         <div>
                           <Label>Gradient</Label>
                           <Select
                             value={branch.gradient}
                             onValueChange={(value) => {
-                              const updatedBranches = content.locations.branches.map(b =>
-                                b.id === branch.id ? { ...b, gradient: value } : b
-                              );
+                              const updatedBranches =
+                                content.locations.branches.map((b) =>
+                                  b.id === branch.id
+                                    ? { ...b, gradient: value }
+                                    : b,
+                                );
                               setContent({
                                 ...content,
-                                locations: { ...content.locations, branches: updatedBranches }
+                                locations: {
+                                  ...content.locations,
+                                  branches: updatedBranches,
+                                },
                               });
                             }}
                           >
@@ -1450,11 +1752,15 @@ export default function AdminCMS() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {gradientOptions.map(gradient => (
+                              {gradientOptions.map((gradient) => (
                                 <SelectItem key={gradient} value={gradient}>
                                   <div className="flex items-center gap-2">
-                                    <div className={`w-4 h-4 rounded bg-gradient-to-r ${gradient}`}></div>
-                                    {gradient.replace('from-', '').replace('to-', ' → ')}
+                                    <div
+                                      className={`w-4 h-4 rounded bg-gradient-to-r ${gradient}`}
+                                    ></div>
+                                    {gradient
+                                      .replace("from-", "")
+                                      .replace("to-", " → ")}
                                   </div>
                                 </SelectItem>
                               ))}
@@ -1485,49 +1791,60 @@ export default function AdminCMS() {
                 <Input
                   id="footerCompanyName"
                   value={content.footer.companyName}
-                  onChange={(e) => setContent({
-                    ...content,
-                    footer: { ...content.footer, companyName: e.target.value }
-                  })}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      footer: {
+                        ...content.footer,
+                        companyName: e.target.value,
+                      },
+                    })
+                  }
                   placeholder="Fayeed Auto Care"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="footerTagline">Tagline</Label>
                 <Input
                   id="footerTagline"
                   value={content.footer.tagline}
-                  onChange={(e) => setContent({
-                    ...content,
-                    footer: { ...content.footer, tagline: e.target.value }
-                  })}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      footer: { ...content.footer, tagline: e.target.value },
+                    })
+                  }
                   placeholder="Zamboanga's First Smart Carwash & Auto Detailing Service"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="footerPoweredBy">Powered By</Label>
                 <Input
                   id="footerPoweredBy"
                   value={content.footer.poweredBy}
-                  onChange={(e) => setContent({
-                    ...content,
-                    footer: { ...content.footer, poweredBy: e.target.value }
-                  })}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      footer: { ...content.footer, poweredBy: e.target.value },
+                    })
+                  }
                   placeholder="Fdigitals"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="footerCopyright">Copyright Text</Label>
                 <Input
                   id="footerCopyright"
                   value={content.footer.copyright}
-                  onChange={(e) => setContent({
-                    ...content,
-                    footer: { ...content.footer, copyright: e.target.value }
-                  })}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      footer: { ...content.footer, copyright: e.target.value },
+                    })
+                  }
                   placeholder="© 2025 Fayeed Auto Care"
                 />
               </div>
@@ -1553,26 +1870,38 @@ export default function AdminCMS() {
                       type="color"
                       id="themePrimaryColor"
                       value={content.theme.primaryColor}
-                      onChange={(e) => setContent({
-                        ...content,
-                        theme: { ...content.theme, primaryColor: e.target.value }
-                      })}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          theme: {
+                            ...content.theme,
+                            primaryColor: e.target.value,
+                          },
+                        })
+                      }
                       className="w-16 h-10"
                     />
                     <div className="flex-1">
                       <Input
                         value={content.theme.primaryColor}
-                        onChange={(e) => setContent({
-                          ...content,
-                          theme: { ...content.theme, primaryColor: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            theme: {
+                              ...content.theme,
+                              primaryColor: e.target.value,
+                            },
+                          })
+                        }
                         placeholder="#ff6b1f"
                       />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">Main brand color (Orange)</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Main brand color (Orange)
+                  </p>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="themeSecondaryColor">Secondary Color</Label>
                   <div className="flex items-center gap-3 mt-2">
@@ -1580,26 +1909,38 @@ export default function AdminCMS() {
                       type="color"
                       id="themeSecondaryColor"
                       value={content.theme.secondaryColor}
-                      onChange={(e) => setContent({
-                        ...content,
-                        theme: { ...content.theme, secondaryColor: e.target.value }
-                      })}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          theme: {
+                            ...content.theme,
+                            secondaryColor: e.target.value,
+                          },
+                        })
+                      }
                       className="w-16 h-10"
                     />
                     <div className="flex-1">
                       <Input
                         value={content.theme.secondaryColor}
-                        onChange={(e) => setContent({
-                          ...content,
-                          theme: { ...content.theme, secondaryColor: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            theme: {
+                              ...content.theme,
+                              secondaryColor: e.target.value,
+                            },
+                          })
+                        }
                         placeholder="#8b5cf6"
                       />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">Secondary brand color (Purple)</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Secondary brand color (Purple)
+                  </p>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="themeAccentColor">Accent Color</Label>
                   <div className="flex items-center gap-3 mt-2">
@@ -1607,55 +1948,73 @@ export default function AdminCMS() {
                       type="color"
                       id="themeAccentColor"
                       value={content.theme.accentColor}
-                      onChange={(e) => setContent({
-                        ...content,
-                        theme: { ...content.theme, accentColor: e.target.value }
-                      })}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          theme: {
+                            ...content.theme,
+                            accentColor: e.target.value,
+                          },
+                        })
+                      }
                       className="w-16 h-10"
                     />
                     <div className="flex-1">
                       <Input
                         value={content.theme.accentColor}
-                        onChange={(e) => setContent({
-                          ...content,
-                          theme: { ...content.theme, accentColor: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            theme: {
+                              ...content.theme,
+                              accentColor: e.target.value,
+                            },
+                          })
+                        }
                         placeholder="#3b82f6"
                       />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">Accent color (Blue)</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Accent color (Blue)
+                  </p>
                 </div>
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <h4 className="font-semibold mb-3">Color Preview</h4>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center">
-                    <div 
+                    <div
                       className="w-full h-16 rounded-lg mb-2"
                       style={{ backgroundColor: content.theme.primaryColor }}
                     ></div>
                     <p className="text-sm font-medium">Primary</p>
-                    <p className="text-xs text-muted-foreground">{content.theme.primaryColor}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {content.theme.primaryColor}
+                    </p>
                   </div>
                   <div className="text-center">
-                    <div 
+                    <div
                       className="w-full h-16 rounded-lg mb-2"
                       style={{ backgroundColor: content.theme.secondaryColor }}
                     ></div>
                     <p className="text-sm font-medium">Secondary</p>
-                    <p className="text-xs text-muted-foreground">{content.theme.secondaryColor}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {content.theme.secondaryColor}
+                    </p>
                   </div>
                   <div className="text-center">
-                    <div 
+                    <div
                       className="w-full h-16 rounded-lg mb-2"
                       style={{ backgroundColor: content.theme.accentColor }}
                     ></div>
                     <p className="text-sm font-medium">Accent</p>
-                    <p className="text-xs text-muted-foreground">{content.theme.accentColor}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {content.theme.accentColor}
+                    </p>
                   </div>
                 </div>
               </div>
