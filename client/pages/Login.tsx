@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -12,14 +13,11 @@ import {
   Mail,
   Lock,
   Zap,
-  Crown,
-  Database,
-  AlertCircle,
-  Wifi,
-  Shield,
+  ArrowLeft,
+  CheckCircle,
+  Calendar,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import SuperAdminStatus from "@/components/SuperAdminStatus";
 import { authService } from "@/services/authService";
 import { neonDbClient } from "@/services/neonDatabaseService";
 
@@ -38,31 +36,17 @@ export default function Login() {
       try {
         const connected = await neonDbClient.testConnection();
         if (connected.connected) {
-          console.log('✅ Neon database connected');
+          console.log("✅ Neon database connected");
         } else {
-          console.warn('⚠️ Neon database not connected');
+          console.warn("⚠️ Neon database not connected");
         }
       } catch (error) {
-        console.error('❌ Failed to check Neon connection:', error);
+        console.error("❌ Failed to check Neon connection:", error);
       }
     };
 
     checkNeonConnection();
   }, []);
-
-  // Test login with Neon admin credentials
-  const testNeonAdminLogin = async () => {
-    setFormData({
-      email: "admin@fayeedautocare.com",
-      password: "admin123"
-    });
-
-    // Auto-submit after setting credentials
-    setTimeout(() => {
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-      document.querySelector('form')?.dispatchEvent(submitEvent);
-    }, 100);
-  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -101,8 +85,9 @@ export default function Login() {
 
       if (!isConnected.connected) {
         toast({
-          title: "Database Connection Required",
-          description: "Please connect to Neon database first. Check the Database Setup in Admin Dashboard.",
+          title: "Service Temporarily Unavailable",
+          description:
+            "We're experiencing technical difficulties. Please try again in a moment.",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -124,6 +109,11 @@ export default function Login() {
         const hasCompletedWelcome = localStorage.getItem(
           `welcomed_${result.user.email}`,
         );
+
+        toast({
+          title: "Welcome back!",
+          description: `Successfully logged in as ${result.user.email}`,
+        });
 
         setTimeout(() => {
           if (
@@ -153,10 +143,11 @@ export default function Login() {
         }, 1000);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: "Unable to connect to database. Please try again.",
+        description:
+          "Invalid email or password. Please check your credentials and try again.",
         variant: "destructive",
       });
     }
@@ -164,15 +155,14 @@ export default function Login() {
     setIsLoading(false);
   };
 
-
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">{/* Removed StickyHeader - using custom navigation */}
-
-      {/* Futuristic Background Elements */}
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      {/* Enhanced Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 left-1/6 w-32 h-32 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl animate-float animate-delay-300"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-fac-orange-500/8 to-purple-500/8 blur-xl animate-float"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 rounded-full bg-gradient-to-r from-blue-500/8 to-fac-orange-500/8 blur-xl animate-float animate-delay-200"></div>
+        <div className="absolute bottom-40 left-1/4 w-40 h-40 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-breathe"></div>
+        <div className="absolute top-1/2 right-10 w-20 h-20 rounded-full bg-gradient-to-r from-green-500/6 to-blue-500/6 blur-lg animate-float animate-delay-500"></div>
       </div>
 
       {/* Theme Toggle */}
@@ -182,260 +172,213 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Header with Logo */}
-      <div className="text-center py-12 px-6 relative z-10">
-        <div>
-          <div className="mb-6">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
-              alt="Fayeed Auto Care Logo"
-              className="h-20 w-auto mx-auto mb-4"
-            />
-            <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Sign in to your Fayeed Auto Care account
-          </p>
-        </div>
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link to="/">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-all"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
       </div>
 
-      {/* Futuristic Login Form */}
-      <div className="flex-1 px-6 py-8 max-w-md mx-auto w-full relative z-10">
-        <Card className="shadow-lg">
-          <CardHeader className="pb-6">
-            <CardTitle className="text-center">
-              <div className="bg-fac-orange-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Lock className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Sign In</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-8">
-              {/* Email Field with Icons */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="email"
-                  className="font-bold text-foreground text-sm flex items-center"
-                >
-                  <Mail className="h-4 w-4 mr-2 text-fac-orange-500" />
-                  Email Address
-                </Label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password Field with Icons */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="password"
-                  className="font-bold text-foreground text-sm flex items-center"
-                >
-                  <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
-                  Password
-                </Label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-fac-orange-500 transition-colors z-10" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                    className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 bg-white/90 backdrop-blur-sm rounded-xl transition-all duration-300 focus:scale-[1.02]"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Forgot Password Link */}
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600 transition-colors hover:underline"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
-              {/* Modern Login Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="btn-futuristic w-full py-4 text-lg rounded-xl font-black relative overflow-hidden group"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="spinner mr-3"></div>
-                    AUTHENTICATING...
-                  </div>
-                ) : (
-                  <span className="relative z-10 flex items-center justify-center">
-                    SIGN IN
-                    <Zap className="h-5 w-5 ml-3 group-hover:scale-125 transition-transform duration-300" />
-                  </span>
-                )}
-              </Button>
-
-              {/* Test Neon Admin Login Button */}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={testNeonAdminLogin}
-                disabled={isLoading}
-                className="w-full py-3 text-sm rounded-xl font-bold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 transition-all group"
-              >
-                <Database className="h-4 w-4 mr-2" />
-                Test Neon Admin Login
-                <span className="text-xs ml-2 opacity-70">(admin@fayeedautocare.com)</span>
-              </Button>
-
-              {/* SuperAdmin Setup Button */}
-              <div className="grid grid-cols-1 gap-2">
-                <Link to="/admin-login-test">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-green-200 text-green-600 hover:bg-green-50 transition-all group"
-                  >
-                    <Shield className="h-4 w-4 mr-2" />
-                    Admin Login Test Suite
-                  </Button>
-                </Link>
-                <Link to="/superadmin-setup">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 transition-all group"
-                  >
-                    <Crown className="h-4 w-4 mr-2" />
-                    SuperAdmin Setup
-                  </Button>
-                </Link>
-                <Link to="/network-test">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full py-2 text-sm rounded-xl font-bold border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all group"
-                  >
-                    <Wifi className="h-4 w-4 mr-2" />
-                    Network Diagnostics
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Forgot Password Link */}
-              <div className="text-center">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-fac-orange-500 hover:text-fac-orange-600"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Sign Up Link */}
-        <div className="text-center mt-8 animate-fade-in-up animate-delay-500">
-          <div className="glass rounded-2xl p-4">
-            <p className="text-muted-foreground font-medium">
-              Don't have an account?{" "}
-              <Link
-                to="/signup"
-                className="text-fac-orange-500 font-black hover:text-fac-orange-600 transition-colors hover:underline"
-              >
-                Join the Future
-              </Link>
+      <div className="flex flex-col min-h-screen">
+        {/* Header Section */}
+        <div className="text-center py-12 px-6 relative z-10">
+          <div className="animate-fade-in-up">
+            <div className="mb-8 relative">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
+                alt="Fayeed Auto Care Logo"
+                className="h-16 w-auto mx-auto mb-4 drop-shadow-lg"
+              />
+              <Badge className="bg-fac-orange-100 text-fac-orange-700 dark:bg-fac-orange-900 dark:text-fac-orange-200 mb-4">
+                Member Login
+              </Badge>
+            </div>
+            <h1 className="text-3xl font-black text-foreground mb-2">
+              Welcome{" "}
+              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
+                Back
+              </span>
+            </h1>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              Sign in to access your account and manage your bookings
             </p>
           </div>
         </div>
 
-        {/* SuperAdmin Status */}
-        <div className="mt-6 animate-fade-in-up animate-delay-450">
-          <SuperAdminStatus />
-        </div>
+        {/* Login Form */}
+        <div className="flex-1 px-6 pb-8 max-w-md mx-auto w-full relative z-10">
+          <Card className="glass border-border/50 shadow-xl animate-fade-in-up animate-delay-200">
+            <CardHeader className="pb-6">
+              <CardTitle className="text-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 flex items-center justify-center mx-auto mb-4">
+                  <Lock className="h-7 w-7 text-white" />
+                </div>
+                <span className="text-xl font-bold text-foreground">
+                  Sign In
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
+                {/* Email Field */}
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="email"
+                    className="font-bold text-foreground text-sm flex items-center"
+                  >
+                    <Mail className="h-4 w-4 mr-2 text-fac-orange-500" />
+                    Email Address
+                  </Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors z-10" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
+                      required
+                    />
+                  </div>
+                </div>
 
-        {/* SuperAdmin Quick Access */}
-        <Card className="mt-6 glass border-yellow-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 animate-fade-in-up animate-delay-500">
-          <CardContent className="p-6">
-            <h3 className="font-black text-foreground text-base mb-4 flex items-center">
-              <Crown className="h-5 w-5 mr-2 text-yellow-500" />
-              SuperAdmin Access
-            </h3>
-            <div className="space-y-3">
-              <Link to="/quick-superadmin">
+                {/* Password Field */}
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="password"
+                    className="font-bold text-foreground text-sm flex items-center"
+                  >
+                    <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
+                    Password
+                  </Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors z-10" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Forgot Password Link */}
+                <div className="text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-bold text-fac-orange-500 hover:text-fac-orange-600 transition-colors hover:underline"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+
+                {/* Login Button */}
                 <Button
-                  variant="default"
-                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl transition-all group shadow-lg"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Quick SuperAdmin Login
-                  <span className="text-sm ml-2 opacity-90">→ Admin Dashboard</span>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="spinner mr-3"></div>
+                      Signing In...
+                    </div>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Sign In
+                      <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
+                    </span>
+                  )}
                 </Button>
-              </Link>
-              <div className="text-xs text-muted-foreground text-center">
-                One-click setup & login with SuperAdmin privileges
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </form>
+            </CardContent>
+          </Card>
 
-        {/* Guest Booking Option */}
-        <Card className="mt-8 glass border-border animate-fade-in-up animate-delay-600">
-          <CardContent className="p-6">
-            <h3 className="font-black text-foreground text-base mb-4 flex items-center">
-              <Smartphone className="h-5 w-5 mr-2 text-fac-orange-500" />
-              Quick Access
-            </h3>
-            <div className="space-y-3">
-              <Link to="/guest-booking">
+          {/* Sign Up Section */}
+          <div className="text-center mt-8 animate-fade-in-up animate-delay-400">
+            <div className="glass rounded-2xl p-6 border border-border/50">
+              <p className="text-muted-foreground font-medium mb-4">
+                Don't have an account yet?
+              </p>
+              <Link to="/signup">
                 <Button
                   variant="outline"
-                  className="w-full border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50 font-bold py-3 rounded-xl transition-all group"
+                  className="w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-fac-orange-50 hover:border-fac-orange-200 dark:hover:bg-fac-orange-950 transition-all duration-300"
                 >
-                  <span className="text-lg mr-2">📅</span>
-                  Book as Guest
-                  <span className="text-lg ml-2">→</span>
+                  Create Account
                 </Button>
               </Link>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      {/* Footer */}
-      <div className="text-center py-8 px-6 relative z-10">
-        <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-700">
-          <p className="text-xs text-muted-foreground font-medium">
-© 2025 Fayeed Auto Care. Made with love by FDigitals
-          </p>
+          {/* Guest Booking Option */}
+          <Card className="mt-6 glass border-border/50 shadow-md animate-fade-in-up animate-delay-500">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <h3 className="font-bold text-foreground text-base mb-2 flex items-center justify-center">
+                  <Smartphone className="h-5 w-5 mr-2 text-blue-500" />
+                  Quick Booking
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Need service right away? Book instantly without an account
+                </p>
+                <Link to="/guest-booking">
+                  <Button
+                    variant="outline"
+                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 font-bold py-3 rounded-xl transition-all duration-300 group"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Book as Guest
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">
+                      →
+                    </span>
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center py-8 px-6 relative z-10">
+          <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-600">
+            <p className="text-xs text-muted-foreground font-medium">
+              © 2025 Fayeed Auto Care
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Powered by{" "}
+              <span className="font-medium text-fac-orange-600">Fdigitals</span>
+              <span className="inline-block ml-1 animate-pulse">🧡</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
