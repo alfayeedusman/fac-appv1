@@ -902,37 +902,85 @@ class NeonDatabaseClient {
     path: string,
     timeoutMs = 8000,
   ): Promise<any> {
-    const makeUrl = (base: string) =>
-      `${base.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+    const makeUrl = (base: string) => {
+      const cleanBase = base.replace(/\/$/, "");
+      const cleanPath = path.startsWith("/") ? path : `/${path}`;
+      return `${cleanBase}${cleanPath}`;
+    };
 
     const tryOnce = async (url: string) => {
+      console.log(`🔄 Attempting fetch to: ${url}`);
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), timeoutMs);
+      const to = setTimeout(() => {
+        console.warn(`⏰ Request timeout (${timeoutMs}ms) for: ${url}`);
+        ac.abort();
+      }, timeoutMs);
+
       try {
-        const res = await fetch(url, { signal: ac.signal });
+        const res = await fetch(url, {
+          signal: ac.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
         clearTimeout(to);
+
+        console.log(`📡 Response status: ${res.status} for ${url}`);
+
         if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(`HTTP ${res.status}: ${text?.slice(0, 200)}`);
+          const text = await res.text().catch(() => "No response body");
+          const errorMsg = `HTTP ${res.status}: ${text?.slice(0, 200)}`;
+          console.error(`❌ Request failed: ${errorMsg}`);
+          throw new Error(errorMsg);
         }
+
         const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) return res.json();
+        console.log(`📋 Content-Type: ${ct}`);
+
+        if (ct.includes("application/json")) {
+          const jsonResult = await res.json();
+          console.log(`✅ JSON response received from ${url}`);
+          return jsonResult;
+        }
+
         const txt = await res.text();
         try {
-          return JSON.parse(txt);
-        } catch {
-          throw new Error("Invalid JSON response");
+          const parsedJson = JSON.parse(txt);
+          console.log(`✅ Text parsed as JSON from ${url}`);
+          return parsedJson;
+        } catch (parseError) {
+          console.error(`❌ Invalid JSON response from ${url}:`, txt.slice(0, 100));
+          throw new Error(`Invalid JSON response: ${txt.slice(0, 100)}`);
         }
       } catch (e) {
         clearTimeout(to);
+        console.error(`❌ Fetch error for ${url}:`, e);
         throw e;
       }
     };
 
+    const primaryUrl = makeUrl(this.baseUrl);
+    const fallbackUrl = makeUrl("/api/neon");
+
+    console.log(`🔍 Attempting fetchJsonWithFallback for path: ${path}`);
+    console.log(`🎯 Primary URL: ${primaryUrl}`);
+    console.log(`🔄 Fallback URL: ${fallbackUrl}`);
+
     try {
-      return await tryOnce(makeUrl(this.baseUrl));
+      const result = await tryOnce(primaryUrl);
+      console.log(`✅ Primary request succeeded for ${path}`);
+      return result;
     } catch (e1) {
-      return await tryOnce(makeUrl("/api/neon"));
+      console.warn(`⚠️ Primary request failed for ${path}, trying fallback...`, e1);
+      try {
+        const result = await tryOnce(fallbackUrl);
+        console.log(`✅ Fallback request succeeded for ${path}`);
+        return result;
+      } catch (e2) {
+        console.error(`❌ Both requests failed for ${path}:`, { primary: e1, fallback: e2 });
+        throw new Error(`All requests failed for ${path}. Primary: ${e1}. Fallback: ${e2}`);
+      }
     }
   }
 
