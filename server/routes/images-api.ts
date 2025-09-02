@@ -108,7 +108,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await db.insert(images).values(imageData);
+    await neonDbService.db.insert(schema.images).values(imageData);
 
     res.json({
       success: true,
@@ -195,7 +195,7 @@ router.post('/upload-multiple', upload.array('images', 10), async (req, res) => 
         updatedAt: new Date(),
       };
 
-      await db.insert(images).values(imageData);
+      await neonDbService.db.insert(schema.images).values(imageData);
       
       uploadedImages.push({
         id: imageData.id,
