@@ -490,6 +490,27 @@ export const getRealtimeStats: RequestHandler = async (req, res) => {
   }
 };
 
+// FAC MAP comprehensive stats endpoint
+export const getFacMapStats: RequestHandler = async (req, res) => {
+  try {
+    console.log("📊 Getting FAC MAP stats...");
+    const facMapStats = await neonDbService.getFacMapStats();
+    console.log("✅ FAC MAP stats retrieved:", JSON.stringify(facMapStats, null, 2));
+
+    res.json({
+      success: true,
+      stats: facMapStats,
+      message: "FAC MAP stats retrieved successfully"
+    });
+  } catch (error) {
+    console.error("❌ Get FAC MAP stats error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch FAC MAP stats",
+    });
+  }
+};
+
 // Analytics data endpoint
 export const getAnalyticsData: RequestHandler = async (req, res) => {
   try {
