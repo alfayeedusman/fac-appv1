@@ -13,16 +13,28 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AdminLoginTest() {
   const [isTestingDatabase, setIsTestingDatabase] = useState(false);
-  const [isTestingLogin, setIsTestingLogin] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [databaseResults, setDatabaseResults] = useState<any>(null);
-  const [loginTestResults, setLoginTestResults] = useState<any>(null);
   const [sessionInfo, setSessionInfo] = useState<any>(null);
   const [credentials, setCredentials] = useState({
-    email: 'admin@fayeedautocare.com',
-    password: 'admin123'
+    email: '',
+    password: ''
   });
   const navigate = useNavigate();
+
+  // Only show in development mode
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            Admin testing tools are not available in production mode.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const testDatabaseState = async () => {
     setIsTestingDatabase(true);
@@ -37,13 +49,16 @@ export default function AdminLoginTest() {
       // Test 2: Initialize database
       const initResult = await neonDbClient.initialize();
       
-      // Test 3: Check if admin users exist
+      // Test 3: Check stats without exposing user details
       const statsResult = await neonDbClient.getStats();
       
       setDatabaseResults({
         connection: connectionTest,
         initialization: initResult,
-        stats: statsResult,
+        stats: {
+          userCount: statsResult?.totalUsers || 0,
+          bookingCount: statsResult?.totalBookings || 0,
+        },
         timestamp: new Date().toISOString()
       });
       
@@ -69,71 +84,20 @@ export default function AdminLoginTest() {
     }
   };
 
-  const testAdminLogin = async () => {
-    setIsTestingLogin(true);
-    setLoginTestResults(null);
-    
-    try {
-      console.log('🔐 Testing admin login...');
-      
-      // Test both admin accounts
-      const adminTests = [
-        { email: 'admin@fayeedautocare.com', password: 'admin123', label: 'Regular Admin' },
-        { email: 'superadmin@fayeedautocare.com', password: 'SuperAdmin2025!', label: 'Super Admin' }
-      ];
-      
-      const results = [];
-      
-      for (const test of adminTests) {
-        try {
-          const result = await neonDbClient.login(test.email, test.password);
-          results.push({
-            ...test,
-            success: result.success,
-            user: result.user,
-            error: result.error
-          });
-        } catch (error: any) {
-          results.push({
-            ...test,
-            success: false,
-            error: error.message || 'Login test failed'
-          });
-        }
-      }
-      
-      setLoginTestResults({
-        results,
-        timestamp: new Date().toISOString()
-      });
-      
+  const performLogin = async () => {
+    if (!credentials.email || !credentials.password) {
       toast({
-        title: '✅ Login Test Complete',
-        description: 'Check results below',
-      });
-      
-    } catch (error: any) {
-      console.error('Login test error:', error);
-      setLoginTestResults({
-        error: error.message || 'Login test failed',
-        timestamp: new Date().toISOString()
-      });
-      
-      toast({
-        title: '❌ Login Test Failed',
-        description: error.message || 'Login test failed',
+        title: 'Missing Credentials',
+        description: 'Please enter both email and password',
         variant: 'destructive',
       });
-    } finally {
-      setIsTestingLogin(false);
+      return;
     }
-  };
 
-  const performActualLogin = async () => {
     setIsLoggingIn(true);
     
     try {
-      console.log('🚀 Performing actual login...');
+      console.log('🚀 Performing login...');
       
       const result = await authService.login(credentials);
       
@@ -149,7 +113,11 @@ export default function AdminLoginTest() {
         
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
-          navigate('/admin-dashboard');
+          if (result.user.role === 'superadmin' || result.user.role === 'admin') {
+            navigate('/admin-dashboard');
+          } else {
+            navigate('/dashboard');
+          }
         }, 2000);
         
       } else {
@@ -161,7 +129,7 @@ export default function AdminLoginTest() {
       }
       
     } catch (error: any) {
-      console.error('Actual login error:', error);
+      console.error('Login error:', error);
       toast({
         title: '❌ Login Error',
         description: error.message || 'Login failed',
@@ -185,6 +153,12 @@ export default function AdminLoginTest() {
     });
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      performLogin();
+    }
+  };
+
   React.useEffect(() => {
     checkCurrentSession();
   }, []);
@@ -193,10 +167,15 @@ export default function AdminLoginTest() {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center">
         <Shield className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-gray-900">Admin Login Test Suite</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Admin Test Suite</h1>
         <p className="text-muted-foreground mt-2">
-          Comprehensive testing and validation for admin authentication
+          Development environment testing tools
         </p>
+        <Alert className="mt-4">
+          <AlertDescription>
+            🚨 Development Mode Only - Not available in production
+          </AlertDescription>
+        </Alert>
       </div>
 
       {/* Current Session Status */}
@@ -325,76 +304,11 @@ export default function AdminLoginTest() {
         </CardContent>
       </Card>
 
-      {/* Login Test */}
+      {/* Secure Login */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            Admin Login Test
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            onClick={testAdminLogin} 
-            disabled={isTestingLogin}
-            className="mb-4"
-          >
-            {isTestingLogin ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Key className="h-4 w-4 mr-2" />
-            )}
-            Test Admin Credentials
-          </Button>
-          
-          {loginTestResults && (
-            <Alert>
-              <AlertDescription>
-                <div className="space-y-3">
-                  {loginTestResults.error ? (
-                    <div className="text-red-600">❌ Error: {loginTestResults.error}</div>
-                  ) : (
-                    loginTestResults.results?.map((result: any, index: number) => (
-                      <div key={index} className="border rounded p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium">{result.label}:</span>
-                          {result.success ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {result.email}
-                        </div>
-                        {result.success && result.user && (
-                          <div className="text-sm">
-                            ✅ {result.user.fullName} ({result.user.role})
-                          </div>
-                        )}
-                        {!result.success && result.error && (
-                          <div className="text-sm text-red-600">
-                            ❌ {result.error}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                  <div className="text-xs text-muted-foreground">
-                    Tested at: {new Date(loginTestResults.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Actual Login */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
             Admin Login
           </CardTitle>
         </CardHeader>
@@ -407,6 +321,8 @@ export default function AdminLoginTest() {
                 type="email"
                 value={credentials.email}
                 onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                onKeyPress={handleKeyPress}
+                placeholder="Enter admin email"
                 className="mt-1"
               />
             </div>
@@ -418,12 +334,14 @@ export default function AdminLoginTest() {
                 type="password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                onKeyPress={handleKeyPress}
+                placeholder="Enter password"
                 className="mt-1"
               />
             </div>
             
             <Button 
-              onClick={performActualLogin} 
+              onClick={performLogin} 
               disabled={isLoggingIn}
               className="w-full"
             >
@@ -438,9 +356,8 @@ export default function AdminLoginTest() {
           
           <Alert className="mt-4">
             <AlertDescription>
-              <div className="space-y-1">
-                <div><strong>Regular Admin:</strong> admin@fayeedautocare.com / admin123</div>
-                <div><strong>Super Admin:</strong> superadmin@fayeedautocare.com / SuperAdmin2025!</div>
+              <div className="text-sm text-muted-foreground">
+                Enter your configured admin credentials. Credentials are not hardcoded for security.
               </div>
             </AlertDescription>
           </Alert>
