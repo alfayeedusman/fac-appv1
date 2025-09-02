@@ -21,12 +21,13 @@ export interface Product {
 export interface StockMovement {
   id: string;
   productId: string;
+  productName: string;
   type: "in" | "out" | "adjustment" | "transfer";
   quantity: number;
   reason: string;
   reference?: string; // PO number, sale ID, etc.
-  previousStock: number;
-  newStock: number;
+  previousStock?: number;
+  newBalance: number;
   performedBy: string;
   timestamp: string;
   notes?: string;
