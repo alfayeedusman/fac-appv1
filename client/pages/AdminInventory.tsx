@@ -602,7 +602,7 @@ export default function AdminInventory() {
             {/* Products Tab */}
             <TabsContent value="products" className="space-y-6">
               {/* Enhanced Stats Cards with Gradients */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
