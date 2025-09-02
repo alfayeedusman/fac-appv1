@@ -546,6 +546,25 @@ export default function RealTimeMap({
     return true;
   });
 
+  // Retry function to reset and try Mapbox again
+  const handleRetry = () => {
+    setShowFallback(false);
+    setError(null);
+    setIsLoading(true);
+    initializingRef.current = false;
+
+    // Clear existing map if any
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+
+    // Force re-initialization
+    setTimeout(() => {
+      console.log('🔄 Retrying map initialization...');
+    }, 100);
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -556,6 +575,11 @@ export default function RealTimeMap({
         </div>
       </div>
     );
+  }
+
+  // Show fallback map if Mapbox failed
+  if (showFallback) {
+    return <FallbackMap height={height} error={error} onRetry={handleRetry} />;
   }
 
   return (
