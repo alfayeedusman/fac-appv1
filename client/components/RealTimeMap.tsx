@@ -195,6 +195,7 @@ export default function RealTimeMap({
   const [customerData, setCustomerData] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFallback, setShowFallback] = useState(false);
   const [selectedCrew, setSelectedCrew] = useState<CrewMember | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
