@@ -775,6 +775,273 @@ class NeonDatabaseClient {
       return { success: false, stats: null };
     }
   }
+
+  // === INVENTORY MANAGEMENT ===
+
+  // Inventory items
+  async getInventoryItems(): Promise<{ success: boolean; items?: any[] }> {
+    if (!this.isConnected) {
+      return { success: false, items: [] };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/items`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory items fetch failed:', error);
+      return { success: false, items: [] };
+    }
+  }
+
+  async createInventoryItem(itemData: {
+    name: string;
+    category: string;
+    description?: string;
+    currentStock: number;
+    minStockLevel: number;
+    maxStockLevel: number;
+    unitPrice?: number;
+    supplier?: string;
+    barcode?: string;
+  }): Promise<{ success: boolean; item?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData)
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory item creation failed:', error);
+      return { success: false };
+    }
+  }
+
+  async updateInventoryItem(id: string, updates: any): Promise<{ success: boolean; item?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/items/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory item update failed:', error);
+      return { success: false };
+    }
+  }
+
+  async deleteInventoryItem(id: string): Promise<{ success: boolean }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/items/${id}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory item deletion failed:', error);
+      return { success: false };
+    }
+  }
+
+  async updateInventoryStock(id: string, newStock: number, reason: string, notes?: string): Promise<{ success: boolean }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/items/${id}/stock`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newStock,
+          reason,
+          notes,
+          performedBy: localStorage.getItem('userEmail') || 'unknown'
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory stock update failed:', error);
+      return { success: false };
+    }
+  }
+
+  // Stock movements
+  async getStockMovements(itemId?: string, limit?: number): Promise<{ success: boolean; movements?: any[] }> {
+    if (!this.isConnected) {
+      return { success: false, movements: [] };
+    }
+
+    try {
+      const params = new URLSearchParams();
+      if (itemId) params.append('itemId', itemId);
+      if (limit) params.append('limit', limit.toString());
+
+      const response = await fetch(`${this.baseUrl}/inventory/movements?${params}`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Stock movements fetch failed:', error);
+      return { success: false, movements: [] };
+    }
+  }
+
+  async createStockMovement(movementData: {
+    itemId: string;
+    type: 'in' | 'out' | 'adjustment';
+    quantity: number;
+    reason: string;
+    reference?: string;
+    notes?: string;
+  }): Promise<{ success: boolean; movement?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/movements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...movementData,
+          performedBy: localStorage.getItem('userEmail') || 'unknown'
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Stock movement creation failed:', error);
+      return { success: false };
+    }
+  }
+
+  // Suppliers
+  async getSuppliers(): Promise<{ success: boolean; suppliers?: any[] }> {
+    if (!this.isConnected) {
+      return { success: false, suppliers: [] };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/suppliers`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Suppliers fetch failed:', error);
+      return { success: false, suppliers: [] };
+    }
+  }
+
+  async createSupplier(supplierData: {
+    name: string;
+    contactPerson: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    website?: string;
+    paymentTerms?: string;
+    notes?: string;
+  }): Promise<{ success: boolean; supplier?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/suppliers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(supplierData)
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Supplier creation failed:', error);
+      return { success: false };
+    }
+  }
+
+  async updateSupplier(id: string, updates: any): Promise<{ success: boolean; supplier?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/suppliers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Supplier update failed:', error);
+      return { success: false };
+    }
+  }
+
+  async deleteSupplier(id: string): Promise<{ success: boolean }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/suppliers/${id}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Supplier deletion failed:', error);
+      return { success: false };
+    }
+  }
+
+  // Analytics
+  async getInventoryAnalytics(): Promise<{ success: boolean; analytics?: any }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/analytics`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Inventory analytics fetch failed:', error);
+      return { success: false };
+    }
+  }
+
+  async getLowStockItems(): Promise<{ success: boolean; items?: any[] }> {
+    if (!this.isConnected) {
+      return { success: false, items: [] };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/inventory/low-stock`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Low stock items fetch failed:', error);
+      return { success: false, items: [] };
+    }
+  }
 }
 
 // Export singleton instance
