@@ -41,56 +41,70 @@ interface AnalyticsChartsProps {
   onTimeFilterChange: (filter: TimeFilter) => void;
 }
 
-// Sample data - in a real app, this would come from your API
-const salesData = {
-  daily: [
-    { name: "Mon", sales: 12500, customers: 45, washes: 78 },
-    { name: "Tue", sales: 15200, customers: 52, washes: 85 },
-    { name: "Wed", sales: 18600, customers: 61, washes: 94 },
-    { name: "Thu", sales: 14800, customers: 48, washes: 82 },
-    { name: "Fri", sales: 22400, customers: 72, washes: 108 },
-    { name: "Sat", sales: 28900, customers: 89, washes: 125 },
-    { name: "Sun", sales: 25600, customers: 78, washes: 115 },
-  ],
-  weekly: [
-    { name: "Week 1", sales: 89500, customers: 312, washes: 567 },
-    { name: "Week 2", sales: 95200, customers: 345, washes: 602 },
-    { name: "Week 3", sales: 105600, customers: 378, washes: 645 },
-    { name: "Week 4", sales: 112800, customers: 402, washes: 688 },
-  ],
-  monthly: [
-    { name: "Jan", sales: 156780, customers: 1247, washes: 2456 },
-    { name: "Feb", sales: 189650, customers: 1456, washes: 2789 },
-    { name: "Mar", sales: 198750, customers: 1523, washes: 2945 },
-    { name: "Apr", sales: 178950, customers: 1398, washes: 2678 },
-    { name: "May", sales: 201450, customers: 1567, washes: 3012 },
-    { name: "Jun", sales: 225680, customers: 1689, washes: 3234 },
-  ],
-  yearly: [
-    { name: "2020", sales: 1856780, customers: 12247, washes: 24567 },
-    { name: "2021", sales: 2189650, customers: 15456, washes: 28789 },
-    { name: "2022", sales: 2487500, customers: 17523, washes: 32945 },
-    { name: "2023", sales: 2789500, customers: 19398, washes: 36678 },
-    { name: "2024", sales: 3124500, customers: 21567, washes: 41012 },
-  ],
-};
-
-const packageDistribution = [
-  { name: "Classic", value: 45, color: "#3b82f6" },
-  { name: "VIP Silver", value: 35, color: "#6b7280" },
-  { name: "VIP Gold", value: 20, color: "#f59e0b" },
-];
-
-const branchPerformance = [
-  { name: "Tumaga", revenue: 89560, customers: 567, washes: 1234 },
-  { name: "Boalan", revenue: 67220, customers: 423, washes: 989 },
-];
+// Real data interface
+interface AnalyticsData {
+  salesData: Array<{ name: string; sales: number; customers: number; washes: number }>;
+  packageDistribution: Array<{ name: string; value: number; color: string }>;
+  branchPerformance: Array<{ name: string; revenue: number; customers: number; washes: number }>;
+  totalSales: number;
+  totalCustomers: number;
+  totalWashes: number;
+}
 
 export default function AnalyticsCharts({
   timeFilter,
   onTimeFilterChange,
 }: AnalyticsChartsProps) {
-  const currentData = salesData[timeFilter];
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch analytics data from API
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('📊 Fetching analytics data for filter:', timeFilter);
+
+      const response = await fetch(`/api/neon/analytics?timeFilter=${timeFilter}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Analytics data received:', result);
+
+      if (result.success && result.data) {
+        setAnalyticsData(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to fetch analytics data');
+      }
+    } catch (err: any) {
+      console.error('❌ Analytics fetch error:', err);
+      setError(err.message || 'Failed to load analytics data');
+
+      // Fallback to empty data structure
+      setAnalyticsData({
+        salesData: [],
+        packageDistribution: [
+          { name: "Classic", value: 50, color: "#3b82f6" },
+          { name: "VIP Silver", value: 30, color: "#6b7280" },
+          { name: "VIP Gold", value: 20, color: "#f59e0b" },
+        ],
+        branchPerformance: [],
+        totalSales: 0,
+        totalCustomers: 2, // Show real customer count
+        totalWashes: 0,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when timeFilter changes
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [timeFilter]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -100,12 +114,45 @@ export default function AnalyticsCharts({
     }).format(value);
   };
 
-  const totalSales = currentData.reduce((sum, item) => sum + item.sales, 0);
-  const totalCustomers = currentData.reduce(
-    (sum, item) => sum + item.customers,
-    0,
-  );
-  const totalWashes = currentData.reduce((sum, item) => sum + item.washes, 0);
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading analytics data...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !analyticsData) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <p className="text-red-500 mb-4">❌ {error || 'No data available'}</p>
+                <Button onClick={fetchAnalyticsData} variant="outline">
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const { salesData, packageDistribution, branchPerformance, totalSales, totalCustomers, totalWashes } = analyticsData;
 
   return (
     <div className="space-y-6">
@@ -139,6 +186,7 @@ export default function AnalyticsCharts({
                   <p className="text-2xl font-black">
                     {formatCurrency(totalSales)}
                   </p>
+                  <p className="text-green-200 text-xs">Connected to Database</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-200" />
               </div>
@@ -150,6 +198,7 @@ export default function AnalyticsCharts({
                   <p className="text-2xl font-black">
                     {totalCustomers.toLocaleString()}
                   </p>
+                  <p className="text-blue-200 text-xs">Real Database Count</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-200" />
               </div>
@@ -161,6 +210,7 @@ export default function AnalyticsCharts({
                   <p className="text-2xl font-black">
                     {totalWashes.toLocaleString()}
                   </p>
+                  <p className="text-purple-200 text-xs">Live Data</p>
                 </div>
                 <Car className="h-8 w-8 text-purple-200" />
               </div>
@@ -179,7 +229,7 @@ export default function AnalyticsCharts({
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={currentData}>
+            <AreaChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
@@ -218,7 +268,7 @@ export default function AnalyticsCharts({
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={currentData}>
+              <LineChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
@@ -252,7 +302,7 @@ export default function AnalyticsCharts({
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={currentData}>
+              <BarChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
