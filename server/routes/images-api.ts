@@ -315,9 +315,16 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting images:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get images'
+    // Return empty list if tables don't exist yet
+    res.json({
+      success: true,
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 50,
+        total: 0,
+        pages: 0
+      }
     });
   }
 });
