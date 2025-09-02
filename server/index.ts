@@ -80,5 +80,11 @@ export function createServer() {
   app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
 
+  // Analytics endpoints
+  app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
+
+  // Users endpoints (for customer management)
+  app.get("/api/neon/users", neonApiRoutes.getAllUsers);
+
   return app;
 }
