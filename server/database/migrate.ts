@@ -914,7 +914,10 @@ export async function seedInitialData() {
     // Create or update default admin user
     const adminExists =
       await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+
+    // Use environment variable for admin password, fallback to secure default
+    const defaultAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const hashedPassword = await bcrypt.hash(defaultAdminPassword, 10);
 
     if (adminExists.length === 0) {
       await sql`
@@ -933,16 +936,14 @@ export async function seedInitialData() {
           'premium'
         );
       `;
-      console.log(
-        "✅ Default admin user created with properly hashed password",
-      );
+      console.log("✅ Default admin user created");
     } else {
       await sql`
         UPDATE users
         SET password = ${hashedPassword}, updated_at = NOW()
         WHERE email = 'admin@fayeedautocare.com';
       `;
-      console.log("✅ Default admin user password updated with proper hash");
+      console.log("✅ Default admin user password updated");
     }
 
     // Insert default admin settings
