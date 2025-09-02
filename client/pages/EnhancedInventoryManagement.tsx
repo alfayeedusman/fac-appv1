@@ -1818,6 +1818,372 @@ export default function EnhancedInventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Product Modal */}
+      <Dialog open={showAddProductModal} onOpenChange={setShowAddProductModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+            <DialogDescription>
+              Add a new product to your inventory with complete details
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="productName">Product Name *</Label>
+                <Input
+                  id="productName"
+                  placeholder="Car Shampoo Premium"
+                  value={newProduct.name}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="productCategory">Category *</Label>
+                <Select
+                  value={newProduct.categoryId}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, categoryId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SafeSelectItem key={category.id} value={category.id}>
+                        {category.icon} {category.name}
+                      </SafeSelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {newProduct.categoryId && (
+              <div>
+                <Label htmlFor="productVariant">Variant</Label>
+                <Select
+                  value={newProduct.variantId}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, variantId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select variant (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories
+                      .find((c) => c.id === newProduct.categoryId)
+                      ?.variants?.map((variant) => (
+                        <SafeSelectItem key={variant.id} value={variant.id}>
+                          {variant.name} (×{variant.priceMultiplier})
+                        </SafeSelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="productDescription">Description</Label>
+              <Textarea
+                id="productDescription"
+                placeholder="Product description and features"
+                value={newProduct.description}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="productSku">SKU</Label>
+                <Input
+                  id="productSku"
+                  placeholder="SKU-001"
+                  value={newProduct.sku}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, sku: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="productBarcode">Barcode</Label>
+                <Input
+                  id="productBarcode"
+                  placeholder="1234567890123"
+                  value={newProduct.barcode}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, barcode: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="currentStock">Current Stock</Label>
+                <Input
+                  id="currentStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.currentStock}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      currentStock: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="minStock">Min Stock Level</Label>
+                <Input
+                  id="minStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.minStockLevel}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      minStockLevel: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="maxStock">Max Stock Level</Label>
+                <Input
+                  id="maxStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.maxStockLevel}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      maxStockLevel: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="unitPrice">Unit Price (₱)</Label>
+                <Input
+                  id="unitPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.unitPrice}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      unitPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="costPrice">Cost Price (₱)</Label>
+                <Input
+                  id="costPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.costPrice}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      costPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplier">Supplier</Label>
+                <Input
+                  id="supplier"
+                  placeholder="Supplier name"
+                  value={newProduct.supplier}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, supplier: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Storage Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Warehouse A, Shelf 1"
+                  value={newProduct.location}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, location: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="tags">Tags (comma separated)</Label>
+              <Input
+                id="tags"
+                placeholder="premium, car care, cleaning"
+                value={newProduct.tags}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, tags: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="specifications">Specifications (JSON format)</Label>
+              <Textarea
+                id="specifications"
+                placeholder='{"volume": "500ml", "ph": "7.0"}'
+                value={newProduct.specifications}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, specifications: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddProductModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddProduct}>
+              Add Product
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Supplier Modal */}
+      <Dialog open={showAddSupplierModal} onOpenChange={setShowAddSupplierModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Supplier</DialogTitle>
+            <DialogDescription>
+              Add a new supplier to your supplier database
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="supplierName">Supplier Name *</Label>
+              <Input
+                id="supplierName"
+                placeholder="ABC Supply Co."
+                value={newSupplier.name}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, name: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contactPerson">Contact Person *</Label>
+              <Input
+                id="contactPerson"
+                placeholder="John Smith"
+                value={newSupplier.contactPerson}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplierEmail">Email</Label>
+                <Input
+                  id="supplierEmail"
+                  type="email"
+                  placeholder="contact@abcsupply.com"
+                  value={newSupplier.email}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, email: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="supplierPhone">Phone</Label>
+                <Input
+                  id="supplierPhone"
+                  placeholder="+63 912 345 6789"
+                  value={newSupplier.phone}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, phone: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="supplierAddress">Address</Label>
+              <Textarea
+                id="supplierAddress"
+                placeholder="Complete address"
+                value={newSupplier.address}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, address: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="supplierWebsite">Website</Label>
+              <Input
+                id="supplierWebsite"
+                placeholder="https://www.abcsupply.com"
+                value={newSupplier.website}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, website: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="supplierNotes">Notes</Label>
+              <Textarea
+                id="supplierNotes"
+                placeholder="Additional notes about this supplier"
+                value={newSupplier.notes}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, notes: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddSupplierModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddSupplier}>
+              Add Supplier
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
