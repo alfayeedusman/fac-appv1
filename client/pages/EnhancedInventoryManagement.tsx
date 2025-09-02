@@ -992,6 +992,16 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
+                {process.env.NODE_ENV === 'development' && (
+                  <Button
+                    onClick={handleDebugConnection}
+                    variant="outline"
+                    size="sm"
+                    className="hidden lg:flex"
+                  >
+                    🔍 Debug DB
+                  </Button>
+                )}
               </div>
 
               {/* Products Table */}
