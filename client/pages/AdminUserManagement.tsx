@@ -41,7 +41,7 @@ import {
   Settings,
   Crown,
   UserPlus,
-  User,
+  User as UserIcon,
 } from "lucide-react";
 import { neonDbClient, User } from "@/services/neonDatabaseService";
 import Swal from "sweetalert2";
@@ -344,7 +344,7 @@ export default function AdminUserManagement() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="bg-gradient-to-r from-fac-orange-500 to-red-500 p-2 rounded-full">
-                            <User className="h-4 w-4 text-white" />
+                            <UserIcon className="h-4 w-4 text-white" />
                           </div>
                           <div>
                             <p className="font-bold text-foreground">{user.fullName}</p>
