@@ -217,11 +217,12 @@ export const updateProductStock = (
     // Log stock movement
     addStockMovement({
       productId,
+      productName: products[productIndex].name,
       type: newStock > oldStock ? "in" : "out",
       quantity: Math.abs(newStock - oldStock),
       reason,
       previousStock: oldStock,
-      newStock,
+      newBalance: newStock,
       performedBy: localStorage.getItem("userEmail") || "system",
     });
   }
