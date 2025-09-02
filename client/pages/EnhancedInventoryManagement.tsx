@@ -949,36 +949,72 @@ export default function EnhancedInventoryManagement() {
 
   // Analytics Functions
   const getInventoryAnalytics = () => {
-    const totalProducts = products.length;
-    const totalValue = products.reduce((sum, p) => sum + (p.currentStock * (p.costPrice || 0)), 0);
-    const lowStockProducts = products.filter(p => p.currentStock <= p.minStockLevel);
-    const outOfStockProducts = products.filter(p => p.currentStock === 0);
-    const topProducts = [...products]
-      .sort((a, b) => (b.currentStock * (b.unitPrice || 0)) - (a.currentStock * (a.unitPrice || 0)))
-      .slice(0, 5);
+    try {
+      const totalProducts = products?.length || 0;
+      const totalValue = products?.reduce((sum, p) => {
+        const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
+        const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
+        return sum + (stock * cost);
+      }, 0) || 0;
 
-    const categoryBreakdown = categories.map(category => {
-      const categoryProducts = products.filter(p => p.categoryId === category.id);
-      const categoryValue = categoryProducts.reduce((sum, p) => sum + (p.currentStock * (p.costPrice || 0)), 0);
+      const lowStockProducts = products?.filter(p =>
+        typeof p.currentStock === 'number' &&
+        typeof p.minStockLevel === 'number' &&
+        p.currentStock <= p.minStockLevel
+      ) || [];
+
+      const outOfStockProducts = products?.filter(p =>
+        typeof p.currentStock === 'number' && p.currentStock === 0
+      ) || [];
+
+      const topProducts = [...(products || [])]
+        .sort((a, b) => {
+          const aValue = (a.currentStock || 0) * (a.unitPrice || 0);
+          const bValue = (b.currentStock || 0) * (b.unitPrice || 0);
+          return bValue - aValue;
+        })
+        .slice(0, 5);
+
+      const categoryBreakdown = (categories || []).map(category => {
+        const categoryProducts = (products || []).filter(p => p.categoryId === category.id);
+        const categoryValue = categoryProducts.reduce((sum, p) => {
+          const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
+          const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
+          return sum + (stock * cost);
+        }, 0);
+        return {
+          category: category.name || 'Unknown',
+          count: categoryProducts.length,
+          value: categoryValue,
+          color: category.color || '#3B82F6'
+        };
+      });
+
       return {
-        category: category.name,
-        count: categoryProducts.length,
-        value: categoryValue,
-        color: category.color
+        totalProducts,
+        totalValue,
+        lowStockCount: lowStockProducts.length,
+        outOfStockCount: outOfStockProducts.length,
+        lowStockProducts,
+        outOfStockProducts,
+        topProducts,
+        categoryBreakdown,
+        recentMovements: (stockMovements || []).slice(0, 10)
       };
-    });
-
-    return {
-      totalProducts,
-      totalValue,
-      lowStockCount: lowStockProducts.length,
-      outOfStockCount: outOfStockProducts.length,
-      lowStockProducts,
-      outOfStockProducts,
-      topProducts,
-      categoryBreakdown,
-      recentMovements: stockMovements.slice(0, 10)
-    };
+    } catch (error) {
+      console.error('Error calculating analytics:', error);
+      return {
+        totalProducts: 0,
+        totalValue: 0,
+        lowStockCount: 0,
+        outOfStockCount: 0,
+        lowStockProducts: [],
+        outOfStockProducts: [],
+        topProducts: [],
+        categoryBreakdown: [],
+        recentMovements: []
+      };
+    }
   };
 
   // Debug function to test database connection
