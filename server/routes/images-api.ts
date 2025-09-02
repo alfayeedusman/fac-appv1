@@ -228,6 +228,19 @@ router.post('/upload-multiple', upload.array('images', 10), async (req, res) => 
  */
 router.get('/', async (req, res) => {
   try {
+    // Check if database is available
+    if (!neonDbService.db) {
+      return res.json({
+        success: true,
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 50,
+          total: 0,
+          pages: 0
+        }
+      });
+    }
     const {
       page = '1',
       limit = '20',
