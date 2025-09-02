@@ -2,8 +2,8 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
-import { db } from '../database/connection';
-import { images, imageCollections, imageCollectionItems } from '../database/schema';
+import { neonDbService } from '../services/neonDatabaseService';
+import * as schema from '../database/schema';
 import { eq, desc, and, like, inArray, count } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
