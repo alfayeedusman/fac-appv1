@@ -735,3 +735,214 @@ export const getPOSCategories: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// ============= INVENTORY MANAGEMENT API =============
+
+// Inventory items endpoints
+export const getInventoryItems: RequestHandler = async (req, res) => {
+  try {
+    const items = await neonDbService.getInventoryItems();
+    res.json({
+      success: true,
+      items: items || []
+    });
+  } catch (error) {
+    console.error('Get inventory items error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch inventory items'
+    });
+  }
+};
+
+export const createInventoryItem: RequestHandler = async (req, res) => {
+  try {
+    const item = await neonDbService.createInventoryItem(req.body);
+    res.status(201).json({
+      success: true,
+      item,
+      message: 'Inventory item created successfully'
+    });
+  } catch (error) {
+    console.error('Create inventory item error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create inventory item'
+    });
+  }
+};
+
+export const updateInventoryItem: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await neonDbService.updateInventoryItem(id, req.body);
+    res.json({
+      success: true,
+      item,
+      message: 'Inventory item updated successfully'
+    });
+  } catch (error) {
+    console.error('Update inventory item error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update inventory item'
+    });
+  }
+};
+
+export const deleteInventoryItem: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await neonDbService.deleteInventoryItem(id);
+    res.json({
+      success: true,
+      message: 'Inventory item deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete inventory item error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete inventory item'
+    });
+  }
+};
+
+// Stock movements endpoints
+export const getStockMovements: RequestHandler = async (req, res) => {
+  try {
+    const { itemId, limit } = req.query;
+    const movements = await neonDbService.getStockMovements(
+      itemId as string,
+      limit ? parseInt(limit as string) : undefined
+    );
+    res.json({
+      success: true,
+      movements: movements || []
+    });
+  } catch (error) {
+    console.error('Get stock movements error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch stock movements'
+    });
+  }
+};
+
+export const createStockMovement: RequestHandler = async (req, res) => {
+  try {
+    const movement = await neonDbService.createStockMovement(req.body);
+    res.status(201).json({
+      success: true,
+      movement,
+      message: 'Stock movement recorded successfully'
+    });
+  } catch (error) {
+    console.error('Create stock movement error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to record stock movement'
+    });
+  }
+};
+
+// Suppliers endpoints
+export const getSuppliers: RequestHandler = async (req, res) => {
+  try {
+    const suppliers = await neonDbService.getSuppliers();
+    res.json({
+      success: true,
+      suppliers: suppliers || []
+    });
+  } catch (error) {
+    console.error('Get suppliers error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch suppliers'
+    });
+  }
+};
+
+export const createSupplier: RequestHandler = async (req, res) => {
+  try {
+    const supplier = await neonDbService.createSupplier(req.body);
+    res.status(201).json({
+      success: true,
+      supplier,
+      message: 'Supplier created successfully'
+    });
+  } catch (error) {
+    console.error('Create supplier error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create supplier'
+    });
+  }
+};
+
+export const updateSupplier: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const supplier = await neonDbService.updateSupplier(id, req.body);
+    res.json({
+      success: true,
+      supplier,
+      message: 'Supplier updated successfully'
+    });
+  } catch (error) {
+    console.error('Update supplier error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update supplier'
+    });
+  }
+};
+
+export const deleteSupplier: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await neonDbService.deleteSupplier(id);
+    res.json({
+      success: true,
+      message: 'Supplier deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete supplier error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete supplier'
+    });
+  }
+};
+
+// Inventory analytics endpoints
+export const getInventoryAnalytics: RequestHandler = async (req, res) => {
+  try {
+    const analytics = await neonDbService.getInventoryAnalytics();
+    res.json({
+      success: true,
+      analytics
+    });
+  } catch (error) {
+    console.error('Get inventory analytics error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch inventory analytics'
+    });
+  }
+};
+
+export const getLowStockItems: RequestHandler = async (req, res) => {
+  try {
+    const items = await neonDbService.getLowStockItems();
+    res.json({
+      success: true,
+      items: items || []
+    });
+  } catch (error) {
+    console.error('Get low stock items error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch low stock items'
+    });
+  }
+};
