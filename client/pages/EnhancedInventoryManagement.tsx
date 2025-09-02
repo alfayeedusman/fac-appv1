@@ -1185,11 +1185,22 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditProduct(product)}
+                                  title="Edit Product"
+                                >
                                   <Edit className="h-3 w-3" />
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                  <Eye className="h-3 w-3" />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                  title="Delete Product"
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </TableCell>
