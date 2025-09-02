@@ -293,7 +293,7 @@ export default function AdminDashboard() {
   const loadRealCustomers = async () => {
     try {
       setCustomersLoading(true);
-      console.log("🔍 Loading customers from database...");
+      console.log("���� Loading customers from database...");
 
       // Ensure database connection is ready
       const connectionStatus = neonDbClient.getConnectionStatus();
@@ -766,8 +766,8 @@ export default function AdminDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-3 sm:p-4 lg:p-6">
+      <div className="flex-1 ml-0 lg:ml-64 min-h-screen">
+        <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-6">
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
