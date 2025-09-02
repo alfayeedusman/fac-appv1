@@ -39,8 +39,11 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  status: "active" | "inactive";
-  createdDate: string;
+  website?: string;
+  notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Sample products for demo
