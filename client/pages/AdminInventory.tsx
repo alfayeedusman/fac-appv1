@@ -674,80 +674,87 @@ export default function AdminInventory() {
 
               {/* Enhanced Controls */}
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                    <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                      <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          placeholder="Search products, categories, suppliers..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        />
+                <CardContent className="p-4 sm:p-6">
+                  <div className="space-y-4">
+                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                      <div className="flex flex-col sm:flex-row gap-3 w-full lg:flex-1">
+                        <div className="relative flex-1 min-w-0">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search products, categories, suppliers..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                          <SelectTrigger className="w-full sm:w-48 border-gray-300">
+                            <Filter className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Filter by category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category.value} value={category.value}>
+                                <div className="flex items-center">
+                                  <span className="mr-2">{category.icon}</span>
+                                  {category.label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      
-                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-48 border-gray-300">
-                          <Filter className="h-4 w-4 mr-2" />
-                          <SelectValue placeholder="Filter by category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Categories</SelectItem>
-                          {categories.map((category) => (
-                            <SelectItem key={category.value} value={category.value}>
-                              <div className="flex items-center">
-                                <span className="mr-2">{category.icon}</span>
-                                {category.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+
+                      <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+                        <Button variant="outline" onClick={loadData} disabled={loading} size="sm">
+                          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                          <span className="hidden sm:inline">Refresh</span>
+                        </Button>
+
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          <span className="hidden sm:inline">Export</span>
+                        </Button>
+
+                        <Button
+                          onClick={() => setShowAddItemModal(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          <span className="hidden sm:inline">Add Product</span>
+                          <span className="sm:hidden">Add</span>
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={loadData} disabled={loading}>
-                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
-                      </Button>
-                      
-                      <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </Button>
-                      
-                      <Button 
-                        onClick={() => setShowAddItemModal(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Product
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* View Mode Toggle */}
-                  <div className="flex justify-end mt-4">
-                    <div className="bg-gray-100 rounded-lg p-1">
-                      <Button
-                        variant={viewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("grid")}
-                        className="text-xs"
-                      >
-                        <Boxes className="h-3 w-3 mr-1" />
-                        Grid
-                      </Button>
-                      <Button
-                        variant={viewMode === "table" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("table")}
-                        className="text-xs"
-                      >
-                        <BarChart3 className="h-3 w-3 mr-1" />
-                        Table
-                      </Button>
+                    {/* View Mode Toggle */}
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">
+                        Showing {filteredItems.length} of {inventoryItems.length} products
+                      </div>
+                      <div className="bg-gray-100 rounded-lg p-1">
+                        <Button
+                          variant={viewMode === "grid" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setViewMode("grid")}
+                          className="text-xs h-8"
+                        >
+                          <Boxes className="h-3 w-3 mr-1" />
+                          Grid
+                        </Button>
+                        <Button
+                          variant={viewMode === "table" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setViewMode("table")}
+                          className="text-xs h-8"
+                        >
+                          <BarChart3 className="h-3 w-3 mr-1" />
+                          Table
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
