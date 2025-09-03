@@ -1057,3 +1057,6 @@ export const notificationDeliveries = pgTable("notification_deliveries", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// Export CMS schema types and tables
+export * from './cmsSchema.js';
