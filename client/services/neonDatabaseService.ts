@@ -866,6 +866,35 @@ class NeonDatabaseClient {
     }
   }
 
+  async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
+    console.log("🏪 getBranches called, connection status:", this.isConnected);
+    if (!this.isConnected) {
+      console.warn("⚠️ Database not connected for getBranches");
+      return { success: false, branches: [] };
+    }
+
+    try {
+      console.log("🔄 Fetching branches from API...");
+      const response = await this.fetchJsonWithFallback("/api/neon/branches");
+
+      if (!response.ok) {
+        console.error("❌ getBranches API error:", response.status, response.statusText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ getBranches result:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ Error in getBranches:", error);
+      return {
+        success: false,
+        branches: [],
+        error: error instanceof Error ? error.message : "Failed to fetch branches"
+      };
+    }
+  }
+
   async getStaffUsers(): Promise<{ success: boolean; users?: User[] }> {
     console.log(
       "🔗 getStaffUsers called, connection status:",
