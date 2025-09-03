@@ -2,15 +2,14 @@
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js');
 
-// Firebase configuration - should match client config
-// Note: In production, these should be loaded from environment variables
+// Firebase configuration for facapp project
 const firebaseConfig = {
-  apiKey: self.location.hostname === 'localhost' ? "demo-api-key" : "AIzaSyD_your_api_key",
-  authDomain: self.location.hostname === 'localhost' ? "demo-project.firebaseapp.com" : "your-project.firebaseapp.com",
-  projectId: self.location.hostname === 'localhost' ? "demo-project-id" : "your-project-id",
-  storageBucket: self.location.hostname === 'localhost' ? "demo-project.appspot.com" : "your-project.appspot.com",
-  messagingSenderId: self.location.hostname === 'localhost' ? "123456789" : "123456789",
-  appId: self.location.hostname === 'localhost' ? "1:123456789:web:demo" : "1:123456789:web:abcdef"
+  apiKey: "AIzaSyBvOAYy6L8_l_ZQ2Z_7Z_YWq_X_dQ_2Z_Q", // You'll need to get this from Firebase Console
+  authDomain: "facapp-dbdc1.firebaseapp.com",
+  projectId: "facapp-dbdc1",
+  storageBucket: "facapp-dbdc1.appspot.com",
+  messagingSenderId: "964995288467",
+  appId: "1:964995288467:web:facapp-web-id" // You'll need to get this from Firebase Console
 };
 
 // Initialize Firebase with error handling
