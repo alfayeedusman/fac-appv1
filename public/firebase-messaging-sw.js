@@ -3,20 +3,32 @@ importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js');
 
 // Firebase configuration - should match client config
+// Note: In production, these should be loaded from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyD_your_api_key", // This will be replaced by build process
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: self.location.hostname === 'localhost' ? "demo-api-key" : "AIzaSyD_your_api_key",
+  authDomain: self.location.hostname === 'localhost' ? "demo-project.firebaseapp.com" : "your-project.firebaseapp.com",
+  projectId: self.location.hostname === 'localhost' ? "demo-project-id" : "your-project-id",
+  storageBucket: self.location.hostname === 'localhost' ? "demo-project.appspot.com" : "your-project.appspot.com",
+  messagingSenderId: self.location.hostname === 'localhost' ? "123456789" : "123456789",
+  appId: self.location.hostname === 'localhost' ? "1:123456789:web:demo" : "1:123456789:web:abcdef"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase with error handling
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log('✅ Firebase initialized in service worker');
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase in service worker:', error);
+}
 
-// Get messaging instance
-const messaging = firebase.messaging();
+// Get messaging instance with error handling
+let messaging = null;
+try {
+  messaging = firebase.messaging();
+  console.log('✅ Firebase messaging initialized in service worker');
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase messaging in service worker:', error);
+}
 
 // Handle background messages
 messaging.onBackgroundMessage(function(payload) {
