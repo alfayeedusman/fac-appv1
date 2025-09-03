@@ -325,14 +325,14 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-blue-100 text-sm">Total Branches</p>
-                    <p className="text-2xl font-black">
+                    <div className="text-blue-100 text-sm">Total Branches</div>
+                    <div className="text-2xl font-black">
                       {loading ? (
-                        <div className="animate-pulse">-</div>
+                        <span className="animate-pulse">-</span>
                       ) : (
                         branches.length
                       )}
-                    </p>
+                    </div>
                   </div>
                   <MapPin className="h-8 w-8 text-blue-200" />
                 </div>
@@ -343,14 +343,14 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-100 text-sm">Total Revenue</p>
-                    <p className="text-2xl font-black">
+                    <div className="text-green-100 text-sm">Total Revenue</div>
+                    <div className="text-2xl font-black">
                       {loading ? (
-                        <div className="animate-pulse">-</div>
+                        <span className="animate-pulse">-</span>
                       ) : (
                         formatCurrency(totalRevenue)
                       )}
-                    </p>
+                    </div>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-200" />
                 </div>
@@ -361,14 +361,14 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-purple-100 text-sm">Total Customers</p>
-                    <p className="text-2xl font-black">
+                    <div className="text-purple-100 text-sm">Total Customers</div>
+                    <div className="text-2xl font-black">
                       {loading ? (
-                        <div className="animate-pulse">-</div>
+                        <span className="animate-pulse">-</span>
                       ) : (
                         totalCustomers.toLocaleString()
                       )}
-                    </p>
+                    </div>
                   </div>
                   <Users className="h-8 w-8 text-purple-200" />
                 </div>
@@ -379,14 +379,14 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-orange-100 text-sm">Total Staff</p>
-                    <p className="text-2xl font-black">
+                    <div className="text-orange-100 text-sm">Total Staff</div>
+                    <div className="text-2xl font-black">
                       {loading ? (
-                        <div className="animate-pulse">-</div>
+                        <span className="animate-pulse">-</span>
                       ) : (
                         totalStaff
                       )}
-                    </p>
+                    </div>
                   </div>
                   <Users className="h-8 w-8 text-orange-200" />
                 </div>
