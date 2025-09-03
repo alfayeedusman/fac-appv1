@@ -3,6 +3,8 @@ import { neonDatabaseService } from '../services/neonDatabaseService.js';
 
 const router = Router();
 
+console.log('🎨 CMS: CMS API routes module loaded successfully');
+
 // Default homepage content structure
 const defaultHomepageContent = {
   hero: {

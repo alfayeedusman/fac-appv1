@@ -133,7 +133,9 @@ export const createServer = () => {
   app.use("/api/images", imagesApiRoutes);
 
   // ============= CMS CONTENT MANAGEMENT API =============
+  console.log('🎨 Registering CMS API routes...');
   app.use("/api/cms", cmsApiRoutes);
+  console.log('🎨 CMS API routes registered successfully');
 
   // Serve React admin app for everything that's NOT an API route
   const reactBuildPath = path.join(__dirname, "../dist/spa");
