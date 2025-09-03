@@ -12,6 +12,7 @@ import * as crewApiRoutes from "./routes/crew-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
+import { seedBranches } from "./database/seed-branches.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -162,5 +163,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`🚀 FAC Server running on port ${PORT}`);
     console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
     console.log(`🏠 Home: http://localhost:${PORT}/`);
+
+    // Seed branch data after server startup
+    setTimeout(async () => {
+      try {
+        console.log("🏪 Auto-seeding branch data...");
+        await seedBranches();
+        console.log("✅ Branch seeding completed successfully");
+      } catch (error) {
+        console.log("⚠️ Branch seeding failed:", error);
+      }
+    }, 3000);
   });
 }
