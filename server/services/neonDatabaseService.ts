@@ -349,6 +349,84 @@ class NeonDatabaseService {
     return !!dismissal;
   }
 
+  // === BRANCH MANAGEMENT ===
+
+  async getBranches(): Promise<any[]> {
+    if (!this.db) throw new Error("Database not connected");
+
+    try {
+      const branches = await this.db
+        .select()
+        .from(schema.branches)
+        .orderBy(schema.branches.name);
+
+      // Calculate stats for each branch
+      const branchesWithStats = await Promise.all(
+        branches.map(async (branch: any) => {
+          // Count customers in this branch
+          const [customerCount] = await this.db
+            .select({ count: count() })
+            .from(schema.users)
+            .where(
+              and(
+                eq(schema.users.branchLocation, branch.name),
+                eq(schema.users.role, "user")
+              )
+            );
+
+          // Count staff in this branch
+          const [staffCount] = await this.db
+            .select({ count: count() })
+            .from(schema.users)
+            .where(
+              and(
+                eq(schema.users.branchLocation, branch.name),
+                sql`${schema.users.role} != 'user'`
+              )
+            );
+
+          // Calculate revenue from bookings in this branch
+          const [revenueResult] = await this.db
+            .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
+            .from(schema.bookings)
+            .where(
+              and(
+                eq(schema.bookings.branch, branch.name),
+                eq(schema.bookings.status, "completed")
+              )
+            );
+
+          // Count completed washes
+          const [washCount] = await this.db
+            .select({ count: count() })
+            .from(schema.bookings)
+            .where(
+              and(
+                eq(schema.bookings.branch, branch.name),
+                eq(schema.bookings.status, "completed")
+              )
+            );
+
+          return {
+            ...branch,
+            stats: {
+              monthlyRevenue: parseFloat(revenueResult.totalRevenue || "0"),
+              totalCustomers: customerCount.count,
+              totalWashes: washCount.count,
+              averageRating: 4.5, // TODO: Calculate from actual ratings
+              staffCount: staffCount.count,
+            },
+          };
+        })
+      );
+
+      return branchesWithStats;
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      return [];
+    }
+  }
+
   // === UTILITY METHODS ===
 
   async getStats(): Promise<{
