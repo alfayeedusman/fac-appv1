@@ -869,30 +869,6 @@ class NeonDatabaseService {
 
   // ============= NEW FEATURES METHODS =============
 
-  // Branches methods
-  async getBranches() {
-    try {
-      // Use raw SQL since schema might not be updated yet
-      const sql = this.createSqlClient();
-      const result =
-        await sql`SELECT * FROM branches WHERE is_active = true ORDER BY is_main_branch DESC, name ASC`;
-      return result || [];
-    } catch (error) {
-      console.error("Get branches error:", error);
-      // Return mock data if table doesn't exist yet
-      return [
-        {
-          id: "branch_main_001",
-          name: "Main Branch",
-          code: "MAIN",
-          address: "123 Main Street, Makati City",
-          city: "Makati",
-          is_active: true,
-          is_main_branch: true,
-        },
-      ];
-    }
-  }
 
   // Service packages methods
   async getServicePackages() {
