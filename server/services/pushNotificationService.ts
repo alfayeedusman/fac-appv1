@@ -144,6 +144,11 @@ export class PushNotificationService {
    */
   async unregisterToken(token: string, userId?: string): Promise<boolean> {
     try {
+      const db = neonDbService.db;
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       const conditions = [eq(schema.fcmTokens.token, token)];
       if (userId) {
         conditions.push(eq(schema.fcmTokens.userId, userId));
@@ -170,6 +175,12 @@ export class PushNotificationService {
    */
   private async getTargetTokens(target: NotificationTarget): Promise<Array<{ token: string; userId?: string; id: string }>> {
     try {
+      const db = neonDbService.db;
+      if (!db) {
+        console.error('Database not initialized for getTargetTokens');
+        return [];
+      }
+
       let tokens: Array<{ token: string; userId?: string; id: string }> = [];
 
       switch (target.type) {

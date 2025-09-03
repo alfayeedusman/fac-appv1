@@ -36,14 +36,29 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true }));
 
   // Health check
-  app.get("/api/health", (req, res) => {
-    res.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      services: {
-        neon: "connected",
-      },
-    });
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Actually test database connectivity
+      const { testConnection } = await import("./database/connection.js");
+      const dbConnected = await testConnection();
+
+      res.json({
+        status: dbConnected ? "healthy" : "degraded",
+        timestamp: new Date().toISOString(),
+        services: {
+          neon: dbConnected ? "connected" : "disconnected",
+        },
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        services: {
+          neon: "error",
+        },
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   });
 
   // API Routes
