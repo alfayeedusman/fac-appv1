@@ -41,6 +41,7 @@
     "jsqr": "^1.4.0",
     "mapbox-gl": "^3.14.0",
     "multer": "^2.0.2",
+    "mysql2": "^3.14.4",
     "nodemailer": "^7.0.5",
     "postgres": "^3.4.7",
     "react-is": "^19.1.0",
