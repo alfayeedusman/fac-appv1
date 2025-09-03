@@ -741,13 +741,15 @@ export const createStaffUser: RequestHandler = async (req, res) => {
 // Branches endpoints
 export const getBranches: RequestHandler = async (req, res) => {
   try {
+    console.log("🏪 Getting branches from database...");
     const branches = await neonDbService.getBranches();
+    console.log("✅ Branches retrieved:", branches.length, "branches found");
     res.json({
       success: true,
       branches: branches || [],
     });
   } catch (error) {
-    console.error("Get branches error:", error);
+    console.error("❌ Get branches error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch branches",
