@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,8 @@ import {
   Smartphone,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { neonDbClient } from "@/services/neonDatabaseService";
+import { toast } from "@/hooks/use-toast";
 
 interface Branch {
   id: string;
@@ -97,134 +99,8 @@ interface BranchManagementProps {
 }
 
 export default function BranchManagement({ userRole }: BranchManagementProps) {
-  const [branches, setBranches] = useState<Branch[]>([
-    {
-      id: "1",
-      name: "Tumaga Branch",
-      address: "Tumaga Road, Zamboanga City",
-      phone: "+63 962 123 4567",
-      email: "tumaga@facautocare.com",
-      manager: "Juan Dela Cruz",
-      status: "active",
-      coordinates: { lat: 6.9214, lng: 122.079 },
-      loginCredentials: {
-        username: "tumaga_branch",
-        password: "tumaga2024",
-        lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      },
-      stats: {
-        monthlyRevenue: 89560,
-        totalCustomers: 567,
-        totalWashes: 1234,
-        averageRating: 4.8,
-        staffCount: 8,
-      },
-      operatingHours: {
-        open: "07:00",
-        close: "19:00",
-        days: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ],
-      },
-      services: ["Classic Wash", "VIP Silver", "VIP Gold", "Premium Detail"],
-      washHistory: [
-        {
-          id: "w1",
-          customerName: "Maria Santos",
-          customerPhone: "+63 918 765 4321",
-          carModel: "Honda Civic 2019",
-          plateNumber: "XYZ 5678",
-          serviceType: "VIP Silver",
-          amount: 1500,
-          washDate: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-          duration: "45 mins",
-          staffMember: "Carlo Reyes",
-          status: "completed",
-        },
-        {
-          id: "w2",
-          customerName: "John Dela Cruz",
-          customerPhone: "+63 912 345 6789",
-          carModel: "Toyota Vios 2020",
-          plateNumber: "ABC 1234",
-          serviceType: "VIP Gold",
-          amount: 3000,
-          washDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-          duration: "60 mins",
-          staffMember: "Anna Garcia",
-          status: "completed",
-        },
-        {
-          id: "w3",
-          customerName: "Pedro Martinez",
-          customerPhone: "+63 920 987 6543",
-          carModel: "Mitsubishi Montero 2021",
-          plateNumber: "DEF 9012",
-          serviceType: "Classic",
-          amount: 500,
-          washDate: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-          duration: "30 mins",
-          staffMember: "Rico Suave",
-          status: "in-progress",
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "Boalan Branch",
-      address: "Boalan Road, Zamboanga City",
-      phone: "+63 962 987 6543",
-      email: "boalan@facautocare.com",
-      manager: "Maria Santos",
-      status: "active",
-      coordinates: { lat: 6.9094, lng: 122.0736 },
-      loginCredentials: {
-        username: "boalan_branch",
-        password: "boalan2024",
-        lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-      },
-      stats: {
-        monthlyRevenue: 67220,
-        totalCustomers: 423,
-        totalWashes: 989,
-        averageRating: 4.6,
-        staffCount: 6,
-      },
-      operatingHours: {
-        open: "08:00",
-        close: "18:00",
-        days: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ],
-      },
-      services: ["Classic Wash", "VIP Silver", "VIP Gold"],
-      washHistory: [
-        {
-          id: "w4",
-          customerName: "Ana Rodriguez",
-          customerPhone: "+63 920 123 4567",
-          carModel: "Ford EcoSport 2021",
-          plateNumber: "GHI 3456",
-          serviceType: "VIP Silver",
-          amount: 1500,
-          washDate: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-          duration: "45 mins",
-          staffMember: "Luis Santos",
-          status: "completed",
-        },
-      ],
-    },
-  ]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
@@ -248,6 +124,72 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       currency: "PHP",
     }).format(amount);
   };
+
+  // Load branches data from backend
+  const loadBranches = async () => {
+    try {
+      setLoading(true);
+      console.log('🏪 Loading branches from database...');
+
+      const result = await neonDbClient.getBranches();
+      console.log('✅ Branches loaded:', result);
+
+      if (result.success && result.branches) {
+        // Transform backend data to match frontend interface
+        const transformedBranches: Branch[] = result.branches.map((branch: any) => ({
+          id: branch.id,
+          name: branch.name,
+          address: branch.address || 'Address not set',
+          phone: branch.phone || 'N/A',
+          email: branch.email || 'N/A',
+          manager: branch.managerName || 'Manager not assigned',
+          status: branch.isActive ? 'active' : 'inactive',
+          coordinates: {
+            lat: parseFloat(branch.latitude) || 6.9214,
+            lng: parseFloat(branch.longitude) || 122.079,
+          },
+          loginCredentials: {
+            username: `${branch.code || branch.name.toLowerCase().replace(/\s+/g, '_')}_branch`,
+            password: '****',
+            lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
+          },
+          stats: {
+            monthlyRevenue: branch.stats?.monthlyRevenue || 0,
+            totalCustomers: branch.stats?.totalCustomers || 0,
+            totalWashes: branch.stats?.totalWashes || 0,
+            averageRating: branch.stats?.averageRating || 4.5,
+            staffCount: branch.stats?.staffCount || 0,
+          },
+          operatingHours: {
+            open: branch.operatingHours?.monday?.open || '08:00',
+            close: branch.operatingHours?.monday?.close || '18:00',
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+          },
+          services: branch.services || ['Classic Wash', 'VIP Silver', 'VIP Gold'],
+          washHistory: [], // TODO: Load actual wash history
+        }));
+
+        setBranches(transformedBranches);
+      } else {
+        console.warn('⚠️ No branches found or failed to load, using empty array');
+        setBranches([]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading branches:', error);
+      toast({
+        title: "Error Loading Branches",
+        description: "Failed to load branch data. Showing empty state.",
+        variant: "destructive",
+      });
+      setBranches([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBranches();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -384,7 +326,13 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-100 text-sm">Total Branches</p>
-                    <p className="text-2xl font-black">{branches.length}</p>
+                    <p className="text-2xl font-black">
+                      {loading ? (
+                        <div className="animate-pulse">-</div>
+                      ) : (
+                        branches.length
+                      )}
+                    </p>
                   </div>
                   <MapPin className="h-8 w-8 text-blue-200" />
                 </div>
@@ -397,7 +345,11 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                   <div>
                     <p className="text-green-100 text-sm">Total Revenue</p>
                     <p className="text-2xl font-black">
-                      {formatCurrency(totalRevenue)}
+                      {loading ? (
+                        <div className="animate-pulse">-</div>
+                      ) : (
+                        formatCurrency(totalRevenue)
+                      )}
                     </p>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-200" />
@@ -411,7 +363,11 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                   <div>
                     <p className="text-purple-100 text-sm">Total Customers</p>
                     <p className="text-2xl font-black">
-                      {totalCustomers.toLocaleString()}
+                      {loading ? (
+                        <div className="animate-pulse">-</div>
+                      ) : (
+                        totalCustomers.toLocaleString()
+                      )}
                     </p>
                   </div>
                   <Users className="h-8 w-8 text-purple-200" />
@@ -424,7 +380,13 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-orange-100 text-sm">Total Staff</p>
-                    <p className="text-2xl font-black">{totalStaff}</p>
+                    <p className="text-2xl font-black">
+                      {loading ? (
+                        <div className="animate-pulse">-</div>
+                      ) : (
+                        totalStaff
+                      )}
+                    </p>
                   </div>
                   <Users className="h-8 w-8 text-orange-200" />
                 </div>
