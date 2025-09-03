@@ -11,6 +11,7 @@ import * as neonApiRoutes from "./routes/neon-api.js";
 import * as crewApiRoutes from "./routes/crew-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
+import cmsApiRoutes from "./routes/cms-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -130,6 +131,9 @@ export const createServer = () => {
 
   // ============= IMAGE MANAGEMENT API =============
   app.use("/api/images", imagesApiRoutes);
+
+  // ============= CMS CONTENT MANAGEMENT API =============
+  app.use("/api/cms", cmsApiRoutes);
 
   // Serve React admin app for everything that's NOT an API route
   const reactBuildPath = path.join(__dirname, "../dist/spa");
