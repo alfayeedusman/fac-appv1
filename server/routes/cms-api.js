@@ -161,7 +161,7 @@ router.get('/homepage', async (req, res) => {
   try {
     console.log('🎨 CMS: Getting homepage content...');
     
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       console.log('🎨 CMS: Database not available, returning default content');
       return res.json({
         success: true,
