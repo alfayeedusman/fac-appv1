@@ -874,19 +874,26 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("🔄 Fetching branches from API...");
-      const response = await this.fetchJsonWithFallback("/api/neon/branches");
+      console.log("📞 Making request to /api/neon/branches...");
+      const response = await fetch("/api/neon/branches");
+      console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
-        console.error("❌ getBranches API error:", response.status, response.statusText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        console.error(
+          "❌ Response not OK:",
+          response.status,
+          response.statusText,
+        );
+        const text = await response.text();
+        console.error("Response body:", text);
+        return { success: false, branches: [] };
       }
 
       const result = await response.json();
       console.log("✅ getBranches result:", result);
       return result;
     } catch (error) {
-      console.error("❌ Error in getBranches:", error);
+      console.error("❌ Database branches fetch failed:", error);
       return {
         success: false,
         branches: [],
