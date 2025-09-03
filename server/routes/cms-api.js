@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { neonDatabaseService } from '../services/neonDatabaseService.js';
+import neonDatabaseService from '../services/neonDatabaseService.js';
 
 const router = Router();
 
