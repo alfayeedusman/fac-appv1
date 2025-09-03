@@ -283,12 +283,86 @@ export default function PushNotificationSubscriber({
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Notifications are blocked. To enable them:
-              <ol className="mt-2 ml-4 list-decimal text-sm">
-                <li>Click the lock icon in your browser's address bar</li>
-                <li>Change notifications to "Allow"</li>
-                <li>Refresh this page</li>
-              </ol>
+              <div className="space-y-4">
+                <p className="font-medium text-orange-800">🔒 Notifications are blocked. Here's how to fix it:</p>
+
+                {/* Chrome/Edge Instructions */}
+                <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                  <p className="font-medium text-blue-800 mb-2">🔧 Chrome/Edge/Brave:</p>
+                  <ol className="text-sm text-blue-700 space-y-1 ml-4 list-decimal">
+                    <li>Click the <strong>🔒 lock icon</strong> in the address bar (left of URL)</li>
+                    <li>Find "Notifications" and change from <strong>"Block"</strong> to <strong>"Allow"</strong></li>
+                    <li>Click <strong>"Reload"</strong> or refresh this page</li>
+                  </ol>
+                </div>
+
+                {/* Firefox Instructions */}
+                <div className="bg-orange-50 p-3 rounded-lg border-l-4 border-orange-400">
+                  <p className="font-medium text-orange-800 mb-2">🦊 Firefox:</p>
+                  <ol className="text-sm text-orange-700 space-y-1 ml-4 list-decimal">
+                    <li>Click the <strong>🛡️ shield icon</strong> in the address bar</li>
+                    <li>Click <strong>"Permissions"</strong> → <strong>"Notifications"</strong></li>
+                    <li>Select <strong>"Allow"</strong> and refresh the page</li>
+                  </ol>
+                </div>
+
+                {/* Safari Instructions */}
+                <div className="bg-gray-50 p-3 rounded-lg border-l-4 border-gray-400">
+                  <p className="font-medium text-gray-800 mb-2">🧭 Safari:</p>
+                  <ol className="text-sm text-gray-700 space-y-1 ml-4 list-decimal">
+                    <li>Go to <strong>Safari</strong> → <strong>Preferences</strong> → <strong>Websites</strong></li>
+                    <li>Find <strong>"Notifications"</strong> in the left sidebar</li>
+                    <li>Set this website to <strong>"Allow"</strong></li>
+                  </ol>
+                </div>
+
+                {/* Alternative Method */}
+                <div className="bg-green-50 p-3 rounded-lg border-l-4 border-green-400">
+                  <p className="font-medium text-green-800 mb-2">📱 Alternative: Browser Settings</p>
+                  <ol className="text-sm text-green-700 space-y-1 ml-4 list-decimal">
+                    <li>Open your browser settings</li>
+                    <li>Search for <strong>"Notifications"</strong> or <strong>"Site Permissions"</strong></li>
+                    <li>Find this website and change to <strong>"Allow"</strong></li>
+                  </ol>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    onClick={() => window.location.reload()}
+                    variant="outline"
+                    size="sm"
+                    className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                  >
+                    🔄 Refresh Page
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Try to request permission again
+                      handleSubscribe();
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                  >
+                    ✅ Try Again
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Ready to Enable Message */}
+        {permission === 'default' && !isSubscribed && (
+          <Alert>
+            <Bell className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="font-medium">🔔 Ready to enable notifications!</p>
+                <p className="text-sm">
+                  Click <strong>"Enable Notifications"</strong> below to start receiving real-time updates about your bookings, rewards, and achievements.
+                </p>
+              </div>
             </AlertDescription>
           </Alert>
         )}
