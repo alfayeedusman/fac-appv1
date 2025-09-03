@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { neonDatabaseService } from '../services/neonDatabaseService.js';
+import { neonDbService } from '../services/neonDatabaseService.js';
 
 const router = Router();
 
@@ -197,7 +197,7 @@ router.post('/homepage', async (req, res) => {
   try {
     console.log('🎨 CMS: Saving homepage content...');
     
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available"
