@@ -8,8 +8,11 @@ import demoRoutes from "./routes/demo.js";
 import customerApiRoutes from "./routes/customer-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
+import * as crewApiRoutes from "./routes/crew-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
+import realtimeApiRoutes from "./routes/realtime-api.js";
+import cmsApiRoutes from "./routes/cms-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +52,10 @@ export function createServer() {
   app.use("/api/v2", customerApiRoutes);
   app.use("/api/images", imagesApiRoutes);
   app.use("/api/notifications", notificationsApiRoutes);
+
+  // ============= CRITICAL PRODUCTION ROUTES =============
+  app.use("/api/realtime", realtimeApiRoutes);
+  app.use("/api/cms", cmsApiRoutes);
 
   // Neon Database API Routes
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
@@ -96,6 +103,13 @@ export function createServer() {
   app.get("/api/neon/customers", neonApiRoutes.getCustomers);
   app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
   app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
+
+  // ============= CREW MANAGEMENT API =============
+  app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
+  app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
+  app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
+  app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew);
 
   // Inventory endpoints
   app.get("/api/neon/inventory/items", neonApiRoutes.getInventoryItems);
