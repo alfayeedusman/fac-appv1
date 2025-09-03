@@ -13,6 +13,7 @@ import imagesApiRoutes from "./routes/images-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
 import realtimeApiRoutes from "./routes/realtime-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
+import { seedBranches } from "./database/seed-branches.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
