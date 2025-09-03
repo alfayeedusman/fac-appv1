@@ -4,12 +4,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-comp
 
 // Firebase configuration for facapp project
 const firebaseConfig = {
-  apiKey: "AIzaSyBvOAYy6L8_l_ZQ2Z_7Z_YWq_X_dQ_2Z_Q", // You'll need to get this from Firebase Console
+  apiKey: "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM",
   authDomain: "facapp-dbdc1.firebaseapp.com",
   projectId: "facapp-dbdc1",
-  storageBucket: "facapp-dbdc1.appspot.com",
+  storageBucket: "facapp-dbdc1.firebasestorage.app",
   messagingSenderId: "964995288467",
-  appId: "1:964995288467:web:facapp-web-id" // You'll need to get this from Firebase Console
+  appId: "1:964995288467:web:a933dcdc046b3f17422c66"
 };
 
 // Initialize Firebase with error handling
