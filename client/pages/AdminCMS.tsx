@@ -350,14 +350,14 @@ export default function AdminCMS() {
       setIsLoading(true);
       const homepageContent = await cmsService.getHomepageContent();
       setContent(homepageContent);
-
+      
       toast({
         title: "Content Loaded! 📄",
         description: "Homepage content loaded successfully.",
       });
     } catch (error) {
       console.error("Error loading homepage content:", error);
-
+      
       // Fallback to localStorage if API fails
       try {
         const savedContent = localStorage.getItem("homepage_content");
@@ -394,10 +394,10 @@ export default function AdminCMS() {
     try {
       setIsLoading(true);
       const currentUser = getCurrentUser();
-
+      
       // Save to backend API
       await cmsService.saveHomepageContent(content, currentUser.id, currentUser.name);
-
+      
       // Also save to localStorage as backup
       localStorage.setItem("homepage_content", JSON.stringify(content));
       const timestamp = new Date().toISOString();
@@ -412,7 +412,7 @@ export default function AdminCMS() {
       });
     } catch (error) {
       console.error("Error saving homepage content:", error);
-
+      
       // Fallback to localStorage if API fails
       try {
         localStorage.setItem("homepage_content", JSON.stringify(content));
@@ -500,6 +500,10 @@ export default function AdminCMS() {
           subtitle: "Description",
           color: "#3b82f6",
         });
+        toast({
+          title: "Feature Added! ✨",
+          description: "New hero feature has been added successfully.",
+        });
         break;
       case "ctaButtons":
         newContent.hero.ctaButtons.push({
@@ -508,6 +512,10 @@ export default function AdminCMS() {
           link: "/",
           variant: "outline",
           enabled: true,
+        });
+        toast({
+          title: "Button Added! 🔘",
+          description: "New CTA button has been added successfully.",
         });
         break;
       case "services":
@@ -519,6 +527,10 @@ export default function AdminCMS() {
           gradient: "from-blue-500 to-blue-600",
           enabled: true,
         });
+        toast({
+          title: "Service Added! 🚗",
+          description: "New service has been added successfully.",
+        });
         break;
       case "branches":
         newContent.locations.branches.push({
@@ -527,6 +539,10 @@ export default function AdminCMS() {
           location: "Branch Location",
           gradient: "from-fac-orange-500 to-fac-orange-600",
           enabled: true,
+        });
+        toast({
+          title: "Branch Added! 🏢",
+          description: "New branch location has been added successfully.",
         });
         break;
     }
@@ -561,6 +577,10 @@ export default function AdminCMS() {
     }
 
     setContent(newContent);
+    toast({
+      title: "Item Removed! 🗑️",
+      description: "Item has been removed successfully.",
+    });
   };
 
   const previewHomepage = () => {
@@ -583,7 +603,7 @@ export default function AdminCMS() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Advanced CMS</h1>
           <p className="text-muted-foreground">
-            Complete homepage content management
+            Complete homepage content management with backend storage
           </p>
         </div>
 
@@ -1771,7 +1791,7 @@ export default function AdminCMS() {
                                 },
                               });
                             }}
-                            placeholder="Branch location/address"
+                            placeholder="Branch Location"
                           />
                         </div>
 
@@ -1882,7 +1902,7 @@ export default function AdminCMS() {
               </div>
 
               <div>
-                <Label htmlFor="footerCopyright">Copyright Text</Label>
+                <Label htmlFor="footerCopyright">Copyright</Label>
                 <Input
                   id="footerCopyright"
                   value={content.footer.copyright}
@@ -1905,164 +1925,109 @@ export default function AdminCMS() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Palette className="h-5 w-5 mr-2 text-fac-orange-500" />
-                Brand Colors & Theme
+                Theme Colors
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <Label htmlFor="themePrimaryColor">Primary Color</Label>
-                  <div className="flex items-center gap-3 mt-2">
-                    <Input
-                      type="color"
-                      id="themePrimaryColor"
-                      value={content.theme.primaryColor}
-                      onChange={(e) =>
-                        setContent({
-                          ...content,
-                          theme: {
-                            ...content.theme,
-                            primaryColor: e.target.value,
-                          },
-                        })
-                      }
-                      className="w-16 h-10"
-                    />
-                    <div className="flex-1">
-                      <Input
-                        value={content.theme.primaryColor}
-                        onChange={(e) =>
-                          setContent({
-                            ...content,
-                            theme: {
-                              ...content.theme,
-                              primaryColor: e.target.value,
-                            },
-                          })
-                        }
-                        placeholder="#ff6b1f"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Main brand color (Orange)
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="themeSecondaryColor">Secondary Color</Label>
-                  <div className="flex items-center gap-3 mt-2">
-                    <Input
-                      type="color"
-                      id="themeSecondaryColor"
-                      value={content.theme.secondaryColor}
-                      onChange={(e) =>
-                        setContent({
-                          ...content,
-                          theme: {
-                            ...content.theme,
-                            secondaryColor: e.target.value,
-                          },
-                        })
-                      }
-                      className="w-16 h-10"
-                    />
-                    <div className="flex-1">
-                      <Input
-                        value={content.theme.secondaryColor}
-                        onChange={(e) =>
-                          setContent({
-                            ...content,
-                            theme: {
-                              ...content.theme,
-                              secondaryColor: e.target.value,
-                            },
-                          })
-                        }
-                        placeholder="#8b5cf6"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Secondary brand color (Purple)
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="themeAccentColor">Accent Color</Label>
-                  <div className="flex items-center gap-3 mt-2">
-                    <Input
-                      type="color"
-                      id="themeAccentColor"
-                      value={content.theme.accentColor}
-                      onChange={(e) =>
-                        setContent({
-                          ...content,
-                          theme: {
-                            ...content.theme,
-                            accentColor: e.target.value,
-                          },
-                        })
-                      }
-                      className="w-16 h-10"
-                    />
-                    <div className="flex-1">
-                      <Input
-                        value={content.theme.accentColor}
-                        onChange={(e) =>
-                          setContent({
-                            ...content,
-                            theme: {
-                              ...content.theme,
-                              accentColor: e.target.value,
-                            },
-                          })
-                        }
-                        placeholder="#3b82f6"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Accent color (Blue)
-                  </p>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="themePrimary">Primary Color</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="themePrimary"
+                    type="color"
+                    value={content.theme.primaryColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          primaryColor: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-20"
+                  />
+                  <Input
+                    value={content.theme.primaryColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          primaryColor: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="#ff6b1f"
+                  />
                 </div>
               </div>
 
-              <Separator />
+              <div>
+                <Label htmlFor="themeSecondary">Secondary Color</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="themeSecondary"
+                    type="color"
+                    value={content.theme.secondaryColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          secondaryColor: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-20"
+                  />
+                  <Input
+                    value={content.theme.secondaryColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          secondaryColor: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="#8b5cf6"
+                  />
+                </div>
+              </div>
 
               <div>
-                <h4 className="font-semibold mb-3">Color Preview</h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div
-                      className="w-full h-16 rounded-lg mb-2"
-                      style={{ backgroundColor: content.theme.primaryColor }}
-                    ></div>
-                    <p className="text-sm font-medium">Primary</p>
-                    <p className="text-xs text-muted-foreground">
-                      {content.theme.primaryColor}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div
-                      className="w-full h-16 rounded-lg mb-2"
-                      style={{ backgroundColor: content.theme.secondaryColor }}
-                    ></div>
-                    <p className="text-sm font-medium">Secondary</p>
-                    <p className="text-xs text-muted-foreground">
-                      {content.theme.secondaryColor}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div
-                      className="w-full h-16 rounded-lg mb-2"
-                      style={{ backgroundColor: content.theme.accentColor }}
-                    ></div>
-                    <p className="text-sm font-medium">Accent</p>
-                    <p className="text-xs text-muted-foreground">
-                      {content.theme.accentColor}
-                    </p>
-                  </div>
+                <Label htmlFor="themeAccent">Accent Color</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="themeAccent"
+                    type="color"
+                    value={content.theme.accentColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          accentColor: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-20"
+                  />
+                  <Input
+                    value={content.theme.accentColor}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        theme: {
+                          ...content.theme,
+                          accentColor: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="#3b82f6"
+                  />
                 </div>
               </div>
             </CardContent>
