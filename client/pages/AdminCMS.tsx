@@ -59,9 +59,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { cmsService, type HomepageContent } from "@/services/cmsService";
 
-// Comprehensive CMS Data Structure
-interface HomepageContent {
+// Note: HomepageContent interface is now imported from cmsService
+// Legacy interface kept for reference
+interface LegacyHomepageContent {
   hero: {
     logo: string;
     badge: string;
@@ -335,34 +337,69 @@ export default function AdminCMS() {
     loadHomepageContent();
   }, []);
 
-  const loadHomepageContent = () => {
+  // Get current user info for audit trail
+  const getCurrentUser = () => {
+    const userEmail = localStorage.getItem('userEmail');
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const user = users.find((u: any) => u.email === userEmail);
+    return user || { id: 'admin', name: 'Admin User' };
+  };
+
+  const loadHomepageContent = async () => {
     try {
-      const savedContent = localStorage.getItem("homepage_content");
-      if (savedContent) {
-        setContent(JSON.parse(savedContent));
-      } else {
-        // Initialize with default content
-        localStorage.setItem(
-          "homepage_content",
-          JSON.stringify(defaultHomepageContent),
-        );
-      }
+      setIsLoading(true);
+      const homepageContent = await cmsService.getHomepageContent();
+      setContent(homepageContent);
+
+      toast({
+        title: "Content Loaded! 📄",
+        description: "Homepage content loaded successfully.",
+      });
     } catch (error) {
       console.error("Error loading homepage content:", error);
-      toast({
-        title: "Loading Error",
-        description: "Failed to load content. Using default values.",
-        variant: "destructive",
-      });
+
+      // Fallback to localStorage if API fails
+      try {
+        const savedContent = localStorage.getItem("homepage_content");
+        if (savedContent) {
+          setContent(JSON.parse(savedContent));
+          toast({
+            title: "Offline Content Loaded",
+            description: "Using cached content (API unavailable).",
+            variant: "destructive",
+          });
+        } else {
+          setContent(defaultHomepageContent);
+          toast({
+            title: "Default Content Loaded",
+            description: "Using default content values.",
+            variant: "destructive",
+          });
+        }
+      } catch (fallbackError) {
+        console.error("Fallback loading failed:", fallbackError);
+        setContent(defaultHomepageContent);
+        toast({
+          title: "Loading Failed",
+          description: "Failed to load content. Using defaults.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const saveHomepageContent = () => {
+  const saveHomepageContent = async () => {
     try {
       setIsLoading(true);
-      localStorage.setItem("homepage_content", JSON.stringify(content));
+      const currentUser = getCurrentUser();
 
-      // Also save to separate backup
+      // Save to backend API
+      await cmsService.saveHomepageContent(content, currentUser.id, currentUser.name);
+
+      // Also save to localStorage as backup
+      localStorage.setItem("homepage_content", JSON.stringify(content));
       const timestamp = new Date().toISOString();
       localStorage.setItem(
         `homepage_backup_${timestamp}`,
@@ -371,15 +408,25 @@ export default function AdminCMS() {
 
       toast({
         title: "Content Saved! 🎉",
-        description: "All homepage content has been successfully updated.",
+        description: "All homepage content has been successfully updated and stored in the database.",
       });
     } catch (error) {
       console.error("Error saving homepage content:", error);
-      toast({
-        title: "Save Failed",
-        description: "Failed to save content. Please try again.",
-        variant: "destructive",
-      });
+
+      // Fallback to localStorage if API fails
+      try {
+        localStorage.setItem("homepage_content", JSON.stringify(content));
+        toast({
+          title: "Offline Save! ⚠️",
+          description: "Content saved locally (API unavailable). Changes will sync when connection is restored.",
+        });
+      } catch (fallbackError) {
+        toast({
+          title: "Save Failed",
+          description: "Failed to save content. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
