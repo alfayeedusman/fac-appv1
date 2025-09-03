@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { AdminConfigManager, type AdminConfig } from '@/utils/adminConfig';
 import { getCarWashServices } from '@/utils/carWashServices';
+import { neonDbClient } from '@/services/neonDatabaseService';
 import { 
   Calendar,
   Clock,
@@ -39,17 +40,59 @@ export default function AdminBookingSettings() {
   const [activeTab, setActiveTab] = useState('home-service');
 
   useEffect(() => {
-    const loadConfig = () => {
+    const loadConfig = async () => {
       try {
-        const adminConfig = AdminConfigManager.getConfig();
-        setConfig(adminConfig);
+        console.log('🔧 Loading booking settings from backend...');
+
+        // First try to load from backend
+        const backendSettings = await neonDbClient.getSettings();
+
+        if (backendSettings.success && backendSettings.settings) {
+          console.log('✅ Loaded settings from backend:', backendSettings.settings);
+
+          // Try to find booking configuration in backend settings
+          const bookingConfigSetting = backendSettings.settings.find(
+            (setting: any) => setting.key === 'booking_configuration'
+          );
+
+          if (bookingConfigSetting && bookingConfigSetting.value) {
+            console.log('📋 Found booking config in backend:', bookingConfigSetting.value);
+            setConfig(bookingConfigSetting.value);
+          } else {
+            console.log('⚠️ No booking config in backend, using default and saving...');
+            // If no backend config exists, use default and save to backend
+            const defaultConfig = AdminConfigManager.getConfig();
+            setConfig(defaultConfig);
+
+            // Save default config to backend
+            await neonDbClient.updateSetting(
+              'booking_configuration',
+              defaultConfig,
+              'Complete booking system configuration including pricing, scheduling, and home service settings',
+              'booking'
+            );
+            console.log('✅ Saved default booking config to backend');
+          }
+        } else {
+          console.log('⚠️ Backend settings failed, using local config');
+          // Fallback to local config if backend fails
+          const adminConfig = AdminConfigManager.getConfig();
+          setConfig(adminConfig);
+        }
       } catch (error) {
-        console.error('Error loading admin config:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load configuration",
-          variant: "destructive",
-        });
+        console.error('❌ Error loading booking config:', error);
+        // Fallback to local config on error
+        try {
+          const adminConfig = AdminConfigManager.getConfig();
+          setConfig(adminConfig);
+        } catch (localError) {
+          console.error('❌ Error loading local config:', localError);
+          toast({
+            title: "Error",
+            description: "Failed to load configuration from both backend and local storage",
+            variant: "destructive",
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -63,18 +106,57 @@ export default function AdminBookingSettings() {
 
     setSaving(true);
     try {
-      AdminConfigManager.saveConfig(config);
-      toast({
-        title: "Success",
-        description: "Booking settings saved successfully",
-      });
+      console.log('💾 Saving booking settings to backend...', config);
+
+      // Save to backend first
+      const backendResult = await neonDbClient.updateSetting(
+        'booking_configuration',
+        config,
+        'Complete booking system configuration including pricing, scheduling, and home service settings',
+        'booking'
+      );
+
+      if (backendResult.success) {
+        console.log('✅ Saved to backend successfully');
+
+        // Also save to local storage as backup
+        AdminConfigManager.saveConfig(config);
+
+        toast({
+          title: "Success",
+          description: "Booking settings saved successfully to backend database",
+        });
+      } else {
+        console.error('❌ Backend save failed:', backendResult);
+
+        // If backend fails, still save locally
+        AdminConfigManager.saveConfig(config);
+
+        toast({
+          title: "Partial Success",
+          description: "Settings saved locally, but backend sync failed. Check database connection.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error('Error saving config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save configuration",
-        variant: "destructive",
-      });
+      console.error('❌ Error saving config:', error);
+
+      try {
+        // Fallback to local save
+        AdminConfigManager.saveConfig(config);
+        toast({
+          title: "Warning",
+          description: "Settings saved locally only. Backend sync failed.",
+          variant: "destructive",
+        });
+      } catch (localError) {
+        console.error('❌ Local save also failed:', localError);
+        toast({
+          title: "Error",
+          description: "Failed to save configuration to both backend and local storage",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
