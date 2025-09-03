@@ -42,6 +42,7 @@ import {
   Settings,
   Calendar,
   Smartphone,
+  RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { neonDbClient } from "@/services/neonDatabaseService";
