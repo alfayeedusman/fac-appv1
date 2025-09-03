@@ -84,6 +84,11 @@ export class PushNotificationService {
     notificationTypes?: string[];
   }): Promise<boolean> {
     try {
+      const db = neonDbService.db;
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       // Check if token already exists
       const existingTokens = await db
         .select()
