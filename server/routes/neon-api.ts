@@ -264,24 +264,63 @@ export const createBooking: RequestHandler = async (req, res) => {
 
 export const getBookings: RequestHandler = async (req, res) => {
   try {
-    const { userId, status } = req.query;
+    const { userId, status, branch, userEmail, userRole } = req.query;
 
     let bookings;
+
+    // Get current user's details if filtering by branch access is needed
+    let currentUser = null;
+    if (userEmail) {
+      currentUser = await neonDbService.getUserByEmail(userEmail as string);
+    }
+
+    // Check if user can view all branches
+    const canViewAll =
+      userRole === 'admin' ||
+      userRole === 'superadmin' ||
+      (currentUser && currentUser.canViewAllBranches);
+
     if (userId) {
+      // Get bookings for specific user
       bookings = await neonDbService.getBookingsByUserId(userId as string);
+    } else if (branch && branch !== 'all') {
+      // Filter by specific branch
+      if (status) {
+        bookings = await neonDbService.getBookingsByBranchAndStatus(branch as string, status as string);
+      } else {
+        bookings = await neonDbService.getBookingsByBranch(branch as string);
+      }
     } else if (status) {
-      bookings = await neonDbService.getBookingsByStatus(status as string);
+      // Filter by status
+      let allBookings = await neonDbService.getBookingsByStatus(status as string);
+
+      // Apply branch restriction if user can't view all branches
+      if (!canViewAll && currentUser) {
+        bookings = allBookings.filter(b => b.branch === currentUser.branchLocation);
+      } else {
+        bookings = allBookings;
+      }
     } else {
-      bookings = await neonDbService.getAllBookings();
+      // Get all bookings
+      let allBookings = await neonDbService.getAllBookings();
+
+      // Apply branch restriction if user can't view all branches
+      if (!canViewAll && currentUser) {
+        bookings = allBookings.filter(b => b.branch === currentUser.branchLocation);
+      } else {
+        bookings = allBookings;
+      }
     }
 
     res.json({
       success: true,
       bookings,
+      canViewAllBranches: canViewAll,
+      userBranch: currentUser?.branchLocation || null,
     });
   } catch (error) {
     console.error("Get bookings error:", error);
-    res.status(500).json({
+    res.json({
       success: false,
       error: "Failed to fetch bookings",
     });
