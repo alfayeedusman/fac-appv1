@@ -106,6 +106,11 @@ export interface AdminConfig {
         };
       };
     };
+    onsite?: {
+      enabled: boolean;
+      name: string;
+      description: string;
+    };
   };
 }
 
