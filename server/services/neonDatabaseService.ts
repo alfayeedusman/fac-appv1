@@ -176,6 +176,31 @@ class NeonDatabaseService {
       .orderBy(desc(schema.bookings.createdAt));
   }
 
+  async getBookingsByBranch(branch: string): Promise<Booking[]> {
+    if (!this.db) throw new Error("Database not connected");
+
+    return await this.db
+      .select()
+      .from(schema.bookings)
+      .where(eq(schema.bookings.branch, branch))
+      .orderBy(desc(schema.bookings.createdAt));
+  }
+
+  async getBookingsByBranchAndStatus(branch: string, status: string): Promise<Booking[]> {
+    if (!this.db) throw new Error("Database not connected");
+
+    return await this.db
+      .select()
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.branch, branch),
+          eq(schema.bookings.status, status)
+        )
+      )
+      .orderBy(desc(schema.bookings.createdAt));
+  }
+
   // === NOTIFICATIONS ===
 
   async createSystemNotification(

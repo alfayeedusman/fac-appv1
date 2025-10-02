@@ -140,6 +140,8 @@ export const users = pgTable("users", {
   crewRating: decimal("crew_rating", { precision: 3, scale: 2 }),
   crewExperience: integer("crew_experience"),
   lastLoginAt: timestamp("last_login_at"),
+  // Branch access control
+  canViewAllBranches: boolean("can_view_all_branches").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
