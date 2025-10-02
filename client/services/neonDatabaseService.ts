@@ -49,6 +49,7 @@ export interface Booking {
   confirmationCode: string;
   category: "carwash" | "auto_detailing" | "graphene_coating";
   service: string;
+  serviceType: "branch" | "home";
   unitType: "car" | "motorcycle";
   unitSize?: string;
   plateNumber?: string;
@@ -61,7 +62,7 @@ export interface Booking {
   basePrice: number;
   totalPrice: number;
   currency: string;
-  paymentMethod?: "cash" | "online" | "gcash";
+  paymentMethod?: "cash" | "online" | "gcash" | "onsite" | "branch";
   paymentStatus: string;
   receiptUrl?: string;
   status: string;
@@ -959,7 +960,7 @@ class NeonDatabaseClient {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error("❌ Database staff user creation failed:", error);
+      console.error("��� Database staff user creation failed:", error);
       return { success: false, error: "Failed to create staff user" };
     }
   }

@@ -183,7 +183,7 @@ export const bookings = pgTable("bookings", {
   currency: varchar("currency", { length: 10 }).notNull().default("PHP"),
 
   // Payment Details
-  paymentMethod: varchar("payment_method", { length: 50 }), // 'cash' | 'online' | 'gcash'
+  paymentMethod: varchar("payment_method", { length: 50 }), // 'cash' | 'online' | 'gcash' | 'onsite' | 'branch'
   paymentStatus: varchar("payment_status", { length: 50 })
     .notNull()
     .default("pending"),
