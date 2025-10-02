@@ -1225,17 +1225,25 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
 
           {bookingData.serviceType === 'branch' && (
             <div>
-              <Label className="text-foreground font-semibold">Select Branch</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-foreground font-semibold">Select Branch</Label>
+                {isAdmin && (
+                  <Button variant="ghost" size="sm" onClick={handleAddBranch} className="text-xs">+ Add Branch</Button>
+                )}
+              </div>
               <Select value={bookingData.branch} onValueChange={(value) => updateBookingData("branch", value)}>
                 <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Choose branch" />
+                  <SelectValue placeholder={loadingBranches ? "Loading branches..." : "Choose branch"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {adminConfig.branches.filter(branch => branch.enabled).map((branch) => (
+                  {branches.map((branch) => (
                     <SelectItem key={branch.id} value={branch.name}>
-                      {String(branch.name)} - {String(branch.address)}
+                      {String(branch.name)}{branch.address ? ` - ${branch.address}` : ''}
                     </SelectItem>
                   ))}
+                  {branches.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">No branches available</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
