@@ -92,12 +92,30 @@ export default function AdminFACMap() {
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Load FAC MAP real-time statistics
-  const loadFacMapStats = async () => {
+  const loadFacMapStats = async (retryCount = 0) => {
+    const maxRetries = 3;
+
     try {
       setStatsLoading(true);
-      console.log("📊 Loading FAC MAP stats...");
+      console.log(`📊 Loading FAC MAP stats... (attempt ${retryCount + 1}/${maxRetries + 1})`);
 
-      const response = await fetch("/api/neon/fac-map-stats");
+      // Add timeout to fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch("/api/neon/fac-map-stats", {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -107,11 +125,29 @@ export default function AdminFACMap() {
         console.error("❌ Failed to load FAC MAP stats:", data.error);
         // Keep existing dummy data as fallback
       }
-    } catch (error) {
-      console.error("❌ Error loading FAC MAP stats:", error);
-      // Keep existing dummy data as fallback
+    } catch (error: any) {
+      console.error(`❌ Error loading FAC MAP stats (attempt ${retryCount + 1}):`, error.message);
+
+      // Retry on network errors
+      if (retryCount < maxRetries && (
+        error.message?.includes('fetch') ||
+        error.message?.includes('network') ||
+        error.message?.includes('NetworkError') ||
+        error.name === 'AbortError'
+      )) {
+        console.log(`🔄 Retrying in ${(retryCount + 1) * 2} seconds...`);
+        setTimeout(() => {
+          loadFacMapStats(retryCount + 1);
+        }, (retryCount + 1) * 2000); // Exponential backoff: 2s, 4s, 6s
+        return;
+      }
+
+      // Keep existing dummy data as fallback after all retries fail
+      console.warn("⚠️ Using fallback data for FAC MAP stats");
     } finally {
-      setStatsLoading(false);
+      if (retryCount === 0 || retryCount >= maxRetries) {
+        setStatsLoading(false);
+      }
     }
   };
 
