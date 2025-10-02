@@ -520,7 +520,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         // Service Details
         category: bookingData.category as any,
         service: bookingData.service,
-        serviceType: bookingData.serviceType, // 'branch' or 'home'
+        serviceType: bookingData.serviceType as "branch" | "home", // 'branch' or 'home'
 
         // Vehicle Details
         unitType: bookingData.unitType as any,
