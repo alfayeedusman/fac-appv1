@@ -304,6 +304,11 @@ const DEFAULT_CONFIG: AdminConfig = {
         },
       },
     },
+    onsite: {
+      enabled: true,
+      name: "On-Site Payment",
+      description: "Pay the crew at your location (Home Service only)",
+    },
   },
 };
 
