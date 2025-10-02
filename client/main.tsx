@@ -90,6 +90,8 @@ const AppComponent = () => {
             <Sonner />
             <GlobalNotificationProvider />
             <AdminNotificationListener />
+            {/* Facebook Messenger Customer Chat */}
+            <FacebookMessenger />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
