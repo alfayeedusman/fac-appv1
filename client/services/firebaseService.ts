@@ -129,6 +129,10 @@ export class FirebasePushNotificationService {
    */
   private async sendTokenToServer(token: string): Promise<void> {
     try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
       const response = await fetch('/api/notifications/register-token', {
         method: 'POST',
         headers: {
@@ -140,15 +144,22 @@ export class FirebasePushNotificationService {
           userAgent: navigator.userAgent,
           timestamp: new Date().toISOString(),
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         console.log('✅ FCM token sent to server successfully');
       } else {
-        console.error('❌ Failed to send FCM token to server');
+        console.error('❌ Failed to send FCM token to server:', response.status);
       }
     } catch (error) {
-      console.error('Error sending FCM token to server:', error);
+      if (error.name === 'AbortError') {
+        console.warn('⏱️ FCM token registration timeout - will retry later');
+      } else {
+        console.error('Error sending FCM token to server:', error);
+      }
     }
   }
 
