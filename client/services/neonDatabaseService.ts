@@ -32,6 +32,7 @@ export interface User {
   crewRating?: number;
   crewExperience?: number;
   lastLoginAt?: string;
+  canViewAllBranches?: boolean;
   createdAt: string;
   updatedAt: string;
 }
