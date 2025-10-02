@@ -402,7 +402,7 @@ class RealtimeService {
    */
   async getActiveJobs(): Promise<{ success: boolean; jobs?: ActiveJob[]; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/jobs/active`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/jobs/active`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -425,7 +425,7 @@ class RealtimeService {
    */
   async getDashboardStats(): Promise<{ success: boolean; stats?: DashboardStats; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/dashboard/stats`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/dashboard/stats`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -458,7 +458,7 @@ class RealtimeService {
     priority?: 'low' | 'normal' | 'high' | 'urgent';
   }): Promise<{ success: boolean; message_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/messages/send`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -484,7 +484,7 @@ class RealtimeService {
    */
   async getMessages(recipientType: string, recipientId: number, limit: number = 50): Promise<{ success: boolean; messages?: RealtimeMessage[]; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/messages/${recipientType}/${recipientId}?limit=${limit}`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/messages/${recipientType}/${recipientId}?limit=${limit}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -507,7 +507,7 @@ class RealtimeService {
    */
   async checkHealth(): Promise<{ success: boolean; status?: string; database?: string; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/health`);
       const result = await response.json();
       
       return result;
