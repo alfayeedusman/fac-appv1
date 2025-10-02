@@ -85,9 +85,9 @@ interface StepperBookingProps {
 }
 
 const STEPS = [
-  { id: 1, title: "Service", icon: Sparkles, description: "Choose your service" },
+  { id: 1, title: "Schedule", icon: Calendar, description: "Pick date & time" },
   { id: 2, title: "Unit", icon: Car, description: "Select vehicle type" },
-  { id: 3, title: "Schedule", icon: Calendar, description: "Pick date & time" },
+  { id: 3, title: "Service", icon: Sparkles, description: "Choose your service" },
   { id: 4, title: "Payment", icon: CreditCard, description: "Payment method" },
   { id: 5, title: "Review", icon: CheckCircle, description: "Confirm booking" },
 ];
@@ -441,25 +441,33 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
   const validateStep = (step: number): boolean => {
     switch (step) {
-      case 1: // Service
-        return !!(bookingData.category && bookingData.service);
-      case 2: // Unit
-        return !!(bookingData.unitType && bookingData.unitSize);
-      case 3: // Schedule
+      case 1: { // Schedule
         const serviceTypeValid = !!bookingData.serviceType;
         const scheduleValid = !!(bookingData.date && bookingData.timeSlot);
         const locationValid = bookingData.serviceType === 'home' || !!bookingData.branch;
         return serviceTypeValid && scheduleValid && locationValid;
-      case 4: // Payment
+      }
+      case 2: // Unit
+        return !!(bookingData.unitType && bookingData.unitSize);
+      case 3: { // Service
+        if (!bookingData.category) return false;
+        // For carwash require specific service; others rely on unit selection already made
+        if (bookingData.category === 'carwash') {
+          return !!bookingData.service;
+        }
+        return true;
+      }
+      case 4: { // Payment
         const paymentValid = !!bookingData.paymentMethod;
-        // For online payments, require a receipt upload. For branch or onsite, receipt is optional.
         const receiptValid = bookingData.paymentMethod === "online" ? !!bookingData.receiptFile : true;
         return paymentValid && receiptValid;
-      case 5: // Review
+      }
+      case 5: { // Review
         const basicCustomerValid = !!(bookingData.fullName && bookingData.mobile);
         const homeServiceAddressValid = bookingData.serviceType !== 'home' || !!bookingData.address;
         const emailValid = !isGuest || !!bookingData.email; // Email required for guests
         return basicCustomerValid && homeServiceAddressValid && emailValid && bookingData.acceptTerms;
+      }
       default:
         return false;
     }
@@ -647,11 +655,11 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} goBackToStep1={goBackToStep1} />;
+        return <ScheduleStep bookingData={bookingData} updateBookingData={updateBookingData} />;
       case 2:
         return <UnitStep bookingData={bookingData} updateBookingData={updateBookingData} />;
       case 3:
-        return <ScheduleStep bookingData={bookingData} updateBookingData={updateBookingData} />;
+        return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} goBackToStep1={goBackToStep1} />;
       case 4:
         return <PaymentStep bookingData={bookingData} updateBookingData={updateBookingData} handleFileUpload={handleFileUpload} />;
       case 5:
@@ -1040,7 +1048,7 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
                   <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
-                    Selected - Price will be calculated based on your vehicle type in the next step
+                    Selected — price is based on your vehicle selection.
                   </p>
                 </div>
               </div>
