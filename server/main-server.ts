@@ -13,6 +13,7 @@ import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
 import { seedBranches } from "./database/seed-branches.js";
+import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -104,6 +105,7 @@ export const createServer = () => {
 
   // Branches endpoints
   app.get("/api/neon/branches", neonApiRoutes.getBranches);
+  app.post("/api/neon/branches", branchesApi.createBranch);
 
   // Service packages endpoints
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
