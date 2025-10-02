@@ -108,10 +108,13 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
   const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedCrew, setSelectedCrew] = useState<string[]>([]);
   const [newStatus, setNewStatus] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
+  const [canViewAllBranches, setCanViewAllBranches] = useState(false);
+  const [userBranch, setUserBranch] = useState<string | null>(null);
 
   useEffect(() => {
     loadBookings();
