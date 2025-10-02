@@ -61,6 +61,7 @@ interface BookingData {
   plateNo: string;
   carModel: string; // car year and model (e.g., "Hilux Conquest 2024")
   address: string;
+  notes?: string;
 
   // Schedule
   date: string;
