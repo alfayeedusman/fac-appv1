@@ -10,6 +10,7 @@ import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import FacebookMessenger from "@/components/FacebookMessenger";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
