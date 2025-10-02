@@ -259,7 +259,21 @@ export default function ImageUploadManager({
 
   const handleImageDownload = async (image: ImageData) => {
     try {
-      const response = await fetch(image.publicUrl);
+      // Add timeout for external resource fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(image.publicUrl, {
+        signal: controller.signal,
+        mode: 'cors', // Explicitly handle CORS
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -271,15 +285,34 @@ export default function ImageUploadManager({
       document.body.removeChild(a);
 
       // Increment download count
-      await fetch(`/api/images/${image.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          downloadCount: (image.downloadCount || 0) + 1 
-        })
-      });
+      const updateController = new AbortController();
+      const updateTimeoutId = setTimeout(() => updateController.abort(), 5000);
+
+      try {
+        await fetch(`/api/images/${image.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            downloadCount: (image.downloadCount || 0) + 1
+          }),
+          signal: updateController.signal,
+        });
+        clearTimeout(updateTimeoutId);
+      } catch (updateError) {
+        clearTimeout(updateTimeoutId);
+        console.warn('Failed to update download count:', updateError);
+      }
     } catch (error) {
       console.error('Download failed:', error);
+
+      // Show user-friendly error message
+      if (error.name === 'AbortError') {
+        alert('Download timeout - the image took too long to download. Please try again.');
+      } else if (error.message?.includes('CORS') || error.message?.includes('cross-origin')) {
+        alert('Unable to download this image due to security restrictions. Please contact support.');
+      } else {
+        alert('Failed to download image. Please try again.');
+      }
     }
   };
 
