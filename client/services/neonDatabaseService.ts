@@ -637,7 +637,15 @@ class NeonDatabaseClient {
   async getBookings(params?: {
     userId?: string;
     status?: string;
-  }): Promise<{ success: boolean; bookings?: Booking[] }> {
+    branch?: string;
+    userEmail?: string;
+    userRole?: string;
+  }): Promise<{
+    success: boolean;
+    bookings?: Booking[];
+    canViewAllBranches?: boolean;
+    userBranch?: string | null;
+  }> {
     if (!this.isConnected) {
       return { success: false, bookings: [] };
     }
@@ -646,6 +654,9 @@ class NeonDatabaseClient {
       const queryParams = new URLSearchParams();
       if (params?.userId) queryParams.append("userId", params.userId);
       if (params?.status) queryParams.append("status", params.status);
+      if (params?.branch) queryParams.append("branch", params.branch);
+      if (params?.userEmail) queryParams.append("userEmail", params.userEmail);
+      if (params?.userRole) queryParams.append("userRole", params.userRole);
 
       const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`);
       const result = await response.json();
