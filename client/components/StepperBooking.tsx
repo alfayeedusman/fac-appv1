@@ -1299,6 +1299,21 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) 
             <p className="text-sm text-muted-foreground">{adminConfig.paymentMethods.online.description}</p>
           </div>
         )}
+
+        {/* On-site payment for home service */}
+        {bookingData.serviceType === 'home' && adminConfig.paymentMethods.onsite && adminConfig.paymentMethods.onsite.enabled && (
+          <div
+            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              bookingData.paymentMethod === "onsite"
+                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
+                : 'border-border hover:border-fac-orange-300'
+            }`}
+            onClick={() => updateBookingData("paymentMethod", "onsite")}
+          >
+            <h3 className="font-bold text-foreground">{adminConfig.paymentMethods.onsite.name}</h3>
+            <p className="text-sm text-muted-foreground">{adminConfig.paymentMethods.onsite.description}</p>
+          </div>
+        )}
       </div>
 
       {bookingData.paymentMethod === "online" && adminConfig.paymentMethods.online.enabled && (
