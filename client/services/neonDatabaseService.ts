@@ -915,6 +915,37 @@ class NeonDatabaseClient {
     }
   }
 
+  async createBranch(data: {
+    name: string;
+    code: string;
+    address?: string;
+    city?: string;
+    phone?: string;
+  }): Promise<{ success: boolean; branch?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false, error: "Database not connected" };
+    }
+    try {
+      const response = await fetch("/api/neon/branches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          code: data.code,
+          address: data.address || null,
+          city: data.city || "Zamboanga City",
+          phone: data.phone || null,
+          type: "full_service",
+        }),
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("❌ Create branch failed:", error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to create branch" };
+    }
+  }
+
   async getStaffUsers(): Promise<{ success: boolean; users?: User[] }> {
     console.log(
       "🔗 getStaffUsers called, connection status:",
