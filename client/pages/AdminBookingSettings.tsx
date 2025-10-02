@@ -251,13 +251,13 @@ export default function AdminBookingSettings() {
     });
   };
 
-  const updatePaymentMethod = (method: 'branch' | 'online', updates: any) => {
+  const updatePaymentMethod = (method: 'branch' | 'online' | 'onsite', updates: any) => {
     if (!config) return;
     setConfig({
       ...config,
       paymentMethods: {
         ...config.paymentMethods,
-        [method]: { ...config.paymentMethods[method], ...updates },
+        [method]: { ...(config.paymentMethods as any)[method], ...updates },
       },
     });
   };
