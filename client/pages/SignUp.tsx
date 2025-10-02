@@ -377,21 +377,21 @@ export default function SignUp() {
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl animate-float animate-delay-300"></div>
+        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl"></div>
       </div>
 
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-20">
-        <div className="glass rounded-full p-1 animate-fade-in-scale">
+        <div className="glass rounded-full p-1">
           <ThemeToggle />
         </div>
       </div>
 
       <div className="px-6 py-8 max-w-md mx-auto relative z-10">
         {/* Modern Header */}
-        <div className="flex items-center mb-8 animate-fade-in-up">
+        <div className="flex items-center mb-8">
           <Link to="/" className="mr-4">
             <Button
               variant="ghost"
@@ -420,7 +420,7 @@ export default function SignUp() {
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-8 animate-fade-in-up animate-delay-100">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3].map((step) => (
               <div
@@ -456,7 +456,7 @@ export default function SignUp() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Step 1: Personal Information */}
           {currentStep === 1 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -706,7 +706,7 @@ export default function SignUp() {
 
           {/* Step 2: Vehicle Information */}
           {currentStep === 2 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -842,7 +842,7 @@ export default function SignUp() {
 
           {/* Step 3: Package Selection */}
           {currentStep === 3 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -964,7 +964,7 @@ export default function SignUp() {
         </form>
 
         {/* Footer */}
-        <div className="text-center mt-8 space-y-4 animate-fade-in-up animate-delay-500">
+        <div className="text-center mt-8 space-y-4">
           <div className="glass rounded-2xl p-4">
             <p className="text-muted-foreground">
               Already have an account?{" "}
