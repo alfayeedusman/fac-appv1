@@ -132,9 +132,41 @@ class RealtimeService {
   private baseUrl: string;
   private refreshInterval?: NodeJS.Timeout;
   private subscribers: Map<string, Set<(data: any) => void>> = new Map();
+  private fetchTimeout: number = 8000; // 8 second timeout
+  private consecutiveErrors: number = 0;
+  private maxConsecutiveErrors: number = 3;
 
   constructor() {
     this.baseUrl = '/api/realtime';
+  }
+
+  /**
+   * Fetch with timeout and network detection
+   */
+  private async fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+    // Check network status first
+    if (!navigator.onLine) {
+      throw new Error('No internet connection');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.fetchTimeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout - server may be slow or unreachable');
+      }
+      throw error;
+    }
   }
 
   /**
@@ -174,6 +206,23 @@ class RealtimeService {
     }
 
     this.refreshInterval = setInterval(async () => {
+      // Circuit breaker: stop polling if too many consecutive errors
+      if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
+        console.warn('⚠️ Too many consecutive errors, pausing real-time updates');
+        this.emit('error', {
+          message: 'Real-time updates paused due to connection issues',
+          consecutiveErrors: this.consecutiveErrors
+        });
+        return;
+      }
+
+      // Skip if offline
+      if (!navigator.onLine) {
+        console.log('📡 Offline - skipping real-time update');
+        this.consecutiveErrors++;
+        return;
+      }
+
       try {
         // Get latest crew locations
         const crewData = await this.getCrewLocations();
@@ -187,8 +236,12 @@ class RealtimeService {
         const statsData = await this.getDashboardStats();
         this.emit('dashboard-stats', statsData);
 
+        // Reset error counter on success
+        this.consecutiveErrors = 0;
+
       } catch (error) {
-        console.error('Real-time update error:', error);
+        this.consecutiveErrors++;
+        console.error(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
         this.emit('error', error);
       }
     }, intervalMs);
@@ -216,7 +269,7 @@ class RealtimeService {
    */
   async updateCrewLocation(data: LocationUpdate): Promise<{ success: boolean; location_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/location`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/location`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +278,7 @@ class RealtimeService {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update location');
       }
@@ -233,7 +286,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update crew location error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -242,9 +295,9 @@ class RealtimeService {
    */
   async getCrewLocations(): Promise<{ success: boolean; crews?: CrewLocation[]; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/locations`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/locations`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to get crew locations');
       }
