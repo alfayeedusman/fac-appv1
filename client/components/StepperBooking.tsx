@@ -106,7 +106,7 @@ try {
       grapheneCoating: { car: {}, motorcycle: {} }
     },
     branches: [],
-    paymentMethods: { branch: { enabled: true }, online: { enabled: true } },
+    paymentMethods: { branch: { enabled: true }, online: { enabled: true }, onsite: { enabled: true, name: 'On-Site Payment', description: 'Pay the crew at your location (Home Service only)' } } ,
     terms: { termsAndConditions: '', cancellationPolicy: '', noShowPolicy: '' }
   };
 }
