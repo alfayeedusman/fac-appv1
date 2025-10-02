@@ -866,6 +866,48 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 // Step Components
 const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => {
   const availableServices = getAvailableServices(bookingData.serviceType || 'branch');
+  const [branches, setBranches] = useState<{ id: string; name: string; address?: string }[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const isAdmin = (localStorage.getItem('userRole') === 'admin' || localStorage.getItem('userRole') === 'superadmin');
+
+  useEffect(() => {
+    const load = async () => {
+      setLoadingBranches(true);
+      try {
+        const res = await neonDbClient.getBranches();
+        if (res.success && res.branches && Array.isArray(res.branches)) {
+          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+        } else {
+          // Fallback to local admin config
+          setBranches((adminConfig.branches || []).filter((b: any) => b.enabled).map((b: any) => ({ id: b.id, name: b.name, address: b.address })));
+        }
+      } catch (e) {
+        setBranches((adminConfig.branches || []).filter((b: any) => b.enabled).map((b: any) => ({ id: b.id, name: b.name, address: b.address })));
+      } finally {
+        setLoadingBranches(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleAddBranch = async () => {
+    const name = window.prompt('New branch name');
+    if (!name) return;
+    const code = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) + String(Date.now()).slice(-2);
+    const address = window.prompt('Branch address (optional)') || undefined;
+    const city = 'Zamboanga City';
+    const resp = await neonDbClient.createBranch({ name, code, address, city });
+    if (resp.success) {
+      toast({ title: 'Branch created', description: `${name} added.` });
+      // reload branches
+      const res = await neonDbClient.getBranches();
+      if (res.success && res.branches) {
+        setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+      }
+    } else {
+      toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
+    }
+  };
 
   return (
   <Card className="glass border-border shadow-xl">
