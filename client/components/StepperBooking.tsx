@@ -42,6 +42,7 @@ import Swal from 'sweetalert2';
 import { getAdminConfig, generateTimeSlots, isSlotAvailable } from "@/utils/adminConfig";
 import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
 import { getCarWashServices } from "@/utils/carWashServices";
+import { getSlotAvailability } from "@/utils/databaseSchema";
 
 interface BookingData {
   // Service Selection
