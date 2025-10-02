@@ -429,16 +429,26 @@ export class FirebasePushNotificationService {
       
       // Notify server to remove token
       if (this.fcmToken) {
-        await fetch('/api/notifications/unregister-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token: this.fcmToken,
-            userId: this.getCurrentUserId(),
-          }),
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        try {
+          await fetch('/api/notifications/unregister-token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token: this.fcmToken,
+              userId: this.getCurrentUserId(),
+            }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+        } catch (unregError) {
+          clearTimeout(timeoutId);
+          console.warn('Failed to unregister token:', unregError);
+        }
       }
 
       this.fcmToken = null;
