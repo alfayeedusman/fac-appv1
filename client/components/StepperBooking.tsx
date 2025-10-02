@@ -452,7 +452,8 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         return serviceTypeValid && scheduleValid && locationValid;
       case 4: // Payment
         const paymentValid = !!bookingData.paymentMethod;
-        const receiptValid = bookingData.paymentMethod === "branch" || !!bookingData.receiptFile;
+        // For online payments, require a receipt upload. For branch or onsite, receipt is optional.
+        const receiptValid = bookingData.paymentMethod === "online" ? !!bookingData.receiptFile : true;
         return paymentValid && receiptValid;
       case 5: // Review
         const basicCustomerValid = !!(bookingData.fullName && bookingData.mobile);
