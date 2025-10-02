@@ -1349,6 +1349,17 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) 
           </div>
         </div>
       )}
+
+      {bookingData.paymentMethod === "onsite" && adminConfig.paymentMethods.onsite && adminConfig.paymentMethods.onsite.enabled && (
+        <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200">
+          <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-3">On-Site Payment</h4>
+          <div className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
+            <p>The crew will collect payment at your location.</p>
+            <p><strong>Amount:</strong> ₱{bookingData.totalPrice.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Please prepare the exact amount. Receipts will be provided by the crew.</p>
+          </div>
+        </div>
+      )}
     </CardContent>
   </Card>
 );
