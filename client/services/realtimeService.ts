@@ -256,8 +256,17 @@ class RealtimeService {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
       this.refreshInterval = undefined;
+      this.consecutiveErrors = 0; // Reset error counter
       console.log('⏹️ Real-time updates stopped');
     }
+  }
+
+  /**
+   * Reset error counter (useful after connection is restored)
+   */
+  resetErrorCounter(): void {
+    this.consecutiveErrors = 0;
+    console.log('✅ Error counter reset - resuming normal operation');
   }
 
   // ============================================================================
