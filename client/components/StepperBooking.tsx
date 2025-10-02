@@ -69,7 +69,7 @@ interface BookingData {
   branch: string;
 
   // Payment
-  paymentMethod: string; // "branch" or "online"
+  paymentMethod: string; // "branch", "online", or "onsite"
   receiptFile: File | null;
 
   // Terms
