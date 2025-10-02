@@ -162,6 +162,7 @@ export const bookings = pgTable("bookings", {
   // Service Details
   category: varchar("category", { length: 50 }).notNull(), // 'carwash' | 'auto_detailing' | 'graphene_coating'
   service: varchar("service", { length: 255 }).notNull(),
+  serviceType: varchar("service_type", { length: 20 }).notNull().default("branch"), // 'branch' | 'home'
 
   // Vehicle Details
   unitType: varchar("unit_type", { length: 20 }).notNull(), // 'car' | 'motorcycle'
