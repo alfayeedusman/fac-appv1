@@ -531,7 +531,7 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <Label>Search</Label>
               <div className="relative">
@@ -543,6 +543,15 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
                   className="pl-10"
                 />
               </div>
+            </div>
+            <div>
+              <BranchFilter
+                value={branchFilter}
+                onChange={setBranchFilter}
+                canViewAllBranches={canViewAllBranches}
+                userBranch={userBranch}
+                label="Branch"
+              />
             </div>
             <div>
               <Label>Status Filter</Label>
@@ -575,10 +584,11 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
               />
             </div>
             <div className="flex items-end">
-              <Button 
+              <Button
                 onClick={() => {
                   setSearchTerm('');
                   setStatusFilter('all');
+                  setBranchFilter('all');
                   setDateFilter('');
                 }}
                 variant="outline"
