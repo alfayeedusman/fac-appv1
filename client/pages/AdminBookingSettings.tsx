@@ -725,6 +725,35 @@ export default function AdminBookingSettings() {
                           </div>
                         </CardContent>
                       </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">On-Site Payment (Home Service)</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Enable On-Site Payment</Label>
+                            <Switch
+                              checked={!!config.paymentMethods.onsite?.enabled}
+                              onCheckedChange={(enabled) => updatePaymentMethod('onsite', { enabled })}
+                            />
+                          </div>
+                          <div>
+                            <Label>Display Name</Label>
+                            <Input
+                              value={config.paymentMethods.onsite?.name || 'On-Site Payment'}
+                              onChange={(e) => updatePaymentMethod('onsite', { name: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label>Description</Label>
+                            <Textarea
+                              value={config.paymentMethods.onsite?.description || 'Pay the crew at your location (Home Service only)'}
+                              onChange={(e) => updatePaymentMethod('onsite', { description: e.target.value })}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </CardContent>
                 </Card>
