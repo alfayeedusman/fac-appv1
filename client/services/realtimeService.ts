@@ -305,7 +305,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get crew locations error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -318,7 +318,7 @@ class RealtimeService {
    */
   async updateCrewStatus(data: StatusUpdate): Promise<{ success: boolean; status_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/status`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -335,7 +335,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update crew status error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -344,7 +344,7 @@ class RealtimeService {
    */
   async getCrewStatusHistory(crewId: number, limit: number = 50): Promise<{ success: boolean; history?: any[]; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/${crewId}/status-history?limit=${limit}`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/${crewId}/status-history?limit=${limit}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -354,7 +354,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get status history error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -367,7 +367,7 @@ class RealtimeService {
    */
   async updateJob(data: JobUpdate): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/jobs/update`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/jobs/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,7 +384,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update job error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -403,7 +403,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get active jobs error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -426,7 +426,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get dashboard stats error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -466,7 +466,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Send message error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -485,7 +485,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get messages error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -504,7 +504,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Health check error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
