@@ -594,28 +594,47 @@ class NeonDatabaseClient {
   async register(
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    if (!this.isConnected) {
-      return {
-        success: false,
-        error: "Database not connected. Please connect to Neon database first.",
-      };
+    const connected = await this.ensureConnection();
+    if (!connected) {
+      return { success: false, error: "Unable to connect to server. Please try again." };
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
       const response = await fetch(`${this.baseUrl}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error("Database registration failed:", error);
-      return {
-        success: false,
-        error: "Registration failed. Please check your connection.",
-      };
+      const ct = response.headers.get('content-type') || '';
+      let data: any = null;
+      if (ct.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const txt = await response.text().catch(() => '');
+        try { data = JSON.parse(txt); } catch { data = null; }
+      }
+
+      if (!response.ok || !data?.success) {
+        const status = response.status;
+        let msg = 'Registration failed. Please try again.';
+        if (status === 409) msg = 'Account already exists.';
+        else if (status === 400) msg = 'Please check your details and try again.';
+        else if (status === 503) msg = 'System under maintenance. Try later.';
+        else if (status >= 500) msg = 'Server error. Please try again shortly.';
+        return { success: false, error: msg };
+      }
+
+      return data;
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        return { success: false, error: 'Request timed out. Please try again.' };
+      }
+      return { success: false, error: 'Registration failed. Please check your connection.' };
     }
   }
 
