@@ -96,15 +96,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <StickyHeader showBack={true} title="Profile" />
 
-      {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 z-20 flex gap-2">
-        <div className="rounded-full p-1">
-          <ThemeToggle />
-        </div>
-      </div>
 
       <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
@@ -119,7 +113,7 @@ export default function Profile() {
               <User className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Profile</h1>
               <p className="text-muted-foreground">
                 Manage your account and preferences
               </p>
@@ -134,7 +128,7 @@ export default function Profile() {
               <div className="flex items-center space-x-6">
                 {/* Profile Picture */}
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
                     {profile.profilePicture && profile.profilePicture.trim() !== "" ? (
                       <img
                         src={profile.profilePicture}
@@ -150,7 +144,7 @@ export default function Profile() {
                         }}
                       />
                     ) : (
-                      <User className="h-10 w-10 text-white" />
+                      <User className="h-8 w-8 text-white" />
                     )}
                   </div>
                   <Button
@@ -199,7 +193,7 @@ export default function Profile() {
         {/* QR Code Card */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <QrCode className="h-6 w-6 text-white" />
               </div>
@@ -208,7 +202,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="bg-muted rounded-2xl p-8 mb-6 mx-auto max-w-sm">
+              <div className="bg-muted rounded-2xl p-6 mb-6 mx-auto max-w-sm">
                 {/* Real QR Code Component */}
                 <div className="flex flex-col items-center">
                   <UserQRCode
@@ -241,7 +235,7 @@ export default function Profile() {
         {/* Digital Membership Card */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Star className="h-6 w-6 text-white" />
               </div>
@@ -291,7 +285,7 @@ export default function Profile() {
         {/* Gamification Progress */}
         <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 rounded-xl mr-4">
                 <Trophy className="h-6 w-6 text-white" />
               </div>
@@ -306,7 +300,7 @@ export default function Profile() {
         {/* Profile Details */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Settings className="h-6 w-6 text-white" />
               </div>
