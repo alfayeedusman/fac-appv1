@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import RegistrationSuccessModal from "@/components/RegistrationSuccessModal";
+import { authService } from "@/services/authService";
 
 interface SignUpFormData {
   fullName: string;
