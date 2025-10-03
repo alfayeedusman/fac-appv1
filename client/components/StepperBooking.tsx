@@ -803,7 +803,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
               {/* Step Content */}
               <div className="w-full max-w-4xl">
-                <div className="w-full overflow-hidden pb-4">
+                <div className="w-full overflow-visible pb-4 md:pb-6">
                   {renderStepContent()}
                 </div>
               </div>
@@ -1545,7 +1545,7 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) 
           <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-3">On-Site Payment</h4>
           <div className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
             <p>The crew will collect payment at your location.</p>
-            <p><strong>Amount:</strong> ₱{bookingData.totalPrice.toLocaleString()}</p>
+            <p><strong>Amount:</strong> ���{bookingData.totalPrice.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground">Please prepare the exact amount. Receipts will be provided by the crew.</p>
           </div>
         </div>
