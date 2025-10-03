@@ -575,7 +575,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       const notificationMessage = `New booking received from ${customerName}\n` +
         `Service: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\n` +
         `Date: ${bookingData.date} at ${bookingData.timeSlot}\n` +
-        `Amount: ₱${bookingData.totalPrice.toLocaleString()}\n` +
+        `Amount: ���${bookingData.totalPrice.toLocaleString()}\n` +
         `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
 
       // Create system notification through API (this happens automatically in the API)
@@ -693,7 +693,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8">
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
@@ -799,8 +799,8 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 </div>
               </div>
 
-              {/* Navigation - Mobile App Style */}
-              <div className="flex flex-col sm:flex-row justify-between items-stretch gap-3 mt-6 max-w-4xl">
+              {/* Navigation - Desktop only; mobile uses sticky bottom bar */}
+              <div className="hidden md:flex flex-row justify-between items-stretch gap-3 mt-6 max-w-4xl">
                 {/* Primary Action Button (Next/Submit) - First on mobile for better UX */}
                 <div className="order-1 sm:order-2">
                   {currentStep === 5 ? (
@@ -854,6 +854,31 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Action Bar */}
+      <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
+        <div className="glass border border-border bg-white/95 dark:bg-gray-900/95 rounded-2xl shadow-2xl p-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">{bookingData.basePrice > 0 ? 'Total' : `Step ${currentStep} of ${STEPS.length}`}</p>
+            <p className="text-lg font-black text-foreground">{bookingData.basePrice > 0 ? `₱${(bookingData.totalPrice || 0).toLocaleString()}` : STEPS[currentStep - 1].title}</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-11 rounded-xl" onClick={() => setShowSidebar(true)}>
+              Summary
+            </Button>
+            {currentStep === 5 ? (
+              <Button onClick={submitBooking} disabled={!canProceed() || isLoading} className="h-11 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white">
+                Confirm
+              </Button>
+            ) : (
+              <Button onClick={nextStep} disabled={!canProceed()} className="h-11 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white">
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
