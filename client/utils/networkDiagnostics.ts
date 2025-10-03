@@ -171,6 +171,43 @@ export class NetworkDiagnostics {
 // Export singleton instance
 export const networkDiagnostics = new NetworkDiagnostics();
 
+// Helper functions for compatibility
+export async function testApiConnectivity(): Promise<{
+  apiReachable: boolean;
+  neonConnected: boolean;
+  registrationEndpoint: boolean;
+  details?: string;
+}> {
+  const results = await networkDiagnostics.runDiagnostics();
+  const healthTest = results.find(r => r.test === 'Health Endpoint');
+  const neonTest = results.find(r => r.test === 'Neon Database Test');
+  const regTest = results.find(r => r.test === 'Registration Endpoint');
+
+  return {
+    apiReachable: healthTest?.success || false,
+    neonConnected: neonTest?.success || false,
+    registrationEndpoint: regTest?.success || false,
+    details: networkDiagnostics.getFormattedResults(),
+  };
+}
+
+export function getNetworkDiagnostics(): {
+  online: boolean;
+  userAgent: string;
+  location: string;
+} {
+  return {
+    online: navigator.onLine,
+    userAgent: navigator.userAgent,
+    location: window.location.href,
+  };
+}
+
+export async function logNetworkDiagnostics(): Promise<void> {
+  await networkDiagnostics.runDiagnostics();
+  networkDiagnostics.printResults();
+}
+
 // Add to window for easy access from console
 if (typeof window !== 'undefined') {
   (window as any).runNetworkDiagnostics = async () => {
