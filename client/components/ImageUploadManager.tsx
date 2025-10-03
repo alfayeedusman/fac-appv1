@@ -101,7 +101,7 @@ export default function ImageUploadManager({
         ...(searchTerm && { search: searchTerm })
       });
 
-      const response = await fetch(`/api/images?${params}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`);
       const result = await response.json();
       
       if (result.success) {
@@ -196,7 +196,7 @@ export default function ImageUploadManager({
       if (associatedId) formData.append('associatedId', associatedId);
       if (uploadedBy) formData.append('uploadedBy', uploadedBy);
 
-      const response = await fetch('/api/images/upload-multiple', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/upload-multiple`, {
         method: 'POST',
         body: formData,
       });
