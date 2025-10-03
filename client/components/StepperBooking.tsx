@@ -965,10 +965,14 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
     const resp = await neonDbClient.createBranch({ name, code, address, city });
     if (resp.success) {
       toast({ title: 'Branch created', description: `${name} added.` });
-      // reload branches
-      const res = await neonDbClient.getBranches();
-      if (res.success && res.branches) {
-        setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+      // reload branches - silently handle errors
+      try {
+        const res = await neonDbClient.getBranches();
+        if (res.success && res.branches) {
+          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+        }
+      } catch {
+        // Ignore errors, keep existing branches
       }
     } else {
       toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
@@ -1266,10 +1270,14 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const resp = await neonDbClient.createBranch({ name, code, address, city });
     if (resp.success) {
       toast({ title: 'Branch created', description: `${name} added.` });
-      // reload branches
-      const res = await neonDbClient.getBranches();
-      if (res.success && res.branches) {
-        setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+      // reload branches - silently handle errors
+      try {
+        const res = await neonDbClient.getBranches();
+        if (res.success && res.branches) {
+          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+        }
+      } catch {
+        // Ignore errors, keep existing branches
       }
     } else {
       toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
