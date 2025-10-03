@@ -118,7 +118,7 @@ export default function AdminCrewManagement() {
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
       // Use existing realtime stats endpoint that's already working
-      const response = await fetch('/api/neon/realtime-stats');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/neon/realtime-stats`);
       const data = await response.json();
 
       if (data.success && data.stats) {
