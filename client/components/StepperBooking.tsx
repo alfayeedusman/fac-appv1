@@ -867,24 +867,58 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         </div>
       </div>
 
-      {/* Mobile Sticky Action Bar */}
+      {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
       <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
-        <div className="glass border border-border bg-white/95 dark:bg-gray-900/95 rounded-2xl shadow-2xl p-3 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">{bookingData.basePrice > 0 ? 'Total' : `Step ${currentStep} of ${STEPS.length}`}</p>
-            <p className="text-lg font-black text-foreground">{bookingData.basePrice > 0 ? `₱${(bookingData.totalPrice || 0).toLocaleString()}` : STEPS[currentStep - 1].title}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-11 rounded-xl" onClick={() => setShowSidebar(true)}>
+        <div className="glass border border-border bg-white/95 dark:bg-gray-900/95 rounded-2xl shadow-2xl p-3 space-y-3">
+          {/* Progress Info */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">
+                {bookingData.basePrice > 0 ? 'Total Price' : `Step ${currentStep} of ${STEPS.length}`}
+              </p>
+              <p className="text-lg font-black text-foreground">
+                {bookingData.basePrice > 0 ? `₱${(bookingData.totalPrice || 0).toLocaleString()}` : STEPS[currentStep - 1].title}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 rounded-xl"
+              onClick={() => setShowSidebar(true)}
+            >
               Summary
             </Button>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-2">
+            {/* Back Button */}
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="flex-1 h-12 rounded-xl font-medium border-2 disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+
+            {/* Next/Confirm Button */}
             {currentStep === 5 ? (
-              <Button onClick={submitBooking} disabled={!canProceed() || isLoading} className="h-11 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white">
-                Confirm
+              <Button
+                onClick={submitBooking}
+                disabled={!canProceed() || isLoading}
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40"
+              >
+                {isLoading ? 'Processing...' : 'Confirm Booking'}
               </Button>
             ) : (
-              <Button onClick={nextStep} disabled={!canProceed()} className="h-11 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white">
-                Next
+              <Button
+                onClick={nextStep}
+                disabled={!canProceed()}
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40"
+              >
+                Next Step
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
