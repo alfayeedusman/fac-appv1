@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
   User,
   Mail,
   Phone,
@@ -96,28 +95,17 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <StickyHeader showBack={true} title="Profile" />
+      <StickyHeader showBack={true} title="Profile" alwaysVisible />
 
 
-      <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
+      <div className="px-4 pt-24 pb-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link to="/dashboard" className="mr-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <div className="bg-fac-orange-500 p-3 rounded-xl">
-              <User className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Profile</h1>
-              <p className="text-muted-foreground">
-                Manage your account and preferences
-              </p>
-            </div>
+        <div className="mb-6 text-center">
+          <div className="w-12 h-12 rounded-xl bg-fac-orange-500 flex items-center justify-center mx-auto mb-2">
+            <User className="h-6 w-6 text-white" />
           </div>
+          <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
+          <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
         </div>
 
         {/* Profile Overview Card */}
