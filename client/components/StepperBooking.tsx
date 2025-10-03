@@ -962,20 +962,24 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
     const code = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) + String(Date.now()).slice(-2);
     const address = window.prompt('Branch address (optional)') || undefined;
     const city = 'Zamboanga City';
-    const resp = await neonDbClient.createBranch({ name, code, address, city });
-    if (resp.success) {
-      toast({ title: 'Branch created', description: `${name} added.` });
-      // reload branches - silently handle errors
-      try {
-        const res = await neonDbClient.getBranches();
-        if (res.success && res.branches) {
-          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+    try {
+      const resp = await neonDbClient.createBranch({ name, code, address, city });
+      if (resp.success) {
+        toast({ title: 'Branch created', description: `${name} added.` });
+        // reload branches - silently handle errors
+        try {
+          const res = await neonDbClient.getBranches();
+          if (res.success && res.branches) {
+            setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+          }
+        } catch {
+          // Ignore errors, keep existing branches
         }
-      } catch {
-        // Ignore errors, keep existing branches
+      } else {
+        toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
       }
-    } else {
-      toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
+    } catch {
+      toast({ title: 'Connection error', description: 'Unable to create branch. Please try again.', variant: 'destructive' });
     }
   };
 
@@ -1267,20 +1271,24 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const code = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) + String(Date.now()).slice(-2);
     const address = window.prompt('Branch address (optional)') || undefined;
     const city = 'Zamboanga City';
-    const resp = await neonDbClient.createBranch({ name, code, address, city });
-    if (resp.success) {
-      toast({ title: 'Branch created', description: `${name} added.` });
-      // reload branches - silently handle errors
-      try {
-        const res = await neonDbClient.getBranches();
-        if (res.success && res.branches) {
-          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+    try {
+      const resp = await neonDbClient.createBranch({ name, code, address, city });
+      if (resp.success) {
+        toast({ title: 'Branch created', description: `${name} added.` });
+        // reload branches - silently handle errors
+        try {
+          const res = await neonDbClient.getBranches();
+          if (res.success && res.branches) {
+            setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+          }
+        } catch {
+          // Ignore errors, keep existing branches
         }
-      } catch {
-        // Ignore errors, keep existing branches
+      } else {
+        toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
       }
-    } else {
-      toast({ title: 'Failed to create branch', description: resp.error || 'Please try again', variant: 'destructive' });
+    } catch {
+      toast({ title: 'Connection error', description: 'Unable to create branch. Please try again.', variant: 'destructive' });
     }
   };
 
