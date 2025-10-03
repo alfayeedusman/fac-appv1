@@ -107,6 +107,7 @@ export function createServer() {
 
   // New features endpoints
   app.get("/api/neon/branches", neonApiRoutes.getBranches);
+  app.post("/api/neon/branches/seed", neonApiRoutes.seedBranchesEndpoint);
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
   app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);

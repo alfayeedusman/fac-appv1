@@ -796,6 +796,26 @@ export const getBranches: RequestHandler = async (req, res) => {
   }
 };
 
+export const seedBranchesEndpoint: RequestHandler = async (req, res) => {
+  try {
+    console.log("🌱 Seeding branches...");
+    const { seedBranches } = await import("../database/seed-branches.js");
+    await seedBranches();
+    const branches = await neonDbService.getBranches();
+    res.json({
+      success: true,
+      message: "Branches seeded successfully",
+      count: branches.length
+    });
+  } catch (error) {
+    console.error("❌ Seed branches error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to seed branches",
+    });
+  }
+};
+
 // Service packages endpoints
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
