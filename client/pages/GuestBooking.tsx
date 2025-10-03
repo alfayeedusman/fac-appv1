@@ -9,11 +9,15 @@ import {
   Sparkles,
   Clock,
   CheckCircle,
+  X,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StepperBooking from "@/components/StepperBooking";
+import { useState } from "react";
 
 export default function GuestBooking() {
+  const [showInfoCard, setShowInfoCard] = useState(true);
+
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
       {/* Enhanced Background Elements */}
@@ -61,8 +65,16 @@ export default function GuestBooking() {
           </p>
         </div>
 
-        {/* Enhanced Info Card */}
-        <div className="max-w-md mx-auto mb-8">
+        {/* Enhanced Info Card (dismissible; reappears on refresh) */}
+        {showInfoCard && (
+        <div className="max-w-md mx-auto mb-8 relative">
+          <button
+            aria-label="Close"
+            onClick={() => setShowInfoCard(false)}
+            className="absolute -top-3 -right-3 z-10 h-9 w-9 rounded-full bg-white/90 dark:bg-gray-900/90 border border-border shadow-md flex items-center justify-center hover:bg-muted/70 active:scale-95 transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
           <Card className="glass border-border/50 shadow-xl">
             <CardContent className="p-6">
               <div className="text-center mb-6">
@@ -126,7 +138,8 @@ export default function GuestBooking() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        )}
+        </div>
 
       {/* Booking Form */}
       <div className="relative z-10">
