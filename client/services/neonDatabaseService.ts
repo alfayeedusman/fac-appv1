@@ -959,28 +959,29 @@ class NeonDatabaseClient {
     }
 
     try {
-      const url = `${this.baseUrl}/branches`;
-      console.log("📞 Making request to", url);
-      const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      // Use fetchJsonWithFallback for better error handling and timeout
+      const result = await this.fetchJsonWithFallback("/branches", 5000);
+      console.log("✅ getBranches result:", result);
 
-      if (!response.ok) {
-        console.error("❌ Response not OK:", response.status, response.statusText);
-        const text = await response.text().catch(() => "");
-        console.error("Response body:", text);
-        throw new Error(`Request failed: ${response.status}`);
+      // Ensure result has the expected structure
+      if (result && typeof result === 'object') {
+        if (result.success !== undefined) {
+          return result;
+        }
+        // If result doesn't have success field, wrap it
+        return { success: true, branches: result.branches || result };
       }
 
-      const result = await response.json();
-      console.log("✅ getBranches result:", result);
-      return result;
+      return { success: true, branches: [] };
     } catch (error) {
       console.error("❌ Database branches fetch failed:", error);
       // Graceful fallback to local demo branches to keep UX flowing
       try {
         const branches = await FallbackService.getBranches();
+        console.log("📍 Using fallback branches:", branches.length);
         return { success: true, branches };
       } catch (e) {
+        console.error("❌ Fallback also failed:", e);
         return {
           success: false,
           branches: [],
