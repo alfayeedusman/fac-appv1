@@ -133,7 +133,7 @@ export class FirebasePushNotificationService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-      const response = await fetch('/api/notifications/register-token', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/register-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -433,7 +433,7 @@ export class FirebasePushNotificationService {
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
         try {
-          await fetch('/api/notifications/unregister-token', {
+          await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/unregister-token`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
