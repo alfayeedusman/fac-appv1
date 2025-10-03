@@ -303,7 +303,21 @@ export default function BookingManagement() {
 
         {/* Bookings List */}
         <div className="space-y-6 animate-fade-in-up animate-delay-400">
-          {filteredBookings.length === 0 ? (
+          {isLoading ? (
+            <Card className="glass border-border">
+              <CardContent className="p-8 text-center">
+                <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500"></div>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Loading your bookings...
+                </h3>
+                <p className="text-muted-foreground">
+                  Please wait while we fetch your booking history
+                </p>
+              </CardContent>
+            </Card>
+          ) : filteredBookings.length === 0 ? (
             <Card className="glass border-border">
               <CardContent className="p-8 text-center">
                 <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
