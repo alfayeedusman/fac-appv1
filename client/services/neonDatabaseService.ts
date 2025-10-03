@@ -427,8 +427,20 @@ class NeonDatabaseClient {
 
     if (json && typeof json === "object") {
       if (!response.ok || !json?.success) {
-        const errMsg = json?.error || `Login failed (HTTP ${response.status}).`;
-        return { success: false, error: errMsg };
+        // Map status codes to friendly messages
+        const status = response.status;
+        let message = "Login failed. Please try again.";
+        if (status === 401) message = "Incorrect email or password.";
+        else if (status === 429) message = "Too many attempts. Please try again later.";
+        else if (status === 503) message = "System under maintenance. Please try again later.";
+        else if (status >= 500) message = "Server error. Please try again shortly.";
+        else if (status === 0) message = "Network error. Please check your connection.";
+        // Prefer server-provided public message if available
+        const serverMsg = typeof json.error === 'string' ? json.error : '';
+        const finalMsg = import.meta.env.MODE === 'development' && serverMsg
+          ? `${message} (${serverMsg})`
+          : (serverMsg && serverMsg.length < 120 ? serverMsg : message);
+        return { success: false, error: finalMsg };
       }
       try {
         localStorage.setItem("userEmail", json.user.email);
@@ -448,15 +460,15 @@ class NeonDatabaseClient {
       return json;
     }
 
-    const ct = response.headers.get("content-type") || "";
-    const why = ct.includes("text/html")
-      ? "HTML page returned instead of JSON."
-      : "Invalid JSON response.";
-    const preview = text ? text.substring(0, 200) : "";
+    // Non-JSON or unreadable body; return friendly error without developer details
+    let friendly = "Login failed. Please try again.";
+    if (response.status === 401) friendly = "Incorrect email or password.";
+    else if (response.status === 503) friendly = "System under maintenance. Please try again later.";
+    else if (response.status >= 500) friendly = "Server error. Please try again shortly.";
+    else if (response.status === 0) friendly = "Network error. Please check your connection.";
     return {
       success: false,
-      error:
-        `${why} (HTTP ${response.status}). ${preview ? `Response: ${preview}` : ""}`.trim(),
+      error: friendly,
     };
   }
 
