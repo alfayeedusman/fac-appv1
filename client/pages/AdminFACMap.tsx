@@ -104,7 +104,7 @@ export default function AdminFACMap() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await fetch("/api/neon/fac-map-stats", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "/api"}/neon/fac-map-stats`, {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
