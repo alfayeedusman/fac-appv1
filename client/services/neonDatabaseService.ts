@@ -406,16 +406,18 @@ class NeonDatabaseClient {
     // Read body ONCE as text to avoid bodyUsed/clone issues, then try JSON parse
     let text = "";
     try {
-      text = await response.text();
+      if (!response.bodyUsed) {
+        text = await response.text();
+      } else {
+        // If already consumed (by an interceptor), we cannot read again safely
+        console.warn("⚠️ Response body already consumed; skipping read");
+      }
     } catch (readErr: any) {
       console.error(
         "❌ Failed to read response body:",
         readErr?.message || readErr,
       );
-      return {
-        success: false,
-        error: `Unable to read server response (HTTP ${response.status}).`,
-      };
+      // Continue with empty text; we'll return a generic error below if needed
     }
 
     let json: any = null;
