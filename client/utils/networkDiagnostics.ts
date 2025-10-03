@@ -1,132 +1,181 @@
 /**
- * Network diagnostic utilities for debugging connection issues
+ * Network diagnostics utility to help debug connection issues
  */
 
-import { formatError } from '../lib/errorUtils';
-
-export interface NetworkDiagnostics {
-  online: boolean;
-  apiBaseUrl: string;
-  origin: string;
-  userAgent: string;
-  timestamp: string;
-}
-
-export interface NetworkTestResult {
+export interface DiagnosticResult {
+  test: string;
   success: boolean;
-  status?: number;
-  responseTime: number;
+  details: string;
   error?: string;
-  diagnostics: NetworkDiagnostics;
 }
 
-/**
- * Get current network diagnostics
- */
-export const getNetworkDiagnostics = (): NetworkDiagnostics => ({
-  online: navigator.onLine,
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
-  origin: window.location.origin,
-  userAgent: navigator.userAgent,
-  timestamp: new Date().toISOString(),
-});
+export class NetworkDiagnostics {
+  private results: DiagnosticResult[] = [];
 
-/**
- * Test API connectivity
- */
-export const testApiConnectivity = async (endpoint: string = '/health'): Promise<NetworkTestResult> => {
-  const startTime = Date.now();
-  const diagnostics = getNetworkDiagnostics();
-  const apiBaseUrl = diagnostics.apiBaseUrl;
-  
-  try {
-    const response = await fetch(`${apiBaseUrl}${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    const responseTime = Date.now() - startTime;
-    
-    if (response.ok) {
-      return {
-        success: true,
-        status: response.status,
-        responseTime,
-        diagnostics,
-      };
-    } else {
-      return {
+  async runDiagnostics(): Promise<DiagnosticResult[]> {
+    this.results = [];
+
+    await this.testHealthEndpoint();
+    await this.testNeonConnection();
+    await this.testRegistrationEndpoint();
+    await this.testCORS();
+
+    return this.results;
+  }
+
+  private async testHealthEndpoint(): Promise<void> {
+    try {
+      const response = await fetch('/api/health', {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.results.push({
+          test: 'Health Endpoint',
+          success: true,
+          details: `Status: ${data.status}, Neon: ${data.services?.neon}`,
+        });
+      } else {
+        this.results.push({
+          test: 'Health Endpoint',
+          success: false,
+          details: `HTTP ${response.status}: ${response.statusText}`,
+        });
+      }
+    } catch (error) {
+      this.results.push({
+        test: 'Health Endpoint',
         success: false,
-        status: response.status,
-        responseTime,
-        error: `HTTP ${response.status}: ${response.statusText}`,
-        diagnostics,
-      };
+        details: 'Failed to connect',
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-  } catch (error) {
-    const responseTime = Date.now() - startTime;
-    
-    return {
-      success: false,
-      responseTime,
-      error: formatError(error),
-      diagnostics,
-    };
   }
-};
 
-/**
- * Log network diagnostics to console
- */
-export const logNetworkDiagnostics = async () => {
-  console.group('🔍 Network Diagnostics');
-  
-  const diagnostics = getNetworkDiagnostics();
-  console.log('📊 Current Status:', diagnostics);
-  
-  console.log('🌐 Testing API connectivity...');
-  const testResult = await testApiConnectivity();
-  
-  if (testResult.success) {
-    console.log('✅ API is reachable:', testResult);
-  } else {
-    console.warn('❌ API connection failed:', testResult);
-    
-    // Additional debugging info
-    console.log('🔧 Troubleshooting tips:');
-    console.log('- Check if backend server is running');
-    console.log('- Verify API_BASE_URL in environment:', diagnostics.apiBaseUrl);
-    console.log('- Check browser network tab for CORS errors');
-    console.log('- Ensure server CORS allows origin:', diagnostics.origin);
-  }
-  
-  console.groupEnd();
-  return testResult;
-};
+  private async testNeonConnection(): Promise<void> {
+    try {
+      const response = await fetch('/api/neon/test', {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+      });
 
-/**
- * Format network error for user display
- */
-export const formatNetworkError = (error: unknown): string => {
-  const errorStr = formatError(error).toLowerCase();
-  
-  if (!navigator.onLine) {
-    return 'No internet connection. Please check your network and try again.';
+      if (response.ok) {
+        const data = await response.json();
+        this.results.push({
+          test: 'Neon Database Test',
+          success: data.connected || data.success,
+          details: `Connected: ${data.connected}, Stats: ${data.stats ? 'Available' : 'N/A'}`,
+        });
+      } else {
+        this.results.push({
+          test: 'Neon Database Test',
+          success: false,
+          details: `HTTP ${response.status}: ${response.statusText}`,
+        });
+      }
+    } catch (error) {
+      this.results.push({
+        test: 'Neon Database Test',
+        success: false,
+        details: 'Failed to connect',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
-  
-  if (errorStr.includes('cors') || errorStr.includes('cross-origin')) {
-    return 'Unable to connect to server. Please contact support if this persists.';
+
+  private async testRegistrationEndpoint(): Promise<void> {
+    try {
+      // Test with invalid data to see if endpoint is reachable
+      const response = await fetch('/api/neon/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: 'diagnostic' }),
+        signal: AbortSignal.timeout(5000),
+      });
+
+      // We expect 400 or 500 (invalid data), not network error
+      this.results.push({
+        test: 'Registration Endpoint',
+        success: true,
+        details: `Endpoint reachable (HTTP ${response.status})`,
+      });
+    } catch (error) {
+      this.results.push({
+        test: 'Registration Endpoint',
+        success: false,
+        details: 'Failed to reach endpoint',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
-  
-  if (errorStr.includes('timeout') || errorStr.includes('network')) {
-    return 'Connection timeout. Please check your internet connection and try again.';
+
+  private async testCORS(): Promise<void> {
+    try {
+      const response = await fetch('/api/health', {
+        method: 'GET',
+        headers: {
+          'Origin': window.location.origin,
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      const corsHeaders = {
+        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+      };
+
+      this.results.push({
+        test: 'CORS Configuration',
+        success: true,
+        details: `Origin: ${window.location.origin}, CORS Headers: ${JSON.stringify(corsHeaders)}`,
+      });
+    } catch (error) {
+      this.results.push({
+        test: 'CORS Configuration',
+        success: false,
+        details: 'Failed to test CORS',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
-  
-  if (errorStr.includes('404') || errorStr.includes('not found')) {
-    return 'Server endpoint not found. The service may be temporarily unavailable.';
+
+  getFormattedResults(): string {
+    let output = '🔍 Network Diagnostics Report\n';
+    output += '='.repeat(50) + '\n\n';
+
+    this.results.forEach(result => {
+      const icon = result.success ? '✅' : '❌';
+      output += `${icon} ${result.test}\n`;
+      output += `   ${result.details}\n`;
+      if (result.error) {
+        output += `   Error: ${result.error}\n`;
+      }
+      output += '\n';
+    });
+
+    output += '='.repeat(50) + '\n';
+    output += `Browser: ${navigator.userAgent}\n`;
+    output += `Location: ${window.location.href}\n`;
+    output += `Online: ${navigator.onLine}\n`;
+
+    return output;
   }
-  
-  return 'Unable to connect to server. Please try again later.';
-};
+
+  printResults(): void {
+    console.log(this.getFormattedResults());
+  }
+}
+
+// Export singleton instance
+export const networkDiagnostics = new NetworkDiagnostics();
+
+// Add to window for easy access from console
+if (typeof window !== 'undefined') {
+  (window as any).runNetworkDiagnostics = async () => {
+    await networkDiagnostics.runDiagnostics();
+    networkDiagnostics.printResults();
+    return networkDiagnostics;
+  };
+}
