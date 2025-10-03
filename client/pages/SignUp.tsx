@@ -175,12 +175,25 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Registration form submitted');
 
     const isStep1Valid = validateStep(1);
     const isStep2Valid = validateStep(2);
     const isStep3Valid = validateStep(3);
+
+    console.log('✅ Validation results:', {
+      step1: isStep1Valid,
+      step2: isStep2Valid,
+      step3: isStep3Valid
+    });
+
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
-      alert("Please fill all required fields correctly before submitting.");
+      console.error('❌ Validation failed:', errors);
+      toast({
+        title: 'Please Complete All Fields',
+        description: 'Fill in all required fields correctly before submitting.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -200,16 +213,32 @@ export default function SignUp() {
         carType: formData.carType,
       };
 
+      console.log('📤 Sending registration request for:', payload.email);
       const result = await authService.register(payload);
+      console.log('📥 Registration response:', result);
 
       if (result.success) {
-        toast({ title: 'Registration Successful! 🎉', description: 'Your account has been created successfully!' });
+        console.log('✅ Registration successful!');
+        toast({
+          title: 'Welcome to FAC! 🎉',
+          description: 'Your account has been created successfully. You can now book car wash services!'
+        });
         setShowSuccessModal(true);
       } else {
-        toast({ title: 'Registration Failed', description: result.error || 'Please try again.', variant: 'destructive' });
+        console.error('❌ Registration failed:', result.error);
+        toast({
+          title: 'Registration Failed',
+          description: result.error || 'Please check your details and try again.',
+          variant: 'destructive'
+        });
       }
-    } catch (_) {
-      toast({ title: 'Registration Failed', description: 'Unable to connect to server. Please try again.', variant: 'destructive' });
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Unable to connect to server. Please check your internet connection and try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsSubmitting(false);
     }
