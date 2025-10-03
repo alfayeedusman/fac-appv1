@@ -868,22 +868,22 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       </div>
 
       {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
-      <div className="fixed bottom-20 left-4 right-4 z-50 md:hidden">
-        <div className="glass border border-border bg-white/95 dark:bg-gray-900/95 rounded-2xl shadow-2xl p-3 space-y-3">
+      <div className="fixed bottom-20 left-3 right-3 z-50 md:hidden">
+        <div className="glass border-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-2xl shadow-2xl p-4 space-y-4">
           {/* Progress Info */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground font-medium">
                 {bookingData.basePrice > 0 ? 'Total Price' : `Step ${currentStep} of ${STEPS.length}`}
               </p>
-              <p className="text-lg font-black text-foreground">
+              <p className="text-lg font-black text-foreground truncate">
                 {bookingData.basePrice > 0 ? `₱${(bookingData.totalPrice || 0).toLocaleString()}` : STEPS[currentStep - 1].title}
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-10 rounded-xl"
+              className="h-10 px-4 rounded-xl font-medium flex-shrink-0"
               onClick={() => setShowSidebar(true)}
             >
               Summary
@@ -891,16 +891,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {/* Back Button */}
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="flex-1 h-12 rounded-xl font-medium border-2 disabled:opacity-40"
+              className="flex-1 h-12 rounded-xl font-semibold border-2 disabled:opacity-40 disabled:cursor-not-allowed text-base"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
+              <ChevronLeft className="h-4 w-4 mr-1.5 flex-shrink-0" />
+              <span>Back</span>
             </Button>
 
             {/* Next/Confirm Button */}
@@ -908,7 +908,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
               <Button
                 onClick={submitBooking}
                 disabled={!canProceed() || isLoading}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40"
+                className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
               >
                 {isLoading ? 'Processing...' : 'Confirm Booking'}
               </Button>
