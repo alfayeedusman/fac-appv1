@@ -120,7 +120,7 @@ export default function AdminImageManager() {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/images/stats');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/stats`);
       const result = await response.json();
       
       if (result.success) {
@@ -141,7 +141,7 @@ export default function AdminImageManager() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`/api/images?${params}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`);
       const result = await response.json();
       
       if (result.success) {
@@ -159,7 +159,7 @@ export default function AdminImageManager() {
 
   const loadCollections = async () => {
     try {
-      const response = await fetch('/api/images/collections');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/collections`);
       const result = await response.json();
       
       if (result.success) {
@@ -172,7 +172,7 @@ export default function AdminImageManager() {
 
   const handleDeleteImage = async (imageId: string) => {
     try {
-      const response = await fetch(`/api/images/${imageId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/${imageId}`, {
         method: 'DELETE',
       });
 
@@ -225,7 +225,7 @@ export default function AdminImageManager() {
     }
 
     try {
-      const response = await fetch('/api/images/collections', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/collections`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
