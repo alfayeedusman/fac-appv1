@@ -14,6 +14,7 @@ interface StickyHeaderProps {
   className?: string;
   isGuestMode?: boolean;
   hideNavigation?: boolean;
+  alwaysVisible?: boolean;
 }
 
 export default function StickyHeader({
@@ -23,6 +24,7 @@ export default function StickyHeader({
   className,
   isGuestMode = false,
   hideNavigation = false,
+  alwaysVisible = false,
 }: StickyHeaderProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -53,6 +55,12 @@ export default function StickyHeader({
       return;
     }
 
+    // If explicitly requested, keep header visible
+    if (alwaysVisible) {
+      setIsVisible(true);
+      return;
+    }
+
     // Always show header on management and admin pages
     const alwaysVisiblePages = [
       "/inventory-management",
@@ -80,7 +88,7 @@ export default function StickyHeader({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [location.pathname, isKioskRoute]);
+  }, [location.pathname, isKioskRoute, alwaysVisible]);
 
   // Don't render StickyHeader on certain routes or kiosk mode
   if (shouldHideHeader || isKioskRoute) {
