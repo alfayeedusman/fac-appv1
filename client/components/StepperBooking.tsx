@@ -933,15 +933,8 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
               : 'border-border/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-fac-orange-300 hover:shadow-xl hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
           }`}
           onClick={async () => {
-            // Check if this category is available for current service type
-            if (bookingData.serviceType === 'home') {
-              const isAvailable = isServiceAvailableForHome(categoryKey);
-              if (!isAvailable) {
-                showHomeServiceUnavailableAlert(category.name, goBackToStep1);
-                return;
-              }
-            }
-
+            // No need to validate category here - getAvailableServices already filtered
+            // Only validate specific service selections (handled in service onClick)
             updateBookingData("category", categoryKey);
             updateBookingData("service", ""); // Reset service when category changes
           }}
