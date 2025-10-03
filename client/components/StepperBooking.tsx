@@ -1220,15 +1220,35 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const load = async () => {
       setLoadingBranches(true);
       try {
+        console.log("📍 Loading branches from database...");
         const res = await neonDbClient.getBranches();
-        if (res.success && res.branches && Array.isArray(res.branches)) {
-          setBranches(res.branches.map((b: any) => ({ id: b.id || b.code || b.name, name: b.name, address: b.address })));
+        console.log("📍 Branches response:", res);
+
+        if (res.success && res.branches && Array.isArray(res.branches) && res.branches.length > 0) {
+          const mappedBranches = res.branches.map((b: any) => ({
+            id: b.id || b.code || b.name,
+            name: b.name,
+            address: b.address
+          }));
+          console.log("✅ Loaded", mappedBranches.length, "branches from database");
+          setBranches(mappedBranches);
         } else {
+          console.warn("⚠️ No branches in database, using fallback config");
           // Fallback to local admin config
-          setBranches((adminConfig.branches || []).filter((b: any) => b.enabled).map((b: any) => ({ id: b.id, name: b.name, address: b.address })));
+          const fallbackBranches = (adminConfig.branches || [])
+            .filter((b: any) => b.enabled)
+            .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
+          setBranches(fallbackBranches);
+          console.log("📍 Using", fallbackBranches.length, "fallback branches from config");
         }
       } catch (e) {
-        setBranches((adminConfig.branches || []).filter((b: any) => b.enabled).map((b: any) => ({ id: b.id, name: b.name, address: b.address })));
+        console.error("❌ Database branches fetch failed:", e);
+        // Fallback to local admin config on error
+        const fallbackBranches = (adminConfig.branches || [])
+          .filter((b: any) => b.enabled)
+          .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
+        setBranches(fallbackBranches);
+        console.log("📍 Error fallback: using", fallbackBranches.length, "branches from config");
       } finally {
         setLoadingBranches(false);
       }
