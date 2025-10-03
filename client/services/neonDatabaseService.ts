@@ -948,15 +948,14 @@ class NeonDatabaseClient {
   }
 
   async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
-    console.log("🏪 getBranches called, connection status:", this.isConnected);
+    console.log("🏪 getBranches called - attempting to load branches...");
 
     // Helper function to try fetching with timeout
-    const tryFetch = async (url: string, timeout: number = 3000): Promise<any> => {
+    const tryFetch = async (url: string, timeout: number = 2000): Promise<any> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       try {
-        console.log(`📞 Attempting fetch to: ${url}`);
         const response = await fetch(url, {
           signal: controller.signal,
           headers: {
@@ -967,58 +966,37 @@ class NeonDatabaseClient {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
-        console.log(`✅ Fetch successful from ${url}`);
         return data;
-      } catch (error) {
+      } catch (error: any) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
-          console.warn(`⏱️ Request timeout (${timeout}ms) for ${url}`);
-          throw new Error(`Timeout after ${timeout}ms`);
-        }
-        console.error(`❌ Fetch failed for ${url}:`, error);
         throw error;
       }
     };
 
-    // Try multiple endpoints in order
-    const endpoints = [
-      `${this.baseUrl}/branches`,
-      '/api/neon/branches',
-      'http://localhost:8080/api/neon/branches'
-    ];
-
-    // Try each endpoint
-    for (const endpoint of endpoints) {
-      try {
-        const result = await tryFetch(endpoint, 3000);
-        if (result && result.branches && Array.isArray(result.branches)) {
-          console.log(`✅ Successfully fetched ${result.branches.length} branches from ${endpoint}`);
-          return result;
-        }
-      } catch (error) {
-        console.warn(`⚠️ Failed to fetch from ${endpoint}, trying next...`);
-        continue;
+    // Try primary endpoint only (simplest approach)
+    try {
+      const result = await tryFetch('/api/neon/branches', 2000);
+      if (result && result.success && result.branches && Array.isArray(result.branches)) {
+        console.log(`✅ Loaded ${result.branches.length} branches from database`);
+        return result;
       }
+    } catch (error) {
+      console.warn("⚠️ Database fetch failed, using fallback branches");
     }
 
-    // All endpoints failed - use fallback
-    console.warn("⚠️ All endpoints failed, using fallback service");
+    // Immediately use fallback on any error
     try {
       const branches = await FallbackService.getBranches();
       console.log(`📍 Using ${branches.length} fallback branches`);
       return { success: true, branches };
     } catch (fallbackError) {
-      console.error("❌ Even fallback failed:", fallbackError);
-      // Return empty array as last resort - UI will show "no branches available"
-      return {
-        success: true,
-        branches: [],
-        error: "Unable to load branches. Please check your connection."
-      };
+      // Last resort - return empty array
+      console.error("❌ Fallback failed, returning empty array");
+      return { success: true, branches: [] };
     }
   }
 
