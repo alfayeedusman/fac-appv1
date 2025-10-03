@@ -916,10 +916,10 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
               <Button
                 onClick={nextStep}
                 disabled={!canProceed()}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40"
+                className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
               >
-                Next Step
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <span>Next Step</span>
+                <ChevronRight className="h-4 w-4 ml-1.5 flex-shrink-0" />
               </Button>
             )}
           </div>
