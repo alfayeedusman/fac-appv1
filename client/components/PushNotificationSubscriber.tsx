@@ -110,7 +110,7 @@ export default function PushNotificationSubscriber({
     setError(null);
 
     try {
-      const response = await fetch('/api/notifications/test', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
