@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -575,7 +576,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       const notificationMessage = `New booking received from ${customerName}\n` +
         `Service: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\n` +
         `Date: ${bookingData.date} at ${bookingData.timeSlot}\n` +
-        `Amount: ���${bookingData.totalPrice.toLocaleString()}\n` +
+        `Amount: ₱${bookingData.totalPrice.toLocaleString()}\n` +
         `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
 
       // Create system notification through API (this happens automatically in the API)
@@ -661,19 +662,27 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      {/* Mobile Sidebar Overlay */}
-      {showSidebar && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setShowSidebar(false)} />
-      )}
+      {/* Mobile Bottom Sheet for Booking Summary */}
+      <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+        <SheetContent side="bottom" className="rounded-t-2xl p-0 md:hidden">
+          <div className="p-4 border-b">
+            <SheetHeader>
+              <SheetTitle className="text-base font-bold">Booking Summary</SheetTitle>
+            </SheetHeader>
+          </div>
+          <div className="max-h-[70vh] overflow-y-auto p-4">
+            <BookingSummary bookingData={bookingData} progressPercentage={progressPercentage} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Container with max width */}
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row">
-          {/* Sidebar */}
+          {/* Sidebar (desktop only) */}
           <div className={`
-            fixed lg:sticky top-0 left-0 h-screen w-80 sm:w-96 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-50 lg:z-10 shadow-2xl lg:shadow-none
-            transform ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen transition-transform duration-300 ease-out
+            hidden lg:block lg:sticky top-0 left-0 h-screen w-80 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-10 lg:shadow-none
+            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
           `}>
             <div className="p-4 md:p-6 h-full overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
