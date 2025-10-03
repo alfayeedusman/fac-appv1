@@ -702,7 +702,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-48 md:pb-8">
+            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8">
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
