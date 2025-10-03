@@ -233,7 +233,7 @@ export default function SignUp() {
         });
       }
     } catch (error) {
-      console.error('❌ Registration error:', error);
+      console.error('��� Registration error:', error);
       toast({
         title: 'Connection Error',
         description: 'Unable to connect to server. Please check your internet connection and try again.',
@@ -308,13 +308,31 @@ export default function SignUp() {
   ];
 
   const nextStep = () => {
-    if (validateStep(currentStep) && currentStep < 3) {
+    console.log(`🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`);
+    const isValid = validateStep(currentStep);
+    console.log(`✅ Step ${currentStep} validation:`, isValid);
+
+    if (!isValid) {
+      console.error(`❌ Step ${currentStep} validation failed:`, errors);
+      toast({
+        title: 'Please Complete This Step',
+        description: 'Fill in all required fields before continuing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+      console.log(`✅ Moved to step ${currentStep + 1}`);
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      console.log(`⬅️ Moved back to step ${currentStep - 1}`);
+    }
   };
 
   return (
