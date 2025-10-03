@@ -1,5 +1,6 @@
 // Client-side service to interact with Neon database via API
 import { toast } from "@/hooks/use-toast";
+import { FallbackService } from "@/services/fallbackService";
 
 // Types based on our database schema
 export interface User {
@@ -910,8 +911,7 @@ class NeonDatabaseClient {
       console.error("❌ Database branches fetch failed:", error);
       // Graceful fallback to local demo branches to keep UX flowing
       try {
-        const { default: fallback } = await import("@/services/fallbackService");
-        const branches = await (fallback as any).getBranches();
+        const branches = await FallbackService.getBranches();
         return { success: true, branches };
       } catch (e) {
         return {
