@@ -1242,13 +1242,14 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
           console.log("📍 Using", fallbackBranches.length, "fallback branches from config");
         }
       } catch (e) {
-        console.error("❌ Database branches fetch failed:", e);
+        // Silently handle error and use fallback - this is expected behavior
+        console.warn("⚠️ Using fallback branches (database unavailable)");
         // Fallback to local admin config on error
         const fallbackBranches = (adminConfig.branches || [])
           .filter((b: any) => b.enabled)
           .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
         setBranches(fallbackBranches);
-        console.log("📍 Error fallback: using", fallbackBranches.length, "branches from config");
+        console.log("📍 Loaded", fallbackBranches.length, "branches from config");
       } finally {
         setLoadingBranches(false);
       }
