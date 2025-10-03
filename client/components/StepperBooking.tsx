@@ -406,30 +406,20 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     // Special handling for service type changes
     if (field === 'serviceType') {
       if (value === 'home') {
-        // Check if current service selection is available for home service
-        if (bookingData.category && bookingData.service) {
-          const isAvailable = isServiceAvailableForHome(bookingData.category, bookingData.service);
+        // Silently clear incompatible selections when switching to home service
+        // Don't show alert - let user make new selections
+        if (bookingData.category) {
+          const isAvailable = isServiceAvailableForHome(bookingData.category, bookingData.service || undefined);
           if (!isAvailable) {
-            const serviceName = bookingData.category === 'carwash'
-              ? adminConfig?.pricing?.carwash?.[bookingData.service as keyof typeof adminConfig.pricing.carwash]?.name
-              : bookingData.category === 'auto_detailing'
-                ? 'Auto Detailing'
-                : 'Graphene Coating';
-
-            showHomeServiceUnavailableAlert(serviceName || 'Selected Service', goBackToStep1);
-            return;
-          }
-        } else if (bookingData.category && !bookingData.service) {
-          // Category selected but no specific service, check if category is available
-          const isAvailable = isServiceAvailableForHome(bookingData.category);
-          if (!isAvailable) {
-            const categoryDisplayName = bookingData.category === 'auto_detailing'
-              ? 'Auto Detailing'
-              : bookingData.category === 'graphene_coating'
-                ? 'Graphene Coating'
-                : bookingData.category;
-
-            showHomeServiceUnavailableAlert(categoryDisplayName, goBackToStep1);
+            // Clear incompatible selections silently
+            setBookingData(prev => ({
+              ...prev,
+              [field]: value,
+              category: '',
+              service: '',
+              basePrice: 0,
+              totalPrice: 0,
+            }));
             return;
           }
         }
