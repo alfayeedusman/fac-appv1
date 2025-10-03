@@ -28,19 +28,16 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import BookingCard from "@/components/BookingCard";
-import {
-  BookingRecord,
-  getBookings,
-  getBookingsByStatus,
-  getRecentBookings,
-} from "@/utils/bookingData";
+import { neonDbClient } from "@/services/neonDatabaseService";
+import type { Booking } from "@/services/neonDatabaseService";
 
 export default function BookingManagement() {
-  const [bookings, setBookings] = useState<BookingRecord[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<BookingRecord[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadBookings();
@@ -50,9 +47,34 @@ export default function BookingManagement() {
     filterAndSortBookings();
   }, [bookings, searchTerm, statusFilter, sortBy]);
 
-  const loadBookings = () => {
-    const allBookings = getBookings();
-    setBookings(allBookings);
+  const loadBookings = async () => {
+    setIsLoading(true);
+    try {
+      const userId = localStorage.getItem('userId');
+      const userEmail = localStorage.getItem('userEmail');
+
+      if (!userId || !userEmail) {
+        console.warn('No user logged in');
+        setBookings([]);
+        return;
+      }
+
+      console.log('📥 Fetching bookings for user:', userEmail);
+      const result = await neonDbClient.getBookings({ userId });
+
+      if (result.success && result.bookings) {
+        console.log('✅ Loaded', result.bookings.length, 'real bookings from database');
+        setBookings(result.bookings);
+      } else {
+        console.warn('⚠️ No bookings found or fetch failed');
+        setBookings([]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading bookings:', error);
+      setBookings([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filterAndSortBookings = () => {
@@ -69,6 +91,7 @@ export default function BookingManagement() {
         (booking) =>
           booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
           booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (booking.confirmationCode && booking.confirmationCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
           booking.branch.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
@@ -87,7 +110,7 @@ export default function BookingManagement() {
         case "date":
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         case "rating":
-          return (b.rating || 0) - (a.rating || 0);
+          return (b.customerRating || 0) - (a.customerRating || 0);
         default:
           return 0;
       }
@@ -99,18 +122,18 @@ export default function BookingManagement() {
   const getStatusStats = () => {
     const stats = {
       total: bookings.length,
-      pending: getBookingsByStatus("pending").length,
-      confirmed: getBookingsByStatus("confirmed").length,
-      completed: getBookingsByStatus("completed").length,
-      cancelled: getBookingsByStatus("cancelled").length,
+      pending: bookings.filter(b => b.status === 'pending').length,
+      confirmed: bookings.filter(b => b.status === 'confirmed').length,
+      completed: bookings.filter(b => b.status === 'completed').length,
+      cancelled: bookings.filter(b => b.status === 'cancelled').length,
     };
 
     const averageRating =
-      bookings.filter((b) => b.rating).length > 0
+      bookings.filter((b) => b.customerRating).length > 0
         ? bookings
-            .filter((b) => b.rating)
-            .reduce((sum, b) => sum + (b.rating || 0), 0) /
-          bookings.filter((b) => b.rating).length
+            .filter((b) => b.customerRating)
+            .reduce((sum, b) => sum + (b.customerRating || 0), 0) /
+          bookings.filter((b) => b.customerRating).length
         : 0;
 
     return { ...stats, averageRating };
