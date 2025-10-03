@@ -192,7 +192,7 @@ export default function SignUp() {
         fullName: formData.fullName,
         contactNumber: formData.contactNumber,
         address: formData.address,
-        branchLocation: formData.branchLocation,
+        branchLocation: formData.branchLocation || 'Tumaga',
         role: 'user' as const,
         carUnit: formData.carUnit,
         carPlateNumber: formData.carPlateNumber,
