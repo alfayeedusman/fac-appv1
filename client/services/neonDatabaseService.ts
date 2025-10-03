@@ -247,7 +247,7 @@ class NeonDatabaseClient {
           if (this.isConnected) {
             console.log("✅ Fallback connection test successful");
           } else {
-            console.warn("⚠�� Fallback connection test returned false");
+            console.warn("⚠️ Fallback connection test returned false");
           }
           return result;
         }
@@ -859,8 +859,9 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("📞 Making request to /api/neon/customers...");
-      const response = await fetch("/api/neon/customers");
+      const url = `${this.baseUrl}/customers`;
+      console.log("📞 Making request to", url);
+      const response = await fetch(url);
       console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
@@ -937,7 +938,7 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch("/api/neon/branches", {
+      const response = await fetch(`${this.baseUrl}/branches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -968,8 +969,9 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("📞 Making request to /api/neon/staff...");
-      const response = await fetch("/api/neon/staff");
+      const url = `${this.baseUrl}/staff`;
+      console.log("📞 Making request to", url);
+      const response = await fetch(url);
       console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
@@ -1005,7 +1007,7 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch("/api/neon/staff", {
+      const response = await fetch(`${this.baseUrl}/staff`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -1028,8 +1030,9 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("📞 Making request to /api/neon/users...");
-      const response = await fetch("/api/neon/users");
+      const url = `${this.baseUrl}/users`;
+      console.log("📞 Making request to", url);
+      const response = await fetch(url);
       console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
