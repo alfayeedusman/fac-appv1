@@ -108,7 +108,7 @@ export default function AdminPushNotifications() {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/notifications/stats');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/stats`);
       const result = await response.json();
       
       if (result.success) {
@@ -121,7 +121,7 @@ export default function AdminPushNotifications() {
 
   const loadNotificationHistory = async () => {
     try {
-      const response = await fetch('/api/notifications/history?limit=20');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/history?limit=20`);
       const result = await response.json();
       
       if (result.success) {
@@ -142,7 +142,7 @@ export default function AdminPushNotifications() {
     setError(null);
 
     try {
-      const response = await fetch('/api/notifications/send', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -199,7 +199,7 @@ export default function AdminPushNotifications() {
     setError(null);
 
     try {
-      const response = await fetch('/api/notifications/test', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
