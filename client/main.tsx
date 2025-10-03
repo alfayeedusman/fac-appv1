@@ -60,6 +60,7 @@ import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
+import "./utils/networkDiagnostics"; // Load network diagnostics tool
 
 const queryClient = new QueryClient();
 
