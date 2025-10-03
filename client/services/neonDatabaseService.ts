@@ -881,25 +881,26 @@ class NeonDatabaseClient {
 
   async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
     console.log("🏪 getBranches called, connection status:", this.isConnected);
+
+    // Auto-initialize once if not connected
     if (!this.isConnected) {
-      console.warn("⚠️ Database not connected for getBranches");
-      return { success: false, branches: [] };
+      console.warn("⚠️ Database not connected for getBranches, attempting init...");
+      try {
+        await this.initialize();
+      } catch {}
     }
 
     try {
-      console.log("📞 Making request to /api/neon/branches...");
-      const response = await fetch("/api/neon/branches");
+      const url = `${this.baseUrl}/branches`;
+      console.log("📞 Making request to", url);
+      const response = await fetch(url);
       console.log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
-        console.error(
-          "❌ Response not OK:",
-          response.status,
-          response.statusText,
-        );
-        const text = await response.text();
+        console.error("❌ Response not OK:", response.status, response.statusText);
+        const text = await response.text().catch(() => "");
         console.error("Response body:", text);
-        return { success: false, branches: [] };
+        throw new Error(`Request failed: ${response.status}`);
       }
 
       const result = await response.json();
@@ -907,11 +908,18 @@ class NeonDatabaseClient {
       return result;
     } catch (error) {
       console.error("❌ Database branches fetch failed:", error);
-      return {
-        success: false,
-        branches: [],
-        error: error instanceof Error ? error.message : "Failed to fetch branches"
-      };
+      // Graceful fallback to local demo branches to keep UX flowing
+      try {
+        const { default: fallback } = await import("@/services/fallbackService");
+        const branches = await (fallback as any).getBranches();
+        return { success: true, branches };
+      } catch (e) {
+        return {
+          success: false,
+          branches: [],
+          error: error instanceof Error ? error.message : "Failed to fetch branches",
+        };
+      }
     }
   }
 
