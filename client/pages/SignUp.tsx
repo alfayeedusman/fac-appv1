@@ -175,11 +175,9 @@ export default function SignUp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all steps
     const isStep1Valid = validateStep(1);
     const isStep2Valid = validateStep(2);
     const isStep3Valid = validateStep(3);
-
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
       alert("Please fill all required fields correctly before submitting.");
       return;
@@ -187,116 +185,33 @@ export default function SignUp() {
 
     setIsSubmitting(true);
 
-    // Simulate API call with modern loading
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Store form data for demo purposes
-    localStorage.setItem("signUpData", JSON.stringify(formData));
-
-    // Save user credentials for authentication
-    const newUser = {
-      email: formData.email,
-      password: formData.password,
-      role: "user",
-      fullName: formData.fullName,
-      registeredAt: new Date().toISOString(),
-    };
-
-    // Get existing registered users or create new array
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-
-    // Check if user already exists
-    const userExists = existingUsers.find(
-      (user: any) => user.email === formData.email,
-    );
-
-    if (!userExists) {
-      existingUsers.push(newUser);
-      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-
-      // Create user-specific subscription data based on selected package
-      const getPackageData = (packageType: string) => {
-        const now = new Date();
-        const cycleEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-        switch (packageType) {
-          case "classic":
-            return {
-              package: "Classic Pro",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 4, vipProMax: 0, premium: 0 },
-              totalWashes: { classic: 4, vipProMax: 0, premium: 0 },
-            };
-          case "vip-silver":
-            return {
-              package: "VIP Silver Elite",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 8, vipProMax: 2, premium: 0 },
-              totalWashes: { classic: 8, vipProMax: 2, premium: 0 },
-            };
-          case "vip-gold":
-            return {
-              package: "VIP Gold Ultimate",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 999, vipProMax: 5, premium: 1 },
-              totalWashes: { classic: 999, vipProMax: 5, premium: 1 },
-            };
-          default:
-            return {
-              package: "Regular Member",
-              daysLeft: 0,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
-              totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
-            };
-        }
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        branchLocation: formData.branchLocation,
+        role: 'user' as const,
+        carUnit: formData.carUnit,
+        carPlateNumber: formData.carPlateNumber,
+        carType: formData.carType,
       };
 
-      // Save user subscription data
-      const userSubscription = getPackageData(formData.packageToAvail);
-      localStorage.setItem(
-        `subscription_${formData.email}`,
-        JSON.stringify(userSubscription),
-      );
+      const result = await authService.register(payload);
 
-      // Initialize empty wash logs for the user
-      localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
-
-      toast({
-        title: "Registration Successful! 🎉",
-        description: "Your account has been created successfully!",
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
-    } else {
-      toast({
-        title: "Registration Failed",
-        description: "An account with this email already exists.",
-        variant: "destructive",
-      });
+      if (result.success) {
+        toast({ title: 'Registration Successful! 🎉', description: 'Your account has been created successfully!' });
+        setShowSuccessModal(true);
+      } else {
+        toast({ title: 'Registration Failed', description: result.error || 'Please try again.', variant: 'destructive' });
+      }
+    } catch (_) {
+      toast({ title: 'Registration Failed', description: 'Unable to connect to server. Please try again.', variant: 'destructive' });
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    setIsSubmitting(false);
-    setShowSuccessModal(true);
   };
 
   const handleContinueToLogin = () => {
