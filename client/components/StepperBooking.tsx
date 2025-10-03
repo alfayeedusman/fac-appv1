@@ -1044,14 +1044,43 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
           
           {bookingData.category === categoryKey && categoryKey !== "carwash" && (
             <div className="mt-4">
-              <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                  <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
-                    Selected — price is based on your vehicle selection.
+              {bookingData.unitType && bookingData.unitSize ? (
+                <div className="p-4 md:p-5 rounded-lg bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 border-2 border-fac-orange-200 dark:border-fac-orange-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <p className="text-sm md:text-base text-foreground font-semibold">
+                        Service Price
+                      </p>
+                    </div>
+                    <p className="text-xl md:text-2xl font-black text-fac-orange-500">
+                      ₱{(() => {
+                        const getPrice = () => {
+                          if (categoryKey === "auto_detailing") {
+                            return adminConfig.pricing.autoDetailing[bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing]?.[bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car] || 0;
+                          } else if (categoryKey === "graphene_coating") {
+                            return adminConfig.pricing.grapheneCoating[bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating]?.[bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car] || 0;
+                          }
+                          return 0;
+                        };
+                        return getPrice().toLocaleString();
+                      })()}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Price for {UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]?.sizes[bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes]}
                   </p>
                 </div>
-              </div>
+              ) : (
+                <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
+                      Selected — price will be shown after vehicle selection.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1116,11 +1145,6 @@ const UnitStep = ({ bookingData, updateBookingData }: any) => (
                     onClick={() => updateBookingData("unitSize", sizeKey)}
                   >
                     <p className="font-bold text-base mb-1">{sizeName}</p>
-                    {bookingData.category !== "carwash" && (
-                      <p className={`text-sm ${bookingData.unitSize === sizeKey ? 'text-white/90' : 'text-muted-foreground'}`}>
-                        ₱{getPrice().toLocaleString()}
-                      </p>
-                    )}
                   </div>
                 );
               })}
@@ -1261,13 +1285,6 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                 onChange={(e) => updateBookingData("date", e.target.value)}
                 className="pr-10 cursor-pointer"
                 placeholder="Choose service date"
-                onFocus={(e) => {
-                  // Prevent auto-opening on mobile
-                  if (window.innerWidth < 768) {
-                    e.target.blur();
-                    setTimeout(() => e.target.focus(), 50);
-                  }
-                }}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
