@@ -948,49 +948,42 @@ class NeonDatabaseClient {
   }
 
   async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
-    // Helper function to try fetching with timeout - silent mode
-    const tryFetch = async (url: string, timeout: number = 2000): Promise<any> => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+    // Simple timeout wrapper using Promise.race
+    const fetchWithTimeout = (url: string, timeoutMs: number = 1500): Promise<any> => {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), timeoutMs)
+      );
 
-      try {
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        });
-        clearTimeout(timeoutId);
-
+      const fetchPromise = fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      }).then(async (response) => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
+        return response.json();
+      });
 
-        const data = await response.json();
-        return data;
-      } catch (error: any) {
-        clearTimeout(timeoutId);
-        throw error;
-      }
+      return Promise.race([fetchPromise, timeoutPromise]);
     };
 
-    // Try primary endpoint first
+    // Try to fetch from API with timeout
     try {
-      const result = await tryFetch('/api/neon/branches', 2000);
-      if (result && result.success && result.branches && Array.isArray(result.branches)) {
+      const result = await fetchWithTimeout('/api/neon/branches', 1500);
+      if (result?.success && Array.isArray(result.branches) && result.branches.length > 0) {
         return result;
       }
     } catch {
-      // Silently catch and fall through to fallback
+      // Silently fail - expected behavior when offline/slow
     }
 
-    // Use fallback service seamlessly
+    // Always use fallback - no logging, just seamless fallback
     try {
       const branches = await FallbackService.getBranches();
       return { success: true, branches };
     } catch {
-      // Last resort - return empty array (should never happen)
       return { success: true, branches: [] };
     }
   }
