@@ -139,6 +139,10 @@ class NeonDatabaseClient {
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
     console.log('🔗 NeonDatabaseClient baseUrl:', this.baseUrl);
+    // Auto-initialize on construction
+    this.autoInitialize().catch(err =>
+      console.warn('⚠️ Background initialization failed:', err)
+    );
   }
 
   // Initialize and test connection
@@ -594,47 +598,73 @@ class NeonDatabaseClient {
   async register(
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    const connected = await this.ensureConnection();
-    if (!connected) {
-      return { success: false, error: "Unable to connect to server. Please try again." };
-    }
+    console.log('📝 Starting registration for:', userData.email);
 
+    const tryRegister = async (url: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+      try {
+        console.log('🔄 Attempting registration at:', url);
+        const ac = new AbortController();
+        const to = setTimeout(() => ac.abort(), 15000);
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+          signal: ac.signal,
+        });
+
+        clearTimeout(to);
+        console.log('📡 Registration response status:', response.status);
+
+        const ct = response.headers.get('content-type') || '';
+        let data: any = null;
+        if (ct.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const txt = await response.text().catch(() => '');
+          try { data = JSON.parse(txt); } catch { data = null; }
+        }
+
+        console.log('📦 Registration response data:', data);
+
+        if (!response.ok || !data?.success) {
+          const status = response.status;
+          let msg = 'Registration failed. Please try again.';
+          if (status === 409) msg = 'Account already exists.';
+          else if (status === 400) msg = 'Please check your details and try again.';
+          else if (status === 503) msg = 'System under maintenance. Try later.';
+          else if (status >= 500) msg = 'Server error. Please try again shortly.';
+          return { success: false, error: msg };
+        }
+
+        console.log('✅ Registration successful!');
+        return data;
+      } catch (error: any) {
+        console.error('❌ Registration attempt failed:', error);
+        if (error?.name === 'AbortError') {
+          return { success: false, error: 'Request timed out. Please try again.' };
+        }
+        throw error;
+      }
+    };
+
+    // Try primary URL first
     try {
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 10000);
-      const response = await fetch(`${this.baseUrl}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-        signal: ac.signal,
-      });
-      clearTimeout(to);
-
-      const ct = response.headers.get('content-type') || '';
-      let data: any = null;
-      if (ct.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const txt = await response.text().catch(() => '');
-        try { data = JSON.parse(txt); } catch { data = null; }
+      const primaryUrl = `${this.baseUrl}/auth/register`;
+      return await tryRegister(primaryUrl);
+    } catch (primaryError) {
+      console.warn('⚠️ Primary registration URL failed, trying fallback...');
+      // Try fallback URL
+      try {
+        const fallbackUrl = `/api/neon/auth/register`;
+        return await tryRegister(fallbackUrl);
+      } catch (fallbackError) {
+        console.error('❌ Both registration attempts failed');
+        return {
+          success: false,
+          error: 'Unable to connect to server. Please check your connection and try again.'
+        };
       }
-
-      if (!response.ok || !data?.success) {
-        const status = response.status;
-        let msg = 'Registration failed. Please try again.';
-        if (status === 409) msg = 'Account already exists.';
-        else if (status === 400) msg = 'Please check your details and try again.';
-        else if (status === 503) msg = 'System under maintenance. Try later.';
-        else if (status >= 500) msg = 'Server error. Please try again shortly.';
-        return { success: false, error: msg };
-      }
-
-      return data;
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        return { success: false, error: 'Request timed out. Please try again.' };
-      }
-      return { success: false, error: 'Registration failed. Please check your connection.' };
     }
   }
 
