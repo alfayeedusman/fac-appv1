@@ -948,9 +948,7 @@ class NeonDatabaseClient {
   }
 
   async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
-    console.log("🏪 getBranches called - attempting to load branches...");
-
-    // Helper function to try fetching with timeout
+    // Helper function to try fetching with timeout - silent mode
     const tryFetch = async (url: string, timeout: number = 2000): Promise<any> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -977,25 +975,22 @@ class NeonDatabaseClient {
       }
     };
 
-    // Try primary endpoint only (simplest approach)
+    // Try primary endpoint first
     try {
       const result = await tryFetch('/api/neon/branches', 2000);
       if (result && result.success && result.branches && Array.isArray(result.branches)) {
-        console.log(`✅ Loaded ${result.branches.length} branches from database`);
         return result;
       }
-    } catch (error) {
-      console.warn("⚠️ Database fetch failed, using fallback branches");
+    } catch {
+      // Silently catch and fall through to fallback
     }
 
-    // Immediately use fallback on any error
+    // Use fallback service seamlessly
     try {
       const branches = await FallbackService.getBranches();
-      console.log(`📍 Using ${branches.length} fallback branches`);
       return { success: true, branches };
-    } catch (fallbackError) {
-      // Last resort - return empty array
-      console.error("❌ Fallback failed, returning empty array");
+    } catch {
+      // Last resort - return empty array (should never happen)
       return { success: true, branches: [] };
     }
   }
