@@ -487,7 +487,7 @@ export default function SignUp() {
                           handleInputChange("fullName", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.fullName
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -519,7 +519,7 @@ export default function SignUp() {
                             handleInputChange("email", e.target.value)
                           }
                           required
-                          className={`pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.email
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -552,7 +552,7 @@ export default function SignUp() {
                             handleInputChange("password", e.target.value)
                           }
                           required
-                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 pr-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.password
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -598,7 +598,7 @@ export default function SignUp() {
                             handleInputChange("confirmPassword", e.target.value)
                           }
                           required
-                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 pr-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.confirmPassword
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -656,7 +656,7 @@ export default function SignUp() {
                             );
                           }}
                           required
-                          className={`pl-16 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-16 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.contactNumber
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -686,7 +686,7 @@ export default function SignUp() {
                           handleInputChange("address", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.address
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -737,7 +737,7 @@ export default function SignUp() {
                           handleInputChange("carUnit", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.carUnit
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -766,7 +766,7 @@ export default function SignUp() {
                           handleInputChange("carPlateNumber", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.carPlateNumber
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -792,10 +792,10 @@ export default function SignUp() {
                           handleInputChange("carType", value)
                         }
                       >
-                        <SelectTrigger className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
+                        <SelectTrigger className="py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
                           <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
+                        <SelectContent className="bg-background/90 border-border">
                           <SelectItem value="sedan">Sedan</SelectItem>
                           <SelectItem value="suv">SUV</SelectItem>
                           <SelectItem value="hatchback">Hatchback</SelectItem>
@@ -819,10 +819,10 @@ export default function SignUp() {
                           handleInputChange("branchLocation", value)
                         }
                       >
-                        <SelectTrigger className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
+                        <SelectTrigger className="py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
                           <SelectValue placeholder="Choose your preferred hub" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
+                        <SelectContent className="bg-background/90 border-border">
                           {branches.map((branch) => (
                             <SelectItem
                               key={branch}
