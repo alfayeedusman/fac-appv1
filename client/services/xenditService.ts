@@ -181,17 +181,8 @@ class XenditService {
   };
 
   public openInvoice = (invoiceUrl: string) => {
-    // Open Xendit invoice in a popup or redirect
-    const width = 600;
-    const height = 800;
-    const left = (window.screen.width / 2) - (width / 2);
-    const top = (window.screen.height / 2) - (height / 2);
-    
-    window.open(
-      invoiceUrl,
-      'XenditPayment',
-      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
-    );
+    // Redirect to Xendit invoice in the same window
+    window.location.href = invoiceUrl;
   };
 
   public isInitialized(): boolean {
