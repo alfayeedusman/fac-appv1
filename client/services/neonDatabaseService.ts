@@ -1533,6 +1533,26 @@ class NeonDatabaseClient {
   }
 
   // === VOUCHERS ===
+  async getVouchers(params?: { audience?: 'all' | 'registered'; status?: 'active' }): Promise<{ success: boolean; vouchers?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params?.audience) queryParams.append('audience', params.audience);
+    if (params?.status) queryParams.append('status', params.status);
+
+    const url = `${this.baseUrl}/vouchers${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
+    try {
+      const res = await fetch(url, { signal: ac.signal });
+      clearTimeout(to);
+      const json = await res.json();
+      return json;
+    } catch (e: any) {
+      clearTimeout(to);
+      return { success: false, error: e?.message || 'Network error', vouchers: [] };
+    }
+  }
+
   async validateVoucher(params: { code: string; bookingAmount: number; userEmail?: string; bookingType?: 'guest' | 'registered'; }): Promise<{ success: boolean; data?: { code: string; title: string; discountType: 'percentage' | 'fixed_amount'; discountValue: number; discountAmount: number; finalAmount: number; audience: 'all' | 'registered' }; error?: string }> {
     await this.ensureConnection();
     const url = `${this.baseUrl}/vouchers/validate`;
