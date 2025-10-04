@@ -1211,6 +1211,151 @@ class NeonDatabaseClient {
     }
   }
 
+  // === USER VEHICLES & ADDRESS ===
+
+  async getUserVehicles(userId: string): Promise<{ success: boolean; vehicles?: UserVehicle[] }> {
+    if (!this.isConnected) {
+      return { success: false, vehicles: [] };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles`, { signal: ac.signal });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Get user vehicles failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Get vehicles timed out");
+      }
+      return { success: false, vehicles: [] };
+    }
+  }
+
+  async addUserVehicle(
+    userId: string,
+    vehicle: Omit<UserVehicle, 'id' | 'createdAt'>
+  ): Promise<{ success: boolean; vehicle?: UserVehicle }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vehicle),
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Add user vehicle failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
+      return { success: false };
+    }
+  }
+
+  async updateUserVehicle(
+    userId: string,
+    vehicleId: string,
+    updates: Partial<UserVehicle>
+  ): Promise<{ success: boolean; vehicle?: UserVehicle }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Update user vehicle failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
+      return { success: false };
+    }
+  }
+
+  async deleteUserVehicle(userId: string, vehicleId: string): Promise<{ success: boolean }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`, {
+        method: "DELETE",
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Delete user vehicle failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
+      return { success: false };
+    }
+  }
+
+  async updateUserAddress(
+    userId: string,
+    defaultAddress: string
+  ): Promise<{ success: boolean; user?: User }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/address`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultAddress }),
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Update user address failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
+      return { success: false };
+    }
+  }
+
   // Helper: fetch JSON with timeout and same-origin fallback
   private async fetchJsonWithFallback(
     path: string,
@@ -1254,7 +1399,7 @@ class NeonDatabaseClient {
 
         if (ct.includes("application/json")) {
           const jsonResult = await res.json();
-          console.log(`✅ JSON response received from ${url}`);
+          console.log(`�� JSON response received from ${url}`);
           return jsonResult;
         }
 
