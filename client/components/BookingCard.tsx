@@ -13,6 +13,8 @@ import {
   CheckCircle,
   AlertCircle,
   Loader,
+  CreditCard,
+  Timer,
 } from "lucide-react";
 import {
   BookingRecord,
@@ -20,15 +22,31 @@ import {
   cancelBooking,
 } from "@/utils/bookingData";
 import RatingReview from "./RatingReview";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 interface BookingCardProps {
-  booking: BookingRecord;
+  booking: BookingRecord | any;
   onUpdate?: () => void;
 }
 
 export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
   const [showRating, setShowRating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const userRole = localStorage.getItem('userRole');
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+
+  // Check if user can cancel (within 10 minutes or is admin)
+  const canCancel = () => {
+    if (isAdmin) return true;
+    if (!booking.createdAt) return false;
+
+    const bookingTime = new Date(booking.createdAt).getTime();
+    const now = new Date().getTime();
+    const tenMinutesMs = 10 * 60 * 1000;
+
+    return (now - bookingTime) <= tenMinutesMs;
+  };
 
   const getStatusColor = (status: BookingRecord["status"]) => {
     switch (status) {
@@ -64,9 +82,24 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
   };
 
   const handleCancel = async () => {
+    if (!canCancel()) {
+      alert("Cancellation is only allowed within 10 minutes of booking. Please contact admin for assistance.");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to cancel this booking?")) {
       setIsUpdating(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      try {
+        // Cancel via API
+        const result = await neonDbClient.updateBooking(booking.id, { status: 'cancelled' });
+        if (result.success) {
+          console.log('Booking cancelled successfully');
+        }
+      } catch (error) {
+        console.error('Failed to cancel booking:', error);
+      }
+
+      // Also update localStorage for backward compatibility
       cancelBooking(booking.id);
       setIsUpdating(false);
       onUpdate?.();
@@ -84,6 +117,19 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
 
   const formatTime = (timeString: string) => {
     return timeString;
+  };
+
+  const formatDateTime = (dateTimeString: string) => {
+    if (!dateTimeString) return 'N/A';
+    const date = new Date(dateTimeString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   const renderStars = (rating: number) => {
@@ -168,11 +214,54 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
             </div>
           </div>
 
-          {/* Price */}
-          <div className="text-right">
-            <p className="text-2xl font-bold text-fac-orange-500">
-              {booking.price}
-            </p>
+          {/* Price & Payment */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
+                <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="font-medium text-foreground capitalize">
+                  {booking.paymentMethod || 'N/A'}
+                </p>
+                <p className="text-sm text-muted-foreground">Payment Method</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-fac-orange-500">
+                {booking.price || booking.totalPrice ? `₱${(booking.price || booking.totalPrice).toLocaleString()}` : 'N/A'}
+              </p>
+            </div>
+          </div>
+
+          {/* Booking & Completion Times */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {booking.createdAt && (
+              <div className="flex items-center space-x-3">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                  <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">
+                    {formatDateTime(booking.createdAt)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Booked At</p>
+                </div>
+              </div>
+            )}
+            {booking.completedAt && (
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">
+                    {formatDateTime(booking.completedAt)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Completed At</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Notes */}
@@ -242,16 +331,17 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
               booking.status === "confirmed") && (
               <Button
                 onClick={handleCancel}
-                disabled={isUpdating}
+                disabled={isUpdating || (!canCancel() && !isAdmin)}
                 variant="destructive"
                 className="flex-1"
+                title={!canCancel() && !isAdmin ? "Cancellation allowed within 10 minutes only" : ""}
               >
                 {isUpdating ? (
                   <Loader className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <X className="h-4 w-4 mr-2" />
                 )}
-                Cancel
+                {!canCancel() && !isAdmin ? "Cannot Cancel" : "Cancel"}
               </Button>
             )}
           </div>
