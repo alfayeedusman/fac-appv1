@@ -1338,6 +1338,26 @@ class NeonDatabaseClient {
     }
   }
 
+  // Admin utility to fix bookings with email in userId field
+  async fixBookingUserIds(): Promise<{ success: boolean; fixed?: number; total?: number; errors?: string[] }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/admin/fix-booking-userids`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Fix booking userIds failed:", error);
+      return { success: false };
+    }
+  }
+
   async updateUserAddress(
     userId: string,
     defaultAddress: string
