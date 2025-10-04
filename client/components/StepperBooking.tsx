@@ -658,27 +658,25 @@ export default function StepperBooking({
           bookingData.serviceType === "home" || !!bookingData.branch;
         return serviceTypeValid && scheduleValid && locationValid;
       }
-      case 2: // Unit
+      case 2: // Vehicle
         return !!(bookingData.unitType && bookingData.unitSize);
-      case 3: {
-        // Service
-        if (!bookingData.category) return false;
-        // For carwash require specific service; others rely on unit selection already made
-        if (bookingData.category === "carwash") {
+      case 3: // Category
+        return !!bookingData.category;
+      case 4: {
+        // Package
+        // For carwash/motorwash require specific service package
+        if (bookingData.category === "carwash" || bookingData.category === "motorwash") {
           return !!bookingData.service;
         }
         return true;
       }
-      case 4: {
-        // Payment
-        // For online payment (FACPay), no receipt needed at this stage
-        // Payment will be processed through Xendit gateway
-        return !!bookingData.paymentMethod;
-      }
       case 5: {
-        // Review
+        // Details (Customer information)
         const basicCustomerValid = !!(
-          bookingData.fullName && bookingData.mobile
+          bookingData.fullName &&
+          bookingData.mobile &&
+          bookingData.plateNo &&
+          bookingData.carModel
         );
         const homeServiceAddressValid =
           bookingData.serviceType !== "home" || !!bookingData.address;
@@ -686,9 +684,16 @@ export default function StepperBooking({
         return (
           basicCustomerValid &&
           homeServiceAddressValid &&
-          emailValid &&
-          bookingData.acceptTerms
+          emailValid
         );
+      }
+      case 6: {
+        // Payment
+        return !!bookingData.paymentMethod;
+      }
+      case 7: {
+        // Review (Final confirmation)
+        return bookingData.acceptTerms;
       }
       default:
         return false;
