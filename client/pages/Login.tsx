@@ -30,23 +30,8 @@ export default function Login() {
     password: "",
   });
 
-  // Check Neon database connection on component mount
-  useEffect(() => {
-    const checkNeonConnection = async () => {
-      try {
-        const connected = await neonDbClient.testConnection();
-        if (connected.connected) {
-          console.log("✅ Neon database connected");
-        } else {
-          console.warn("⚠️ Neon database not connected");
-        }
-      } catch (error) {
-        console.error("❌ Failed to check Neon connection:", error);
-      }
-    };
-
-    checkNeonConnection();
-  }, []);
+  // Connection check happens in background during login attempt
+  // No need to check on mount as it may cause false errors
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
