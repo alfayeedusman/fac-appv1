@@ -84,6 +84,68 @@ export default function Profile() {
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  const fileInputId = "profile_pic_input";
+
+  const saveProfilePicture = (dataUrl: string) => {
+    const key = `userProfilePicture_${(profile.email || "").trim()}`;
+    localStorage.setItem(key, dataUrl);
+    try {
+      const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+      const idx = users.findIndex((u: any) => u.email === profile.email);
+      if (idx !== -1) {
+        users[idx].profilePicture = dataUrl;
+        localStorage.setItem("registeredUsers", JSON.stringify(users));
+      }
+    } catch {}
+  };
+
+  const compressImage = async (file: File, maxSize = 512): Promise<string> => {
+    const img = document.createElement("img");
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onload = () => {
+        if (!reader.result) return reject(new Error("Failed to read image"));
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas not supported"));
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error("Invalid image"));
+        img.src = reader.result as string;
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const onProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      await swalHelpers.showError("Invalid File", "Please select an image file.");
+      return;
+    }
+    try {
+      const dataUrl = await compressImage(file, 512);
+      setProfile((p) => ({ ...p, profilePicture: dataUrl }));
+      setEditedProfile((p) => ({ ...p, profilePicture: dataUrl }));
+      saveProfilePicture(dataUrl);
+      await swalHelpers.showSuccess("Profile Photo Updated");
+    } catch (err) {
+      await swalHelpers.showError("Upload Failed", "Could not process the image.");
+    } finally {
+      const el = document.getElementById(fileInputId) as HTMLInputElement | null;
+      if (el) el.value = "";
+    }
+  };
 
   const handleSave = () => {
     setProfile(editedProfile);
