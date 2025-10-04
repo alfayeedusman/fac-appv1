@@ -121,7 +121,10 @@ export function createServer() {
   app.post("/api/neon/vouchers/validate", neonApiRoutes.validateVoucher);
   app.post("/api/neon/vouchers/redeem", neonApiRoutes.redeemVoucher);
 
-  // Xendit Payment endpoints
+  // Xendit Payment endpoints - TEST
+  app.get("/api/neon/payment/xendit/test", (req, res) => {
+    res.json({ success: true, message: "Xendit routes are working!" });
+  });
   app.post("/api/neon/payment/xendit/create-invoice", xenditApiRoutes.createInvoice);
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
