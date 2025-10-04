@@ -199,9 +199,9 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
               </div>
               <div>
                 <p className="font-medium text-foreground">
-                  {formatTime(booking.time)}
+                  {booking.timeSlot || formatTime(booking.time)}
                 </p>
-                <p className="text-sm text-muted-foreground">Time</p>
+                <p className="text-sm text-muted-foreground">Time Slot</p>
               </div>
             </div>
           </div>
