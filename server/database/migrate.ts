@@ -134,6 +134,7 @@ export async function runMigrations() {
         role VARCHAR(50) NOT NULL DEFAULT 'user',
         contact_number VARCHAR(20),
         address TEXT,
+        default_address TEXT,
         car_unit VARCHAR(255),
         car_plate_number VARCHAR(20),
         car_type VARCHAR(100),
@@ -150,6 +151,21 @@ export async function runMigrations() {
         crew_rating DECIMAL(3,2),
         crew_experience INTEGER,
         last_login_at TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create user_vehicles table for multiple vehicle support
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_vehicles (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        unit_type VARCHAR(20) NOT NULL,
+        unit_size VARCHAR(50) NOT NULL,
+        plate_number VARCHAR(20) NOT NULL,
+        vehicle_model VARCHAR(255) NOT NULL,
+        is_default BOOLEAN NOT NULL DEFAULT false,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
