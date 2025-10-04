@@ -1,28 +1,40 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Upload, 
-  X, 
-  Image as ImageIcon, 
-  FileImage, 
-  Trash2, 
-  Download, 
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import {
+  Upload,
+  X,
+  Image as ImageIcon,
+  FileImage,
+  Trash2,
+  Download,
   Eye,
   Search,
   Filter,
   Grid,
   List,
-  Plus
-} from 'lucide-react';
+  Plus,
+} from "lucide-react";
 
 interface ImageData {
   id: string;
@@ -52,14 +64,14 @@ interface ImageUploadManagerProps {
 }
 
 export default function ImageUploadManager({
-  className = '',
-  category = 'general',
+  className = "",
+  category = "general",
   associatedWith,
   associatedId,
   uploadedBy,
   onUploadComplete,
   showGallery = true,
-  maxFiles = 10
+  maxFiles = 10,
 }: ImageUploadManagerProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -67,16 +79,16 @@ export default function ImageUploadManager({
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+
   // Form state for metadata
   const [formData, setFormData] = useState({
-    altText: '',
-    description: '',
-    tags: '',
-    category: category
+    altText: "",
+    description: "",
+    tags: "",
+    category: category,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -96,17 +108,20 @@ export default function ImageUploadManager({
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: '1',
-        limit: '50',
-        ...(filterCategory !== 'all' && { category: filterCategory }),
+        page: "1",
+        limit: "50",
+        ...(filterCategory !== "all" && { category: filterCategory }),
         ...(associatedWith && { associatedWith }),
         ...(associatedId && { associatedId }),
-        ...(searchTerm && { search: searchTerm })
+        ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`, {
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images?${params}`,
+        {
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(timeout);
       const result = await response.json();
@@ -114,17 +129,17 @@ export default function ImageUploadManager({
       if (result.success) {
         setImages(result.data);
       } else {
-        setError('Failed to load images');
+        setError("Failed to load images");
       }
     } catch (error: any) {
       clearTimeout(timeout);
 
-      if (error?.name === 'AbortError') {
-        console.warn('⏱️ Image load request timed out');
-        setError('Request timed out. Please try again.');
+      if (error?.name === "AbortError") {
+        console.warn("⏱️ Image load request timed out");
+        setError("Request timed out. Please try again.");
       } else {
-        console.error('Error loading images:', error);
-        setError('Failed to load images');
+        console.error("Error loading images:", error);
+        setError("Failed to load images");
       }
     } finally {
       setLoading(false);
@@ -158,13 +173,14 @@ export default function ImageUploadManager({
   };
 
   const handleFileSelection = (files: File[]) => {
-    const validFiles = files.filter(file => {
-      if (!file.type.startsWith('image/')) {
-        setError('Only image files are allowed');
+    const validFiles = files.filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        setError("Only image files are allowed");
         return false;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        setError('File size must be less than 10MB');
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
+        setError("File size must be less than 10MB");
         return false;
       }
       return true;
@@ -175,17 +191,17 @@ export default function ImageUploadManager({
       return;
     }
 
-    setSelectedFiles(prev => [...prev, ...validFiles]);
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
     setError(null);
   };
 
   const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      setError('Please select at least one file');
+      setError("Please select at least one file");
       return;
     }
 
@@ -195,29 +211,32 @@ export default function ImageUploadManager({
 
     try {
       const formData = new FormData();
-      
+
       selectedFiles.forEach((file) => {
-        formData.append('images', file);
+        formData.append("images", file);
       });
 
       // Add metadata
-      formData.append('category', formData.get('category') || category);
-      formData.append('altText', formData.get('altText') || '');
-      formData.append('description', formData.get('description') || '');
-      formData.append('tags', formData.get('tags') || '[]');
-      
-      if (associatedWith) formData.append('associatedWith', associatedWith);
-      if (associatedId) formData.append('associatedId', associatedId);
-      if (uploadedBy) formData.append('uploadedBy', uploadedBy);
+      formData.append("category", formData.get("category") || category);
+      formData.append("altText", formData.get("altText") || "");
+      formData.append("description", formData.get("description") || "");
+      formData.append("tags", formData.get("tags") || "[]");
+
+      if (associatedWith) formData.append("associatedWith", associatedWith);
+      if (associatedId) formData.append("associatedId", associatedId);
+      if (uploadedBy) formData.append("uploadedBy", uploadedBy);
 
       const ac = new AbortController();
       const timeout = setTimeout(() => ac.abort(), 30000); // 30s for upload
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/upload-multiple`, {
-        method: 'POST',
-        body: formData,
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images/upload-multiple`,
+        {
+          method: "POST",
+          body: formData,
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(timeout);
 
@@ -226,13 +245,13 @@ export default function ImageUploadManager({
       if (result.success) {
         setSelectedFiles([]);
         setUploadProgress(100);
-        
+
         // Reset form
         setFormData({
-          altText: '',
-          description: '',
-          tags: '',
-          category: category
+          altText: "",
+          description: "",
+          tags: "",
+          category: category,
         });
 
         // Reload images if gallery is shown
@@ -244,15 +263,17 @@ export default function ImageUploadManager({
           onUploadComplete(result.data);
         }
       } else {
-        setError(result.error || 'Upload failed');
+        setError(result.error || "Upload failed");
       }
     } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        console.error('⏱️ Upload request timed out');
-        setError('Upload timed out. Please try again with smaller files or better internet connection.');
+      if (error?.name === "AbortError") {
+        console.error("⏱️ Upload request timed out");
+        setError(
+          "Upload timed out. Please try again with smaller files or better internet connection.",
+        );
       } else {
-        console.error('Upload error:', error);
-        setError('Upload failed');
+        console.error("Upload error:", error);
+        setError("Upload failed");
       }
     } finally {
       setUploading(false);
@@ -261,11 +282,11 @@ export default function ImageUploadManager({
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const handleImageClick = async (image: ImageData) => {
@@ -279,15 +300,17 @@ export default function ImageUploadManager({
       });
 
       clearTimeout(timeout);
-      setImages(prev => prev.map(img =>
-        img.id === image.id
-          ? { ...img, viewCount: (img.viewCount || 0) + 1 }
-          : img
-      ));
+      setImages((prev) =>
+        prev.map((img) =>
+          img.id === image.id
+            ? { ...img, viewCount: (img.viewCount || 0) + 1 }
+            : img,
+        ),
+      );
     } catch (error: any) {
       clearTimeout(timeout);
-      if (error?.name !== 'AbortError') {
-        console.error('Failed to increment view count:', error);
+      if (error?.name !== "AbortError") {
+        console.error("Failed to increment view count:", error);
       }
     }
   };
@@ -300,18 +323,20 @@ export default function ImageUploadManager({
 
       const response = await fetch(image.publicUrl, {
         signal: controller.signal,
-        mode: 'cors', // Explicitly handle CORS
+        mode: "cors", // Explicitly handle CORS
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to download image: ${response.status} ${response.statusText}`,
+        );
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = image.originalName;
       document.body.appendChild(a);
@@ -325,35 +350,43 @@ export default function ImageUploadManager({
 
       try {
         await fetch(`/api/images/${image.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            downloadCount: (image.downloadCount || 0) + 1
+            downloadCount: (image.downloadCount || 0) + 1,
           }),
           signal: updateController.signal,
         });
         clearTimeout(updateTimeoutId);
       } catch (updateError) {
         clearTimeout(updateTimeoutId);
-        console.warn('Failed to update download count:', updateError);
+        console.warn("Failed to update download count:", updateError);
       }
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
 
       // Show user-friendly error message
-      if (error.name === 'AbortError') {
-        alert('Download timeout - the image took too long to download. Please try again.');
-      } else if (error.message?.includes('CORS') || error.message?.includes('cross-origin')) {
-        alert('Unable to download this image due to security restrictions. Please contact support.');
+      if (error.name === "AbortError") {
+        alert(
+          "Download timeout - the image took too long to download. Please try again.",
+        );
+      } else if (
+        error.message?.includes("CORS") ||
+        error.message?.includes("cross-origin")
+      ) {
+        alert(
+          "Unable to download this image due to security restrictions. Please contact support.",
+        );
       } else {
-        alert('Failed to download image. Please try again.');
+        alert("Failed to download image. Please try again.");
       }
     }
   };
 
-  const filteredImages = images.filter(image => 
-    image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredImages = images.filter(
+    (image) =>
+      image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -366,7 +399,8 @@ export default function ImageUploadManager({
             Upload Images
           </CardTitle>
           <CardDescription>
-            Upload and manage your images. Supported formats: JPG, PNG, GIF, WebP (max 10MB each)
+            Upload and manage your images. Supported formats: JPG, PNG, GIF,
+            WebP (max 10MB each)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -409,7 +443,10 @@ export default function ImageUploadManager({
               <Label>Selected Files ({selectedFiles.length})</Label>
               <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
                 {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 border rounded">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 border rounded"
+                  >
                     <div className="flex items-center gap-2">
                       <FileImage className="h-4 w-4" />
                       <span className="text-sm truncate">{file.name}</span>
@@ -450,14 +487,18 @@ export default function ImageUploadManager({
                 id="alt-text"
                 placeholder="Describe the image for accessibility"
                 value={formData.altText}
-                onChange={(e) => setFormData(prev => ({ ...prev, altText: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, altText: e.target.value }))
+                }
               />
             </div>
             <div>
               <Label htmlFor="category">Category</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, category: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -481,7 +522,12 @@ export default function ImageUploadManager({
               id="description"
               placeholder="Optional description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
             />
           </div>
 
@@ -491,7 +537,9 @@ export default function ImageUploadManager({
               id="tags"
               placeholder="tag1, tag2, tag3"
               value={formData.tags}
-              onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, tags: e.target.value }))
+              }
             />
           </div>
 
@@ -500,7 +548,9 @@ export default function ImageUploadManager({
             disabled={selectedFiles.length === 0 || uploading}
             className="w-full"
           >
-            {uploading ? 'Uploading...' : `Upload ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`}
+            {uploading
+              ? "Uploading..."
+              : `Upload ${selectedFiles.length} Image${selectedFiles.length !== 1 ? "s" : ""}`}
           </Button>
         </CardContent>
       </Card>
@@ -515,17 +565,21 @@ export default function ImageUploadManager({
                   <ImageIcon className="h-5 w-5" />
                   Image Gallery
                 </CardTitle>
-                <CardDescription>
-                  Manage your uploaded images
-                </CardDescription>
+                <CardDescription>Manage your uploaded images</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                  onClick={() =>
+                    setViewMode(viewMode === "grid" ? "list" : "grid")
+                  }
                 >
-                  {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+                  {viewMode === "grid" ? (
+                    <List className="h-4 w-4" />
+                  ) : (
+                    <Grid className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -566,21 +620,25 @@ export default function ImageUploadManager({
                 No images found
               </div>
             ) : (
-              <div className={viewMode === 'grid' 
-                ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" 
-                : "space-y-2"
-              }>
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                    : "space-y-2"
+                }
+              >
                 {filteredImages.map((image) => (
                   <div
                     key={image.id}
-                    className={viewMode === 'grid' 
-                      ? "border rounded-lg overflow-hidden hover:shadow-lg transition-shadow" 
-                      : "flex items-center gap-4 p-2 border rounded-lg"
+                    className={
+                      viewMode === "grid"
+                        ? "border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                        : "flex items-center gap-4 p-2 border rounded-lg"
                     }
                   >
-                    {viewMode === 'grid' ? (
+                    {viewMode === "grid" ? (
                       <>
-                        <div 
+                        <div
                           className="aspect-square bg-muted cursor-pointer"
                           onClick={() => handleImageClick(image)}
                         >
@@ -591,7 +649,10 @@ export default function ImageUploadManager({
                           />
                         </div>
                         <div className="p-2">
-                          <div className="text-sm font-medium truncate" title={image.originalName}>
+                          <div
+                            className="text-sm font-medium truncate"
+                            title={image.originalName}
+                          >
                             {image.originalName}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -621,7 +682,9 @@ export default function ImageUploadManager({
                           onClick={() => handleImageClick(image)}
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{image.originalName}</div>
+                          <div className="font-medium truncate">
+                            {image.originalName}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             {image.category} • {formatFileSize(image.size)}
                           </div>

@@ -58,20 +58,35 @@ export default function Voucher() {
   useEffect(() => {
     const loadVouchers = async () => {
       setLoadingVouchers(true);
-      const result = await neonDbClient.getVouchers({ audience: 'registered', status: 'active' });
+      const result = await neonDbClient.getVouchers({
+        audience: "registered",
+        status: "active",
+      });
       if (result.success && result.vouchers) {
-        const mapped = result.vouchers.map((v: any) => ({
-          id: v.id,
-          code: v.code,
-          title: v.title,
-          description: v.description || '',
-          discountType: v.discount_type === 'percentage' ? 'percentage' : 'fixed',
-          discountValue: v.discount_value,
-          minAmount: v.minimum_amount,
-          category: 'general',
-          status: v.is_active && (!v.valid_until || new Date(v.valid_until) >= new Date()) ? 'available' : 'expired',
-          validUntil: v.valid_until ? new Date(v.valid_until).toISOString().split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        } as Voucher));
+        const mapped = result.vouchers.map(
+          (v: any) =>
+            ({
+              id: v.id,
+              code: v.code,
+              title: v.title,
+              description: v.description || "",
+              discountType:
+                v.discount_type === "percentage" ? "percentage" : "fixed",
+              discountValue: v.discount_value,
+              minAmount: v.minimum_amount,
+              category: "general",
+              status:
+                v.is_active &&
+                (!v.valid_until || new Date(v.valid_until) >= new Date())
+                  ? "available"
+                  : "expired",
+              validUntil: v.valid_until
+                ? new Date(v.valid_until).toISOString().split("T")[0]
+                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split("T")[0],
+            }) as Voucher,
+        );
         setAvailableVouchers(mapped);
       }
       setLoadingVouchers(false);
@@ -81,7 +96,7 @@ export default function Voucher() {
 
   // Load applied vouchers from localStorage on component mount
   useEffect(() => {
-    const saved = localStorage.getItem('activatedVouchers');
+    const saved = localStorage.getItem("activatedVouchers");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -94,7 +109,7 @@ export default function Voucher() {
 
   // Save applied vouchers to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('activatedVouchers', JSON.stringify(appliedVouchers));
+    localStorage.setItem("activatedVouchers", JSON.stringify(appliedVouchers));
   }, [appliedVouchers]);
 
   const handleRedeemVoucher = async () => {
@@ -185,8 +200,12 @@ export default function Voucher() {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-purple-600 flex items-center justify-center mx-auto mb-3 shadow-lg">
             <Gift className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">Vouchers & Deals</h1>
-          <p className="text-sm text-muted-foreground">Save more on every booking</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">
+            Vouchers & Deals
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Save more on every booking
+          </p>
         </div>
 
         {/* Voucher Input Card */}
@@ -204,7 +223,7 @@ export default function Voucher() {
                 placeholder="Enter code (e.g. SAVE20)"
                 value={voucherCode}
                 onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                onKeyPress={(e) => e.key === 'Enter' && handleRedeemVoucher()}
+                onKeyPress={(e) => e.key === "Enter" && handleRedeemVoucher()}
                 className="flex-1 font-mono"
               />
               <Button
@@ -229,9 +248,7 @@ export default function Voucher() {
             </CardHeader>
             <CardContent className="space-y-2">
               {appliedVouchers.map((code) => {
-                const voucher = availableVouchers.find(
-                  (v) => v.code === code,
-                );
+                const voucher = availableVouchers.find((v) => v.code === code);
                 return voucher ? (
                   <div
                     key={code}
@@ -257,7 +274,9 @@ export default function Voucher() {
         {/* Section Title */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground">
-            {loadingVouchers ? 'Loading...' : `Available Offers (${availableVouchers.filter((v) => v.status === "available").length})`}
+            {loadingVouchers
+              ? "Loading..."
+              : `Available Offers (${availableVouchers.filter((v) => v.status === "available").length})`}
           </h2>
         </div>
 
@@ -272,7 +291,9 @@ export default function Voucher() {
             <Card className="glass border-border text-center py-16">
               <CardContent>
                 <Gift className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No vouchers available</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No vouchers available
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Check back later for exciting offers!
                 </p>
@@ -305,15 +326,26 @@ export default function Voucher() {
                           </p>
                         </div>
                         <Badge
-                          variant={voucher.status === "available" ? "default" : "secondary"}
+                          variant={
+                            voucher.status === "available"
+                              ? "default"
+                              : "secondary"
+                          }
                           className={cn(
                             "text-xs flex-shrink-0",
-                            voucher.status === "available" && "bg-green-500 hover:bg-green-600",
+                            voucher.status === "available" &&
+                              "bg-green-500 hover:bg-green-600",
                           )}
                         >
-                          {voucher.status === "available" && <Gift className="h-3 w-3 mr-1" />}
-                          {voucher.status === "used" && <CheckCircle className="h-3 w-3 mr-1" />}
-                          {voucher.status === "expired" && <Clock className="h-3 w-3 mr-1" />}
+                          {voucher.status === "available" && (
+                            <Gift className="h-3 w-3 mr-1" />
+                          )}
+                          {voucher.status === "used" && (
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                          )}
+                          {voucher.status === "expired" && (
+                            <Clock className="h-3 w-3 mr-1" />
+                          )}
                           {voucher.status.toUpperCase()}
                         </Badge>
                       </div>
@@ -352,7 +384,9 @@ export default function Voucher() {
                       {/* Expiry */}
                       <div className="flex items-center text-xs text-muted-foreground mb-3">
                         <Calendar className="h-3 w-3 mr-1" />
-                        <span>Valid until {formatDate(voucher.validUntil)}</span>
+                        <span>
+                          Valid until {formatDate(voucher.validUntil)}
+                        </span>
                       </div>
 
                       {/* Action Button */}
@@ -362,13 +396,17 @@ export default function Voucher() {
                             <div className="space-y-2">
                               <div className="flex items-center justify-center gap-2 bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-300 py-2 px-3 rounded-lg">
                                 <CheckCircle className="h-4 w-4" />
-                                <span className="text-sm font-semibold">Activated</span>
+                                <span className="text-sm font-semibold">
+                                  Activated
+                                </span>
                               </div>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="w-full"
-                                onClick={() => handleRemoveVoucher(voucher.code)}
+                                onClick={() =>
+                                  handleRemoveVoucher(voucher.code)
+                                }
                               >
                                 <X className="h-4 w-4 mr-2" />
                                 Remove
@@ -425,7 +463,7 @@ export default function Voucher() {
           discountType={appliedVoucherData.discountType}
           onBookNow={() => {
             setShowSuccessModal(false);
-            navigate('/booking');
+            navigate("/booking");
           }}
         />
       )}

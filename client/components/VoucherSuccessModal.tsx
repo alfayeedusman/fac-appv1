@@ -86,7 +86,8 @@ export default function VoucherSuccessModal({
               Your voucher is ready to use!
             </p>
             <p className="text-sm text-muted-foreground">
-              This discount will be automatically applied when you book a service.
+              This discount will be automatically applied when you book a
+              service.
             </p>
           </div>
 

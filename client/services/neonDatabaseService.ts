@@ -152,10 +152,10 @@ class NeonDatabaseClient {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
-    console.log('🔗 NeonDatabaseClient baseUrl:', this.baseUrl);
+    console.log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
-    this.autoInitialize().catch(err =>
-      console.warn('⚠️ Background initialization failed:', err)
+    this.autoInitialize().catch((err) =>
+      console.warn("⚠️ Background initialization failed:", err),
     );
   }
 
@@ -185,10 +185,15 @@ class NeonDatabaseClient {
           return true;
         }
       } else {
-        console.warn(`⚠️ Init request failed: ${response.status} ${response.statusText}`);
+        console.warn(
+          `⚠️ Init request failed: ${response.status} ${response.statusText}`,
+        );
       }
     } catch (error) {
-      console.warn("⚠️ Init request error, will try /test fallback:", error instanceof Error ? error.message : error);
+      console.warn(
+        "⚠️ Init request error, will try /test fallback:",
+        error instanceof Error ? error.message : error,
+      );
     }
 
     // Fallback: GET /test
@@ -205,7 +210,10 @@ class NeonDatabaseClient {
         return this.isConnected;
       }
     } catch (e) {
-      console.warn("⚠️ Test request failed:", e instanceof Error ? e.message : e);
+      console.warn(
+        "⚠️ Test request failed:",
+        e instanceof Error ? e.message : e,
+      );
     }
 
     // Final: mark offline, allow UI to use fallbacks
@@ -314,7 +322,7 @@ class NeonDatabaseClient {
     testResults: any;
     initResults: any;
   }> {
-    console.log('🔍 Starting database connection debug...');
+    console.log("🔍 Starting database connection debug...");
 
     const debug = {
       baseUrl: this.baseUrl,
@@ -325,25 +333,29 @@ class NeonDatabaseClient {
 
     try {
       // Test basic connectivity
-      console.log('🧪 Testing connection...');
+      console.log("🧪 Testing connection...");
       debug.testResults = await this.testConnection();
-      console.log('✅ Test connection result:', debug.testResults);
+      console.log("✅ Test connection result:", debug.testResults);
     } catch (error) {
-      console.error('❌ Test connection failed:', error);
-      debug.testResults = { error: error instanceof Error ? error.message : 'Unknown test error' };
+      console.error("❌ Test connection failed:", error);
+      debug.testResults = {
+        error: error instanceof Error ? error.message : "Unknown test error",
+      };
     }
 
     try {
       // Try initialization
-      console.log('🚀 Testing initialization...');
+      console.log("🚀 Testing initialization...");
       debug.initResults = await this.initialize();
-      console.log('✅ Init result:', debug.initResults);
+      console.log("✅ Init result:", debug.initResults);
     } catch (error) {
-      console.error('❌ Initialization failed:', error);
-      debug.initResults = { error: error instanceof Error ? error.message : 'Unknown init error' };
+      console.error("❌ Initialization failed:", error);
+      debug.initResults = {
+        error: error instanceof Error ? error.message : "Unknown init error",
+      };
     }
 
-    console.log('🔍 Debug completed:', debug);
+    console.log("🔍 Debug completed:", debug);
     return debug;
   }
 
@@ -449,15 +461,22 @@ class NeonDatabaseClient {
         const status = response.status;
         let message = "Login failed. Please try again.";
         if (status === 401) message = "Incorrect email or password.";
-        else if (status === 429) message = "Too many attempts. Please try again later.";
-        else if (status === 503) message = "System under maintenance. Please try again later.";
-        else if (status >= 500) message = "Server error. Please try again shortly.";
-        else if (status === 0) message = "Network error. Please check your connection.";
+        else if (status === 429)
+          message = "Too many attempts. Please try again later.";
+        else if (status === 503)
+          message = "System under maintenance. Please try again later.";
+        else if (status >= 500)
+          message = "Server error. Please try again shortly.";
+        else if (status === 0)
+          message = "Network error. Please check your connection.";
         // Prefer server-provided public message if available
-        const serverMsg = typeof json.error === 'string' ? json.error : '';
-        const finalMsg = import.meta.env.MODE === 'development' && serverMsg
-          ? `${message} (${serverMsg})`
-          : (serverMsg && serverMsg.length < 120 ? serverMsg : message);
+        const serverMsg = typeof json.error === "string" ? json.error : "";
+        const finalMsg =
+          import.meta.env.MODE === "development" && serverMsg
+            ? `${message} (${serverMsg})`
+            : serverMsg && serverMsg.length < 120
+              ? serverMsg
+              : message;
         return { success: false, error: finalMsg };
       }
       try {
@@ -481,9 +500,12 @@ class NeonDatabaseClient {
     // Non-JSON or unreadable body; return friendly error without developer details
     let friendly = "Login failed. Please try again.";
     if (response.status === 401) friendly = "Incorrect email or password.";
-    else if (response.status === 503) friendly = "System under maintenance. Please try again later.";
-    else if (response.status >= 500) friendly = "Server error. Please try again shortly.";
-    else if (response.status === 0) friendly = "Network error. Please check your connection.";
+    else if (response.status === 503)
+      friendly = "System under maintenance. Please try again later.";
+    else if (response.status >= 500)
+      friendly = "Server error. Please try again shortly.";
+    else if (response.status === 0)
+      friendly = "Network error. Please check your connection.";
     return {
       success: false,
       error: friendly,
@@ -612,11 +634,13 @@ class NeonDatabaseClient {
   async register(
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    console.log('📝 Starting registration for:', userData.email);
+    console.log("📝 Starting registration for:", userData.email);
 
-    const tryRegister = async (url: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    const tryRegister = async (
+      url: string,
+    ): Promise<{ success: boolean; user?: User; error?: string }> => {
       try {
-        console.log('🔄 Attempting registration at:', url);
+        console.log("🔄 Attempting registration at:", url);
         const ac = new AbortController();
         const to = setTimeout(() => ac.abort(), 15000);
 
@@ -628,35 +652,44 @@ class NeonDatabaseClient {
         });
 
         clearTimeout(to);
-        console.log('📡 Registration response status:', response.status);
+        console.log("📡 Registration response status:", response.status);
 
-        const ct = response.headers.get('content-type') || '';
+        const ct = response.headers.get("content-type") || "";
         let data: any = null;
-        if (ct.includes('application/json')) {
+        if (ct.includes("application/json")) {
           data = await response.json();
         } else {
-          const txt = await response.text().catch(() => '');
-          try { data = JSON.parse(txt); } catch { data = null; }
+          const txt = await response.text().catch(() => "");
+          try {
+            data = JSON.parse(txt);
+          } catch {
+            data = null;
+          }
         }
 
-        console.log('📦 Registration response data:', data);
+        console.log("📦 Registration response data:", data);
 
         if (!response.ok || !data?.success) {
           const status = response.status;
-          let msg = 'Registration failed. Please try again.';
-          if (status === 409) msg = 'Account already exists.';
-          else if (status === 400) msg = 'Please check your details and try again.';
-          else if (status === 503) msg = 'System under maintenance. Try later.';
-          else if (status >= 500) msg = 'Server error. Please try again shortly.';
+          let msg = "Registration failed. Please try again.";
+          if (status === 409) msg = "Account already exists.";
+          else if (status === 400)
+            msg = "Please check your details and try again.";
+          else if (status === 503) msg = "System under maintenance. Try later.";
+          else if (status >= 500)
+            msg = "Server error. Please try again shortly.";
           return { success: false, error: msg };
         }
 
-        console.log('✅ Registration successful!');
+        console.log("✅ Registration successful!");
         return data;
       } catch (error: any) {
-        console.error('❌ Registration attempt failed:', error);
-        if (error?.name === 'AbortError') {
-          return { success: false, error: 'Request timed out. Please try again.' };
+        console.error("❌ Registration attempt failed:", error);
+        if (error?.name === "AbortError") {
+          return {
+            success: false,
+            error: "Request timed out. Please try again.",
+          };
         }
         throw error;
       }
@@ -667,16 +700,17 @@ class NeonDatabaseClient {
       const primaryUrl = `${this.baseUrl}/auth/register`;
       return await tryRegister(primaryUrl);
     } catch (primaryError) {
-      console.warn('⚠️ Primary registration URL failed, trying fallback...');
+      console.warn("⚠️ Primary registration URL failed, trying fallback...");
       // Try fallback URL
       try {
         const fallbackUrl = `/api/neon/auth/register`;
         return await tryRegister(fallbackUrl);
       } catch (fallbackError) {
-        console.error('❌ Both registration attempts failed');
+        console.error("❌ Both registration attempts failed");
         return {
           success: false,
-          error: 'Unable to connect to server. Please check your connection and try again.'
+          error:
+            "Unable to connect to server. Please check your connection and try again.",
         };
       }
     }
@@ -713,8 +747,11 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database booking creation failed:", error);
-      if (error?.name === 'AbortError') {
-        return { success: false, error: "Request timed out. Please try again." };
+      if (error?.name === "AbortError") {
+        return {
+          success: false,
+          error: "Request timed out. Please try again.",
+        };
       }
       return {
         success: false,
@@ -759,7 +796,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database booking fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Bookings fetch timed out");
       }
       return { success: false, bookings: [] };
@@ -790,7 +827,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database booking update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Booking update timed out");
       }
       return { success: false };
@@ -813,7 +850,7 @@ class NeonDatabaseClient {
 
       const response = await fetch(
         `${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`,
-        { signal: ac.signal }
+        { signal: ac.signal },
       );
 
       clearTimeout(to);
@@ -821,7 +858,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database notification fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Notifications fetch timed out");
       }
       return { success: false, notifications: [] };
@@ -855,7 +892,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database notification update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Notification update timed out");
       }
       return { success: false };
@@ -876,14 +913,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/settings`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/settings`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Database settings fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Settings fetch timed out");
       }
       return { success: false, settings: [] };
@@ -916,7 +955,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database setting update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Setting update timed out");
       }
       return { success: false };
@@ -934,14 +973,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/ads`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/ads`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Database ads fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Ads fetch timed out");
       }
       return { success: false, ads: [] };
@@ -971,7 +1012,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database ad creation failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1002,7 +1043,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Database ad dismissal failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Ad dismissal timed out");
       }
       return { success: false };
@@ -1044,18 +1085,25 @@ class NeonDatabaseClient {
     }
   }
 
-  async getBranches(): Promise<{ success: boolean; branches?: any[]; error?: string }> {
+  async getBranches(): Promise<{
+    success: boolean;
+    branches?: any[];
+    error?: string;
+  }> {
     // Simple timeout wrapper using Promise.race
-    const fetchWithTimeout = (url: string, timeoutMs: number = 1500): Promise<any> => {
+    const fetchWithTimeout = (
+      url: string,
+      timeoutMs: number = 1500,
+    ): Promise<any> => {
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), timeoutMs)
+        setTimeout(() => reject(new Error("timeout")), timeoutMs),
       );
 
       const fetchPromise = fetch(url, {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       }).then(async (response) => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
@@ -1068,8 +1116,12 @@ class NeonDatabaseClient {
 
     // Try to fetch from API with timeout
     try {
-      const result = await fetchWithTimeout('/api/neon/branches', 1500);
-      if (result?.success && Array.isArray(result.branches) && result.branches.length > 0) {
+      const result = await fetchWithTimeout("/api/neon/branches", 1500);
+      if (
+        result?.success &&
+        Array.isArray(result.branches) &&
+        result.branches.length > 0
+      ) {
         return result;
       }
     } catch {
@@ -1112,7 +1164,11 @@ class NeonDatabaseClient {
       return result;
     } catch (error) {
       console.error("❌ Create branch failed:", error);
-      return { success: false, error: error instanceof Error ? error.message : "Failed to create branch" };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to create branch",
+      };
     }
   }
 
@@ -1215,7 +1271,9 @@ class NeonDatabaseClient {
 
   // === USER VEHICLES & ADDRESS ===
 
-  async getUserVehicles(userId: string): Promise<{ success: boolean; vehicles?: UserVehicle[] }> {
+  async getUserVehicles(
+    userId: string,
+  ): Promise<{ success: boolean; vehicles?: UserVehicle[] }> {
     if (!this.isConnected) {
       return { success: false, vehicles: [] };
     }
@@ -1224,7 +1282,9 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
 
@@ -1244,7 +1304,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Get user vehicles failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Get vehicles timed out");
       }
       return { success: false, vehicles: [] };
@@ -1253,7 +1313,7 @@ class NeonDatabaseClient {
 
   async addUserVehicle(
     userId: string,
-    vehicle: Omit<UserVehicle, 'id' | 'createdAt'>
+    vehicle: Omit<UserVehicle, "id" | "createdAt">,
   ): Promise<{ success: boolean; vehicle?: UserVehicle }> {
     if (!this.isConnected) {
       return { success: false };
@@ -1275,7 +1335,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Add user vehicle failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1285,7 +1345,7 @@ class NeonDatabaseClient {
   async updateUserVehicle(
     userId: string,
     vehicleId: string,
-    updates: Partial<UserVehicle>
+    updates: Partial<UserVehicle>,
   ): Promise<{ success: boolean; vehicle?: UserVehicle }> {
     if (!this.isConnected) {
       return { success: false };
@@ -1295,26 +1355,32 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updates),
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Update user vehicle failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
     }
   }
 
-  async deleteUserVehicle(userId: string, vehicleId: string): Promise<{ success: boolean }> {
+  async deleteUserVehicle(
+    userId: string,
+    vehicleId: string,
+  ): Promise<{ success: boolean }> {
     if (!this.isConnected) {
       return { success: false };
     }
@@ -1323,17 +1389,20 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`, {
-        method: "DELETE",
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`,
+        {
+          method: "DELETE",
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Delete user vehicle failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1341,16 +1410,24 @@ class NeonDatabaseClient {
   }
 
   // Admin utility to fix bookings with email in userId field
-  async fixBookingUserIds(): Promise<{ success: boolean; fixed?: number; total?: number; errors?: string[] }> {
+  async fixBookingUserIds(): Promise<{
+    success: boolean;
+    fixed?: number;
+    total?: number;
+    errors?: string[];
+  }> {
     if (!this.isConnected) {
       return { success: false };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/admin/fix-booking-userids`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetch(
+        `${this.baseUrl}/admin/fix-booking-userids`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
 
       const result = await response.json();
       return result;
@@ -1362,7 +1439,7 @@ class NeonDatabaseClient {
 
   async updateUserAddress(
     userId: string,
-    defaultAddress: string
+    defaultAddress: string,
   ): Promise<{ success: boolean; user?: User }> {
     if (!this.isConnected) {
       return { success: false };
@@ -1384,7 +1461,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Update user address failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1414,9 +1491,9 @@ class NeonDatabaseClient {
         const res = await fetch(url, {
           signal: ac.signal,
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         });
         clearTimeout(to);
 
@@ -1444,7 +1521,10 @@ class NeonDatabaseClient {
           console.log(`✅ Text parsed as JSON from ${url}`);
           return parsedJson;
         } catch (parseError) {
-          console.error(`❌ Invalid JSON response from ${url}:`, txt.slice(0, 100));
+          console.error(
+            `❌ Invalid JSON response from ${url}:`,
+            txt.slice(0, 100),
+          );
           throw new Error(`Invalid JSON response: ${txt.slice(0, 100)}`);
         }
       } catch (e) {
@@ -1466,14 +1546,22 @@ class NeonDatabaseClient {
       console.log(`✅ Primary request succeeded for ${path}`);
       return result;
     } catch (e1) {
-      console.warn(`⚠️ Primary request failed for ${path}, trying fallback...`, e1);
+      console.warn(
+        `⚠️ Primary request failed for ${path}, trying fallback...`,
+        e1,
+      );
       try {
         const result = await tryOnce(fallbackUrl);
         console.log(`✅ Fallback request succeeded for ${path}`);
         return result;
       } catch (e2) {
-        console.error(`❌ Both requests failed for ${path}:`, { primary: e1, fallback: e2 });
-        throw new Error(`All requests failed for ${path}. Primary: ${e1}. Fallback: ${e2}`);
+        console.error(`❌ Both requests failed for ${path}:`, {
+          primary: e1,
+          fallback: e2,
+        });
+        throw new Error(
+          `All requests failed for ${path}. Primary: ${e1}. Fallback: ${e2}`,
+        );
       }
     }
   }
@@ -1484,13 +1572,13 @@ class NeonDatabaseClient {
     try {
       const connected = await this.ensureConnection();
       if (!connected) {
-        console.warn('⚠️ getRealtimeStats: Database not connected');
+        console.warn("⚠️ getRealtimeStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log('📊 Fetching realtime stats...');
+      console.log("📊 Fetching realtime stats...");
       const result = await this.fetchJsonWithFallback("/realtime-stats");
-      console.log('✅ Realtime stats received:', result);
+      console.log("✅ Realtime stats received:", result);
 
       return result?.success !== undefined
         ? result
@@ -1500,7 +1588,7 @@ class NeonDatabaseClient {
       return {
         success: false,
         stats: null,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -1511,13 +1599,13 @@ class NeonDatabaseClient {
     try {
       const connected = await this.ensureConnection();
       if (!connected) {
-        console.warn('⚠️ getStats: Database not connected');
+        console.warn("⚠️ getStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log('📈 Fetching stats...');
+      console.log("📈 Fetching stats...");
       const result = await this.fetchJsonWithFallback("/stats");
-      console.log('✅ Stats received:', result);
+      console.log("✅ Stats received:", result);
 
       return result?.success !== undefined
         ? result
@@ -1527,19 +1615,22 @@ class NeonDatabaseClient {
       return {
         success: false,
         stats: null,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
   // === VOUCHERS ===
-  async getVouchers(params?: { audience?: 'all' | 'registered'; status?: 'active' }): Promise<{ success: boolean; vouchers?: any[]; error?: string }> {
+  async getVouchers(params?: {
+    audience?: "all" | "registered";
+    status?: "active";
+  }): Promise<{ success: boolean; vouchers?: any[]; error?: string }> {
     await this.ensureConnection();
     const queryParams = new URLSearchParams();
-    if (params?.audience) queryParams.append('audience', params.audience);
-    if (params?.status) queryParams.append('status', params.status);
+    if (params?.audience) queryParams.append("audience", params.audience);
+    if (params?.status) queryParams.append("status", params.status);
 
-    const url = `${this.baseUrl}/vouchers${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `${this.baseUrl}/vouchers${queryParams.toString() ? "?" + queryParams.toString() : ""}`;
     const ac = new AbortController();
     const to = setTimeout(() => ac.abort(), 8000);
     try {
@@ -1549,19 +1640,40 @@ class NeonDatabaseClient {
       return json;
     } catch (e: any) {
       clearTimeout(to);
-      return { success: false, error: e?.message || 'Network error', vouchers: [] };
+      return {
+        success: false,
+        error: e?.message || "Network error",
+        vouchers: [],
+      };
     }
   }
 
-  async validateVoucher(params: { code: string; bookingAmount: number; userEmail?: string; bookingType?: 'guest' | 'registered'; }): Promise<{ success: boolean; data?: { code: string; title: string; discountType: 'percentage' | 'fixed_amount'; discountValue: number; discountAmount: number; finalAmount: number; audience: 'all' | 'registered' }; error?: string }> {
+  async validateVoucher(params: {
+    code: string;
+    bookingAmount: number;
+    userEmail?: string;
+    bookingType?: "guest" | "registered";
+  }): Promise<{
+    success: boolean;
+    data?: {
+      code: string;
+      title: string;
+      discountType: "percentage" | "fixed_amount";
+      discountValue: number;
+      discountAmount: number;
+      finalAmount: number;
+      audience: "all" | "registered";
+    };
+    error?: string;
+  }> {
     await this.ensureConnection();
     const url = `${this.baseUrl}/vouchers/validate`;
     const ac = new AbortController();
     const to = setTimeout(() => ac.abort(), 8000);
     try {
       const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
         signal: ac.signal,
       });
@@ -1570,18 +1682,32 @@ class NeonDatabaseClient {
       return json;
     } catch (e: any) {
       clearTimeout(to);
-      return { success: false, error: e?.message || 'Network error' };
+      return { success: false, error: e?.message || "Network error" };
     }
   }
 
-  async redeemVoucher(params: { code: string; userEmail?: string; bookingId: string; discountAmount: number; }): Promise<{ success: boolean; id?: string; error?: string; message?: string }> {
+  async redeemVoucher(params: {
+    code: string;
+    userEmail?: string;
+    bookingId: string;
+    discountAmount: number;
+  }): Promise<{
+    success: boolean;
+    id?: string;
+    error?: string;
+    message?: string;
+  }> {
     await this.ensureConnection();
     const url = `${this.baseUrl}/vouchers/redeem`;
     try {
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
       return await res.json();
     } catch (e: any) {
-      return { success: false, error: e?.message || 'Network error' };
+      return { success: false, error: e?.message || "Network error" };
     }
   }
 
@@ -1597,14 +1723,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/items`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/inventory/items`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Inventory items fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Inventory fetch timed out");
       }
       return { success: false, items: [] };
@@ -1642,7 +1770,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Inventory item creation failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1673,7 +1801,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Inventory item update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1699,7 +1827,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Inventory item deletion failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1740,7 +1868,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Inventory stock update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1766,7 +1894,7 @@ class NeonDatabaseClient {
 
       const response = await fetch(
         `${this.baseUrl}/inventory/movements?${params}`,
-        { signal: ac.signal }
+        { signal: ac.signal },
       );
 
       clearTimeout(to);
@@ -1774,7 +1902,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Stock movements fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Stock movements fetch timed out");
       }
       return { success: false, movements: [] };
@@ -1812,7 +1940,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Stock movement creation failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1829,14 +1957,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/suppliers`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/inventory/suppliers`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Suppliers fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Suppliers fetch timed out");
       }
       return { success: false, suppliers: [] };
@@ -1873,7 +2003,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Supplier creation failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1907,7 +2037,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Supplier update failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1936,7 +2066,7 @@ class NeonDatabaseClient {
       return result;
     } catch (error: any) {
       console.error("Supplier deletion failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         return { success: false, error: "Request timed out" };
       }
       return { success: false };
@@ -1956,14 +2086,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/analytics`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/inventory/analytics`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Inventory analytics fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Analytics fetch timed out");
       }
       return { success: false };
@@ -1979,14 +2111,16 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/low-stock`, { signal: ac.signal });
+      const response = await fetch(`${this.baseUrl}/inventory/low-stock`, {
+        signal: ac.signal,
+      });
 
       clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
       console.error("Low stock items fetch failed:", error);
-      if (error?.name === 'AbortError') {
+      if (error?.name === "AbortError") {
         console.warn("Low stock items fetch timed out");
       }
       return { success: false, items: [] };

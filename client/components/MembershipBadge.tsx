@@ -6,7 +6,10 @@ interface MembershipBadgeProps {
   className?: string;
 }
 
-export default function MembershipBadge({ membershipType, className }: MembershipBadgeProps) {
+export default function MembershipBadge({
+  membershipType,
+  className,
+}: MembershipBadgeProps) {
   const type = (membershipType || "").toLowerCase();
   const isRegular = type.includes("regular");
   const isClassic = type.includes("classic");

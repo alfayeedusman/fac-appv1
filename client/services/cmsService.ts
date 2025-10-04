@@ -1,5 +1,5 @@
 // CMS Service for API communication
-const API_BASE_URL = '/api/cms';
+const API_BASE_URL = "/api/cms";
 
 export interface HomepageContent {
   hero: {
@@ -113,9 +113,9 @@ class CMSService {
 
     try {
       const response = await fetch(`${API_BASE_URL}/homepage`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         signal: ac.signal,
       });
@@ -129,17 +129,17 @@ class CMSService {
       const result: CMSApiResponse<HomepageContent> = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to get homepage content');
+        throw new Error(result.message || "Failed to get homepage content");
       }
 
       return result.data;
     } catch (error: any) {
       clearTimeout(timeout);
 
-      if (error?.name === 'AbortError') {
-        console.warn('⏱️ CMS content request timed out, using default content');
+      if (error?.name === "AbortError") {
+        console.warn("⏱️ CMS content request timed out, using default content");
       } else {
-        console.error('Error getting homepage content:', error);
+        console.error("Error getting homepage content:", error);
       }
 
       // Return default content as fallback
@@ -150,20 +150,24 @@ class CMSService {
   /**
    * Save homepage content
    */
-  async saveHomepageContent(content: HomepageContent, userId?: string, userName?: string): Promise<boolean> {
+  async saveHomepageContent(
+    content: HomepageContent,
+    userId?: string,
+    userName?: string,
+  ): Promise<boolean> {
     const ac = new AbortController();
     const timeout = setTimeout(() => ac.abort(), 10000);
 
     try {
       const response = await fetch(`${API_BASE_URL}/homepage`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           content,
-          userId: userId || 'admin',
-          userName: userName || 'Admin User',
+          userId: userId || "admin",
+          userName: userName || "Admin User",
         }),
         signal: ac.signal,
       });
@@ -177,19 +181,19 @@ class CMSService {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to save homepage content');
+        throw new Error(result.message || "Failed to save homepage content");
       }
 
       return true;
     } catch (error: any) {
       clearTimeout(timeout);
 
-      if (error?.name === 'AbortError') {
-        console.error('⏱️ CMS save request timed out');
-        throw new Error('Request timed out. Please try again.');
+      if (error?.name === "AbortError") {
+        console.error("⏱️ CMS save request timed out");
+        throw new Error("Request timed out. Please try again.");
       }
 
-      console.error('Error saving homepage content:', error);
+      console.error("Error saving homepage content:", error);
       throw error;
     }
   }
@@ -202,13 +206,16 @@ class CMSService {
     const timeout = setTimeout(() => ac.abort(), 8000);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/history?limit=${limit}&offset=${offset}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${API_BASE_URL}/history?limit=${limit}&offset=${offset}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: ac.signal,
         },
-        signal: ac.signal,
-      });
+      );
 
       clearTimeout(timeout);
 
@@ -219,17 +226,17 @@ class CMSService {
       const result: CMSApiResponse<ContentHistory[]> = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to get content history');
+        throw new Error(result.message || "Failed to get content history");
       }
 
       return result.data;
     } catch (error: any) {
       clearTimeout(timeout);
 
-      if (error?.name === 'AbortError') {
-        console.warn('⏱️ CMS history request timed out');
+      if (error?.name === "AbortError") {
+        console.warn("⏱️ CMS history request timed out");
       } else {
-        console.error('Error getting content history:', error);
+        console.error("Error getting content history:", error);
       }
       return [];
     }
@@ -238,19 +245,22 @@ class CMSService {
   /**
    * Initialize CMS with default content
    */
-  async initializeContent(userId?: string, userName?: string): Promise<boolean> {
+  async initializeContent(
+    userId?: string,
+    userName?: string,
+  ): Promise<boolean> {
     const ac = new AbortController();
     const timeout = setTimeout(() => ac.abort(), 10000);
 
     try {
       const response = await fetch(`${API_BASE_URL}/initialize`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: userId || 'admin',
-          userName: userName || 'Admin User',
+          userId: userId || "admin",
+          userName: userName || "Admin User",
         }),
         signal: ac.signal,
       });
@@ -264,19 +274,19 @@ class CMSService {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to initialize content');
+        throw new Error(result.message || "Failed to initialize content");
       }
 
       return true;
     } catch (error: any) {
       clearTimeout(timeout);
 
-      if (error?.name === 'AbortError') {
-        console.error('⏱️ CMS initialize request timed out');
-        throw new Error('Request timed out. Please try again.');
+      if (error?.name === "AbortError") {
+        console.error("⏱️ CMS initialize request timed out");
+        throw new Error("Request timed out. Please try again.");
       }
 
-      console.error('Error initializing content:', error);
+      console.error("Error initializing content:", error);
       throw error;
     }
   }
@@ -292,7 +302,8 @@ class CMSService {
         mainTitle: "Smart Auto Care",
         highlightedTitle: "for Modern Drivers",
         subtitle: "Premium Quality • Affordable Prices",
-        description: "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
+        description:
+          "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
         features: [
           {
             id: "feature1",
@@ -344,13 +355,15 @@ class CMSService {
         badge: "Our Services",
         title: "Premium Auto Care",
         highlightedTitle: "",
-        description: "Professional services designed to keep your vehicle in perfect condition",
+        description:
+          "Professional services designed to keep your vehicle in perfect condition",
         items: [
           {
             id: "service1",
             icon: "Car",
             title: "Car & Motor Wash",
-            description: "Premium cleaning with eco-friendly products for a spotless finish",
+            description:
+              "Premium cleaning with eco-friendly products for a spotless finish",
             gradient: "from-fac-orange-500 to-fac-orange-600",
             enabled: true,
           },
@@ -358,7 +371,8 @@ class CMSService {
             id: "service2",
             icon: "Star",
             title: "Auto Detailing",
-            description: "Comprehensive interior and exterior detailing services",
+            description:
+              "Comprehensive interior and exterior detailing services",
             gradient: "from-purple-500 to-purple-600",
             enabled: true,
           },
@@ -366,7 +380,8 @@ class CMSService {
             id: "service3",
             icon: "Sparkles",
             title: "Headlight Restoration",
-            description: "Crystal clear headlights for enhanced visibility and safety",
+            description:
+              "Crystal clear headlights for enhanced visibility and safety",
             gradient: "from-blue-500 to-blue-600",
             enabled: true,
           },
@@ -386,13 +401,15 @@ class CMSService {
         highlightedTitle: "",
         vision: {
           title: "Our Vision",
-          content: "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
+          content:
+            "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
           icon: "Crown",
           gradient: "from-fac-orange-500 to-fac-orange-600",
         },
         mission: {
           title: "Our Mission",
-          content: "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
+          content:
+            "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
           icon: "Star",
           gradient: "from-purple-500 to-purple-600",
         },

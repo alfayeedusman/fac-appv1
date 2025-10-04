@@ -11,10 +11,12 @@ When customers select "Online Payment" during booking, a Xendit invoice popup wi
 ### API Keys
 
 **Public Key (Frontend):**
+
 - Located in: `client/services/xenditService.ts`
 - Current: `xnd_public_production_nIE1jSkGVG0K1fDTroRMXjLHJ14sfjM6YyU_m_ochdnqJHLWv2JJ40BUiBhUD7jx`
 
 **Secret Key (Backend):**
+
 - Environment variable: `XENDIT_SECRET_KEY`
 - ⚠️ **IMPORTANT:** Replace the placeholder secret key in `server/routes/xendit-api.ts` with your actual Xendit secret key
 - Get your secret key from: https://dashboard.xendit.co/settings/developers#api-keys
@@ -22,6 +24,7 @@ When customers select "Online Payment" during booking, a Xendit invoice popup wi
 ### Environment Setup
 
 1. Set the Xendit secret key as an environment variable:
+
    ```bash
    export XENDIT_SECRET_KEY="your_secret_key_here"
    ```
@@ -36,20 +39,24 @@ When customers select "Online Payment" during booking, a Xendit invoice popup wi
 ### Payment Flow
 
 1. **Customer Books Service:**
+
    - Customer selects "Online Payment" during booking
    - Fills in all booking details and confirms
 
 2. **Booking Creation:**
+
    - System creates booking in database
    - Booking status: `pending`
    - Payment status: `pending`
 
 3. **Xendit Invoice Creation:**
+
    - System creates a Xendit invoice via API
    - Invoice amount: Total booking price
    - External ID: `BOOKING_{bookingId}`
 
 4. **Payment Popup:**
+
    - Xendit invoice opens in a popup window
    - Customer completes payment (credit/debit card, e-wallet, etc.)
 
@@ -60,6 +67,7 @@ When customers select "Online Payment" during booking, a Xendit invoice popup wi
 ### Payment Methods Supported
 
 Via Xendit, customers can pay using:
+
 - Credit/Debit Cards (Visa, Mastercard, etc.)
 - GCash
 - PayMaya
@@ -69,11 +77,13 @@ Via Xendit, customers can pay using:
 ## API Endpoints
 
 ### Create Invoice
+
 ```
 POST /api/neon/payment/xendit/create-invoice
 ```
 
 **Request Body:**
+
 ```json
 {
   "external_id": "BOOKING_123",
@@ -90,6 +100,7 @@ POST /api/neon/payment/xendit/create-invoice
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -100,6 +111,7 @@ POST /api/neon/payment/xendit/create-invoice
 ```
 
 ### Webhook Handler
+
 ```
 POST /api/neon/payment/xendit/webhook
 ```
@@ -107,6 +119,7 @@ POST /api/neon/payment/xendit/webhook
 This endpoint receives payment status updates from Xendit.
 
 **Webhook Events:**
+
 - `PAID` - Payment successful
 - `SETTLED` - Payment settled
 - `EXPIRED` - Invoice expired
@@ -117,6 +130,7 @@ This endpoint receives payment status updates from Xendit.
 ### Test Mode
 
 1. Use Xendit test API keys for development:
+
    - Test Public Key: `xnd_public_development_...`
    - Test Secret Key: `xnd_development_...`
 
@@ -126,11 +140,13 @@ This endpoint receives payment status updates from Xendit.
 ### Test Cards
 
 **Successful Payment:**
+
 - Card: `4000000000000002`
 - CVV: Any 3 digits
 - Expiry: Any future date
 
 **Failed Payment:**
+
 - Card: `4000000000000010`
 - CVV: Any 3 digits
 - Expiry: Any future date
@@ -146,6 +162,7 @@ This endpoint receives payment status updates from Xendit.
 ## Webhook Configuration
 
 Configure webhook URL in Xendit Dashboard:
+
 1. Go to https://dashboard.xendit.co/settings/developers#webhooks
 2. Add webhook URL: `https://yourapp.com/api/neon/payment/xendit/webhook`
 3. Select events: `invoice.paid`, `invoice.expired`, `invoice.failed`
@@ -163,11 +180,13 @@ Configure webhook URL in Xendit Dashboard:
 ## Troubleshooting
 
 ### Invoice not opening
+
 - Check browser popup blockers
 - Verify Xendit SDK is loaded (check browser console)
 - Check public key is correct
 
 ### Payment not updating booking
+
 - Check webhook is configured correctly
 - Verify webhook URL is accessible
 - Check server logs for webhook errors
@@ -176,14 +195,17 @@ Configure webhook URL in Xendit Dashboard:
 ### Common Errors
 
 **401 Unauthorized:**
+
 - Invalid or missing secret key
 - Check `XENDIT_SECRET_KEY` environment variable
 
 **400 Bad Request:**
+
 - Invalid request parameters
 - Check invoice creation payload
 
 **500 Internal Server Error:**
+
 - Check server logs
 - Verify database connection
 - Check Xendit API status
@@ -197,6 +219,7 @@ Configure webhook URL in Xendit Dashboard:
 ## Support
 
 For issues related to:
+
 - Payment processing: Contact Xendit support
 - App integration: Check server logs and Xendit dashboard
 - Booking issues: Check database records

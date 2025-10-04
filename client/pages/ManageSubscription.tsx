@@ -288,7 +288,7 @@ export default function ManageSubscription() {
 
     // Show payment method selection
     const result = window.confirm(
-      "Choose Payment Method:\n\nOK = Pay with FACPay (Instant)\nCancel = Upload Receipt (Manual)"
+      "Choose Payment Method:\n\nOK = Pay with FACPay (Instant)\nCancel = Upload Receipt (Manual)",
     );
 
     if (result) {

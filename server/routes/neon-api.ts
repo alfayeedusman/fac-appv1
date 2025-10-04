@@ -1,6 +1,10 @@
 import { RequestHandler } from "express";
 import { neonDbService } from "../services/neonDatabaseService";
-import { initializeDatabase, testConnection, sql } from "../database/connection";
+import {
+  initializeDatabase,
+  testConnection,
+  sql,
+} from "../database/connection";
 import { migrate } from "../database/migrate";
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
@@ -276,27 +280,34 @@ export const getBookings: RequestHandler = async (req, res) => {
 
     // Check if user can view all branches
     const canViewAll =
-      userRole === 'admin' ||
-      userRole === 'superadmin' ||
+      userRole === "admin" ||
+      userRole === "superadmin" ||
       (currentUser && currentUser.canViewAllBranches);
 
     if (userId) {
       // Get bookings for specific user
       bookings = await neonDbService.getBookingsByUserId(userId as string);
-    } else if (branch && branch !== 'all') {
+    } else if (branch && branch !== "all") {
       // Filter by specific branch
       if (status) {
-        bookings = await neonDbService.getBookingsByBranchAndStatus(branch as string, status as string);
+        bookings = await neonDbService.getBookingsByBranchAndStatus(
+          branch as string,
+          status as string,
+        );
       } else {
         bookings = await neonDbService.getBookingsByBranch(branch as string);
       }
     } else if (status) {
       // Filter by status
-      let allBookings = await neonDbService.getBookingsByStatus(status as string);
+      let allBookings = await neonDbService.getBookingsByStatus(
+        status as string,
+      );
 
       // Apply branch restriction if user can't view all branches
       if (!canViewAll && currentUser) {
-        bookings = allBookings.filter(b => b.branch === currentUser.branchLocation);
+        bookings = allBookings.filter(
+          (b) => b.branch === currentUser.branchLocation,
+        );
       } else {
         bookings = allBookings;
       }
@@ -306,7 +317,9 @@ export const getBookings: RequestHandler = async (req, res) => {
 
       // Apply branch restriction if user can't view all branches
       if (!canViewAll && currentUser) {
-        bookings = allBookings.filter(b => b.branch === currentUser.branchLocation);
+        bookings = allBookings.filter(
+          (b) => b.branch === currentUser.branchLocation,
+        );
       } else {
         bookings = allBookings;
       }
@@ -370,89 +383,149 @@ export const getVouchers: RequestHandler = async (req, res) => {
       query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all')`;
     }
 
-    if (status === 'active') {
+    if (status === "active") {
       query = sql`SELECT * FROM vouchers WHERE is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
     }
 
-    if (audience && status === 'active') {
+    if (audience && status === "active") {
       query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all') AND is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
     }
 
     const vouchers = await query;
-    res.json({ success: true, vouchers: Array.isArray(vouchers) ? vouchers : vouchers?.rows || [] });
+    res.json({
+      success: true,
+      vouchers: Array.isArray(vouchers) ? vouchers : vouchers?.rows || [],
+    });
   } catch (err: any) {
-    console.error('Get vouchers error:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch vouchers' });
+    console.error("Get vouchers error:", err);
+    res.status(500).json({ success: false, error: "Failed to fetch vouchers" });
   }
 };
 
 export const validateVoucher: RequestHandler = async (req, res) => {
   try {
     const { code, bookingAmount, userEmail, bookingType } = req.body || {};
-    if (!code || typeof bookingAmount !== 'number') {
-      return res.status(400).json({ success: false, error: 'code and bookingAmount are required' });
+    if (!code || typeof bookingAmount !== "number") {
+      return res
+        .status(400)
+        .json({ success: false, error: "code and bookingAmount are required" });
     }
 
     await ensureVoucherTables();
 
     // Fetch voucher by code (case-insensitive)
-    const result: any = await sql`SELECT * FROM vouchers WHERE LOWER(code) = LOWER(${code}) LIMIT 1`;
+    const result: any =
+      await sql`SELECT * FROM vouchers WHERE LOWER(code) = LOWER(${code}) LIMIT 1`;
     const voucher = Array.isArray(result) ? result[0] : result?.rows?.[0];
-    if (!voucher) return res.status(404).json({ success: false, error: 'Invalid voucher code' });
+    if (!voucher)
+      return res
+        .status(404)
+        .json({ success: false, error: "Invalid voucher code" });
 
     // Check status and validity window
     const now = new Date();
-    if (voucher.is_active === false) return res.status(400).json({ success: false, error: 'Voucher is inactive' });
-    if (voucher.valid_from && new Date(voucher.valid_from) > now) return res.status(400).json({ success: false, error: 'Voucher not yet active' });
-    if (voucher.valid_until && new Date(voucher.valid_until) < now) return res.status(400).json({ success: false, error: 'Voucher expired' });
+    if (voucher.is_active === false)
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher is inactive" });
+    if (voucher.valid_from && new Date(voucher.valid_from) > now)
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher not yet active" });
+    if (voucher.valid_until && new Date(voucher.valid_until) < now)
+      return res.status(400).json({ success: false, error: "Voucher expired" });
 
     // Audience rules
     const isRegistered = !!userEmail;
-    if (voucher.audience === 'registered' && !isRegistered) {
-      return res.status(403).json({ success: false, error: 'Voucher is only for registered users' });
+    if (voucher.audience === "registered" && !isRegistered) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "Voucher is only for registered users",
+        });
     }
 
     // Usage limits
-    if (voucher.usage_limit && Number(voucher.total_used || 0) >= voucher.usage_limit) {
-      return res.status(400).json({ success: false, error: 'Voucher usage limit reached' });
+    if (
+      voucher.usage_limit &&
+      Number(voucher.total_used || 0) >= voucher.usage_limit
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher usage limit reached" });
     }
     if (isRegistered && voucher.per_user_limit) {
-      const usedByUser: any = await sql`SELECT COUNT(*)::int as cnt FROM voucher_redemptions WHERE voucher_code = ${voucher.code} AND user_email = ${userEmail}`;
-      const usedCount = Array.isArray(usedByUser) ? usedByUser[0]?.cnt : usedByUser?.rows?.[0]?.cnt;
+      const usedByUser: any =
+        await sql`SELECT COUNT(*)::int as cnt FROM voucher_redemptions WHERE voucher_code = ${voucher.code} AND user_email = ${userEmail}`;
+      const usedCount = Array.isArray(usedByUser)
+        ? usedByUser[0]?.cnt
+        : usedByUser?.rows?.[0]?.cnt;
       if (Number(usedCount || 0) >= voucher.per_user_limit) {
-        return res.status(400).json({ success: false, error: 'You have already used this voucher' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            error: "You have already used this voucher",
+          });
       }
     }
 
     // Min amount
     const minAmt = Number(voucher.minimum_amount || 0);
     if (minAmt > 0 && bookingAmount < minAmt) {
-      return res.status(400).json({ success: false, error: `Minimum amount ₱${minAmt.toFixed(2)} not met` });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: `Minimum amount ₱${minAmt.toFixed(2)} not met`,
+        });
     }
 
     // Calculate discount
     let discountAmount = 0;
-    if (voucher.discount_type === 'percentage') {
-      discountAmount = Math.round((bookingAmount * Number(voucher.discount_value)))/100; // percentage value already like 20 => amount = amount * 20 / 100
-      discountAmount = Number((bookingAmount * Number(voucher.discount_value) / 100).toFixed(2));
+    if (voucher.discount_type === "percentage") {
+      discountAmount =
+        Math.round(bookingAmount * Number(voucher.discount_value)) / 100; // percentage value already like 20 => amount = amount * 20 / 100
+      discountAmount = Number(
+        ((bookingAmount * Number(voucher.discount_value)) / 100).toFixed(2),
+      );
     } else {
       discountAmount = Number(voucher.discount_value);
     }
     if (discountAmount > bookingAmount) discountAmount = bookingAmount;
     const finalAmount = Number((bookingAmount - discountAmount).toFixed(2));
 
-    return res.json({ success: true, data: { code: voucher.code, title: voucher.title, discountType: voucher.discount_type, discountValue: Number(voucher.discount_value), discountAmount, finalAmount, audience: voucher.audience } });
+    return res.json({
+      success: true,
+      data: {
+        code: voucher.code,
+        title: voucher.title,
+        discountType: voucher.discount_type,
+        discountValue: Number(voucher.discount_value),
+        discountAmount,
+        finalAmount,
+        audience: voucher.audience,
+      },
+    });
   } catch (error: any) {
-    console.error('validateVoucher error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to validate voucher' });
+    console.error("validateVoucher error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to validate voucher" });
   }
 };
 
 export const redeemVoucher: RequestHandler = async (req, res) => {
   try {
     const { code, userEmail, bookingId, discountAmount } = req.body || {};
-    if (!code || !bookingId || typeof discountAmount !== 'number') {
-      return res.status(400).json({ success: false, error: 'code, bookingId and discountAmount are required' });
+    if (!code || !bookingId || typeof discountAmount !== "number") {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "code, bookingId and discountAmount are required",
+        });
     }
 
     await ensureVoucherTables();
@@ -465,10 +538,12 @@ export const redeemVoucher: RequestHandler = async (req, res) => {
     // Also update booking columns if present
     await sql`UPDATE bookings SET voucher_code = ${code}, voucher_discount = ${discountAmount} WHERE id = ${bookingId}`;
 
-    return res.json({ success: true, message: 'Voucher redeemed', id });
+    return res.json({ success: true, message: "Voucher redeemed", id });
   } catch (error: any) {
-    console.error('redeemVoucher error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to redeem voucher' });
+    console.error("redeemVoucher error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to redeem voucher" });
   }
 };
 
@@ -679,12 +754,15 @@ export const getFacMapStats: RequestHandler = async (req, res) => {
   try {
     console.log("📊 Getting FAC MAP stats...");
     const facMapStats = await neonDbService.getFacMapStats();
-    console.log("✅ FAC MAP stats retrieved:", JSON.stringify(facMapStats, null, 2));
+    console.log(
+      "✅ FAC MAP stats retrieved:",
+      JSON.stringify(facMapStats, null, 2),
+    );
 
     res.json({
       success: true,
       stats: facMapStats,
-      message: "FAC MAP stats retrieved successfully"
+      message: "FAC MAP stats retrieved successfully",
     });
   } catch (error) {
     console.error("❌ Get FAC MAP stats error:", error);
@@ -950,7 +1028,7 @@ export const seedBranchesEndpoint: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       message: "Branches seeded successfully",
-      count: branches.length
+      count: branches.length,
     });
   } catch (error) {
     console.error("❌ Seed branches error:", error);
@@ -1262,8 +1340,13 @@ export const getUserVehicles: RequestHandler = async (req, res) => {
     console.error("Get user vehicles error:", error);
 
     // Check if table doesn't exist
-    if (error?.message?.includes("does not exist") || error?.message?.includes("relation")) {
-      console.warn("⚠️ user_vehicles table doesn't exist, returning empty array");
+    if (
+      error?.message?.includes("does not exist") ||
+      error?.message?.includes("relation")
+    ) {
+      console.warn(
+        "⚠️ user_vehicles table doesn't exist, returning empty array",
+      );
       return res.json({
         success: true,
         vehicles: [],
@@ -1283,7 +1366,8 @@ export const getUserVehicles: RequestHandler = async (req, res) => {
 export const addUserVehicle: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { unitType, unitSize, plateNumber, vehicleModel, isDefault } = req.body;
+    const { unitType, unitSize, plateNumber, vehicleModel, isDefault } =
+      req.body;
 
     // If this is set as default, unset other defaults
     if (isDefault) {
@@ -1419,7 +1503,7 @@ export const deleteUserVehicle: RequestHandler = async (req, res) => {
 // Fix bookings with email in userId field (migration utility)
 export const fixBookingUserIds: RequestHandler = async (req, res) => {
   try {
-    console.log('🔧 Starting booking userId fix...');
+    console.log("🔧 Starting booking userId fix...");
 
     // Get all bookings where userId contains @ (email pattern)
     const bookingsToFix = await sql`
@@ -1428,7 +1512,9 @@ export const fixBookingUserIds: RequestHandler = async (req, res) => {
       AND user_id LIKE '%@%'
     `;
 
-    console.log(`Found ${bookingsToFix.length} bookings with email in userId field`);
+    console.log(
+      `Found ${bookingsToFix.length} bookings with email in userId field`,
+    );
 
     let fixedCount = 0;
     let errors = [];
@@ -1451,9 +1537,13 @@ export const fixBookingUserIds: RequestHandler = async (req, res) => {
           `;
 
           fixedCount++;
-          console.log(`✅ Fixed booking ${booking.id}: ${booking.user_id} -> ${actualUserId}`);
+          console.log(
+            `✅ Fixed booking ${booking.id}: ${booking.user_id} -> ${actualUserId}`,
+          );
         } else {
-          errors.push(`No user found for email: ${booking.user_id} (booking ${booking.id})`);
+          errors.push(
+            `No user found for email: ${booking.user_id} (booking ${booking.id})`,
+          );
           console.warn(`⚠️ No user found for email: ${booking.user_id}`);
         }
       } catch (err) {

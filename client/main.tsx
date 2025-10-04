@@ -73,12 +73,12 @@ const AppComponent = () => {
       try {
         const result = await neonDbClient.testConnection();
         if (result.connected) {
-          console.log('✅ Neon database available');
+          console.log("✅ Neon database available");
         } else {
-          console.warn('⚠️ Neon database not connected');
+          console.warn("⚠️ Neon database not connected");
         }
       } catch (error) {
-        console.error('❌ Error during Neon database test:', error);
+        console.error("❌ Error during Neon database test:", error);
       }
     };
 
@@ -414,5 +414,5 @@ const AppComponent = () => {
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <AppComponent />
-  </ErrorBoundary>
+  </ErrorBoundary>,
 );

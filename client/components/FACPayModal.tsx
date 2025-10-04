@@ -40,16 +40,17 @@ export default function FACPayModal({
 
     try {
       const userEmail = localStorage.getItem("userEmail") || "";
-      const userName = localStorage.getItem("userFullName") || userEmail.split("@")[0];
-      
-      const externalId = `${paymentType.toUpperCase()}_${selectedPlan.replace(/\s+/g, '_').toUpperCase()}_${Date.now()}`;
-      
+      const userName =
+        localStorage.getItem("userFullName") || userEmail.split("@")[0];
+
+      const externalId = `${paymentType.toUpperCase()}_${selectedPlan.replace(/\s+/g, "_").toUpperCase()}_${Date.now()}`;
+
       const invoiceData = await xenditService.createInvoice({
         amount: planPrice,
         externalId,
         customerName: userName,
         customerEmail: userEmail,
-        description: `${paymentType === 'renewal' ? 'Renewal' : 'Upgrade'} to ${selectedPlan} plan`,
+        description: `${paymentType === "renewal" ? "Renewal" : "Upgrade"} to ${selectedPlan} plan`,
         successRedirectUrl: `${window.location.origin}/manage-subscription?payment=success&plan=${encodeURIComponent(selectedPlan)}`,
         failureRedirectUrl: `${window.location.origin}/manage-subscription?payment=failed`,
       });
@@ -57,8 +58,8 @@ export default function FACPayModal({
       if (invoiceData && invoiceData.invoice_url) {
         notificationManager.success(
           "Redirecting to FACPay! 💳",
-          `You will be redirected to FACPay to complete your ${paymentType === 'renewal' ? 'renewal' : 'upgrade'} to ${selectedPlan}.`,
-          { autoClose: 2000 }
+          `You will be redirected to FACPay to complete your ${paymentType === "renewal" ? "renewal" : "upgrade"} to ${selectedPlan}.`,
+          { autoClose: 2000 },
         );
 
         // Small delay to show the notification before redirect
@@ -67,13 +68,16 @@ export default function FACPayModal({
         }, 1500);
 
         // Store pending payment info
-        localStorage.setItem('pending_payment', JSON.stringify({
-          type: paymentType,
-          plan: selectedPlan,
-          amount: planPrice,
-          externalId,
-          timestamp: new Date().toISOString(),
-        }));
+        localStorage.setItem(
+          "pending_payment",
+          JSON.stringify({
+            type: paymentType,
+            plan: selectedPlan,
+            amount: planPrice,
+            externalId,
+            timestamp: new Date().toISOString(),
+          }),
+        );
 
         onClose();
 
@@ -87,7 +91,7 @@ export default function FACPayModal({
       console.error("FACPay error:", error);
       notificationManager.error(
         "Payment Error",
-        error.message || "Failed to initialize payment. Please try again."
+        error.message || "Failed to initialize payment. Please try again.",
       );
     } finally {
       setIsProcessing(false);
@@ -100,7 +104,8 @@ export default function FACPayModal({
         <DialogHeader>
           <DialogTitle className="flex items-center text-xl font-bold text-foreground">
             <CreditCard className="h-6 w-6 mr-3 text-fac-orange-500" />
-            {paymentType === 'renewal' ? 'Renew Plan' : 'Upgrade Plan'} with FACPay
+            {paymentType === "renewal" ? "Renew Plan" : "Upgrade Plan"} with
+            FACPay
           </DialogTitle>
           <DialogDescription>
             Secure payment powered by Xendit
@@ -121,7 +126,7 @@ export default function FACPayModal({
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-muted-foreground">
-                  {paymentType === 'renewal' ? 'Renewing:' : 'Upgrading To:'}
+                  {paymentType === "renewal" ? "Renewing:" : "Upgrading To:"}
                 </p>
                 <p className="font-bold text-fac-orange-600 capitalize text-lg">
                   {selectedPlan}
@@ -147,7 +152,8 @@ export default function FACPayModal({
                   Secure Payment
                 </h4>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Your payment is processed securely through Xendit. We never store your card details.
+                  Your payment is processed securely through Xendit. We never
+                  store your card details.
                 </p>
               </div>
             </div>
@@ -155,7 +161,9 @@ export default function FACPayModal({
 
           {/* Payment Methods Info */}
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Accepted Payment Methods:</p>
+            <p className="text-sm font-semibold text-foreground">
+              Accepted Payment Methods:
+            </p>
             <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
               <div className="flex items-center">
                 <CheckCircle className="h-4 w-4 mr-2 text-green-500" />

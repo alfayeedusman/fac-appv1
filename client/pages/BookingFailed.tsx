@@ -61,7 +61,9 @@ export default function BookingFailed() {
             </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
-              <h3 className="font-semibold text-orange-900 mb-2">What to do next?</h3>
+              <h3 className="font-semibold text-orange-900 mb-2">
+                What to do next?
+              </h3>
               <ul className="space-y-2 text-sm text-orange-800">
                 <li className="flex items-start">
                   <RefreshCw className="h-4 w-4 mr-2 mt-0.5 text-orange-600 flex-shrink-0" />
@@ -79,7 +81,9 @@ export default function BookingFailed() {
             </div>
 
             <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Common Issues:</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Common Issues:
+              </h3>
               <ul className="space-y-1 text-sm text-blue-800">
                 <li>• Insufficient balance</li>
                 <li>• Incorrect card details</li>

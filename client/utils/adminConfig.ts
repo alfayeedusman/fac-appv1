@@ -36,7 +36,8 @@ export interface CarwashPricing {
 
 export interface SchedulingConfig {
   workingHours: {
-    [key: string]: { // day of week: "monday", "tuesday", etc.
+    [key: string]: {
+      // day of week: "monday", "tuesday", etc.
       enabled: boolean;
       startTime: string;
       endTime: string;
@@ -232,13 +233,48 @@ const DEFAULT_CONFIG: AdminConfig = {
   },
   scheduling: {
     workingHours: {
-      monday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      tuesday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      wednesday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      thursday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      friday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      saturday: { enabled: true, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
-      sunday: { enabled: false, startTime: "08:00", endTime: "18:00", slotDuration: 60 },
+      monday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      tuesday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      wednesday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      thursday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      friday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      saturday: {
+        enabled: true,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
+      sunday: {
+        enabled: false,
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+      },
     },
     capacityPerSlot: 2,
     bufferTime: 15,
@@ -256,14 +292,23 @@ const DEFAULT_CONFIG: AdminConfig = {
     },
     priceMultiplier: 1.2, // 20% additional charge for home service
     coverage: {
-      areas: ["Tumaga", "Boalan", "Zamboanga City", "Downtown", "Rio Hondo", "Tetuan"],
+      areas: [
+        "Tumaga",
+        "Boalan",
+        "Zamboanga City",
+        "Downtown",
+        "Rio Hondo",
+        "Tetuan",
+      ],
       maxDistance: 15, // 15km radius
     },
     leadTime: 4, // 4 hours minimum advance booking for home service
   },
   terms: {
-    cancellationPolicy: "Free cancellation up to 2 hours before appointment time. No-show or late cancellation may result in charges.",
-    termsAndConditions: "By booking this service, you agree to our terms and conditions. Payment terms and service policies apply.",
+    cancellationPolicy:
+      "Free cancellation up to 2 hours before appointment time. No-show or late cancellation may result in charges.",
+    termsAndConditions:
+      "By booking this service, you agree to our terms and conditions. Payment terms and service policies apply.",
     noShowPolicy: "No-show appointments may be charged 50% of the service fee.",
   },
   branches: [
@@ -276,7 +321,7 @@ const DEFAULT_CONFIG: AdminConfig = {
     },
     {
       id: "boalan",
-      name: "Boalan Hub", 
+      name: "Boalan Hub",
       address: "Commercial Center, Boalan",
       features: ["Premium Bay", "Customer Lounge", "Full Service"],
       enabled: true,
@@ -343,7 +388,10 @@ export class AdminConfigManager {
     return DEFAULT_CONFIG;
   }
 
-  static updatePricing(category: keyof AdminConfig["pricing"], pricing: any): void {
+  static updatePricing(
+    category: keyof AdminConfig["pricing"],
+    pricing: any,
+  ): void {
     const config = this.getConfig();
     config.pricing[category] = pricing;
     this.saveConfig(config);
@@ -367,18 +415,24 @@ export class AdminConfigManager {
     this.saveConfig(config);
   }
 
-  static updateBranch(branchId: string, updates: Partial<AdminConfig["branches"][0]>): void {
+  static updateBranch(
+    branchId: string,
+    updates: Partial<AdminConfig["branches"][0]>,
+  ): void {
     const config = this.getConfig();
-    const branchIndex = config.branches.findIndex(b => b.id === branchId);
+    const branchIndex = config.branches.findIndex((b) => b.id === branchId);
     if (branchIndex >= 0) {
-      config.branches[branchIndex] = { ...config.branches[branchIndex], ...updates };
+      config.branches[branchIndex] = {
+        ...config.branches[branchIndex],
+        ...updates,
+      };
       this.saveConfig(config);
     }
   }
 
   static removeBranch(branchId: string): void {
     const config = this.getConfig();
-    config.branches = config.branches.filter(b => b.id !== branchId);
+    config.branches = config.branches.filter((b) => b.id !== branchId);
     this.saveConfig(config);
   }
 
@@ -392,7 +446,9 @@ export class AdminConfigManager {
 
   static removeBlackoutDate(date: string): void {
     const config = this.getConfig();
-    config.scheduling.blackoutDates = config.scheduling.blackoutDates.filter(d => d !== date);
+    config.scheduling.blackoutDates = config.scheduling.blackoutDates.filter(
+      (d) => d !== date,
+    );
     this.saveConfig(config);
   }
 
@@ -406,8 +462,8 @@ export class AdminConfigManager {
     }
 
     const slots: string[] = [];
-    const [startHour, startMinute] = dayConfig.startTime.split(':').map(Number);
-    const [endHour, endMinute] = dayConfig.endTime.split(':').map(Number);
+    const [startHour, startMinute] = dayConfig.startTime.split(":").map(Number);
+    const [endHour, endMinute] = dayConfig.endTime.split(":").map(Number);
 
     const startTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;
@@ -417,9 +473,9 @@ export class AdminConfigManager {
       const minutes = time % 60;
 
       // Convert to 12-hour format with AM/PM
-      const period = hours >= 12 ? 'PM' : 'AM';
+      const period = hours >= 12 ? "PM" : "AM";
       const displayHours = hours % 12 || 12; // Convert 0 to 12 for midnight, 13-23 to 1-11
-      const displayMinutes = minutes.toString().padStart(2, '0');
+      const displayMinutes = minutes.toString().padStart(2, "0");
 
       slots.push(`${displayHours}:${displayMinutes} ${period}`);
     }
@@ -427,7 +483,11 @@ export class AdminConfigManager {
     return slots;
   }
 
-  static isSlotAvailable(date: string, timeSlot: string, branch: string): boolean {
+  static isSlotAvailable(
+    date: string,
+    timeSlot: string,
+    branch: string,
+  ): boolean {
     const config = this.getConfig();
 
     // Check blackout dates
@@ -437,16 +497,16 @@ export class AdminConfigManager {
 
     // Convert 12-hour format to 24-hour for Date object
     const convert12To24 = (time12: string): string => {
-      const [time, period] = time12.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
+      const [time, period] = time12.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
 
-      if (period === 'PM' && hours !== 12) {
+      if (period === "PM" && hours !== 12) {
         hours += 12;
-      } else if (period === 'AM' && hours === 12) {
+      } else if (period === "AM" && hours === 12) {
         hours = 0;
       }
 
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
     };
 
     // Check lead time
@@ -464,17 +524,26 @@ export class AdminConfigManager {
     return existingBookings.length < config.scheduling.capacityPerSlot;
   }
 
-  static getBookingsForSlot(date: string, timeSlot: string, branch: string): any[] {
+  static getBookingsForSlot(
+    date: string,
+    timeSlot: string,
+    branch: string,
+  ): any[] {
     // Get bookings from storage
-    const userBookings = JSON.parse(localStorage.getItem("userBookings") || "[]");
-    const guestBookings = JSON.parse(localStorage.getItem("guestBookings") || "[]");
+    const userBookings = JSON.parse(
+      localStorage.getItem("userBookings") || "[]",
+    );
+    const guestBookings = JSON.parse(
+      localStorage.getItem("guestBookings") || "[]",
+    );
     const allBookings = [...userBookings, ...guestBookings];
-    
-    return allBookings.filter(booking => 
-      booking.date === date && 
-      booking.timeSlot === timeSlot && 
-      booking.branch === branch &&
-      booking.status !== "cancelled"
+
+    return allBookings.filter(
+      (booking) =>
+        booking.date === date &&
+        booking.timeSlot === timeSlot &&
+        booking.branch === branch &&
+        booking.status !== "cancelled",
     );
   }
 
@@ -526,14 +595,20 @@ export class AdminConfigManager {
 
 // Export convenience functions
 export const getAdminConfig = () => AdminConfigManager.getConfig();
-export const saveAdminConfig = (config: AdminConfig) => AdminConfigManager.saveConfig(config);
-export const updatePricing = (category: keyof AdminConfig["pricing"], pricing: any) => 
-  AdminConfigManager.updatePricing(category, pricing);
-export const updateScheduling = (scheduling: Partial<SchedulingConfig>) => 
+export const saveAdminConfig = (config: AdminConfig) =>
+  AdminConfigManager.saveConfig(config);
+export const updatePricing = (
+  category: keyof AdminConfig["pricing"],
+  pricing: any,
+) => AdminConfigManager.updatePricing(category, pricing);
+export const updateScheduling = (scheduling: Partial<SchedulingConfig>) =>
   AdminConfigManager.updateScheduling(scheduling);
-export const generateTimeSlots = (dayOfWeek: string) => 
+export const generateTimeSlots = (dayOfWeek: string) =>
   AdminConfigManager.generateTimeSlots(dayOfWeek);
-export const isSlotAvailable = (date: string, timeSlot: string, branch: string) =>
-  AdminConfigManager.isSlotAvailable(date, timeSlot, branch);
+export const isSlotAvailable = (
+  date: string,
+  timeSlot: string,
+  branch: string,
+) => AdminConfigManager.isSlotAvailable(date, timeSlot, branch);
 
 export default AdminConfigManager;

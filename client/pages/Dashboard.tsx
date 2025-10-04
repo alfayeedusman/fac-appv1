@@ -53,7 +53,13 @@ interface WashLog {
   id: string;
   service: string;
   date: string;
-  status: "completed" | "scheduled" | "cancelled" | "pending" | "confirmed" | "in-progress";
+  status:
+    | "completed"
+    | "scheduled"
+    | "cancelled"
+    | "pending"
+    | "confirmed"
+    | "in-progress";
   amount: number;
   branch: string;
 }
@@ -166,14 +172,24 @@ export default function Dashboard() {
       // Try backend first
       const connected = neonDbClient.getConnectionStatus();
       if (connected && email) {
-        const res = await neonDbClient.getBookings({ userEmail: email, userRole: role });
+        const res = await neonDbClient.getBookings({
+          userEmail: email,
+          userRole: role,
+        });
         if (res.success && res.bookings) {
           const logs: WashLog[] = res.bookings
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            )
             .map((b) => ({
               id: b.id,
               service: b.service || b.category || "Service",
-              date: new Date(b.createdAt || b.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              date: new Date(b.createdAt || b.date).toLocaleDateString(
+                "en-US",
+                { month: "short", day: "numeric", year: "numeric" },
+              ),
               status: (b.status as any) || "pending",
               amount: b.totalPrice || b.basePrice || 0,
               branch: b.branch || "Unknown",
@@ -184,7 +200,9 @@ export default function Dashboard() {
       }
 
       // Fallback to local logs
-      const userLogs = JSON.parse(localStorage.getItem(`washLogs_${email}`) || "[]");
+      const userLogs = JSON.parse(
+        localStorage.getItem(`washLogs_${email}`) || "[]",
+      );
       setWashLogs(userLogs);
     };
     loadActivity();
@@ -360,8 +378,8 @@ export default function Dashboard() {
                     Monthly car washes
                   </div>
                   <div className="flex items-center text-red-700 dark:text-red-300">
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}
-                    VIP services
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" /> VIP
+                    services
                   </div>
                   <div className="flex items-center text-red-700 dark:text-red-300">
                     <CheckCircle className="h-4 w-4 mr-2 text-green-500" />{" "}

@@ -34,8 +34,8 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
   const [showRating, setShowRating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const userRole = localStorage.getItem('userRole');
-  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const userRole = localStorage.getItem("userRole");
+  const isAdmin = userRole === "admin" || userRole === "superadmin";
 
   // Check if user can cancel (within 10 minutes or is admin)
   const canCancel = () => {
@@ -46,7 +46,7 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
     const now = new Date().getTime();
     const tenMinutesMs = 10 * 60 * 1000;
 
-    return (now - bookingTime) <= tenMinutesMs;
+    return now - bookingTime <= tenMinutesMs;
   };
 
   const getStatusColor = (status: BookingRecord["status"]) => {
@@ -100,13 +100,18 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
 
     setIsUpdating(true);
     try {
-      const result = await neonDbClient.updateBooking(booking.id, { status: 'cancelled' });
+      const result = await neonDbClient.updateBooking(booking.id, {
+        status: "cancelled",
+      });
       if (result.success) {
         // no-op, handled by refresh below
       }
     } catch (error) {
-      console.error('Failed to cancel booking:', error);
-      await swalHelpers.showError("Cancellation Failed", "Something went wrong while cancelling. Please try again.");
+      console.error("Failed to cancel booking:", error);
+      await swalHelpers.showError(
+        "Cancellation Failed",
+        "Something went wrong while cancelling. Please try again.",
+      );
     }
 
     cancelBooking(booking.id);
@@ -128,15 +133,15 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
   };
 
   const formatDateTime = (dateTimeString: string) => {
-    if (!dateTimeString) return 'N/A';
+    if (!dateTimeString) return "N/A";
     const date = new Date(dateTimeString);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -178,12 +183,16 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
             </div>
             <div>
               <p className="font-medium text-foreground capitalize">
-                {booking.vehicleModel || booking.unitType || booking.vehicleType}
+                {booking.vehicleModel ||
+                  booking.unitType ||
+                  booking.vehicleType}
                 {booking.motorcycleType && ` (${booking.motorcycleType})`}
               </p>
               <p className="text-sm text-muted-foreground">
-                {booking.plateNumber || booking.plateNo ? `${booking.plateNumber || booking.plateNo} • ` : ''}
-                {booking.unitSize || 'Vehicle'}
+                {booking.plateNumber || booking.plateNo
+                  ? `${booking.plateNumber || booking.plateNo} • `
+                  : ""}
+                {booking.unitSize || "Vehicle"}
               </p>
             </div>
           </div>
@@ -233,14 +242,16 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
               </div>
               <div>
                 <p className="font-medium text-foreground capitalize">
-                  {booking.paymentMethod || 'N/A'}
+                  {booking.paymentMethod || "N/A"}
                 </p>
                 <p className="text-sm text-muted-foreground">Payment Method</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-fac-orange-500">
-                {booking.price || booking.totalPrice ? `₱${(booking.price || booking.totalPrice).toLocaleString()}` : 'N/A'}
+                {booking.price || booking.totalPrice
+                  ? `₱${(booking.price || booking.totalPrice).toLocaleString()}`
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -345,7 +356,11 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
                 disabled={isUpdating || (!canCancel() && !isAdmin)}
                 variant="destructive"
                 className="flex-1"
-                title={!canCancel() && !isAdmin ? "Cancellation allowed within 10 minutes only" : ""}
+                title={
+                  !canCancel() && !isAdmin
+                    ? "Cancellation allowed within 10 minutes only"
+                    : ""
+                }
               >
                 {isUpdating ? (
                   <Loader className="h-4 w-4 mr-2 animate-spin" />

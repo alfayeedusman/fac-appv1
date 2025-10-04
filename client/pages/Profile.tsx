@@ -130,7 +130,10 @@ export default function Profile() {
     const file = e.target?.files?.[0] as File | undefined;
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      await swalHelpers.showError("Invalid File", "Please select an image file.");
+      await swalHelpers.showError(
+        "Invalid File",
+        "Please select an image file.",
+      );
       return;
     }
     try {
@@ -140,9 +143,14 @@ export default function Profile() {
       saveProfilePicture(dataUrl);
       await swalHelpers.showSuccess("Profile Photo Updated");
     } catch (err) {
-      await swalHelpers.showError("Upload Failed", "Could not process the image.");
+      await swalHelpers.showError(
+        "Upload Failed",
+        "Could not process the image.",
+      );
     } finally {
-      const el = document.getElementById(fileInputId) as HTMLInputElement | null;
+      const el = document.getElementById(
+        fileInputId,
+      ) as HTMLInputElement | null;
       if (el) el.value = "";
     }
   };
@@ -166,7 +174,6 @@ export default function Profile() {
     <div className="min-h-screen bg-background pb-28">
       <StickyHeader showBack={true} title="Profile" alwaysVisible />
 
-
       <div className="px-4 pt-24 pb-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-6 text-center">
@@ -174,7 +181,9 @@ export default function Profile() {
             <User className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-          <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
+          <p className="text-sm text-muted-foreground">
+            Manage your account and preferences
+          </p>
         </div>
 
         {/* Profile Overview Card */}
@@ -185,25 +194,36 @@ export default function Profile() {
                 {/* Profile Picture */}
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-fac-orange-500 flex items-center justify-center overflow-hidden">
-                    {profile.profilePicture && profile.profilePicture.trim() !== "" ? (
+                    {profile.profilePicture &&
+                    profile.profilePicture.trim() !== "" ? (
                       <img
                         src={profile.profilePicture}
                         alt="Profile picture"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const parent = e.currentTarget.parentElement;
-                          if (parent) parent.innerHTML = '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                          if (parent)
+                            parent.innerHTML =
+                              '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
                         }}
                       />
                     ) : (
                       <User className="h-8 w-8 text-white" />
                     )}
                   </div>
-                  <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={onProfileImageChange} />
+                  <input
+                    id={fileInputId}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onProfileImageChange}
+                  />
                   <Button
                     size="sm"
                     className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0 bg-background border-2 border-border hover:bg-accent"
-                    onClick={() => document.getElementById(fileInputId)?.click()}
+                    onClick={() =>
+                      document.getElementById(fileInputId)?.click()
+                    }
                     title="Change profile photo"
                   >
                     <Camera className="h-4 w-4" />

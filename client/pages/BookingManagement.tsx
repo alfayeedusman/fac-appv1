@@ -50,27 +50,36 @@ export default function BookingManagement() {
   const loadBookings = async () => {
     setIsLoading(true);
     try {
-      const userId = localStorage.getItem('userId');
-      const userEmail = localStorage.getItem('userEmail');
+      const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
 
       if (!userId || !userEmail) {
-        console.warn('No user logged in');
+        console.warn("No user logged in");
         setBookings([]);
         return;
       }
 
-      console.log('📥 Fetching bookings for user:', userEmail, 'userId:', userId);
+      console.log(
+        "📥 Fetching bookings for user:",
+        userEmail,
+        "userId:",
+        userId,
+      );
       const result = await neonDbClient.getBookings({ userId });
 
       if (result.success && result.bookings) {
-        console.log('✅ Loaded', result.bookings.length, 'real bookings from database');
+        console.log(
+          "✅ Loaded",
+          result.bookings.length,
+          "real bookings from database",
+        );
         setBookings(result.bookings);
       } else {
-        console.warn('⚠️ No bookings found or fetch failed');
+        console.warn("⚠️ No bookings found or fetch failed");
         setBookings([]);
       }
     } catch (error) {
-      console.error('❌ Error loading bookings:', error);
+      console.error("❌ Error loading bookings:", error);
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -78,24 +87,30 @@ export default function BookingManagement() {
   };
 
   const handleFixBookingUserIds = async () => {
-    if (!confirm('This will fix bookings that have email addresses in the userId field. Continue?')) {
+    if (
+      !confirm(
+        "This will fix bookings that have email addresses in the userId field. Continue?",
+      )
+    ) {
       return;
     }
 
     try {
-      console.log('🔧 Running booking userId fix...');
+      console.log("🔧 Running booking userId fix...");
       const result = await neonDbClient.fixBookingUserIds();
 
       if (result.success) {
-        alert(`Fixed ${result.fixed} out of ${result.total} bookings!${result.errors ? '\n\nErrors: ' + result.errors.join('\n') : ''}`);
+        alert(
+          `Fixed ${result.fixed} out of ${result.total} bookings!${result.errors ? "\n\nErrors: " + result.errors.join("\n") : ""}`,
+        );
         // Reload bookings
         loadBookings();
       } else {
-        alert('Failed to fix bookings');
+        alert("Failed to fix bookings");
       }
     } catch (error) {
-      console.error('Error fixing bookings:', error);
-      alert('Error fixing bookings: ' + error);
+      console.error("Error fixing bookings:", error);
+      alert("Error fixing bookings: " + error);
     }
   };
 
@@ -113,7 +128,10 @@ export default function BookingManagement() {
         (booking) =>
           booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
           booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (booking.confirmationCode && booking.confirmationCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (booking.confirmationCode &&
+            booking.confirmationCode
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
           booking.branch.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
@@ -144,10 +162,10 @@ export default function BookingManagement() {
   const getStatusStats = () => {
     const stats = {
       total: bookings.length,
-      pending: bookings.filter(b => b.status === 'pending').length,
-      confirmed: bookings.filter(b => b.status === 'confirmed').length,
-      completed: bookings.filter(b => b.status === 'completed').length,
-      cancelled: bookings.filter(b => b.status === 'cancelled').length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      completed: bookings.filter((b) => b.status === "completed").length,
+      cancelled: bookings.filter((b) => b.status === "cancelled").length,
     };
 
     const averageRating =
@@ -211,7 +229,8 @@ export default function BookingManagement() {
         </div>
 
         {/* Admin Fix Button */}
-        {(localStorage.getItem('userRole') === 'admin' || localStorage.getItem('userRole') === 'superadmin') && (
+        {(localStorage.getItem("userRole") === "admin" ||
+          localStorage.getItem("userRole") === "superadmin") && (
           <div className="mb-4">
             <Button
               onClick={handleFixBookingUserIds}

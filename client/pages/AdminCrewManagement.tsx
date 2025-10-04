@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { toast } from '@/hooks/use-toast';
-import StickyHeader from '@/components/StickyHeader';
-import AdminSidebar from '@/components/AdminSidebar';
-import AdminHeatMap from '@/components/AdminHeatMap';
-import CrewGroupManagement from '@/components/CrewGroupManagement';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import StickyHeader from "@/components/StickyHeader";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeatMap from "@/components/AdminHeatMap";
+import CrewGroupManagement from "@/components/CrewGroupManagement";
 import {
   Users,
   MapPin,
@@ -28,8 +28,8 @@ import {
   Calendar,
   BarChart3,
   Globe,
-  Zap
-} from 'lucide-react';
+  Zap,
+} from "lucide-react";
 
 interface CrewStats {
   totalCrew: number;
@@ -47,19 +47,19 @@ interface CrewStats {
 
 interface RecentActivity {
   id: string;
-  type: 'status_change' | 'assignment' | 'group_change' | 'location_update';
+  type: "status_change" | "assignment" | "group_change" | "location_update";
   crewId: string;
   crewName: string;
   message: string;
   timestamp: string;
-  severity: 'info' | 'warning' | 'success';
+  severity: "info" | "warning" | "success";
 }
 
 export default function AdminCrewManagement() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState<CrewStats>({
     totalCrew: 0,
     onlineCrew: 0,
@@ -71,11 +71,11 @@ export default function AdminCrewManagement() {
     unassignedCrew: 0,
     avgRating: 0,
     todayJobs: 0,
-    todayRevenue: 0
+    todayRevenue: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   // Check authentication on mount and whenever storage changes
@@ -121,9 +121,12 @@ export default function AdminCrewManagement() {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/neon/realtime-stats`, {
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/neon/realtime-stats`,
+        {
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(to);
       const data = await response.json();
@@ -133,7 +136,10 @@ export default function AdminCrewManagement() {
         const { onlineCrew, busyCrew, activeGroups } = data.stats;
         const totalCrew = onlineCrew + busyCrew + 5; // Add some offline crew
         const availableCrew = Math.max(0, totalCrew - onlineCrew - busyCrew);
-        const offlineCrew = Math.max(0, totalCrew - onlineCrew - busyCrew - availableCrew);
+        const offlineCrew = Math.max(
+          0,
+          totalCrew - onlineCrew - busyCrew - availableCrew,
+        );
 
         return {
           totalCrew,
@@ -146,13 +152,13 @@ export default function AdminCrewManagement() {
           unassignedCrew: Math.max(0, totalCrew - (onlineCrew + busyCrew)),
           avgRating: 4.3, // Default rating
           todayJobs: 47, // Default for now
-          todayRevenue: 125000 // Default for now
+          todayRevenue: 125000, // Default for now
         };
       } else {
-        throw new Error('Failed to fetch realtime stats');
+        throw new Error("Failed to fetch realtime stats");
       }
     } catch (error) {
-      console.error('Error fetching crew stats:', error);
+      console.error("Error fetching crew stats:", error);
       // Return realistic default values instead of zeros
       return {
         totalCrew: 25,
@@ -165,7 +171,7 @@ export default function AdminCrewManagement() {
         unassignedCrew: 5,
         avgRating: 4.3,
         todayJobs: 47,
-        todayRevenue: 125000
+        todayRevenue: 125000,
       };
     }
   };
@@ -174,32 +180,32 @@ export default function AdminCrewManagement() {
     // For now, return sample activity data - we can connect this to real data later
     return [
       {
-        id: '1',
-        type: 'status_change',
-        crewId: 'crew-1',
-        crewName: 'John Santos',
-        message: 'Changed status from Available to Busy',
+        id: "1",
+        type: "status_change",
+        crewId: "crew-1",
+        crewName: "John Santos",
+        message: "Changed status from Available to Busy",
         timestamp: new Date(Date.now() - 300000).toISOString(),
-        severity: 'info'
+        severity: "info",
       },
       {
-        id: '2',
-        type: 'assignment',
-        crewId: 'crew-2',
-        crewName: 'Maria Garcia',
-        message: 'Accepted new assignment #BK-2024-0145',
+        id: "2",
+        type: "assignment",
+        crewId: "crew-2",
+        crewName: "Maria Garcia",
+        message: "Accepted new assignment #BK-2024-0145",
         timestamp: new Date(Date.now() - 600000).toISOString(),
-        severity: 'success'
+        severity: "success",
       },
       {
-        id: '3',
-        type: 'location_update',
-        crewId: 'crew-3',
-        crewName: 'Carlos Reyes',
-        message: 'Location updated - Makati City',
+        id: "3",
+        type: "location_update",
+        crewId: "crew-3",
+        crewName: "Carlos Reyes",
+        message: "Location updated - Makati City",
         timestamp: new Date(Date.now() - 900000).toISOString(),
-        severity: 'info'
-      }
+        severity: "info",
+      },
     ];
   };
 
@@ -213,14 +219,14 @@ export default function AdminCrewManagement() {
         // Load real data from API
         const [crewStats, crewActivity] = await Promise.all([
           fetchCrewStats(),
-          fetchCrewActivity()
+          fetchCrewActivity(),
         ]);
 
         setStats(crewStats);
         setRecentActivity(crewActivity);
         console.log("✅ Crew management data loaded successfully");
       } catch (error) {
-        console.error('Error loading crew management data:', error);
+        console.error("Error loading crew management data:", error);
         toast({
           title: "Error",
           description: "Failed to load crew management data",
@@ -241,7 +247,7 @@ export default function AdminCrewManagement() {
       // Reload real data from API
       const [crewStats, crewActivity] = await Promise.all([
         fetchCrewStats(),
-        fetchCrewActivity()
+        fetchCrewActivity(),
       ]);
 
       setStats(crewStats);
@@ -252,7 +258,7 @@ export default function AdminCrewManagement() {
         description: "Crew management data has been updated",
       });
     } catch (error) {
-      console.error('Error refreshing crew data:', error);
+      console.error("Error refreshing crew data:", error);
       toast({
         title: "Refresh Failed",
         description: "Could not refresh crew management data",
@@ -265,19 +271,27 @@ export default function AdminCrewManagement() {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'status_change': return <Activity className="h-4 w-4" />;
-      case 'assignment': return <Calendar className="h-4 w-4" />;
-      case 'location_update': return <MapPin className="h-4 w-4" />;
-      case 'group_change': return <Users className="h-4 w-4" />;
-      default: return <Bell className="h-4 w-4" />;
+      case "status_change":
+        return <Activity className="h-4 w-4" />;
+      case "assignment":
+        return <Calendar className="h-4 w-4" />;
+      case "location_update":
+        return <MapPin className="h-4 w-4" />;
+      case "group_change":
+        return <Users className="h-4 w-4" />;
+      default:
+        return <Bell className="h-4 w-4" />;
     }
   };
 
   const getActivityColor = (severity: string) => {
     switch (severity) {
-      case 'success': return 'text-green-600 bg-green-50';
-      case 'warning': return 'text-orange-600 bg-orange-50';
-      default: return 'text-blue-600 bg-blue-50';
+      case "success":
+        return "text-green-600 bg-green-50";
+      case "warning":
+        return "text-orange-600 bg-orange-50";
+      default:
+        return "text-blue-600 bg-blue-50";
     }
   };
 
@@ -288,7 +302,9 @@ export default function AdminCrewManagement() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {isAuthLoading ? "Checking authentication..." : "Loading crew management..."}
+            {isAuthLoading
+              ? "Checking authentication..."
+              : "Loading crew management..."}
           </p>
         </div>
       </div>
@@ -311,7 +327,8 @@ export default function AdminCrewManagement() {
       <AdminSidebar
         activeTab="crew"
         onTabChange={(tab) => {
-          if (tab === "crew") navigate("/admin-crew-management"); // Navigate to crew management
+          if (tab === "crew")
+            navigate("/admin-crew-management"); // Navigate to crew management
           else if (tab === "overview") navigate("/admin-dashboard");
           else if (tab === "cms") navigate("/admin-cms");
           else if (tab === "fac-map") navigate("/admin-fac-map");
@@ -321,7 +338,8 @@ export default function AdminCrewManagement() {
           else if (tab === "packages") navigate("/admin-packages");
           else if (tab === "pos") navigate("/pos");
           else if (tab === "inventory") navigate("/inventory-management");
-          else if (tab === "user-management") navigate("/admin-user-management");
+          else if (tab === "user-management")
+            navigate("/admin-user-management");
           else if (tab === "images") navigate("/admin-image-manager");
           else if (tab === "notifications") navigate("/admin-notifications");
           else if (tab === "ads") navigate("/admin-ads");
@@ -349,7 +367,7 @@ export default function AdminCrewManagement() {
                 Monitor, organize, and manage your car wash crew teams
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -376,8 +394,12 @@ export default function AdminCrewManagement() {
                     <Users className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-blue-700">Total Crew</p>
-                    <p className="text-xl font-bold text-blue-900">{stats.totalCrew}</p>
+                    <p className="text-xs font-semibold text-blue-700">
+                      Total Crew
+                    </p>
+                    <p className="text-xl font-bold text-blue-900">
+                      {stats.totalCrew}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -390,8 +412,12 @@ export default function AdminCrewManagement() {
                     <UserCheck className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-green-700">Online</p>
-                    <p className="text-xl font-bold text-green-900">{stats.onlineCrew}</p>
+                    <p className="text-xs font-semibold text-green-700">
+                      Online
+                    </p>
+                    <p className="text-xl font-bold text-green-900">
+                      {stats.onlineCrew}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -404,8 +430,12 @@ export default function AdminCrewManagement() {
                     <Clock className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-orange-700">Busy</p>
-                    <p className="text-xl font-bold text-orange-900">{stats.busyCrew}</p>
+                    <p className="text-xs font-semibold text-orange-700">
+                      Busy
+                    </p>
+                    <p className="text-xl font-bold text-orange-900">
+                      {stats.busyCrew}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -418,8 +448,12 @@ export default function AdminCrewManagement() {
                     <Globe className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-purple-700">Groups</p>
-                    <p className="text-xl font-bold text-purple-900">{stats.totalGroups}</p>
+                    <p className="text-xs font-semibold text-purple-700">
+                      Groups
+                    </p>
+                    <p className="text-xl font-bold text-purple-900">
+                      {stats.totalGroups}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -432,8 +466,12 @@ export default function AdminCrewManagement() {
                     <Star className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-amber-700">Avg Rating</p>
-                    <p className="text-xl font-bold text-amber-900">{stats.avgRating}</p>
+                    <p className="text-xs font-semibold text-amber-700">
+                      Avg Rating
+                    </p>
+                    <p className="text-xl font-bold text-amber-900">
+                      {stats.avgRating}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -446,8 +484,12 @@ export default function AdminCrewManagement() {
                     <TrendingUp className="h-4 w-4 text-white" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-xs font-semibold text-emerald-700">Today Jobs</p>
-                    <p className="text-xl font-bold text-emerald-900">{stats.todayJobs}</p>
+                    <p className="text-xs font-semibold text-emerald-700">
+                      Today Jobs
+                    </p>
+                    <p className="text-xl font-bold text-emerald-900">
+                      {stats.todayJobs}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -455,35 +497,39 @@ export default function AdminCrewManagement() {
           </div>
 
           {/* Main Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
             <div className="bg-white rounded-lg shadow-sm border p-1">
               <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
-                <TabsTrigger 
-                  value="overview" 
+                <TabsTrigger
+                  value="overview"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
                 >
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
                   <span className="sm:hidden">Overview</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="groups" 
+                <TabsTrigger
+                  value="groups"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
                 >
                   <Users className="h-4 w-4" />
                   <span className="hidden sm:inline">Groups</span>
                   <span className="sm:hidden">Groups</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="heatmap" 
+                <TabsTrigger
+                  value="heatmap"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
                 >
                   <MapPin className="h-4 w-4" />
                   <span className="hidden sm:inline">Heat Map</span>
                   <span className="sm:hidden">Map</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="settings" 
+                <TabsTrigger
+                  value="settings"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
                 >
                   <Settings className="h-4 w-4" />
@@ -508,36 +554,54 @@ export default function AdminCrewManagement() {
                     <CardContent>
                       <div className="grid md:grid-cols-3 gap-6">
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-fac-orange-600">{stats.todayJobs}</div>
-                          <div className="text-sm text-gray-600">Jobs Completed</div>
+                          <div className="text-3xl font-bold text-fac-orange-600">
+                            {stats.todayJobs}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Jobs Completed
+                          </div>
                           <div className="mt-2">
-                            <Badge variant="outline" className="bg-green-50 text-green-700">
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700"
+                            >
                               +12% vs yesterday
                             </Badge>
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-green-600">₱{stats.todayRevenue.toLocaleString()}</div>
-                          <div className="text-sm text-gray-600">Revenue Generated</div>
+                          <div className="text-3xl font-bold text-green-600">
+                            ₱{stats.todayRevenue.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Revenue Generated
+                          </div>
                           <div className="mt-2">
-                            <Badge variant="outline" className="bg-green-50 text-green-700">
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700"
+                            >
                               +8% vs yesterday
                             </Badge>
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-blue-600">{stats.avgRating}</div>
-                          <div className="text-sm text-gray-600">Average Rating</div>
+                          <div className="text-3xl font-bold text-blue-600">
+                            {stats.avgRating}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Average Rating
+                          </div>
                           <div className="mt-2">
                             <div className="flex justify-center">
                               {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
+                                <Star
+                                  key={i}
                                   className={`h-3 w-3 ${
-                                    i < Math.floor(stats.avgRating) 
-                                      ? 'text-yellow-500 fill-yellow-500' 
-                                      : 'text-gray-300'
-                                  }`} 
+                                    i < Math.floor(stats.avgRating)
+                                      ? "text-yellow-500 fill-yellow-500"
+                                      : "text-gray-300"
+                                  }`}
                                 />
                               ))}
                             </div>
@@ -558,45 +622,61 @@ export default function AdminCrewManagement() {
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">{stats.onlineCrew}</div>
+                          <div className="text-2xl font-bold text-green-600">
+                            {stats.onlineCrew}
+                          </div>
                           <div className="text-sm text-green-700">Online</div>
                           <div className="w-full bg-green-200 rounded-full h-2 mt-2">
-                            <div 
-                              className="bg-green-500 h-2 rounded-full" 
-                              style={{ width: `${(stats.onlineCrew / stats.totalCrew) * 100}%` }}
+                            <div
+                              className="bg-green-500 h-2 rounded-full"
+                              style={{
+                                width: `${(stats.onlineCrew / stats.totalCrew) * 100}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
-                        
+
                         <div className="text-center p-4 bg-orange-50 rounded-lg">
-                          <div className="text-2xl font-bold text-orange-600">{stats.busyCrew}</div>
+                          <div className="text-2xl font-bold text-orange-600">
+                            {stats.busyCrew}
+                          </div>
                           <div className="text-sm text-orange-700">Busy</div>
                           <div className="w-full bg-orange-200 rounded-full h-2 mt-2">
-                            <div 
-                              className="bg-orange-500 h-2 rounded-full" 
-                              style={{ width: `${(stats.busyCrew / stats.totalCrew) * 100}%` }}
+                            <div
+                              className="bg-orange-500 h-2 rounded-full"
+                              style={{
+                                width: `${(stats.busyCrew / stats.totalCrew) * 100}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
-                        
+
                         <div className="text-center p-4 bg-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">{stats.availableCrew}</div>
+                          <div className="text-2xl font-bold text-blue-600">
+                            {stats.availableCrew}
+                          </div>
                           <div className="text-sm text-blue-700">Available</div>
                           <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
-                            <div 
-                              className="bg-blue-500 h-2 rounded-full" 
-                              style={{ width: `${(stats.availableCrew / stats.totalCrew) * 100}%` }}
+                            <div
+                              className="bg-blue-500 h-2 rounded-full"
+                              style={{
+                                width: `${(stats.availableCrew / stats.totalCrew) * 100}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
-                        
+
                         <div className="text-center p-4 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-gray-600">{stats.offlineCrew}</div>
+                          <div className="text-2xl font-bold text-gray-600">
+                            {stats.offlineCrew}
+                          </div>
                           <div className="text-sm text-gray-700">Offline</div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div 
-                              className="bg-gray-500 h-2 rounded-full" 
-                              style={{ width: `${(stats.offlineCrew / stats.totalCrew) * 100}%` }}
+                            <div
+                              className="bg-gray-500 h-2 rounded-full"
+                              style={{
+                                width: `${(stats.offlineCrew / stats.totalCrew) * 100}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
@@ -617,15 +697,26 @@ export default function AdminCrewManagement() {
                     <CardContent>
                       <div className="space-y-3 max-h-96 overflow-y-auto">
                         {recentActivity.map((activity) => (
-                          <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
-                            <div className={`p-1.5 rounded-full ${getActivityColor(activity.severity)}`}>
+                          <div
+                            key={activity.id}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-gray-50"
+                          >
+                            <div
+                              className={`p-1.5 rounded-full ${getActivityColor(activity.severity)}`}
+                            >
                               {getActivityIcon(activity.type)}
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium">{activity.crewName}</p>
-                              <p className="text-xs text-gray-600">{activity.message}</p>
+                              <p className="text-sm font-medium">
+                                {activity.crewName}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {activity.message}
+                              </p>
                               <p className="text-xs text-gray-400 mt-1">
-                                {new Date(activity.timestamp).toLocaleTimeString()}
+                                {new Date(
+                                  activity.timestamp,
+                                ).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
@@ -639,7 +730,7 @@ export default function AdminCrewManagement() {
 
             {/* Groups Tab */}
             <TabsContent value="groups" className="space-y-6">
-              <CrewGroupManagement 
+              <CrewGroupManagement
                 onGroupSelect={setSelectedGroup}
                 selectedGroupId={selectedGroup?.id}
               />
@@ -661,29 +752,35 @@ export default function AdminCrewManagement() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Auto-assign Jobs</p>
-                        <p className="text-sm text-gray-600">Automatically assign jobs to available crew</p>
+                        <p className="text-sm text-gray-600">
+                          Automatically assign jobs to available crew
+                        </p>
                       </div>
                       <Badge variant="outline">Enabled</Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Location Tracking</p>
-                        <p className="text-sm text-gray-600">Track crew member locations in real-time</p>
+                        <p className="text-sm text-gray-600">
+                          Track crew member locations in real-time
+                        </p>
                       </div>
                       <Badge variant="outline">Required</Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Group Size Limit</p>
-                        <p className="text-sm text-gray-600">Maximum members per group</p>
+                        <p className="text-sm text-gray-600">
+                          Maximum members per group
+                        </p>
                       </div>
                       <Badge variant="outline">4 members</Badge>
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Performance Metrics</CardTitle>
@@ -692,23 +789,29 @@ export default function AdminCrewManagement() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Rating System</p>
-                        <p className="text-sm text-gray-600">Customer feedback rating scale</p>
+                        <p className="text-sm text-gray-600">
+                          Customer feedback rating scale
+                        </p>
                       </div>
                       <Badge variant="outline">5-star scale</Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Performance Reviews</p>
-                        <p className="text-sm text-gray-600">Frequency of crew performance reviews</p>
+                        <p className="text-sm text-gray-600">
+                          Frequency of crew performance reviews
+                        </p>
                       </div>
                       <Badge variant="outline">Monthly</Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Bonus Calculations</p>
-                        <p className="text-sm text-gray-600">Performance-based bonus system</p>
+                        <p className="text-sm text-gray-600">
+                          Performance-based bonus system
+                        </p>
                       </div>
                       <Badge variant="outline">Enabled</Badge>
                     </div>

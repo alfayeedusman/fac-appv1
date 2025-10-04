@@ -121,7 +121,10 @@ export const createServer = () => {
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
   // Xendit Payment endpoints
-  app.post("/api/neon/payment/xendit/create-invoice", xenditApiRoutes.createInvoice);
+  app.post(
+    "/api/neon/payment/xendit/create-invoice",
+    xenditApiRoutes.createInvoice,
+  );
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
 
@@ -129,13 +132,22 @@ export const createServer = () => {
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
 
   // Admin utilities
-  app.post("/api/neon/admin/fix-booking-userids", neonApiRoutes.fixBookingUserIds);
+  app.post(
+    "/api/neon/admin/fix-booking-userids",
+    neonApiRoutes.fixBookingUserIds,
+  );
 
   // User vehicles and address endpoints
   app.get("/api/neon/users/:userId/vehicles", neonApiRoutes.getUserVehicles);
   app.post("/api/neon/users/:userId/vehicles", neonApiRoutes.addUserVehicle);
-  app.put("/api/neon/users/:userId/vehicles/:vehicleId", neonApiRoutes.updateUserVehicle);
-  app.delete("/api/neon/users/:userId/vehicles/:vehicleId", neonApiRoutes.deleteUserVehicle);
+  app.put(
+    "/api/neon/users/:userId/vehicles/:vehicleId",
+    neonApiRoutes.updateUserVehicle,
+  );
+  app.delete(
+    "/api/neon/users/:userId/vehicles/:vehicleId",
+    neonApiRoutes.deleteUserVehicle,
+  );
   app.put("/api/neon/users/:userId/address", neonApiRoutes.updateUserAddress);
 
   // ============= CREW MANAGEMENT API =============
@@ -152,9 +164,9 @@ export const createServer = () => {
   app.use("/api/images", imagesApiRoutes);
 
   // ============= CMS CONTENT MANAGEMENT API =============
-  console.log('🎨 Registering CMS API routes...');
+  console.log("🎨 Registering CMS API routes...");
   app.use("/api/cms", cmsApiRoutes);
-  console.log('🎨 CMS API routes registered successfully');
+  console.log("🎨 CMS API routes registered successfully");
 
   // Serve React admin app for everything that's NOT an API route
   const reactBuildPath = path.join(__dirname, "../dist/spa");

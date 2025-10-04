@@ -1010,7 +1010,8 @@ export async function seedInitialData() {
       await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
 
     // Use environment variable for superadmin password, fallback to secure default
-    const defaultPassword = process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
+    const defaultPassword =
+      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
     const superAdminPassword = await bcrypt.hash(defaultPassword, 10);
 
     if (superAdminExists.length === 0) {

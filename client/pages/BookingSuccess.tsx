@@ -52,7 +52,9 @@ export default function BookingSuccess() {
               {bookingId && (
                 <div className="bg-green-50 rounded-lg p-4 mt-4">
                   <p className="text-sm text-muted-foreground">Booking ID</p>
-                  <p className="text-xl font-bold text-green-700">{bookingId}</p>
+                  <p className="text-xl font-bold text-green-700">
+                    {bookingId}
+                  </p>
                 </div>
               )}
             </div>

@@ -17,14 +17,17 @@ All requested improvements have been successfully implemented:
 ### 1. Time Format Conversion (12-hour with AM/PM)
 
 **Files Modified:**
+
 - `client/utils/adminConfig.ts`
 
 **Changes:**
+
 - Updated `generateTimeSlots()` to return 12-hour format (e.g., "2:00 PM" instead of "14:00")
 - Added `convert12To24()` helper in `isSlotAvailable()` for backend compatibility
 - Time slots now display as: `9:00 AM`, `10:30 AM`, `2:00 PM`, etc.
 
 **Example:**
+
 ```typescript
 // Before: ["09:00", "10:00", "14:00", "15:00"]
 // After:  ["9:00 AM", "10:00 AM", "2:00 PM", "3:00 PM"]
@@ -35,15 +38,18 @@ All requested improvements have been successfully implemented:
 ### 2. Address Field - Home Service Only
 
 **Files Modified:**
+
 - `client/components/StepperBooking.tsx` (Review Step)
 
 **Changes:**
+
 - Wrapped address field in conditional: `{bookingData.serviceType === 'home' && ...}`
-- Address label changed from "Address *" to "Service Address *"
+- Address label changed from "Address _" to "Service Address _"
 - Address field only appears when Home Service is selected
 - For Branch Service, no address is required
 
 **User Experience:**
+
 - **Branch Service** → No address field shown
 - **Home Service** → Address field appears with location options (default, current location, custom)
 
@@ -52,6 +58,7 @@ All requested improvements have been successfully implemented:
 ### 3. Multiple Vehicles Support
 
 **Database Schema:**
+
 - Created new table: `user_vehicles`
   ```sql
   - id (primary key)
@@ -66,6 +73,7 @@ All requested improvements have been successfully implemented:
 - Added `default_address` field to `users` table
 
 **Frontend Types:**
+
 - `client/services/neonDatabaseService.ts`
   - Added `UserVehicle` interface
   - Updated `User` interface with `vehicles[]` and `defaultAddress`
@@ -77,6 +85,7 @@ All requested improvements have been successfully implemented:
     - `updateUserAddress(userId, defaultAddress)`
 
 **Backend API:**
+
 - `server/routes/neon-api.ts` - Added handlers:
   - `GET /api/neon/users/:userId/vehicles` - Get all user vehicles
   - `POST /api/neon/users/:userId/vehicles` - Add new vehicle
@@ -89,6 +98,7 @@ All requested improvements have been successfully implemented:
 ### 4. Seamless Registered User Booking
 
 **Auto-fill User Data:**
+
 - `client/components/StepperBooking.tsx`
 - Added `useEffect` to load user data on mount
 - Auto-fills: Full Name, Mobile, Email, Default Address
@@ -97,11 +107,13 @@ All requested improvements have been successfully implemented:
 **Vehicle Selection UI (Unit Step):**
 
 **For Guest Users:**
+
 - Standard flow - select vehicle type, size, enter plate number and model manually
 
 **For Registered Users:**
 
 **A. If User Has Saved Vehicles:**
+
 - Shows list of saved vehicles with:
   - Unit type badge (Car/Motorcycle)
   - Unit size badge (Sedan/SUV/etc)
@@ -112,6 +124,7 @@ All requested improvements have been successfully implemented:
 - "+ Add New Vehicle" button to add more vehicles
 
 **B. Adding New Vehicle:**
+
 - Click "+ Add New Vehicle"
 - Select vehicle type (Car/Motorcycle)
 - Select vehicle size
@@ -121,6 +134,7 @@ All requested improvements have been successfully implemented:
 - Vehicle saved to database and auto-selected
 
 **C. If No Saved Vehicles:**
+
 - Shows standard vehicle selection form
 - After booking, vehicle is saved automatically
 
@@ -129,14 +143,16 @@ All requested improvements have been successfully implemented:
 ### 5. Booking Flow Comparison
 
 #### **Guest User Flow:**
+
 1. **Step 1: Schedule** - Select date, time, branch/home service
 2. **Step 2: Unit** - Select vehicle type and size
 3. **Step 3: Service** - Choose service
 4. **Step 4: Payment** - Select payment method
-5. **Step 5: Review** - Fill all details (name, contact, email, plate, model, address*)
-   - *Address only if Home Service
+5. **Step 5: Review** - Fill all details (name, contact, email, plate, model, address\*)
+   - \*Address only if Home Service
 
 #### **Registered User Flow:**
+
 1. **Step 1: Schedule** - Select date, time, branch/home service
 2. **Step 2: Unit** - **Choose from saved vehicles** OR add new
    - Default vehicle pre-selected
@@ -157,6 +173,7 @@ All requested improvements have been successfully implemented:
 ## 🗄️ Database Changes
 
 ### New Table: `user_vehicles`
+
 ```sql
 CREATE TABLE user_vehicles (
   id TEXT PRIMARY KEY,
@@ -172,11 +189,13 @@ CREATE TABLE user_vehicles (
 ```
 
 ### Updated Table: `users`
+
 ```sql
 ALTER TABLE users ADD COLUMN default_address TEXT;
 ```
 
 **Note:** Run migrations to apply these schema changes:
+
 ```bash
 npm run db:migrate
 ```
@@ -186,27 +205,31 @@ npm run db:migrate
 ## 🔌 API Endpoints Added
 
 ### Vehicle Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/neon/users/:userId/vehicles` | Get all user vehicles |
-| POST | `/api/neon/users/:userId/vehicles` | Add new vehicle |
-| PUT | `/api/neon/users/:userId/vehicles/:vehicleId` | Update vehicle |
-| DELETE | `/api/neon/users/:userId/vehicles/:vehicleId` | Delete vehicle |
+
+| Method | Endpoint                                      | Description           |
+| ------ | --------------------------------------------- | --------------------- |
+| GET    | `/api/neon/users/:userId/vehicles`            | Get all user vehicles |
+| POST   | `/api/neon/users/:userId/vehicles`            | Add new vehicle       |
+| PUT    | `/api/neon/users/:userId/vehicles/:vehicleId` | Update vehicle        |
+| DELETE | `/api/neon/users/:userId/vehicles/:vehicleId` | Delete vehicle        |
 
 ### Address Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| PUT | `/api/neon/users/:userId/address` | Update default address |
+
+| Method | Endpoint                          | Description            |
+| ------ | --------------------------------- | ---------------------- |
+| PUT    | `/api/neon/users/:userId/address` | Update default address |
 
 ---
 
 ## 🎨 UI/UX Improvements
 
 ### Time Display
+
 - **Before:** 14:00, 15:30, 18:00
 - **After:** 2:00 PM, 3:30 PM, 6:00 PM
 
 ### Address Field
+
 - **Branch Service:** Hidden
 - **Home Service:** Visible with 3 quick options:
   1. Use Default (from profile)
@@ -214,12 +237,12 @@ npm run db:migrate
   3. Custom Address (manual entry)
 
 ### Vehicle Selection (Registered Users)
+
 - **Saved Vehicles Card:**
   - Clean card design
   - Quick visual identification
   - Default vehicle highlighted
   - Click to select
-  
 - **Add New Vehicle:**
   - Inline form
   - Save for future use
@@ -230,6 +253,7 @@ npm run db:migrate
 ## 📱 Mobile Responsive
 
 All changes are fully responsive:
+
 - ✅ Mobile-friendly vehicle cards
 - ✅ Touch-optimized buttons
 - ✅ Swipeable time slots
@@ -240,6 +264,7 @@ All changes are fully responsive:
 ## 🔄 Data Flow
 
 ### First Booking (Registered User):
+
 1. User selects vehicle type/size
 2. Enters plate number and model
 3. Completes booking
@@ -247,6 +272,7 @@ All changes are fully responsive:
 5. **Address saved to profile** ✓
 
 ### Subsequent Bookings (Registered User):
+
 1. **Vehicles auto-loaded** ✓
 2. **Default vehicle pre-selected** ✓
 3. **All details pre-filled** ✓
@@ -257,12 +283,14 @@ All changes are fully responsive:
 ## ✅ Testing Checklist
 
 ### Guest Booking:
+
 - [ ] Can book without saved vehicles
 - [ ] Address shown only for Home Service
 - [ ] Time slots show in 12-hour format
 - [ ] All fields required
 
 ### Registered User Booking:
+
 - [ ] User data auto-fills
 - [ ] Saved vehicles load correctly
 - [ ] Default vehicle pre-selected
@@ -272,6 +300,7 @@ All changes are fully responsive:
 - [ ] Can change address during booking
 
 ### Backend:
+
 - [ ] Vehicle CRUD operations work
 - [ ] Default vehicle logic works (only one default per user)
 - [ ] Address updates save correctly
@@ -282,6 +311,7 @@ All changes are fully responsive:
 ## 🚀 How to Test
 
 ### 1. As a New Registered User:
+
 ```bash
 # Login to the app
 1. Go to Booking page
@@ -292,6 +322,7 @@ All changes are fully responsive:
 ```
 
 ### 2. As a Registered User with Vehicles:
+
 ```bash
 1. Go to Booking page
 2. Step 2 (Unit): See your saved vehicles
@@ -301,6 +332,7 @@ All changes are fully responsive:
 ```
 
 ### 3. Testing Home Service Address:
+
 ```bash
 # Branch Service
 1. Select "Visit Branch"
@@ -319,7 +351,9 @@ All changes are fully responsive:
 ## 📝 Notes for Developers
 
 ### Adding More Vehicle Types:
+
 Update `UNIT_TYPES` in `client/components/StepperBooking.tsx`:
+
 ```typescript
 const UNIT_TYPES = {
   car: { name: "Car", sizes: { ... } },
@@ -330,10 +364,12 @@ const UNIT_TYPES = {
 ```
 
 ### Customizing Time Format:
+
 Modify `generateTimeSlots()` in `client/utils/adminConfig.ts`:
+
 ```typescript
 // Current: 12-hour with AM/PM
-const period = hours >= 12 ? 'PM' : 'AM';
+const period = hours >= 12 ? "PM" : "AM";
 
 // For 24-hour: Remove the conversion logic
 ```
@@ -343,6 +379,7 @@ const period = hours >= 12 ? 'PM' : 'AM';
 ## 🎉 Result
 
 The booking system now provides:
+
 1. **Better UX** - Customers see time in familiar 12-hour format
 2. **Faster Booking** - Registered users save time with auto-fill
 3. **Vehicle Management** - Users can manage multiple vehicles
