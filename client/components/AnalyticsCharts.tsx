@@ -102,7 +102,11 @@ export default function AnalyticsCharts({
       }
     } catch (err: any) {
       console.error("❌ Analytics fetch error:", err);
-      setError(err.message || "Failed to load analytics data");
+      if (err?.name === 'AbortError') {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError(err.message || "Failed to load analytics data");
+      }
 
       // Fallback to empty data structure
       setAnalyticsData({
