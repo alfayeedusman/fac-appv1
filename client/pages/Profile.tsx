@@ -184,28 +184,27 @@ export default function Profile() {
               <div className="flex items-center space-x-6">
                 {/* Profile Picture */}
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-fac-orange-500 flex items-center justify-center overflow-hidden">
                     {profile.profilePicture && profile.profilePicture.trim() !== "" ? (
                       <img
                         src={profile.profilePicture}
                         alt="Profile picture"
-                        className="w-full h-full rounded-2xl object-cover"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.warn(`Failed to load profile picture: ${profile.profilePicture}`);
-                          // Replace with User icon
                           const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
-                          }
+                          if (parent) parent.innerHTML = '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
                         }}
                       />
                     ) : (
                       <User className="h-8 w-8 text-white" />
                     )}
                   </div>
+                  <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={onProfileImageChange} />
                   <Button
                     size="sm"
                     className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0 bg-background border-2 border-border hover:bg-accent"
+                    onClick={() => document.getElementById(fileInputId)?.click()}
+                    title="Change profile photo"
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
