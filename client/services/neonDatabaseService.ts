@@ -1772,8 +1772,11 @@ class NeonDatabaseClient {
       clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Low stock items fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Low stock items fetch timed out");
+      }
       return { success: false, items: [] };
     }
   }
