@@ -863,6 +863,8 @@ export async function runMigrations() {
     // Create indexes for better performance
     await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_vehicles_user_id ON user_vehicles(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_vehicles_is_default ON user_vehicles(user_id, is_default);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(date);`;
