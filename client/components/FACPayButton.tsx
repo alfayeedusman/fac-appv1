@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Swal from "sweetalert2";
 
 interface FACPayButtonProps {
   amount: number;
@@ -24,10 +25,38 @@ export default function FACPayButton({
   variant = "default",
   fullWidth = false,
 }: FACPayButtonProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleClick = async () => {
+    setIsProcessing(true);
+
+    // Show loading popup
+    Swal.fire({
+      title: 'Opening Payment Gateway',
+      html: '<div class="flex flex-col items-center"><div class="spinner mb-4"></div><p>Please wait a few seconds...</p></div>',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Simulate a small delay for UX
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Close the loading popup
+    Swal.close();
+
+    // Call the actual payment handler
+    onPaymentClick();
+
+    setIsProcessing(false);
+  };
+
   return (
     <Button
-      onClick={onPaymentClick}
-      disabled={disabled || isLoading}
+      onClick={handleClick}
+      disabled={disabled || isLoading || isProcessing}
       size={size}
       variant={variant}
       className={cn(
@@ -41,10 +70,10 @@ export default function FACPayButton({
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
 
-      {isLoading ? (
+      {isLoading || isProcessing ? (
         <>
           <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-          Processing...
+          {isProcessing ? "Opening Gateway..." : "Processing..."}
         </>
       ) : (
         <>
