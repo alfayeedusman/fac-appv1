@@ -121,9 +121,10 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 50 }).notNull().default("user"), // 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew'
   contactNumber: varchar("contact_number", { length: 20 }),
   address: text("address"),
-  carUnit: varchar("car_unit", { length: 255 }),
-  carPlateNumber: varchar("car_plate_number", { length: 20 }),
-  carType: varchar("car_type", { length: 100 }),
+  defaultAddress: text("default_address"), // For home service bookings
+  carUnit: varchar("car_unit", { length: 255 }), // Legacy - kept for backward compatibility
+  carPlateNumber: varchar("car_plate_number", { length: 20 }), // Legacy
+  carType: varchar("car_type", { length: 100 }), // Legacy
   branchLocation: varchar("branch_location", { length: 255 }).notNull(),
   profileImage: text("profile_image"),
   isActive: boolean("is_active").notNull().default(true),
