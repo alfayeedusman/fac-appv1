@@ -1696,201 +1696,129 @@ const PackageStep = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-4 md:space-y-6">
-        {Object.entries(availableServices).map(([categoryKey, category]) => (
-          <div
-            key={categoryKey}
-            className={`p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
-              bookingData.category === categoryKey
-                ? "border-fac-orange-500 bg-gradient-to-r from-fac-orange-50/80 to-orange-50/80 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl shadow-fac-orange-500/20"
-                : "border-border/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-fac-orange-300 hover:shadow-xl hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30"
-            }`}
-            onClick={async () => {
-              // No need to validate category here - getAvailableServices already filtered
-              // Only validate specific service selections (handled in service onClick)
-              updateBookingData("category", categoryKey);
-              updateBookingData("service", ""); // Reset service when category changes
-            }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-              <div className="flex items-center space-x-4">
+        {packages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {packages.map((pkg: any) => {
+              const price = calculateServicePrice(
+                pkg.basePrice,
+                bookingData.unitSize,
+                bookingData.unitType === "motorcycle" ? bookingData.unitSize : undefined
+              );
+
+              return (
                 <div
-                  className={`bg-gradient-to-r ${category.gradient} p-3 md:p-4 rounded-2xl shadow-lg`}
+                  key={pkg.id}
+                  className={`relative p-4 md:p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                    bookingData.service === pkg.id
+                      ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50 shadow-lg"
+                      : "border-border hover:border-fac-orange-300 hover:shadow-md"
+                  }`}
+                  onClick={() => {
+                    updateBookingData("service", pkg.id);
+                    updateBookingData("basePrice", price);
+                  }}
                 >
-                  <category.icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-black text-foreground text-lg md:text-xl">
-                    {category.name}
-                  </h3>
-                  {category.description && (
-                    <p className="text-muted-foreground text-sm md:text-base mt-1">
-                      {category.description}
-                    </p>
+                  {pkg.category === "premium" && (
+                    <div className="absolute -top-2 -right-2">
+                      <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs">
+                        Popular
+                      </Badge>
+                    </div>
                   )}
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h4 className="font-bold text-foreground text-sm md:text-base">
+                        {pkg.name}
+                      </h4>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {pkg.description}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {pkg.duration}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base md:text-lg font-black text-fac-orange-500">
+                        ₱{price.toLocaleString()}
+                      </p>
+                      {bookingData.service === pkg.id && (
+                        <div className="flex items-center justify-end mt-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div>
+            {bookingData.unitType && bookingData.unitSize ? (
+              <div className="p-4 md:p-5 rounded-lg bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 border-2 border-fac-orange-200 dark:border-fac-orange-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <p className="text-sm md:text-base text-foreground font-semibold">
+                      Service Price
+                    </p>
+                  </div>
+                  <p className="text-xl md:text-2xl font-black text-fac-orange-500">
+                    ₱
+                    {(() => {
+                      const getPrice = () => {
+                        if (bookingData.category === "auto_detailing") {
+                          return (
+                            adminConfig.pricing.autoDetailing[
+                              bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing
+                            ]?.[
+                              bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car
+                            ] || 0
+                          );
+                        } else if (bookingData.category === "graphene_coating") {
+                          return (
+                            adminConfig.pricing.grapheneCoating[
+                              bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating
+                            ]?.[
+                              bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car
+                            ] || 0
+                          );
+                        }
+                        return 0;
+                      };
+                      const price = getPrice();
+                      updateBookingData("basePrice", price);
+                      return price.toLocaleString();
+                    })()}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Price for{" "}
+                  {
+                    UNIT_TYPES[
+                      bookingData.unitType as keyof typeof UNIT_TYPES
+                    ]?.sizes[
+                      bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes
+                    ]
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
+                    Selected — price will be shown after vehicle
+                    selection.
+                  </p>
                 </div>
               </div>
-              {bookingData.category === categoryKey && (
-                <div className="mt-3 sm:mt-0 flex-shrink-0">
-                  <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
-                    ✓ Selected
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {bookingData.category === categoryKey &&
-              categoryKey === "carwash" && (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
-                    <p className="text-sm md:text-base font-semibold text-foreground">
-                      Select wash type:
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {Object.entries(category.services).map(
-                      ([serviceKey, service]) => (
-                        <div
-                          key={serviceKey}
-                          className={`relative p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
-                            bookingData.service === serviceKey
-                              ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-xl shadow-fac-orange-500/30"
-                              : "border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/50 dark:hover:bg-fac-orange-950/50"
-                          }`}
-                          onClick={async (e) => {
-                            e.stopPropagation();
-
-                            // Check if this service is available for current service type
-                            if (bookingData.serviceType === "home") {
-                              const isAvailable = isServiceAvailableForHome(
-                                "carwash",
-                                serviceKey,
-                                bookingData.unitType,
-                              );
-                              if (!isAvailable) {
-                                if (bookingData.unitType === "motorcycle") {
-                                  showHomeServiceUnavailableAlert(
-                                    `${service.name} is not available for motorcycle home service. Please check available motorcycle services in admin settings.`,
-                                    goBackToStep1,
-                                  );
-                                } else {
-                                  showHomeServiceUnavailableAlert(
-                                    service.name,
-                                    goBackToStep1,
-                                  );
-                                }
-                                return;
-                              }
-                            }
-
-                            updateBookingData("service", serviceKey);
-                          }}
-                        >
-                          {service.popular && (
-                            <div className="absolute -top-2 -right-2">
-                              <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs">
-                                Popular
-                              </Badge>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0 pr-2">
-                              <h4 className="font-bold text-foreground text-sm md:text-base">
-                                {service.name}
-                              </h4>
-                              <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {service.description}
-                              </p>
-                              <div className="flex items-center space-x-2 mt-2">
-                                <Clock className="h-3 w-3 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">
-                                  {service.duration}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-base md:text-lg font-black text-fac-orange-500">
-                                ₱{service.price.toLocaleString()}
-                              </p>
-                              {bookingData.service === serviceKey && (
-                                <div className="flex items-center justify-end mt-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-            {bookingData.category === categoryKey &&
-              categoryKey !== "carwash" && (
-                <div className="mt-4">
-                  {bookingData.unitType && bookingData.unitSize ? (
-                    <div className="p-4 md:p-5 rounded-lg bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 border-2 border-fac-orange-200 dark:border-fac-orange-700">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                          <p className="text-sm md:text-base text-foreground font-semibold">
-                            Service Price
-                          </p>
-                        </div>
-                        <p className="text-xl md:text-2xl font-black text-fac-orange-500">
-                          ₱
-                          {(() => {
-                            const getPrice = () => {
-                              if (categoryKey === "auto_detailing") {
-                                return (
-                                  adminConfig.pricing.autoDetailing[
-                                    bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing
-                                  ]?.[
-                                    bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car
-                                  ] || 0
-                                );
-                              } else if (categoryKey === "graphene_coating") {
-                                return (
-                                  adminConfig.pricing.grapheneCoating[
-                                    bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating
-                                  ]?.[
-                                    bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car
-                                  ] || 0
-                                );
-                              }
-                              return 0;
-                            };
-                            return getPrice().toLocaleString();
-                          })()}
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Price for{" "}
-                        {
-                          UNIT_TYPES[
-                            bookingData.unitType as keyof typeof UNIT_TYPES
-                          ]?.sizes[
-                            bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes
-                          ]
-                        }
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                        <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
-                          Selected — price will be shown after vehicle
-                          selection.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+            )}
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
   );
