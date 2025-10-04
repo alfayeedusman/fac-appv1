@@ -660,13 +660,16 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       });
 
       if (invoiceData && invoiceData.invoice_url) {
-        // Open Xendit payment in popup
-        xenditService.openInvoice(invoiceData.invoice_url);
-
+        // Redirect to Xendit payment page
         toast({
-          title: "Payment Gateway Opened",
-          description: "Complete your payment in the popup window",
+          title: "Redirecting to Payment",
+          description: "You will be redirected to FACPay to complete your payment",
         });
+
+        // Small delay to show the toast before redirect
+        setTimeout(() => {
+          xenditService.openInvoice(invoiceData.invoice_url);
+        }, 1000);
 
         return true;
       } else {
@@ -800,7 +803,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
       notificationManager.success(
         "Booking Confirmed! 🎉",
-        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\n${bookingData.paymentMethod === 'online' ? 'Complete your payment in the popup window.' : 'You will receive confirmation shortly.'}`,
+        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\n${bookingData.paymentMethod === 'online' ? 'Redirecting to FACPay for payment...' : 'You will receive confirmation shortly.'}`,
         { autoClose: 5000 }
       );
 
