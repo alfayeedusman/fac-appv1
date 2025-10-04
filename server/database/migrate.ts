@@ -156,6 +156,28 @@ export async function runMigrations() {
       );
     `;
 
+    // Add missing columns to existing users table (safe migration)
+    console.log("🔧 Checking for missing columns in users table...");
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS default_address TEXT;
+      `;
+      console.log("✅ default_address column check complete");
+    } catch (error: any) {
+      console.warn("⚠️ Could not add default_address column (may already exist):", error.message);
+    }
+
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS can_view_all_branches BOOLEAN NOT NULL DEFAULT false;
+      `;
+      console.log("✅ can_view_all_branches column check complete");
+    } catch (error: any) {
+      console.warn("⚠️ Could not add can_view_all_branches column (may already exist):", error.message);
+    }
+
     // Create user_vehicles table for multiple vehicle support
     await sql`
       CREATE TABLE IF NOT EXISTS user_vehicles (
