@@ -368,6 +368,68 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     };
   }, []);
 
+  // Load user data and vehicles for registered users
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (isGuest) return;
+
+      const userEmail = localStorage.getItem("userEmail");
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "";
+      const userContact = localStorage.getItem("userContact") || "";
+      const userAddress = localStorage.getItem("userAddress") || "";
+
+      if (!userEmail || !userId) return;
+
+      // Set user basic data
+      const user = {
+        id: userId,
+        email: userEmail,
+        fullName: userName,
+        contactNumber: userContact,
+        defaultAddress: userAddress,
+      };
+      setUserData(user);
+
+      // Auto-fill user details
+      setBookingData(prev => ({
+        ...prev,
+        fullName: userName,
+        mobile: userContact,
+        email: userEmail,
+        address: userAddress,
+      }));
+
+      // Load saved vehicles
+      setIsLoadingVehicles(true);
+      try {
+        const result = await neonDbClient.getUserVehicles(userId);
+        if (result.success && result.vehicles) {
+          setSavedVehicles(result.vehicles);
+
+          // Auto-select default vehicle if exists
+          const defaultVehicle = result.vehicles.find(v => v.isDefault);
+          if (defaultVehicle) {
+            setSelectedVehicleId(defaultVehicle.id);
+            setBookingData(prev => ({
+              ...prev,
+              unitType: defaultVehicle.unitType,
+              unitSize: defaultVehicle.unitSize,
+              plateNo: defaultVehicle.plateNumber,
+              carModel: defaultVehicle.vehicleModel,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load user vehicles:", error);
+      } finally {
+        setIsLoadingVehicles(false);
+      }
+    };
+
+    loadUserData();
+  }, [isGuest]);
+
   // Memoize price calculation to prevent infinite loops
   const { basePrice, totalPrice } = useMemo(() => {
     let price = 0;
