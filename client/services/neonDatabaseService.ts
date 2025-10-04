@@ -1257,6 +1257,39 @@ class NeonDatabaseClient {
     }
   }
 
+  // === VOUCHERS ===
+  async validateVoucher(params: { code: string; bookingAmount: number; userEmail?: string; bookingType?: 'guest' | 'registered'; }): Promise<{ success: boolean; data?: { code: string; title: string; discountType: 'percentage' | 'fixed_amount'; discountValue: number; discountAmount: number; finalAmount: number; audience: 'all' | 'registered' }; error?: string }> {
+    await this.ensureConnection();
+    const url = `${this.baseUrl}/vouchers/validate`;
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+        signal: ac.signal,
+      });
+      clearTimeout(to);
+      const json = await res.json();
+      return json;
+    } catch (e: any) {
+      clearTimeout(to);
+      return { success: false, error: e?.message || 'Network error' };
+    }
+  }
+
+  async redeemVoucher(params: { code: string; userEmail?: string; bookingId: string; discountAmount: number; }): Promise<{ success: boolean; id?: string; error?: string; message?: string }> {
+    await this.ensureConnection();
+    const url = `${this.baseUrl}/vouchers/redeem`;
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+      return await res.json();
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Network error' };
+    }
+  }
+
   // === INVENTORY MANAGEMENT ===
 
   // Inventory items
