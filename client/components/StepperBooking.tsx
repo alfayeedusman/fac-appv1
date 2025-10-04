@@ -1548,7 +1548,7 @@ export default function StepperBooking({
             </Button>
 
             {/* Next/Confirm Button */}
-            {currentStep === 5 ? (
+            {currentStep === 7 ? (
               bookingData.paymentMethod === "online" ? (
                 <FACPayButton
                   amount={bookingData.totalPrice}
