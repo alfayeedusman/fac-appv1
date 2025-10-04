@@ -516,6 +516,51 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     }
   };
 
+  const validateVoucherCode = async () => {
+    if (!voucherInput.trim()) {
+      toast({ title: "Enter voucher code", description: "Please enter a voucher code", variant: "destructive" });
+      return;
+    }
+    if (bookingData.totalPrice <= 0) {
+      toast({ title: "No booking amount", description: "Please complete booking details first", variant: "destructive" });
+      return;
+    }
+
+    setIsValidatingVoucher(true);
+    try {
+      const userEmail = isGuest ? bookingData.email : localStorage.getItem('userEmail') || undefined;
+      const result = await neonDbClient.validateVoucher({
+        code: voucherInput.trim().toUpperCase(),
+        bookingAmount: bookingData.totalPrice,
+        userEmail,
+        bookingType: isGuest ? 'guest' : 'registered',
+      });
+
+      if (result.success && result.data) {
+        setBookingData(prev => ({
+          ...prev,
+          voucherCode: result.data!.code,
+          voucherDiscount: result.data!.discountAmount,
+          voucherData: { title: result.data!.title, discountType: result.data!.discountType, discountValue: result.data!.discountValue },
+        }));
+        toast({ title: "Voucher Applied! \ud83c\udf89", description: `${result.data.title}: \u20b1${result.data.discountAmount.toFixed(2)} discount` });
+        setVoucherInput("");
+      } else {
+        toast({ title: "Invalid Voucher", description: result.error || "This voucher code is invalid or cannot be used", variant: "destructive" });
+      }
+    } catch (err: any) {
+      toast({ title: "Validation Failed", description: err?.message || "Failed to validate voucher", variant: "destructive" });
+    } finally {
+      setIsValidatingVoucher(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setBookingData(prev => ({ ...prev, voucherCode: undefined, voucherDiscount: 0, voucherData: undefined }));
+    setVoucherInput("");
+    toast({ title: "Voucher Removed", description: "Voucher discount has been removed" });
+  };
+
   const submitBooking = async () => {
     setIsLoading(true);
 
