@@ -217,10 +217,13 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 export const getInvoiceStatus: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params as { id: string };
-    if (!id) return res.status(400).json({ success: false, error: "id is required" });
+    if (!id)
+      return res.status(400).json({ success: false, error: "id is required" });
 
     if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes("YOUR_SECRET_KEY")) {
-      return res.status(500).json({ success: false, error: "Xendit API key not configured" });
+      return res
+        .status(500)
+        .json({ success: false, error: "Xendit API key not configured" });
     }
 
     const response = await fetch(`${XENDIT_API_URL}/invoices/${id}`, {
@@ -238,7 +241,9 @@ export const getInvoiceStatus: RequestHandler = async (req, res) => {
     res.json({ success: true, invoice: data, status: data.status });
   } catch (error: any) {
     console.error("Get invoice status error:", error);
-    res.status(500).json({ success: false, error: error.message || "Internal error" });
+    res
+      .status(500)
+      .json({ success: false, error: error.message || "Internal error" });
   }
 };
 

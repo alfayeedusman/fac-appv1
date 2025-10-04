@@ -518,7 +518,7 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     // Attempt background connection check but don't block login
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err)
+      console.warn("Background connection check failed:", err),
     );
 
     try {
@@ -634,7 +634,7 @@ class NeonDatabaseClient {
 
     // Attempt background connection check but don't block registration
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err)
+      console.warn("Background connection check failed:", err),
     );
 
     const tryRegister = async (
@@ -758,7 +758,8 @@ class NeonDatabaseClient {
           return {
             success: false,
             error:
-              data?.error || `HTTP ${response.status}: Failed to create booking`,
+              data?.error ||
+              `HTTP ${response.status}: Failed to create booking`,
           };
         }
         this.isConnected = true;
@@ -766,7 +767,10 @@ class NeonDatabaseClient {
       } catch (e: any) {
         clearTimeout(to);
         if (e?.name === "AbortError") {
-          return { success: false, error: "Request timed out. Please try again." };
+          return {
+            success: false,
+            error: "Request timed out. Please try again.",
+          };
         }
         return { success: false, error: e?.message || "Network error" };
       }

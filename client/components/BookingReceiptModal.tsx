@@ -80,24 +80,32 @@ export default function BookingReceiptModal({
         backgroundColor: "#ffffff",
       });
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob) return;
 
-        const file = new File([blob], `FAC-Booking-${bookingData.confirmationCode}.jpg`, {
-          type: "image/jpeg",
-        });
+          const file = new File(
+            [blob],
+            `FAC-Booking-${bookingData.confirmationCode}.jpg`,
+            {
+              type: "image/jpeg",
+            },
+          );
 
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "Booking Receipt",
-            text: `Fayeed Auto Care - Booking ${bookingData.confirmationCode}`,
-          });
-        } else {
-          // Fallback to download
-          downloadReceipt();
-        }
-      }, "image/jpeg", 0.95);
+          if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: "Booking Receipt",
+              text: `Fayeed Auto Care - Booking ${bookingData.confirmationCode}`,
+            });
+          } else {
+            // Fallback to download
+            downloadReceipt();
+          }
+        },
+        "image/jpeg",
+        0.95,
+      );
     } catch (error) {
       console.error("Failed to share receipt:", error);
     }
@@ -247,7 +255,9 @@ export default function BookingReceiptModal({
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t-2 border-dashed">
-                    <span className="font-bold text-gray-900">Total Amount:</span>
+                    <span className="font-bold text-gray-900">
+                      Total Amount:
+                    </span>
                     <span className="font-black text-fac-orange-500 text-lg">
                       ₱{bookingData.totalPrice.toLocaleString()}
                     </span>
@@ -287,8 +297,8 @@ export default function BookingReceiptModal({
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>📱 Save this receipt!</strong> Screenshot or download this
-              confirmation as proof of your booking. You'll receive a confirmation
-              email shortly.
+              confirmation as proof of your booking. You'll receive a
+              confirmation email shortly.
             </p>
           </div>
 

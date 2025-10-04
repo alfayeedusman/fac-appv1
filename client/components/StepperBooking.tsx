@@ -52,7 +52,10 @@ import {
   isSlotAvailable,
 } from "@/utils/adminConfig";
 import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
-import { getCarWashServices, calculateServicePrice } from "@/utils/carWashServices";
+import {
+  getCarWashServices,
+  calculateServicePrice,
+} from "@/utils/carWashServices";
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
@@ -510,23 +513,27 @@ export default function StepperBooking({
     if (bookingData.category === "carwash" && bookingData.service) {
       // Get the service from carWashServices
       const services = getCarWashServices();
-      const selectedService = services.find(s => s.id === bookingData.service);
+      const selectedService = services.find(
+        (s) => s.id === bookingData.service,
+      );
 
       if (selectedService && bookingData.unitType) {
         // For motorcycle, use unitType as "motorcycle" and unitSize for subtype
-        const vehicleTypeId = bookingData.unitType === "motorcycle"
-          ? "motorcycle"
-          : bookingData.unitSize || "sedan"; // For cars, use unitSize (sedan, suv, pickup, etc)
+        const vehicleTypeId =
+          bookingData.unitType === "motorcycle"
+            ? "motorcycle"
+            : bookingData.unitSize || "sedan"; // For cars, use unitSize (sedan, suv, pickup, etc)
 
-        const motorcycleSubtypeId = bookingData.unitType === "motorcycle"
-          ? bookingData.unitSize // For motorcycles, unitSize contains the subtype (small, medium, big)
-          : undefined;
+        const motorcycleSubtypeId =
+          bookingData.unitType === "motorcycle"
+            ? bookingData.unitSize // For motorcycles, unitSize contains the subtype (small, medium, big)
+            : undefined;
 
         // Calculate price using the service variant system
         price = calculateServicePrice(
           selectedService.basePrice,
           vehicleTypeId,
-          motorcycleSubtypeId
+          motorcycleSubtypeId,
         );
       } else {
         // Fallback to old system
@@ -665,7 +672,10 @@ export default function StepperBooking({
       case 4: {
         // Package
         // For carwash/motorwash require specific service package
-        if (bookingData.category === "carwash" || bookingData.category === "motorwash") {
+        if (
+          bookingData.category === "carwash" ||
+          bookingData.category === "motorwash"
+        ) {
           return !!bookingData.service;
         }
         return true;
@@ -681,11 +691,7 @@ export default function StepperBooking({
         const homeServiceAddressValid =
           bookingData.serviceType !== "home" || !!bookingData.address;
         const emailValid = !isGuest || !!bookingData.email; // Email required for guests
-        return (
-          basicCustomerValid &&
-          homeServiceAddressValid &&
-          emailValid
-        );
+        return basicCustomerValid && homeServiceAddressValid && emailValid;
       }
       case 6: {
         // Payment
@@ -859,13 +865,17 @@ export default function StepperBooking({
             },
           };
           localStorage.setItem("fac_last_booking", JSON.stringify(payload));
-          localStorage.setItem("fac_last_invoice_id", String(invoiceData.invoice_id));
+          localStorage.setItem(
+            "fac_last_invoice_id",
+            String(invoiceData.invoice_id),
+          );
         } catch (_) {}
 
         // Redirect to Xendit payment page (same tab)
         toast({
           title: "Redirecting to Payment",
-          description: "You will be redirected to FACPay to complete your payment",
+          description:
+            "You will be redirected to FACPay to complete your payment",
         });
         setTimeout(() => {
           xenditService.openInvoice(invoiceData.invoice_url);
@@ -1046,7 +1056,10 @@ export default function StepperBooking({
       setCompletedBooking({
         id: createdBooking.id,
         confirmationCode: createdBooking.confirmationCode,
-        service: SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name,
+        service:
+          SERVICE_CATEGORIES[
+            bookingData.category as keyof typeof SERVICE_CATEGORIES
+          ].name,
         category: bookingData.category,
         date: bookingData.date,
         timeSlot: bookingData.timeSlot,
@@ -1592,7 +1605,7 @@ const CategoryStep = ({ bookingData, updateBookingData }: any) => {
     ([key, category]: [string, any]) => {
       if (!category.vehicleTypes) return true;
       return category.vehicleTypes.includes(vehicleType);
-    }
+    },
   );
 
   return (
@@ -1603,7 +1616,8 @@ const CategoryStep = ({ bookingData, updateBookingData }: any) => {
           Select Service Category
         </CardTitle>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Choose the type of service you need for your {vehicleType === "motorcycle" ? "motorcycle" : "car"}
+          Choose the type of service you need for your{" "}
+          {vehicleType === "motorcycle" ? "motorcycle" : "car"}
         </p>
       </CardHeader>
       <CardContent>
@@ -1636,10 +1650,14 @@ const CategoryStep = ({ bookingData, updateBookingData }: any) => {
                     </div>
                   </div>
                 )}
-                <div className={`bg-gradient-to-br ${category.gradient} rounded-lg p-3 mb-3 inline-block`}>
+                <div
+                  className={`bg-gradient-to-br ${category.gradient} rounded-lg p-3 mb-3 inline-block`}
+                >
                   <Icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="font-bold text-base md:text-lg mb-1">{category.name}</h3>
+                <h3 className="font-bold text-base md:text-lg mb-1">
+                  {category.name}
+                </h3>
                 {category.description && (
                   <p className="text-xs md:text-sm text-muted-foreground">
                     {category.description}
@@ -1660,12 +1678,16 @@ const PackageStep = ({
   goBackToStep1,
 }: any) => {
   // Get selected category info
-  const selectedCategory = SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES];
+  const selectedCategory =
+    SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES];
   const categoryName = selectedCategory?.name || "Service";
 
   // Get available packages based on category
   const getPackages = () => {
-    if (bookingData.category === "carwash" || bookingData.category === "motorwash") {
+    if (
+      bookingData.category === "carwash" ||
+      bookingData.category === "motorwash"
+    ) {
       // Show car wash packages
       const allCarwashServices = getCarWashServices();
       return allCarwashServices.filter((service) => service.isActive);
@@ -1687,7 +1709,8 @@ const PackageStep = ({
           Select {categoryName} Package
         </CardTitle>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Choose the perfect package for your {bookingData.unitType === "motorcycle" ? "motorcycle" : "vehicle"}
+          Choose the perfect package for your{" "}
+          {bookingData.unitType === "motorcycle" ? "motorcycle" : "vehicle"}
           {bookingData.serviceType === "home" && (
             <span className="block text-xs text-orange-600 mt-1">
               Only selected services are available for home service
@@ -1702,7 +1725,9 @@ const PackageStep = ({
               const price = calculateServicePrice(
                 pkg.basePrice,
                 bookingData.unitSize,
-                bookingData.unitType === "motorcycle" ? bookingData.unitSize : undefined
+                bookingData.unitType === "motorcycle"
+                  ? bookingData.unitSize
+                  : undefined,
               );
 
               return (
@@ -1778,7 +1803,9 @@ const PackageStep = ({
                               bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car
                             ] || 0
                           );
-                        } else if (bookingData.category === "graphene_coating") {
+                        } else if (
+                          bookingData.category === "graphene_coating"
+                        ) {
                           return (
                             adminConfig.pricing.grapheneCoating[
                               bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating
@@ -1798,9 +1825,8 @@ const PackageStep = ({
                 <p className="text-xs text-muted-foreground mt-2">
                   Price for{" "}
                   {
-                    UNIT_TYPES[
-                      bookingData.unitType as keyof typeof UNIT_TYPES
-                    ]?.sizes[
+                    UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]
+                      ?.sizes[
                       bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes
                     ]
                   }
@@ -1811,8 +1837,7 @@ const PackageStep = ({
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
                   <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
-                    Selected — price will be shown after vehicle
-                    selection.
+                    Selected — price will be shown after vehicle selection.
                   </p>
                 </div>
               </div>
@@ -2481,9 +2506,7 @@ const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
               </Label>
               <Input
                 value={bookingData.fullName}
-                onChange={(e) =>
-                  updateBookingData("fullName", e.target.value)
-                }
+                onChange={(e) => updateBookingData("fullName", e.target.value)}
                 placeholder="Enter your full name"
                 className={`mt-1 ${!bookingData.fullName.trim() ? "border-red-500 focus:border-red-500" : ""}`}
                 required
@@ -2504,8 +2527,7 @@ const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
                 onChange={(e) => {
                   // Auto-format mobile number
                   let value = e.target.value.replace(/\D/g, "");
-                  if (value.startsWith("0"))
-                    value = "63" + value.substring(1);
+                  if (value.startsWith("0")) value = "63" + value.substring(1);
                   updateBookingData("mobile", value);
                 }}
                 placeholder="+63 912 345 6789"
@@ -2536,9 +2558,7 @@ const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
               />
               {((isGuest && !bookingData.email.trim()) ||
                 (bookingData.email.trim() &&
-                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                    bookingData.email,
-                  ))) && (
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
                 <p className="text-red-500 text-xs mt-1 flex items-center">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   {isGuest && !bookingData.email.trim()
@@ -2573,9 +2593,7 @@ const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
               </Label>
               <Input
                 value={bookingData.carModel}
-                onChange={(e) =>
-                  updateBookingData("carModel", e.target.value)
-                }
+                onChange={(e) => updateBookingData("carModel", e.target.value)}
                 placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
                 className={`mt-1 ${!bookingData.carModel.trim() ? "border-red-500 focus:border-red-500" : ""}`}
                 required
@@ -2587,8 +2605,8 @@ const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-1">
-                💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic
-                Type R 2023"
+                💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R
+                2023"
               </p>
             </div>
           </div>
@@ -2841,12 +2859,18 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Service Type:</span>
-                <span className="font-medium">{bookingData.serviceType === "home" ? "Home Service" : "Branch Visit"}</span>
+                <span className="font-medium">
+                  {bookingData.serviceType === "home"
+                    ? "Home Service"
+                    : "Branch Visit"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Category:</span>
                 <span className="font-medium">
-                  {SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || "-"}
+                  {SERVICE_CATEGORIES[
+                    bookingData.category as keyof typeof SERVICE_CATEGORIES
+                  ]?.name || "-"}
                 </span>
               </div>
               {bookingData.service && (
@@ -2857,7 +2881,9 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Vehicle:</span>
-                <span className="font-medium">{bookingData.unitType} - {bookingData.unitSize}</span>
+                <span className="font-medium">
+                  {bookingData.unitType} - {bookingData.unitSize}
+                </span>
               </div>
             </div>
           </div>
@@ -2909,12 +2935,16 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Vehicle:</span>
-                <span className="font-medium">{bookingData.carModel} ({bookingData.plateNo})</span>
+                <span className="font-medium">
+                  {bookingData.carModel} ({bookingData.plateNo})
+                </span>
               </div>
               {bookingData.serviceType === "home" && bookingData.address && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Address:</span>
-                  <span className="font-medium text-right ml-4">{bookingData.address}</span>
+                  <span className="font-medium text-right ml-4">
+                    {bookingData.address}
+                  </span>
                 </div>
               )}
             </div>
@@ -2929,7 +2959,9 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Method:</span>
-                <span className="font-medium capitalize">{bookingData.paymentMethod}</span>
+                <span className="font-medium capitalize">
+                  {bookingData.paymentMethod}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-border">
                 <span className="font-bold text-foreground">Total Amount:</span>

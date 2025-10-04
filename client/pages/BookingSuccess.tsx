@@ -30,15 +30,22 @@ export default function BookingSuccess() {
     let attempts = 0;
     const poll = async () => {
       try {
-        const res = await fetch(`/api/neon/payment/xendit/invoice-status/${invoiceId}`);
+        const res = await fetch(
+          `/api/neon/payment/xendit/invoice-status/${invoiceId}`,
+        );
         if (res.ok) {
           const data = await res.json();
-          const status = (data.status || data.invoice?.status || '').toUpperCase();
-          if (status === 'PAID' || status === 'SETTLED') {
+          const status = (
+            data.status ||
+            data.invoice?.status ||
+            ""
+          ).toUpperCase();
+          if (status === "PAID" || status === "SETTLED") {
             setReceiptData({
               id: payload.bookingId,
-              confirmationCode: payload.bookingData?.confirmationCode || payload.bookingId,
-              service: payload.bookingData?.service || 'Service',
+              confirmationCode:
+                payload.bookingData?.confirmationCode || payload.bookingId,
+              service: payload.bookingData?.service || "Service",
               category: payload.bookingData?.category,
               date: payload.bookingData?.date,
               timeSlot: payload.bookingData?.timeSlot,
@@ -49,16 +56,16 @@ export default function BookingSuccess() {
               plateNumber: payload.bookingData?.plateNo,
               vehicleModel: payload.bookingData?.carModel,
               totalPrice: payload.bookingData?.totalPrice || 0,
-              paymentMethod: 'online',
-              customerName: payload.bookingData?.fullName || 'Customer',
-              customerEmail: payload.bookingData?.email || '',
-              customerPhone: payload.bookingData?.mobile || '',
+              paymentMethod: "online",
+              customerName: payload.bookingData?.fullName || "Customer",
+              customerEmail: payload.bookingData?.email || "",
+              customerPhone: payload.bookingData?.mobile || "",
             });
             setShowReceipt(true);
             setChecking(false);
             return;
           }
-          if (status === 'EXPIRED' || status === 'FAILED') {
+          if (status === "EXPIRED" || status === "FAILED") {
             setChecking(false);
             navigate(`/booking-failed?bookingId=${payload.bookingId}`);
             return;
@@ -119,7 +126,9 @@ export default function BookingSuccess() {
           <CardContent className="space-y-6">
             <div className="text-center space-y-2">
               <p className="text-lg text-muted-foreground">
-                {checking ? 'Confirming payment with gateway...' : 'Your payment has been processed successfully.'}
+                {checking
+                  ? "Confirming payment with gateway..."
+                  : "Your payment has been processed successfully."}
               </p>
               {bookingId && (
                 <div className="bg-green-50 rounded-lg p-4 mt-4">

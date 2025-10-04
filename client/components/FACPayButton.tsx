@@ -32,17 +32,17 @@ export default function FACPayButton({
 
     // Show loading popup
     Swal.fire({
-      title: 'Opening Payment Gateway',
+      title: "Opening Payment Gateway",
       html: '<div class="flex flex-col items-center"><div class="spinner mb-4"></div><p>Please wait a few seconds...</p></div>',
       allowOutsideClick: false,
       showConfirmButton: false,
       didOpen: () => {
         Swal.showLoading();
-      }
+      },
     });
 
     // Simulate a small delay for UX
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Close the loading popup
     Swal.close();
