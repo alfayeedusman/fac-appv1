@@ -115,6 +115,10 @@ export function createServer() {
   // Analytics endpoints
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
+  // Voucher endpoints
+  app.post("/api/neon/vouchers/validate", neonApiRoutes.validateVoucher);
+  app.post("/api/neon/vouchers/redeem", neonApiRoutes.redeemVoucher);
+
   // Users endpoints
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
   app.get("/api/neon/customers", neonApiRoutes.getCustomers);
