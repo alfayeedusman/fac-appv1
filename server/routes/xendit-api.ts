@@ -9,6 +9,9 @@ const XENDIT_API_URL = 'https://api.xendit.co/v2';
 
 // Create Invoice
 export const createInvoice: RequestHandler = async (req, res) => {
+  console.log('💳 Xendit create invoice request received');
+  console.log('Request body:', req.body);
+
   try {
     const {
       external_id,
