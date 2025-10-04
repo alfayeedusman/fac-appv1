@@ -1541,7 +1541,47 @@ const UnitStep = ({
 };
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
-  const availableSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
+  // Get all slots for the selected date
+  const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
+
+  // Filter out past time slots if date is today
+  const availableSlots = React.useMemo(() => {
+    if (!bookingData?.date) return [];
+
+    const selectedDate = new Date(bookingData.date);
+    const today = new Date();
+
+    // Check if selected date is today
+    const isToday = selectedDate.toDateString() === today.toDateString();
+
+    if (!isToday) {
+      return allSlots;
+    }
+
+    // Filter out past times for today
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+    const currentMinute = currentTime.getMinutes();
+
+    return allSlots.filter(slot => {
+      // Parse time slot (e.g., "9:00 AM" or "2:30 PM")
+      const [time, period] = slot.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+
+      let slotHour = hours;
+      if (period === 'PM' && hours !== 12) {
+        slotHour = hours + 12;
+      } else if (period === 'AM' && hours === 12) {
+        slotHour = 0;
+      }
+
+      // Check if slot time is in the future
+      if (slotHour > currentHour) return true;
+      if (slotHour === currentHour && minutes > currentMinute) return true;
+
+      return false;
+    });
+  }, [bookingData?.date, allSlots]);
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
