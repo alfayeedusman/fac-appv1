@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import {
   MapPin,
   Users,
@@ -57,6 +58,29 @@ interface LocationData {
   };
 }
 
+interface FacMapStats {
+  crew: {
+    total: number;
+    online: number;
+    busy: number;
+    available: number;
+    offline: number;
+  };
+  customers: {
+    total: number;
+    active: number;
+    champions: number;
+    vip: number;
+    loyal: number;
+    regular: number;
+    new: number;
+  };
+  realtime: {
+    timestamp: string;
+    lastUpdate: string;
+  };
+}
+
 export default function AdminFACMap() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>("");
@@ -65,6 +89,68 @@ export default function AdminFACMap() {
     null,
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [facMapStats, setFacMapStats] = useState<FacMapStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Load FAC MAP real-time statistics
+  const loadFacMapStats = async (retryCount = 0) => {
+    const maxRetries = 3;
+
+    try {
+      setStatsLoading(true);
+      console.log(`📊 Loading FAC MAP stats... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+
+      // Add timeout to fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "/api"}/neon/fac-map-stats`, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log("✅ FAC MAP stats loaded:", data.stats);
+        setFacMapStats(data.stats);
+      } else {
+        console.error("❌ Failed to load FAC MAP stats:", data.error);
+        // Keep existing dummy data as fallback
+      }
+    } catch (error: any) {
+      console.error(`❌ Error loading FAC MAP stats (attempt ${retryCount + 1}):`, error.message);
+
+      // Retry on network errors
+      if (retryCount < maxRetries && (
+        error.message?.includes('fetch') ||
+        error.message?.includes('network') ||
+        error.message?.includes('NetworkError') ||
+        error.name === 'AbortError'
+      )) {
+        console.log(`🔄 Retrying in ${(retryCount + 1) * 2} seconds...`);
+        setTimeout(() => {
+          loadFacMapStats(retryCount + 1);
+        }, (retryCount + 1) * 2000); // Exponential backoff: 2s, 4s, 6s
+        return;
+      }
+
+      // Keep existing dummy data as fallback after all retries fail
+      console.warn("⚠️ Using fallback data for FAC MAP stats");
+    } finally {
+      if (retryCount === 0 || retryCount >= maxRetries) {
+        setStatsLoading(false);
+      }
+    }
+  };
 
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
@@ -102,6 +188,17 @@ export default function AdminFACMap() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [navigate]);
 
+  // Load FAC MAP stats when component mounts and user is authenticated
+  useEffect(() => {
+    if (userRole && !isLoading) {
+      loadFacMapStats();
+
+      // Set up auto-refresh every 30 seconds
+      const interval = setInterval(loadFacMapStats, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [userRole, isLoading]);
+
   // Show loading while checking auth
   if (isLoading) {
     return (
@@ -124,7 +221,7 @@ export default function AdminFACMap() {
   };
 
   const refreshData = () => {
-    window.location.reload();
+    loadFacMapStats();
   };
 
   return (
@@ -156,6 +253,17 @@ export default function AdminFACMap() {
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   Real-time location tracking and heat map visualization
                 </p>
+                {facMapStats?.realtime.lastUpdate && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Last updated: {facMapStats.realtime.lastUpdate}
+                    {statsLoading && (
+                      <span className="ml-2 inline-flex items-center">
+                        <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500 inline-block"></span>
+                        <span className="ml-1">updating...</span>
+                      </span>
+                    )}
+                  </p>
+                )}
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <AdminNotificationDropdown />
@@ -189,7 +297,7 @@ export default function AdminFACMap() {
                       Total Crew
                     </p>
                     <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      20
+                      {statsLoading ? "..." : (facMapStats?.crew.total || 20)}
                     </p>
                   </div>
                 </div>
@@ -207,7 +315,7 @@ export default function AdminFACMap() {
                       Online Crew
                     </p>
                     <p className="text-xl font-bold text-green-900 dark:text-green-100">
-                      18
+                      {statsLoading ? "..." : (facMapStats?.crew.online || 18)}
                     </p>
                   </div>
                 </div>
@@ -225,7 +333,7 @@ export default function AdminFACMap() {
                       Busy Crew
                     </p>
                     <p className="text-xl font-bold text-orange-900 dark:text-orange-100">
-                      12
+                      {statsLoading ? "..." : (facMapStats?.crew.busy || 12)}
                     </p>
                   </div>
                 </div>
@@ -243,7 +351,7 @@ export default function AdminFACMap() {
                       Customers
                     </p>
                     <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
-                      50
+                      {statsLoading ? "..." : (facMapStats?.customers.total || 50)}
                     </p>
                   </div>
                 </div>
@@ -261,7 +369,7 @@ export default function AdminFACMap() {
                       Active
                     </p>
                     <p className="text-xl font-bold text-indigo-900 dark:text-indigo-100">
-                      47
+                      {statsLoading ? "..." : (facMapStats?.customers.active || 47)}
                     </p>
                   </div>
                 </div>
@@ -279,7 +387,7 @@ export default function AdminFACMap() {
                       Available
                     </p>
                     <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">
-                      8
+                      {statsLoading ? "..." : (facMapStats?.crew.available || 8)}
                     </p>
                   </div>
                 </div>
@@ -300,7 +408,7 @@ export default function AdminFACMap() {
                       Champions
                     </p>
                     <p className="text-xl font-bold text-yellow-900 dark:text-yellow-100">
-                      5
+                      {statsLoading ? "..." : (facMapStats?.customers.champions || 5)}
                     </p>
                   </div>
                 </div>
@@ -318,7 +426,7 @@ export default function AdminFACMap() {
                       VIP
                     </p>
                     <p className="text-xl font-bold text-red-900 dark:text-red-100">
-                      12
+                      {statsLoading ? "..." : (facMapStats?.customers.vip || 12)}
                     </p>
                   </div>
                 </div>
@@ -336,7 +444,7 @@ export default function AdminFACMap() {
                       Loyal
                     </p>
                     <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
-                      18
+                      {statsLoading ? "..." : (facMapStats?.customers.loyal || 18)}
                     </p>
                   </div>
                 </div>
@@ -354,7 +462,7 @@ export default function AdminFACMap() {
                       Regular
                     </p>
                     <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      10
+                      {statsLoading ? "..." : (facMapStats?.customers.regular || 10)}
                     </p>
                   </div>
                 </div>
@@ -372,7 +480,7 @@ export default function AdminFACMap() {
                       New
                     </p>
                     <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                      5
+                      {statsLoading ? "..." : (facMapStats?.customers.new || 5)}
                     </p>
                   </div>
                 </div>
@@ -482,7 +590,9 @@ export default function AdminFACMap() {
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         <span className="text-sm font-medium">Online</span>
                       </div>
-                      <Badge className="bg-green-500 text-white">18 Crew</Badge>
+                      <Badge className="bg-green-500 text-white">
+                        {statsLoading ? "..." : (facMapStats?.crew.online || 18)} Crew
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-orange-50 dark:bg-orange-950 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -490,7 +600,7 @@ export default function AdminFACMap() {
                         <span className="text-sm font-medium">Busy</span>
                       </div>
                       <Badge className="bg-orange-500 text-white">
-                        12 Crew
+                        {statsLoading ? "..." : (facMapStats?.crew.busy || 12)} Crew
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-purple-50 dark:bg-purple-950 rounded-lg">
@@ -499,7 +609,7 @@ export default function AdminFACMap() {
                         <span className="text-sm font-medium">Customers</span>
                       </div>
                       <Badge className="bg-purple-500 text-white">
-                        47 Active
+                        {statsLoading ? "..." : (facMapStats?.customers.active || 47)} Active
                       </Badge>
                     </div>
                   </div>

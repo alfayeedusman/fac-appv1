@@ -9,24 +9,28 @@ import {
   Sparkles,
   Clock,
   CheckCircle,
+  X,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StepperBooking from "@/components/StepperBooking";
+import { useState } from "react";
 
 export default function GuestBooking() {
+  const [showInfoCard, setShowInfoCard] = useState(true);
+
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-fac-orange-500/8 to-purple-500/8 blur-xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 rounded-full bg-gradient-to-r from-blue-500/8 to-fac-orange-500/8 blur-xl animate-float animate-delay-200"></div>
-        <div className="absolute bottom-40 left-1/4 w-40 h-40 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-breathe"></div>
-        <div className="absolute top-1/2 right-10 w-20 h-20 rounded-full bg-gradient-to-r from-green-500/6 to-blue-500/6 blur-lg animate-float animate-delay-500"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-fac-orange-500/8 to-purple-500/8 blur-xl"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 rounded-full bg-gradient-to-r from-blue-500/8 to-fac-orange-500/8 blur-xl"></div>
+        <div className="absolute bottom-40 left-1/4 w-40 h-40 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl"></div>
+        <div className="absolute top-1/2 right-10 w-20 h-20 rounded-full bg-gradient-to-r from-green-500/6 to-blue-500/6 blur-lg"></div>
       </div>
 
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-30">
-        <div className="glass rounded-full p-1 animate-fade-in-scale">
+        <div className="glass rounded-full p-1">
           <ThemeToggle />
         </div>
       </div>
@@ -37,7 +41,7 @@ export default function GuestBooking() {
           <Button
             variant="ghost"
             size="sm"
-            className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-all animate-fade-in-up"
+            className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -46,7 +50,7 @@ export default function GuestBooking() {
 
       {/* Header Section */}
       <div className="pt-20 px-6 relative z-10">
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-8">
           <Badge className="mb-4 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
             Quick Booking
           </Badge>
@@ -61,9 +65,17 @@ export default function GuestBooking() {
           </p>
         </div>
 
-        {/* Enhanced Info Card */}
-        <div className="max-w-md mx-auto mb-8">
-          <Card className="glass border-border/50 shadow-xl animate-fade-in-up animate-delay-200">
+        {/* Enhanced Info Card (dismissible; reappears on refresh) */}
+        {showInfoCard && (
+        <div className="max-w-md mx-auto mb-8 relative">
+          <button
+            aria-label="Close"
+            onClick={() => setShowInfoCard(false)}
+            className="absolute -top-3 -right-3 z-10 h-9 w-9 rounded-full bg-white/90 dark:bg-gray-900/90 border border-border shadow-md flex items-center justify-center hover:bg-muted/70 active:scale-95 transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <Card className="glass border-border/50 shadow-xl">
             <CardContent className="p-6">
               <div className="text-center mb-6">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 flex items-center justify-center mx-auto mb-4">
@@ -126,10 +138,11 @@ export default function GuestBooking() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        )}
+        </div>
 
       {/* Booking Form */}
-      <div className="relative z-10 animate-fade-in-up animate-delay-400">
+      <div className="relative z-10">
         <StepperBooking isGuest={true} />
       </div>
     </div>

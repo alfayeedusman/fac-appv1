@@ -363,12 +363,12 @@ export default function Index() {
   const getButtonVariantClass = (variant: string) => {
     switch (variant) {
       case "primary":
-        return "w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300";
+        return "w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 group transition-transform duration-200 active:translate-y-[1px]";
       case "secondary":
-        return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-secondary hover:border-secondary-foreground transition-all duration-300";
+        return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-secondary hover:border-secondary-foreground transition-colors duration-200 active:translate-y-[1px]";
       case "outline":
       default:
-        return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-fac-orange-50 hover:border-fac-orange-200 dark:hover:bg-fac-orange-950 transition-all duration-300";
+        return "w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-fac-orange-50 hover:border-fac-orange-200 dark:hover:bg-fac-orange-950 transition-colors duration-200 active:translate-y-[1px]";
     }
   };
 
@@ -474,7 +474,7 @@ export default function Index() {
               <Link
                 key={button.id}
                 to={button.link}
-                className={`block animate-fade-in-up animate-delay-${500 + index * 100}`}
+                className="block"
               >
                 <Button className={getButtonVariantClass(button.variant)}>
                   <span className="flex items-center justify-center">

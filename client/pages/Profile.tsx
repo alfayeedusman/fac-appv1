@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
   User,
   Mail,
   Phone,
@@ -26,13 +25,14 @@ import {
   Trophy,
   CreditCard,
 } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 import VehicleSelector from "@/components/VehicleSelector";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import LevelProgress from "@/components/LevelProgress";
 import UserQRCode from "@/components/UserQRCode";
+import MembershipBadge from "@/components/MembershipBadge";
+import { swalHelpers } from "@/utils/swalHelpers";
 
 interface UserProfile {
   name: string;
@@ -62,6 +62,10 @@ export default function Profile() {
   );
 
   const getUserProfile = (): UserProfile => {
+    const picture =
+      currentUser?.profilePicture ||
+      localStorage.getItem(`userProfilePicture_${userEmail}`) ||
+      "";
     return {
       name: currentUser?.fullName || signUpData.fullName || "User",
       email: currentUser?.email || userEmail,
@@ -73,12 +77,83 @@ export default function Profile() {
       joinDate:
         currentUser?.registeredAt?.split("T")[0] ||
         new Date().toISOString().split("T")[0],
+      profilePicture: picture,
     };
   };
 
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  const fileInputId = "profile_pic_input";
+
+  const saveProfilePicture = (dataUrl: string) => {
+    const key = `userProfilePicture_${(profile.email || "").trim()}`;
+    localStorage.setItem(key, dataUrl);
+    try {
+      const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+      const idx = users.findIndex((u: any) => u.email === profile.email);
+      if (idx !== -1) {
+        users[idx].profilePicture = dataUrl;
+        localStorage.setItem("registeredUsers", JSON.stringify(users));
+      }
+    } catch {}
+  };
+
+  const compressImage = async (file: File, maxSize = 512): Promise<string> => {
+    const img = document.createElement("img");
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onload = () => {
+        if (!reader.result) return reject(new Error("Failed to read image"));
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas not supported"));
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error("Invalid image"));
+        img.src = reader.result as string;
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const onProfileImageChange = async (e: any) => {
+    const file = e.target?.files?.[0] as File | undefined;
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      await swalHelpers.showError(
+        "Invalid File",
+        "Please select an image file.",
+      );
+      return;
+    }
+    try {
+      const dataUrl = await compressImage(file, 512);
+      setProfile((p) => ({ ...p, profilePicture: dataUrl }));
+      setEditedProfile((p) => ({ ...p, profilePicture: dataUrl }));
+      saveProfilePicture(dataUrl);
+      await swalHelpers.showSuccess("Profile Photo Updated");
+    } catch (err) {
+      await swalHelpers.showError(
+        "Upload Failed",
+        "Could not process the image.",
+      );
+    } finally {
+      const el = document.getElementById(
+        fileInputId,
+      ) as HTMLInputElement | null;
+      if (el) el.value = "";
+    }
+  };
 
   const handleSave = () => {
     setProfile(editedProfile);
@@ -96,35 +171,19 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <StickyHeader showBack={true} title="Profile" />
+    <div className="min-h-screen bg-background pb-28">
+      <StickyHeader showBack={true} title="Profile" alwaysVisible />
 
-      {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 z-20 flex gap-2">
-        <div className="rounded-full p-1">
-          <ThemeToggle />
-        </div>
-      </div>
-
-      <div className="px-6 py-8 max-w-2xl mx-auto relative z-10">
+      <div className="px-4 pt-24 pb-8 max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link to="/dashboard" className="mr-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <div className="bg-fac-orange-500 p-3 rounded-xl">
-              <User className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
-              <p className="text-muted-foreground">
-                Manage your account and preferences
-              </p>
-            </div>
+        <div className="mb-6 text-center">
+          <div className="w-12 h-12 rounded-xl bg-fac-orange-500 flex items-center justify-center mx-auto mb-2">
+            <User className="h-6 w-6 text-white" />
           </div>
+          <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your account and preferences
+          </p>
         </div>
 
         {/* Profile Overview Card */}
@@ -134,28 +193,38 @@ export default function Profile() {
               <div className="flex items-center space-x-6">
                 {/* Profile Picture */}
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-fac-orange-500 flex items-center justify-center">
-                    {profile.profilePicture && profile.profilePicture.trim() !== "" ? (
+                  <div className="w-16 h-16 rounded-2xl bg-fac-orange-500 flex items-center justify-center overflow-hidden">
+                    {profile.profilePicture &&
+                    profile.profilePicture.trim() !== "" ? (
                       <img
                         src={profile.profilePicture}
                         alt="Profile picture"
-                        className="w-full h-full rounded-2xl object-cover"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.warn(`Failed to load profile picture: ${profile.profilePicture}`);
-                          // Replace with User icon
                           const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
-                          }
+                          if (parent)
+                            parent.innerHTML =
+                              '<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
                         }}
                       />
                     ) : (
-                      <User className="h-10 w-10 text-white" />
+                      <User className="h-8 w-8 text-white" />
                     )}
                   </div>
+                  <input
+                    id={fileInputId}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onProfileImageChange}
+                  />
                   <Button
                     size="sm"
                     className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0 bg-background border-2 border-border hover:bg-accent"
+                    onClick={() =>
+                      document.getElementById(fileInputId)?.click()
+                    }
+                    title="Change profile photo"
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
@@ -168,10 +237,7 @@ export default function Profile() {
                   </h2>
                   <p className="text-muted-foreground">{profile.email}</p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <Badge className="bg-fac-orange-500 text-white font-bold">
-                      <Crown className="h-3 w-3 mr-1" />
-                      {profile.membershipType}
-                    </Badge>
+                    <MembershipBadge membershipType={profile.membershipType} />
                     <Badge className="bg-green-500 text-white font-bold">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       VERIFIED
@@ -199,7 +265,7 @@ export default function Profile() {
         {/* QR Code Card */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <QrCode className="h-6 w-6 text-white" />
               </div>
@@ -208,7 +274,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="bg-muted rounded-2xl p-8 mb-6 mx-auto max-w-sm">
+              <div className="bg-muted rounded-2xl p-6 mb-6 mx-auto max-w-sm">
                 {/* Real QR Code Component */}
                 <div className="flex flex-col items-center">
                   <UserQRCode
@@ -241,7 +307,7 @@ export default function Profile() {
         {/* Digital Membership Card */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Star className="h-6 w-6 text-white" />
               </div>
@@ -291,7 +357,7 @@ export default function Profile() {
         {/* Gamification Progress */}
         <Card className="glass border-border shadow-2xl animate-fade-in-up animate-delay-400">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 rounded-xl mr-4">
                 <Trophy className="h-6 w-6 text-white" />
               </div>
@@ -306,7 +372,7 @@ export default function Profile() {
         {/* Profile Details */}
         <Card className="border shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground text-2xl">
+            <CardTitle className="flex items-center text-foreground text-xl sm:text-2xl">
               <div className="bg-fac-orange-500 p-3 rounded-xl mr-4">
                 <Settings className="h-6 w-6 text-white" />
               </div>

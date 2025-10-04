@@ -8,8 +8,13 @@ import demoRoutes from "./routes/demo.js";
 import customerApiRoutes from "./routes/customer-api.js";
 import otpApiRoutes from "./routes/otp-api.js";
 import * as neonApiRoutes from "./routes/neon-api.js";
+import * as crewApiRoutes from "./routes/crew-api.js";
+import * as xenditApiRoutes from "./routes/xendit-api.js";
 import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
+import cmsApiRoutes from "./routes/cms-api.js";
+import { seedBranches } from "./database/seed-branches.js";
+import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,6 +75,7 @@ export const createServer = () => {
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
+  app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
 
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
@@ -100,6 +106,7 @@ export const createServer = () => {
 
   // Branches endpoints
   app.get("/api/neon/branches", neonApiRoutes.getBranches);
+  app.post("/api/neon/branches", branchesApi.createBranch);
 
   // Service packages endpoints
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
@@ -113,14 +120,53 @@ export const createServer = () => {
   // Analytics endpoints
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
+  // Xendit Payment endpoints
+  app.post(
+    "/api/neon/payment/xendit/create-invoice",
+    xenditApiRoutes.createInvoice,
+  );
+  app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
+  app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
+
   // Users endpoints (for customer management)
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
+
+  // Admin utilities
+  app.post(
+    "/api/neon/admin/fix-booking-userids",
+    neonApiRoutes.fixBookingUserIds,
+  );
+
+  // User vehicles and address endpoints
+  app.get("/api/neon/users/:userId/vehicles", neonApiRoutes.getUserVehicles);
+  app.post("/api/neon/users/:userId/vehicles", neonApiRoutes.addUserVehicle);
+  app.put(
+    "/api/neon/users/:userId/vehicles/:vehicleId",
+    neonApiRoutes.updateUserVehicle,
+  );
+  app.delete(
+    "/api/neon/users/:userId/vehicles/:vehicleId",
+    neonApiRoutes.deleteUserVehicle,
+  );
+  app.put("/api/neon/users/:userId/address", neonApiRoutes.updateUserAddress);
+
+  // ============= CREW MANAGEMENT API =============
+  app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
+  app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
+  app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
+  app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew); // For development only
 
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
 
   // ============= IMAGE MANAGEMENT API =============
   app.use("/api/images", imagesApiRoutes);
+
+  // ============= CMS CONTENT MANAGEMENT API =============
+  console.log("🎨 Registering CMS API routes...");
+  app.use("/api/cms", cmsApiRoutes);
+  console.log("🎨 CMS API routes registered successfully");
 
   // Serve React admin app for everything that's NOT an API route
   const reactBuildPath = path.join(__dirname, "../dist/spa");
@@ -147,5 +193,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`🚀 FAC Server running on port ${PORT}`);
     console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
     console.log(`🏠 Home: http://localhost:${PORT}/`);
+
+    // Seed branch data after server startup
+    setTimeout(async () => {
+      try {
+        console.log("🏪 Auto-seeding branch data...");
+        await seedBranches();
+        console.log("✅ Branch seeding completed successfully");
+      } catch (error) {
+        console.log("⚠️ Branch seeding failed:", error);
+      }
+    }, 3000);
   });
 }

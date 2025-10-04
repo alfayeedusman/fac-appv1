@@ -78,9 +78,16 @@ export default function AnalyticsCharts({
       setError(null);
       console.log("📊 Fetching analytics data for filter:", timeFilter);
 
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
+
       const response = await fetch(
         `/api/neon/analytics?timeFilter=${timeFilter}`,
+        { signal: ac.signal },
       );
+
+      clearTimeout(to);
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -95,7 +102,11 @@ export default function AnalyticsCharts({
       }
     } catch (err: any) {
       console.error("❌ Analytics fetch error:", err);
-      setError(err.message || "Failed to load analytics data");
+      if (err?.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError(err.message || "Failed to load analytics data");
+      }
 
       // Fallback to empty data structure
       setAnalyticsData({

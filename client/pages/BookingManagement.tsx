@@ -28,19 +28,16 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import BookingCard from "@/components/BookingCard";
-import {
-  BookingRecord,
-  getBookings,
-  getBookingsByStatus,
-  getRecentBookings,
-} from "@/utils/bookingData";
+import { neonDbClient } from "@/services/neonDatabaseService";
+import type { Booking } from "@/services/neonDatabaseService";
 
 export default function BookingManagement() {
-  const [bookings, setBookings] = useState<BookingRecord[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<BookingRecord[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadBookings();
@@ -50,9 +47,71 @@ export default function BookingManagement() {
     filterAndSortBookings();
   }, [bookings, searchTerm, statusFilter, sortBy]);
 
-  const loadBookings = () => {
-    const allBookings = getBookings();
-    setBookings(allBookings);
+  const loadBookings = async () => {
+    setIsLoading(true);
+    try {
+      const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
+
+      if (!userId || !userEmail) {
+        console.warn("No user logged in");
+        setBookings([]);
+        return;
+      }
+
+      console.log(
+        "📥 Fetching bookings for user:",
+        userEmail,
+        "userId:",
+        userId,
+      );
+      const result = await neonDbClient.getBookings({ userId });
+
+      if (result.success && result.bookings) {
+        console.log(
+          "✅ Loaded",
+          result.bookings.length,
+          "real bookings from database",
+        );
+        setBookings(result.bookings);
+      } else {
+        console.warn("⚠️ No bookings found or fetch failed");
+        setBookings([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading bookings:", error);
+      setBookings([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFixBookingUserIds = async () => {
+    if (
+      !confirm(
+        "This will fix bookings that have email addresses in the userId field. Continue?",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      console.log("🔧 Running booking userId fix...");
+      const result = await neonDbClient.fixBookingUserIds();
+
+      if (result.success) {
+        alert(
+          `Fixed ${result.fixed} out of ${result.total} bookings!${result.errors ? "\n\nErrors: " + result.errors.join("\n") : ""}`,
+        );
+        // Reload bookings
+        loadBookings();
+      } else {
+        alert("Failed to fix bookings");
+      }
+    } catch (error) {
+      console.error("Error fixing bookings:", error);
+      alert("Error fixing bookings: " + error);
+    }
   };
 
   const filterAndSortBookings = () => {
@@ -69,6 +128,10 @@ export default function BookingManagement() {
         (booking) =>
           booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
           booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (booking.confirmationCode &&
+            booking.confirmationCode
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
           booking.branch.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
@@ -87,7 +150,7 @@ export default function BookingManagement() {
         case "date":
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         case "rating":
-          return (b.rating || 0) - (a.rating || 0);
+          return (b.customerRating || 0) - (a.customerRating || 0);
         default:
           return 0;
       }
@@ -99,18 +162,18 @@ export default function BookingManagement() {
   const getStatusStats = () => {
     const stats = {
       total: bookings.length,
-      pending: getBookingsByStatus("pending").length,
-      confirmed: getBookingsByStatus("confirmed").length,
-      completed: getBookingsByStatus("completed").length,
-      cancelled: getBookingsByStatus("cancelled").length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      completed: bookings.filter((b) => b.status === "completed").length,
+      cancelled: bookings.filter((b) => b.status === "cancelled").length,
     };
 
     const averageRating =
-      bookings.filter((b) => b.rating).length > 0
+      bookings.filter((b) => b.customerRating).length > 0
         ? bookings
-            .filter((b) => b.rating)
-            .reduce((sum, b) => sum + (b.rating || 0), 0) /
-          bookings.filter((b) => b.rating).length
+            .filter((b) => b.customerRating)
+            .reduce((sum, b) => sum + (b.customerRating || 0), 0) /
+          bookings.filter((b) => b.customerRating).length
         : 0;
 
     return { ...stats, averageRating };
@@ -164,6 +227,21 @@ export default function BookingManagement() {
             </div>
           </div>
         </div>
+
+        {/* Admin Fix Button */}
+        {(localStorage.getItem("userRole") === "admin" ||
+          localStorage.getItem("userRole") === "superadmin") && (
+          <div className="mb-4">
+            <Button
+              onClick={handleFixBookingUserIds}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              🔧 Fix Booking User IDs (Admin)
+            </Button>
+          </div>
+        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up animate-delay-100">
@@ -280,7 +358,21 @@ export default function BookingManagement() {
 
         {/* Bookings List */}
         <div className="space-y-6 animate-fade-in-up animate-delay-400">
-          {filteredBookings.length === 0 ? (
+          {isLoading ? (
+            <Card className="glass border-border">
+              <CardContent className="p-8 text-center">
+                <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500"></div>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Loading your bookings...
+                </h3>
+                <p className="text-muted-foreground">
+                  Please wait while we fetch your booking history
+                </p>
+              </CardContent>
+            </Card>
+          ) : filteredBookings.length === 0 ? (
             <Card className="glass border-border">
               <CardContent className="p-8 text-center">
                 <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">

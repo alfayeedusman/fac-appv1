@@ -121,9 +121,10 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 50 }).notNull().default("user"), // 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew'
   contactNumber: varchar("contact_number", { length: 20 }),
   address: text("address"),
-  carUnit: varchar("car_unit", { length: 255 }),
-  carPlateNumber: varchar("car_plate_number", { length: 20 }),
-  carType: varchar("car_type", { length: 100 }),
+  defaultAddress: text("default_address"), // For home service bookings
+  carUnit: varchar("car_unit", { length: 255 }), // Legacy - kept for backward compatibility
+  carPlateNumber: varchar("car_plate_number", { length: 20 }), // Legacy
+  carType: varchar("car_type", { length: 100 }), // Legacy
   branchLocation: varchar("branch_location", { length: 255 }).notNull(),
   profileImage: text("profile_image"),
   isActive: boolean("is_active").notNull().default(true),
@@ -140,6 +141,23 @@ export const users = pgTable("users", {
   crewRating: decimal("crew_rating", { precision: 3, scale: 2 }),
   crewExperience: integer("crew_experience"),
   lastLoginAt: timestamp("last_login_at"),
+  // Branch access control
+  canViewAllBranches: boolean("can_view_all_branches").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// User Vehicles table (for multiple vehicles support)
+export const userVehicles = pgTable("user_vehicles", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id").notNull(), // Foreign key to users.id
+  unitType: varchar("unit_type", { length: 20 }).notNull(), // 'car' | 'motorcycle'
+  unitSize: varchar("unit_size", { length: 50 }).notNull(), // sedan, suv, pickup, regular, medium, big_bike
+  plateNumber: varchar("plate_number", { length: 20 }).notNull(),
+  vehicleModel: varchar("vehicle_model", { length: 255 }).notNull(), // e.g., "Toyota Hilux 2024"
+  isDefault: boolean("is_default").notNull().default(false), // One default vehicle per user
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -162,6 +180,9 @@ export const bookings = pgTable("bookings", {
   // Service Details
   category: varchar("category", { length: 50 }).notNull(), // 'carwash' | 'auto_detailing' | 'graphene_coating'
   service: varchar("service", { length: 255 }).notNull(),
+  serviceType: varchar("service_type", { length: 20 })
+    .notNull()
+    .default("branch"), // 'branch' | 'home'
 
   // Vehicle Details
   unitType: varchar("unit_type", { length: 20 }).notNull(), // 'car' | 'motorcycle'
@@ -182,7 +203,7 @@ export const bookings = pgTable("bookings", {
   currency: varchar("currency", { length: 10 }).notNull().default("PHP"),
 
   // Payment Details
-  paymentMethod: varchar("payment_method", { length: 50 }), // 'cash' | 'online' | 'gcash'
+  paymentMethod: varchar("payment_method", { length: 50 }), // 'cash' | 'online' | 'gcash' | 'onsite' | 'branch'
   paymentStatus: varchar("payment_status", { length: 50 })
     .notNull()
     .default("pending"),
@@ -1057,3 +1078,6 @@ export const notificationDeliveries = pgTable("notification_deliveries", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// Export CMS schema types and tables
+export * from "./cmsSchema.js";

@@ -88,20 +88,24 @@
 
 /* Animation Classes */
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 .animate-fade-in-scale {
-  animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: none !important;
 }
 
 
 .animate-breathe {
-  animation: breathe 4s ease-in-out infinite;
+  animation: none !important;
 }
 
 .animate-ping-slow {

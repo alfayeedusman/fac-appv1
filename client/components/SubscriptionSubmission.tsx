@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -54,10 +54,10 @@ export default function SubscriptionSubmission({
   const [userPhone, setUserPhone] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const receiptObjectUrlRef = React.useRef<string | null>(null);
+  const receiptObjectUrlRef = useRef<string | null>(null);
 
   // Cleanup object URLs when component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (receiptObjectUrlRef.current) {
         URL.revokeObjectURL(receiptObjectUrlRef.current);

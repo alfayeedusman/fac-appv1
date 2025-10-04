@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import BranchFilter from '@/components/BranchFilter';
+import { neonDbClient } from '@/services/neonDatabaseService';
 import {
   Calendar,
   Clock,
@@ -108,45 +110,62 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
   const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedCrew, setSelectedCrew] = useState<string[]>([]);
   const [newStatus, setNewStatus] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
+  const [canViewAllBranches, setCanViewAllBranches] = useState(false);
+  const [userBranch, setUserBranch] = useState<string | null>(null);
 
   useEffect(() => {
     loadBookings();
     loadCrewMembers();
-  }, []);
+  }, [branchFilter]);
 
-  const loadBookings = () => {
+  const loadBookings = async () => {
     try {
-      // Use the database schema to get all bookings
-      const databaseBookings = getAllBookings();
+      // Get current user info
+      const userEmail = localStorage.getItem('userEmail');
 
-      const allBookings = databaseBookings.map(booking => ({
-        ...booking,
-        customerName: booking.guestInfo ?
-          `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
-          'Registered Customer',
-        customerEmail: booking.guestInfo?.email || 'N/A',
-        customerPhone: booking.guestInfo?.phone || 'N/A',
-        customerAddress: 'N/A', // This would need to be added to booking schema if needed
-        plateNumber: booking.plateNumber || 'N/A',
-        status: booking.status || 'pending',
-        createdAt: booking.createdAt || new Date().toISOString(),
-      }));
+      // Fetch bookings from Neon database with branch filtering
+      const result = await neonDbClient.getBookings({
+        branch: branchFilter,
+        userEmail: userEmail || undefined,
+        userRole: userRole,
+      });
 
-      // Sort by creation date (newest first)
-      allBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      if (result.success && result.bookings) {
+        // Store branch access info
+        setCanViewAllBranches(result.canViewAllBranches || false);
+        setUserBranch(result.userBranch || null);
 
-      setBookings(allBookings);
+        // Map bookings to match the expected format
+        const allBookings = result.bookings.map(booking => ({
+          ...booking,
+          customerName: booking.guestInfo ?
+            `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
+            'Registered Customer',
+          customerEmail: booking.guestInfo?.email || 'N/A',
+          customerPhone: booking.guestInfo?.phone || 'N/A',
+          customerAddress: booking.serviceLocation || 'N/A',
+          plateNumber: booking.plateNumber || 'N/A',
+          status: booking.status || 'pending',
+          createdAt: booking.createdAt || new Date().toISOString(),
+        }));
 
-      console.log(`✅ Loaded ${allBookings.length} bookings from database`);
+        // Sort by creation date (newest first)
+        allBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        setBookings(allBookings);
+
+        console.log(`✅ Loaded ${allBookings.length} bookings from Neon database (branch: ${branchFilter})`);
+      }
     } catch (error) {
       console.error('Error loading bookings:', error);
       toast({
         title: "Error",
-        description: "Failed to load bookings",
+        description: "Failed to load bookings from database",
         variant: "destructive",
       });
     }
@@ -512,7 +531,7 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <Label>Search</Label>
               <div className="relative">
@@ -524,6 +543,15 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
                   className="pl-10"
                 />
               </div>
+            </div>
+            <div>
+              <BranchFilter
+                value={branchFilter}
+                onChange={setBranchFilter}
+                canViewAllBranches={canViewAllBranches}
+                userBranch={userBranch}
+                label="Branch"
+              />
             </div>
             <div>
               <Label>Status Filter</Label>
@@ -556,10 +584,11 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
               />
             </div>
             <div className="flex items-end">
-              <Button 
+              <Button
                 onClick={() => {
                   setSearchTerm('');
                   setStatusFilter('all');
+                  setBranchFilter('all');
                   setDateFilter('');
                 }}
                 variant="outline"

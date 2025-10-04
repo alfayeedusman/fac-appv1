@@ -2,21 +2,32 @@
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js');
 
-// Firebase configuration - should match client config
+// Firebase configuration for facapp project
 const firebaseConfig = {
-  apiKey: "AIzaSyD_your_api_key", // This will be replaced by build process
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM",
+  authDomain: "facapp-dbdc1.firebaseapp.com",
+  projectId: "facapp-dbdc1",
+  storageBucket: "facapp-dbdc1.firebasestorage.app",
+  messagingSenderId: "964995288467",
+  appId: "1:964995288467:web:a933dcdc046b3f17422c66"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase with error handling
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log('✅ Firebase initialized in service worker');
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase in service worker:', error);
+}
 
-// Get messaging instance
-const messaging = firebase.messaging();
+// Get messaging instance with error handling
+let messaging = null;
+try {
+  messaging = firebase.messaging();
+  console.log('✅ Firebase messaging initialized in service worker');
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase messaging in service worker:', error);
+}
 
 // Handle background messages
 messaging.onBackgroundMessage(function(payload) {

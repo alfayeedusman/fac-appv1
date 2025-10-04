@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import PaymentUploadModal from "@/components/PaymentUploadModal";
+import FACPayModal from "@/components/FACPayModal";
 import SwipeablePackageModal from "@/components/SwipeablePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
@@ -80,6 +81,7 @@ export default function ManageSubscription() {
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFACPayModal, setShowFACPayModal] = useState(false);
   const [showSwipeablePackageModal, setShowSwipeablePackageModal] =
     useState(false);
   const [showSubscriptionSubmission, setShowSubscriptionSubmission] =
@@ -283,7 +285,17 @@ export default function ManageSubscription() {
     setSelectedPlan(packageId);
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
     setShowSwipeablePackageModal(false);
-    setShowPaymentModal(true);
+
+    // Show payment method selection
+    const result = window.confirm(
+      "Choose Payment Method:\n\nOK = Pay with FACPay (Instant)\nCancel = Upload Receipt (Manual)",
+    );
+
+    if (result) {
+      setShowFACPayModal(true);
+    } else {
+      setShowPaymentModal(true);
+    }
   };
 
   const handleCancellation = () => {
@@ -848,6 +860,24 @@ export default function ManageSubscription() {
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
         onStatusUpdate={() => {
+          refreshSubscriptionStatus();
+        }}
+      />
+
+      {/* FACPay Modal */}
+      <FACPayModal
+        isOpen={showFACPayModal}
+        onClose={() => {
+          setShowFACPayModal(false);
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
+        currentPlan={currentPlan}
+        selectedPlan={selectedPlan}
+        planPrice={pricing.total}
+        paymentType="upgrade"
+        onPaymentSuccess={() => {
           refreshSubscriptionStatus();
         }}
       />

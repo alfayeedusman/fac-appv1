@@ -119,63 +119,113 @@ export default function AdminImageManager() {
   }, [selectedCategory, searchTerm]);
 
   const loadStats = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch('/api/images/stats');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images/stats`,
+        {
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load image stats:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== "AbortError") {
+        console.error("Failed to load image stats:", error);
+      }
     }
   };
 
   const loadImages = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        page: '1',
-        limit: '50',
-        ...(selectedCategory !== 'all' && { category: selectedCategory }),
+        page: "1",
+        limit: "50",
+        ...(selectedCategory !== "all" && { category: selectedCategory }),
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`/api/images?${params}`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images?${params}`,
+        {
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setImages(result.data);
       } else {
-        setError('Failed to load images');
+        setError("Failed to load images");
       }
-    } catch (error) {
-      console.error('Failed to load images:', error);
-      setError('Failed to load images');
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        console.error("Failed to load images:", error);
+        setError("Failed to load images");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   const loadCollections = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch('/api/images/collections');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images/collections`,
+        {
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setCollections(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load collections:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== "AbortError") {
+        console.error("Failed to load collections:", error);
+      }
     }
   };
 
   const handleDeleteImage = async (imageId: string) => {
-    try {
-      const response = await fetch(`/api/images/${imageId}`, {
-        method: 'DELETE',
-      });
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
 
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images/${imageId}`,
+        {
+          method: "DELETE",
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
 
       if (result.success) {
@@ -183,24 +233,37 @@ export default function AdminImageManager() {
           title: "✅ Image Deleted",
           description: "Image has been successfully deleted",
         });
-        
+
         await loadImages();
         await loadStats();
       } else {
-        setError('Failed to delete image');
+        setError("Failed to delete image");
       }
-    } catch (error) {
-      console.error('Failed to delete image:', error);
-      setError('Failed to delete image');
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        console.error("Failed to delete image:", error);
+        setError("Failed to delete image");
+      }
     }
   };
 
   const handleDownloadImage = async (image: ImageData) => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
+
     try {
-      const response = await fetch(image.publicUrl);
+      const response = await fetch(image.publicUrl, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = image.originalName;
       document.body.appendChild(a);
@@ -212,9 +275,13 @@ export default function AdminImageManager() {
         title: "✅ Download Started",
         description: `Downloading ${image.originalName}`,
       });
-    } catch (error) {
-      console.error('Download failed:', error);
-      setError('Failed to download image');
+    } catch (error: any) {
+      if (error?.name === "AbortError") {
+        setError("Download timed out. Please try again.");
+      } else {
+        console.error("Download failed:", error);
+        setError("Failed to download image");
+      }
     }
   };
 
@@ -225,16 +292,25 @@ export default function AdminImageManager() {
     }
 
     try {
-      const response = await fetch('/api/images/collections', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const ac = new AbortController();
+      const timeout = setTimeout(() => ac.abort(), 10000);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/images/collections`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...newCollection,
+            createdBy: userId,
+          }),
+          signal: ac.signal,
         },
-        body: JSON.stringify({
-          ...newCollection,
-          createdBy: userId,
-        }),
-      });
+      );
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -253,11 +329,11 @@ export default function AdminImageManager() {
 
         await loadCollections();
       } else {
-        setError('Failed to create collection');
+        setError("Failed to create collection");
       }
     } catch (error) {
-      console.error('Failed to create collection:', error);
-      setError('Failed to create collection');
+      console.error("Failed to create collection:", error);
+      setError("Failed to create collection");
     }
   };
 
@@ -273,28 +349,29 @@ export default function AdminImageManager() {
   };
 
   const toggleImageSelection = (imageId: string) => {
-    setSelectedImages(prev =>
+    setSelectedImages((prev) =>
       prev.includes(imageId)
-        ? prev.filter(id => id !== imageId)
-        : [...prev, imageId]
+        ? prev.filter((id) => id !== imageId)
+        : [...prev, imageId],
     );
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const filteredImages = images.filter(image =>
-    image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredImages = images.filter(
+    (image) =>
+      image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -326,7 +403,9 @@ export default function AdminImageManager() {
             }}
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <Button
@@ -433,9 +512,15 @@ export default function AdminImageManager() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    onClick={() =>
+                      setViewMode(viewMode === "grid" ? "list" : "grid")
+                    }
                   >
-                    {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+                    {viewMode === "grid" ? (
+                      <List className="h-4 w-4" />
+                    ) : (
+                      <Grid className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -452,7 +537,10 @@ export default function AdminImageManager() {
                     className="pl-10"
                   />
                 </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -476,12 +564,20 @@ export default function AdminImageManager() {
                     {selectedImages.length} image(s) selected
                   </span>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setSelectedImages([])}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedImages([])}
+                    >
                       Clear Selection
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600"
+                        >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Delete Selected
                         </Button>
@@ -490,8 +586,9 @@ export default function AdminImageManager() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Images</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete {selectedImages.length} selected image(s)?
-                            This action cannot be undone.
+                            Are you sure you want to delete{" "}
+                            {selectedImages.length} selected image(s)? This
+                            action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -522,22 +619,26 @@ export default function AdminImageManager() {
                   <p>No images found</p>
                 </div>
               ) : (
-                <div className={viewMode === 'grid' 
-                  ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" 
-                  : "space-y-2"
-                }>
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                      : "space-y-2"
+                  }
+                >
                   {filteredImages.map((image) => (
                     <div
                       key={image.id}
-                      className={viewMode === 'grid' 
-                        ? "border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" 
-                        : "flex items-center gap-4 p-3 border rounded-lg hover:bg-muted transition-colors"
+                      className={
+                        viewMode === "grid"
+                          ? "border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                          : "flex items-center gap-4 p-3 border rounded-lg hover:bg-muted transition-colors"
                       }
                     >
-                      {viewMode === 'grid' ? (
+                      {viewMode === "grid" ? (
                         <>
                           <div className="relative">
-                            <div 
+                            <div
                               className="aspect-square bg-muted"
                               onClick={() => toggleImageSelection(image.id)}
                             >
@@ -562,7 +663,10 @@ export default function AdminImageManager() {
                             </div>
                           </div>
                           <div className="p-3">
-                            <div className="text-sm font-medium truncate" title={image.originalName}>
+                            <div
+                              className="text-sm font-medium truncate"
+                              title={image.originalName}
+                            >
                               {image.originalName}
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -590,15 +694,22 @@ export default function AdminImageManager() {
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                                      <AlertDialogTitle>
+                                        Delete Image
+                                      </AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Are you sure you want to delete this image? This action cannot be undone.
+                                        Are you sure you want to delete this
+                                        image? This action cannot be undone.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
                                       <AlertDialogAction
-                                        onClick={() => handleDeleteImage(image.id)}
+                                        onClick={() =>
+                                          handleDeleteImage(image.id)
+                                        }
                                       >
                                         Delete
                                       </AlertDialogAction>
@@ -629,9 +740,12 @@ export default function AdminImageManager() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{image.originalName}</div>
+                            <div className="font-medium truncate">
+                              {image.originalName}
+                            </div>
                             <div className="text-sm text-muted-foreground">
-                              {image.category} • {formatFileSize(image.size)} • {formatDate(image.createdAt)}
+                              {image.category} • {formatFileSize(image.size)} •{" "}
+                              {formatDate(image.createdAt)}
                             </div>
                             {image.description && (
                               <div className="text-xs text-muted-foreground truncate">
@@ -655,9 +769,12 @@ export default function AdminImageManager() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Delete Image
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete this image? This action cannot be undone.
+                                    Are you sure you want to delete this image?
+                                    This action cannot be undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -714,10 +831,12 @@ export default function AdminImageManager() {
                     <Input
                       id="collection-name"
                       value={newCollection.name}
-                      onChange={(e) => setNewCollection({
-                        ...newCollection,
-                        name: e.target.value
-                      })}
+                      onChange={(e) =>
+                        setNewCollection({
+                          ...newCollection,
+                          name: e.target.value,
+                        })
+                      }
                       placeholder="Enter collection name"
                     />
                   </div>
@@ -725,10 +844,12 @@ export default function AdminImageManager() {
                     <Label htmlFor="collection-category">Category</Label>
                     <Select
                       value={newCollection.category}
-                      onValueChange={(value) => setNewCollection({
-                        ...newCollection,
-                        category: value
-                      })}
+                      onValueChange={(value) =>
+                        setNewCollection({
+                          ...newCollection,
+                          category: value,
+                        })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -747,14 +868,19 @@ export default function AdminImageManager() {
                   <Input
                     id="collection-description"
                     value={newCollection.description}
-                    onChange={(e) => setNewCollection({
-                      ...newCollection,
-                      description: e.target.value
-                    })}
+                    onChange={(e) =>
+                      setNewCollection({
+                        ...newCollection,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Enter collection description"
                   />
                 </div>
-                <Button onClick={handleCreateCollection} className="bg-fac-orange-500 hover:bg-fac-orange-600">
+                <Button
+                  onClick={handleCreateCollection}
+                  className="bg-fac-orange-500 hover:bg-fac-orange-600"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Collection
                 </Button>
@@ -774,7 +900,9 @@ export default function AdminImageManager() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold">{collection.name}</h4>
-                            <Badge variant="outline">{collection.category}</Badge>
+                            <Badge variant="outline">
+                              {collection.category}
+                            </Badge>
                           </div>
                           {collection.description && (
                             <p className="text-sm text-muted-foreground">
@@ -824,7 +952,10 @@ export default function AdminImageManager() {
                     <h4 className="font-semibold mb-4">Category Breakdown</h4>
                     <div className="space-y-3">
                       {stats.categoryBreakdown.map((category) => (
-                        <div key={category.category} className="flex items-center justify-between">
+                        <div
+                          key={category.category}
+                          className="flex items-center justify-between"
+                        >
                           <span className="text-sm font-medium capitalize">
                             {category.category}
                           </span>
@@ -833,7 +964,11 @@ export default function AdminImageManager() {
                               {category.count} images
                             </span>
                             <Badge variant="outline" className="text-xs">
-                              {((category.count / stats.totalImages) * 100).toFixed(1)}%
+                              {(
+                                (category.count / stats.totalImages) *
+                                100
+                              ).toFixed(1)}
+                              %
                             </Badge>
                           </div>
                         </div>
@@ -844,18 +979,23 @@ export default function AdminImageManager() {
                     <h4 className="font-semibold mb-4">Storage Usage</h4>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Total Storage</span>
+                        <span className="text-sm font-medium">
+                          Total Storage
+                        </span>
                         <span className="text-sm text-muted-foreground">
                           {stats.totalStorageMB.toFixed(2)} MB
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Average File Size</span>
+                        <span className="text-sm font-medium">
+                          Average File Size
+                        </span>
                         <span className="text-sm text-muted-foreground">
-                          {stats.totalImages > 0 
-                            ? formatFileSize(stats.totalStorageBytes / stats.totalImages)
-                            : '0 Bytes'
-                          }
+                          {stats.totalImages > 0
+                            ? formatFileSize(
+                                stats.totalStorageBytes / stats.totalImages,
+                              )
+                            : "0 Bytes"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

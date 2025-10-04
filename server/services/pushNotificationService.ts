@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
-import { db } from '../database/connection';
-import { fcmTokens, pushNotifications, notificationDeliveries } from '../database/schema';
+import { neonDbService } from './neonDatabaseService';
+import * as schema from '../database/schema';
 import { eq, inArray, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -84,17 +84,22 @@ export class PushNotificationService {
     notificationTypes?: string[];
   }): Promise<boolean> {
     try {
+      const db = neonDbService.db;
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       // Check if token already exists
       const existingTokens = await db
         .select()
-        .from(fcmTokens)
-        .where(eq(fcmTokens.token, tokenData.token))
+        .from(schema.fcmTokens)
+        .where(eq(schema.fcmTokens.token, tokenData.token))
         .limit(1);
 
       if (existingTokens.length > 0) {
         // Update existing token
         await db
-          .update(fcmTokens)
+          .update(schema.fcmTokens)
           .set({
             userId: tokenData.userId,
             deviceType: tokenData.deviceType || 'web',
@@ -105,12 +110,12 @@ export class PushNotificationService {
             lastUsed: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(fcmTokens.token, tokenData.token));
+          .where(eq(schema.fcmTokens.token, tokenData.token));
 
         console.log('✅ FCM token updated successfully');
       } else {
         // Insert new token
-        await db.insert(fcmTokens).values({
+        await neonDbService.db.insert(schema.fcmTokens).values({
           id: createId(),
           token: tokenData.token,
           userId: tokenData.userId,
@@ -139,13 +144,18 @@ export class PushNotificationService {
    */
   async unregisterToken(token: string, userId?: string): Promise<boolean> {
     try {
-      const conditions = [eq(fcmTokens.token, token)];
+      const db = neonDbService.db;
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
+      const conditions = [eq(schema.fcmTokens.token, token)];
       if (userId) {
-        conditions.push(eq(fcmTokens.userId, userId));
+        conditions.push(eq(schema.fcmTokens.userId, userId));
       }
 
       await db
-        .update(fcmTokens)
+        .update(schema.fcmTokens)
         .set({
           isActive: false,
           updatedAt: new Date(),
@@ -165,6 +175,12 @@ export class PushNotificationService {
    */
   private async getTargetTokens(target: NotificationTarget): Promise<Array<{ token: string; userId?: string; id: string }>> {
     try {
+      const db = neonDbService.db;
+      if (!db) {
+        console.error('Database not initialized for getTargetTokens');
+        return [];
+      }
+
       let tokens: Array<{ token: string; userId?: string; id: string }> = [];
 
       switch (target.type) {
@@ -172,15 +188,15 @@ export class PushNotificationService {
           if (target.values && target.values.length > 0) {
             const userTokens = await db
               .select({
-                token: fcmTokens.token,
-                userId: fcmTokens.userId,
-                id: fcmTokens.id,
+                token: schema.fcmTokens.token,
+                userId: schema.fcmTokens.userId,
+                id: schema.fcmTokens.id,
               })
-              .from(fcmTokens)
+              .from(schema.fcmTokens)
               .where(
                 and(
-                  eq(fcmTokens.userId, target.values[0]),
-                  eq(fcmTokens.isActive, true)
+                  eq(schema.fcmTokens.userId, target.values[0]),
+                  eq(schema.fcmTokens.isActive, true)
                 )
               );
             tokens = userTokens;
@@ -191,15 +207,15 @@ export class PushNotificationService {
           if (target.values && target.values.length > 0) {
             const userTokens = await db
               .select({
-                token: fcmTokens.token,
-                userId: fcmTokens.userId,
-                id: fcmTokens.id,
+                token: schema.fcmTokens.token,
+                userId: schema.fcmTokens.userId,
+                id: schema.fcmTokens.id,
               })
-              .from(fcmTokens)
+              .from(schema.fcmTokens)
               .where(
                 and(
-                  inArray(fcmTokens.userId, target.values),
-                  eq(fcmTokens.isActive, true)
+                  inArray(schema.fcmTokens.userId, target.values),
+                  eq(schema.fcmTokens.isActive, true)
                 )
               );
             tokens = userTokens;
@@ -211,24 +227,24 @@ export class PushNotificationService {
           // For now, we'll implement a basic version
           const allTokens = await db
             .select({
-              token: fcmTokens.token,
-              userId: fcmTokens.userId,
-              id: fcmTokens.id,
+              token: schema.fcmTokens.token,
+              userId: schema.fcmTokens.userId,
+              id: schema.fcmTokens.id,
             })
-            .from(fcmTokens)
-            .where(eq(fcmTokens.isActive, true));
+            .from(schema.fcmTokens)
+            .where(eq(schema.fcmTokens.isActive, true));
           tokens = allTokens;
           break;
 
         case 'all':
           const allActiveTokens = await db
             .select({
-              token: fcmTokens.token,
-              userId: fcmTokens.userId,
-              id: fcmTokens.id,
+              token: schema.fcmTokens.token,
+              userId: schema.fcmTokens.userId,
+              id: schema.fcmTokens.id,
             })
-            .from(fcmTokens)
-            .where(eq(fcmTokens.isActive, true));
+            .from(schema.fcmTokens)
+            .where(eq(schema.fcmTokens.isActive, true));
           tokens = allActiveTokens;
           break;
 
@@ -269,7 +285,7 @@ export class PushNotificationService {
 
       // Create notification record
       const notificationId = createId();
-      await db.insert(pushNotifications).values({
+      await neonDbService.db.insert(schema.pushNotifications).values({
         id: notificationId,
         title: options.payload.title,
         body: options.payload.body,
@@ -297,7 +313,7 @@ export class PushNotificationService {
         
         // Create mock delivery records
         for (const tokenData of targetTokens) {
-          await db.insert(notificationDeliveries).values({
+          await neonDbService.db.insert(schema.notificationDeliveries).values({
             id: createId(),
             notificationId,
             fcmTokenId: tokenData.id,
@@ -361,7 +377,7 @@ export class PushNotificationService {
               successfulDeliveries++;
               
               // Record successful delivery
-              await db.insert(notificationDeliveries).values({
+              await neonDbService.db.insert(schema.notificationDeliveries).values({
                 id: createId(),
                 notificationId,
                 fcmTokenId: tokenData.id,
@@ -374,7 +390,7 @@ export class PushNotificationService {
               failedDeliveries++;
               
               // Record failed delivery
-              await db.insert(notificationDeliveries).values({
+              await neonDbService.db.insert(schema.notificationDeliveries).values({
                 id: createId(),
                 notificationId,
                 fcmTokenId: tokenData.id,
@@ -401,7 +417,7 @@ export class PushNotificationService {
 
       // Update notification status
       await db
-        .update(pushNotifications)
+        .update(schema.pushNotifications)
         .set({
           status: failedDeliveries === targetTokens.length ? 'failed' : 'sent',
           successfulDeliveries,
@@ -409,7 +425,7 @@ export class PushNotificationService {
           sentAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(pushNotifications.id, notificationId));
+        .where(eq(schema.pushNotifications.id, notificationId));
 
       return {
         success: successfulDeliveries > 0,
@@ -540,9 +556,9 @@ export class PushNotificationService {
       }
 
       await db
-        .update(notificationDeliveries)
+        .update(schema.notificationDeliveries)
         .set(updateData)
-        .where(eq(notificationDeliveries.notificationId, notificationId));
+        .where(eq(schema.notificationDeliveries.notificationId, notificationId));
 
       return true;
     } catch (error) {

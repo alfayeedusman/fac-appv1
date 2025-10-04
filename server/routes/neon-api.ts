@@ -1,6 +1,10 @@
 import { RequestHandler } from "express";
 import { neonDbService } from "../services/neonDatabaseService";
-import { initializeDatabase, testConnection } from "../database/connection";
+import {
+  initializeDatabase,
+  testConnection,
+  sql,
+} from "../database/connection";
 import { migrate } from "../database/migrate";
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
@@ -264,27 +268,282 @@ export const createBooking: RequestHandler = async (req, res) => {
 
 export const getBookings: RequestHandler = async (req, res) => {
   try {
-    const { userId, status } = req.query;
+    const { userId, status, branch, userEmail, userRole } = req.query;
 
     let bookings;
+
+    // Get current user's details if filtering by branch access is needed
+    let currentUser = null;
+    if (userEmail) {
+      currentUser = await neonDbService.getUserByEmail(userEmail as string);
+    }
+
+    // Check if user can view all branches
+    const canViewAll =
+      userRole === "admin" ||
+      userRole === "superadmin" ||
+      (currentUser && currentUser.canViewAllBranches);
+
     if (userId) {
+      // Get bookings for specific user
       bookings = await neonDbService.getBookingsByUserId(userId as string);
+    } else if (branch && branch !== "all") {
+      // Filter by specific branch
+      if (status) {
+        bookings = await neonDbService.getBookingsByBranchAndStatus(
+          branch as string,
+          status as string,
+        );
+      } else {
+        bookings = await neonDbService.getBookingsByBranch(branch as string);
+      }
     } else if (status) {
-      bookings = await neonDbService.getBookingsByStatus(status as string);
+      // Filter by status
+      let allBookings = await neonDbService.getBookingsByStatus(
+        status as string,
+      );
+
+      // Apply branch restriction if user can't view all branches
+      if (!canViewAll && currentUser) {
+        bookings = allBookings.filter(
+          (b) => b.branch === currentUser.branchLocation,
+        );
+      } else {
+        bookings = allBookings;
+      }
     } else {
-      bookings = await neonDbService.getAllBookings();
+      // Get all bookings
+      let allBookings = await neonDbService.getAllBookings();
+
+      // Apply branch restriction if user can't view all branches
+      if (!canViewAll && currentUser) {
+        bookings = allBookings.filter(
+          (b) => b.branch === currentUser.branchLocation,
+        );
+      } else {
+        bookings = allBookings;
+      }
     }
 
     res.json({
       success: true,
       bookings,
+      canViewAllBranches: canViewAll,
+      userBranch: currentUser?.branchLocation || null,
     });
   } catch (error) {
     console.error("Get bookings error:", error);
-    res.status(500).json({
+    res.json({
       success: false,
       error: "Failed to fetch bookings",
     });
+  }
+};
+
+// Ensure voucher tables exist (idempotent)
+async function ensureVoucherTables() {
+  await sql`CREATE TABLE IF NOT EXISTS vouchers (
+    id TEXT PRIMARY KEY,
+    code VARCHAR(100) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    discount_type VARCHAR(20) NOT NULL,
+    discount_value DECIMAL(10,2) NOT NULL,
+    minimum_amount DECIMAL(10,2) DEFAULT 0.00,
+    audience VARCHAR(20) NOT NULL DEFAULT 'registered',
+    valid_from TIMESTAMP,
+    valid_until TIMESTAMP,
+    usage_limit INTEGER,
+    per_user_limit INTEGER DEFAULT 1,
+    total_used INTEGER DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+  );`;
+  await sql`CREATE TABLE IF NOT EXISTS voucher_redemptions (
+    id TEXT PRIMARY KEY,
+    voucher_code VARCHAR(100) NOT NULL,
+    user_email VARCHAR(255),
+    booking_id TEXT,
+    discount_amount DECIMAL(10,2) NOT NULL,
+    redeemed_at TIMESTAMP NOT NULL DEFAULT NOW()
+  );`;
+  await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
+  await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
+}
+
+export const getVouchers: RequestHandler = async (req, res) => {
+  try {
+    await ensureVoucherTables();
+    const { audience, status } = req.query;
+
+    let query = sql`SELECT * FROM vouchers WHERE 1=1`;
+
+    if (audience) {
+      query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all')`;
+    }
+
+    if (status === "active") {
+      query = sql`SELECT * FROM vouchers WHERE is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
+    }
+
+    if (audience && status === "active") {
+      query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all') AND is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
+    }
+
+    const vouchers = await query;
+    res.json({
+      success: true,
+      vouchers: Array.isArray(vouchers) ? vouchers : vouchers?.rows || [],
+    });
+  } catch (err: any) {
+    console.error("Get vouchers error:", err);
+    res.status(500).json({ success: false, error: "Failed to fetch vouchers" });
+  }
+};
+
+export const validateVoucher: RequestHandler = async (req, res) => {
+  try {
+    const { code, bookingAmount, userEmail, bookingType } = req.body || {};
+    if (!code || typeof bookingAmount !== "number") {
+      return res
+        .status(400)
+        .json({ success: false, error: "code and bookingAmount are required" });
+    }
+
+    await ensureVoucherTables();
+
+    // Fetch voucher by code (case-insensitive)
+    const result: any =
+      await sql`SELECT * FROM vouchers WHERE LOWER(code) = LOWER(${code}) LIMIT 1`;
+    const voucher = Array.isArray(result) ? result[0] : result?.rows?.[0];
+    if (!voucher)
+      return res
+        .status(404)
+        .json({ success: false, error: "Invalid voucher code" });
+
+    // Check status and validity window
+    const now = new Date();
+    if (voucher.is_active === false)
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher is inactive" });
+    if (voucher.valid_from && new Date(voucher.valid_from) > now)
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher not yet active" });
+    if (voucher.valid_until && new Date(voucher.valid_until) < now)
+      return res.status(400).json({ success: false, error: "Voucher expired" });
+
+    // Audience rules
+    const isRegistered = !!userEmail;
+    if (voucher.audience === "registered" && !isRegistered) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "Voucher is only for registered users",
+        });
+    }
+
+    // Usage limits
+    if (
+      voucher.usage_limit &&
+      Number(voucher.total_used || 0) >= voucher.usage_limit
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Voucher usage limit reached" });
+    }
+    if (isRegistered && voucher.per_user_limit) {
+      const usedByUser: any =
+        await sql`SELECT COUNT(*)::int as cnt FROM voucher_redemptions WHERE voucher_code = ${voucher.code} AND user_email = ${userEmail}`;
+      const usedCount = Array.isArray(usedByUser)
+        ? usedByUser[0]?.cnt
+        : usedByUser?.rows?.[0]?.cnt;
+      if (Number(usedCount || 0) >= voucher.per_user_limit) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            error: "You have already used this voucher",
+          });
+      }
+    }
+
+    // Min amount
+    const minAmt = Number(voucher.minimum_amount || 0);
+    if (minAmt > 0 && bookingAmount < minAmt) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: `Minimum amount ₱${minAmt.toFixed(2)} not met`,
+        });
+    }
+
+    // Calculate discount
+    let discountAmount = 0;
+    if (voucher.discount_type === "percentage") {
+      discountAmount =
+        Math.round(bookingAmount * Number(voucher.discount_value)) / 100; // percentage value already like 20 => amount = amount * 20 / 100
+      discountAmount = Number(
+        ((bookingAmount * Number(voucher.discount_value)) / 100).toFixed(2),
+      );
+    } else {
+      discountAmount = Number(voucher.discount_value);
+    }
+    if (discountAmount > bookingAmount) discountAmount = bookingAmount;
+    const finalAmount = Number((bookingAmount - discountAmount).toFixed(2));
+
+    return res.json({
+      success: true,
+      data: {
+        code: voucher.code,
+        title: voucher.title,
+        discountType: voucher.discount_type,
+        discountValue: Number(voucher.discount_value),
+        discountAmount,
+        finalAmount,
+        audience: voucher.audience,
+      },
+    });
+  } catch (error: any) {
+    console.error("validateVoucher error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to validate voucher" });
+  }
+};
+
+export const redeemVoucher: RequestHandler = async (req, res) => {
+  try {
+    const { code, userEmail, bookingId, discountAmount } = req.body || {};
+    if (!code || !bookingId || typeof discountAmount !== "number") {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "code, bookingId and discountAmount are required",
+        });
+    }
+
+    await ensureVoucherTables();
+
+    // Insert redemption
+    const id = `vrd_${Date.now()}`;
+    await sql`INSERT INTO voucher_redemptions (id, voucher_code, user_email, booking_id, discount_amount) VALUES (${id}, ${code}, ${userEmail || null}, ${bookingId}, ${discountAmount})`;
+    await sql`UPDATE vouchers SET total_used = COALESCE(total_used,0) + 1, updated_at = NOW() WHERE code = ${code}`;
+
+    // Also update booking columns if present
+    await sql`UPDATE bookings SET voucher_code = ${code}, voucher_discount = ${discountAmount} WHERE id = ${bookingId}`;
+
+    return res.json({ success: true, message: "Voucher redeemed", id });
+  } catch (error: any) {
+    console.error("redeemVoucher error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to redeem voucher" });
   }
 };
 
@@ -486,6 +745,30 @@ export const getRealtimeStats: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch realtime stats",
+    });
+  }
+};
+
+// FAC MAP comprehensive stats endpoint
+export const getFacMapStats: RequestHandler = async (req, res) => {
+  try {
+    console.log("📊 Getting FAC MAP stats...");
+    const facMapStats = await neonDbService.getFacMapStats();
+    console.log(
+      "✅ FAC MAP stats retrieved:",
+      JSON.stringify(facMapStats, null, 2),
+    );
+
+    res.json({
+      success: true,
+      stats: facMapStats,
+      message: "FAC MAP stats retrieved successfully",
+    });
+  } catch (error) {
+    console.error("❌ Get FAC MAP stats error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch FAC MAP stats",
     });
   }
 };
@@ -720,16 +1003,38 @@ export const createStaffUser: RequestHandler = async (req, res) => {
 // Branches endpoints
 export const getBranches: RequestHandler = async (req, res) => {
   try {
+    console.log("🏪 Getting branches from database...");
     const branches = await neonDbService.getBranches();
+    console.log("✅ Branches retrieved:", branches.length, "branches found");
     res.json({
       success: true,
       branches: branches || [],
     });
   } catch (error) {
-    console.error("Get branches error:", error);
+    console.error("❌ Get branches error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch branches",
+    });
+  }
+};
+
+export const seedBranchesEndpoint: RequestHandler = async (req, res) => {
+  try {
+    console.log("🌱 Seeding branches...");
+    const { seedBranches } = await import("../database/seed-branches.js");
+    await seedBranches();
+    const branches = await neonDbService.getBranches();
+    res.json({
+      success: true,
+      message: "Branches seeded successfully",
+      count: branches.length,
+    });
+  } catch (error) {
+    console.error("❌ Seed branches error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to seed branches",
     });
   }
 };
@@ -992,6 +1297,310 @@ export const getLowStockItems: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch low stock items",
+    });
+  }
+};
+
+// ============= USER VEHICLES & ADDRESS MANAGEMENT API =============
+
+// Get user vehicles
+export const getUserVehicles: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "User ID is required",
+        vehicles: [],
+      });
+    }
+
+    const result = await sql`
+      SELECT * FROM user_vehicles
+      WHERE user_id = ${userId}
+      ORDER BY is_default DESC, created_at DESC
+    `;
+
+    const vehicles = result.map((v: any) => ({
+      id: v.id,
+      unitType: v.unit_type,
+      unitSize: v.unit_size,
+      plateNumber: v.plate_number,
+      vehicleModel: v.vehicle_model,
+      isDefault: v.is_default,
+      createdAt: v.created_at,
+    }));
+
+    res.json({
+      success: true,
+      vehicles,
+    });
+  } catch (error: any) {
+    console.error("Get user vehicles error:", error);
+
+    // Check if table doesn't exist
+    if (
+      error?.message?.includes("does not exist") ||
+      error?.message?.includes("relation")
+    ) {
+      console.warn(
+        "⚠️ user_vehicles table doesn't exist, returning empty array",
+      );
+      return res.json({
+        success: true,
+        vehicles: [],
+        message: "No vehicles found (table not initialized)",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch user vehicles",
+      vehicles: [],
+    });
+  }
+};
+
+// Add user vehicle
+export const addUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { unitType, unitSize, plateNumber, vehicleModel, isDefault } =
+      req.body;
+
+    // If this is set as default, unset other defaults
+    if (isDefault) {
+      await sql`
+        UPDATE user_vehicles
+        SET is_default = false
+        WHERE user_id = ${userId}
+      `;
+    }
+
+    const result = await sql`
+      INSERT INTO user_vehicles (
+        user_id, unit_type, unit_size, plate_number, vehicle_model, is_default
+      ) VALUES (
+        ${userId}, ${unitType}, ${unitSize}, ${plateNumber}, ${vehicleModel}, ${isDefault || false}
+      ) RETURNING *
+    `;
+
+    const vehicle = {
+      id: result[0].id,
+      unitType: result[0].unit_type,
+      unitSize: result[0].unit_size,
+      plateNumber: result[0].plate_number,
+      vehicleModel: result[0].vehicle_model,
+      isDefault: result[0].is_default,
+      createdAt: result[0].created_at,
+    };
+
+    res.status(201).json({
+      success: true,
+      vehicle,
+      message: "Vehicle added successfully",
+    });
+  } catch (error) {
+    console.error("Add user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to add vehicle",
+    });
+  }
+};
+
+// Update user vehicle
+export const updateUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId, vehicleId } = req.params;
+    const updates = req.body;
+
+    // If this is set as default, unset other defaults
+    if (updates.isDefault) {
+      await sql`
+        UPDATE user_vehicles
+        SET is_default = false
+        WHERE user_id = ${userId} AND id != ${vehicleId}
+      `;
+    }
+
+    const result = await sql`
+      UPDATE user_vehicles
+      SET
+        unit_type = COALESCE(${updates.unitType}, unit_type),
+        unit_size = COALESCE(${updates.unitSize}, unit_size),
+        plate_number = COALESCE(${updates.plateNumber}, plate_number),
+        vehicle_model = COALESCE(${updates.vehicleModel}, vehicle_model),
+        is_default = COALESCE(${updates.isDefault}, is_default),
+        updated_at = NOW()
+      WHERE id = ${vehicleId} AND user_id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found",
+      });
+    }
+
+    const vehicle = {
+      id: result[0].id,
+      unitType: result[0].unit_type,
+      unitSize: result[0].unit_size,
+      plateNumber: result[0].plate_number,
+      vehicleModel: result[0].vehicle_model,
+      isDefault: result[0].is_default,
+      createdAt: result[0].created_at,
+    };
+
+    res.json({
+      success: true,
+      vehicle,
+      message: "Vehicle updated successfully",
+    });
+  } catch (error) {
+    console.error("Update user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update vehicle",
+    });
+  }
+};
+
+// Delete user vehicle
+export const deleteUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId, vehicleId } = req.params;
+
+    const result = await sql`
+      DELETE FROM user_vehicles
+      WHERE id = ${vehicleId} AND user_id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Vehicle deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete vehicle",
+    });
+  }
+};
+
+// Fix bookings with email in userId field (migration utility)
+export const fixBookingUserIds: RequestHandler = async (req, res) => {
+  try {
+    console.log("🔧 Starting booking userId fix...");
+
+    // Get all bookings where userId contains @ (email pattern)
+    const bookingsToFix = await sql`
+      SELECT id, user_id FROM bookings
+      WHERE user_id IS NOT NULL
+      AND user_id LIKE '%@%'
+    `;
+
+    console.log(
+      `Found ${bookingsToFix.length} bookings with email in userId field`,
+    );
+
+    let fixedCount = 0;
+    let errors = [];
+
+    for (const booking of bookingsToFix) {
+      try {
+        // Find the actual user by email
+        const users = await sql`
+          SELECT id FROM users WHERE email = ${booking.user_id} LIMIT 1
+        `;
+
+        if (users.length > 0) {
+          const actualUserId = users[0].id;
+
+          // Update the booking with correct userId
+          await sql`
+            UPDATE bookings
+            SET user_id = ${actualUserId}
+            WHERE id = ${booking.id}
+          `;
+
+          fixedCount++;
+          console.log(
+            `✅ Fixed booking ${booking.id}: ${booking.user_id} -> ${actualUserId}`,
+          );
+        } else {
+          errors.push(
+            `No user found for email: ${booking.user_id} (booking ${booking.id})`,
+          );
+          console.warn(`⚠️ No user found for email: ${booking.user_id}`);
+        }
+      } catch (err) {
+        errors.push(`Error fixing booking ${booking.id}: ${err}`);
+        console.error(`❌ Error fixing booking ${booking.id}:`, err);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed ${fixedCount} bookings`,
+      total: bookingsToFix.length,
+      fixed: fixedCount,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.error("Fix booking userIds error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fix booking userIds",
+    });
+  }
+};
+
+// Update user default address
+export const updateUserAddress: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { defaultAddress } = req.body;
+
+    const result = await sql`
+      UPDATE users
+      SET default_address = ${defaultAddress}, updated_at = NOW()
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: result[0].id,
+        defaultAddress: result[0].default_address,
+      },
+      message: "Address updated successfully",
+    });
+  } catch (error) {
+    console.error("Update user address error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update address",
     });
   }
 };

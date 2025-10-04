@@ -132,9 +132,41 @@ class RealtimeService {
   private baseUrl: string;
   private refreshInterval?: NodeJS.Timeout;
   private subscribers: Map<string, Set<(data: any) => void>> = new Map();
+  private fetchTimeout: number = 8000; // 8 second timeout
+  private consecutiveErrors: number = 0;
+  private maxConsecutiveErrors: number = 3;
 
   constructor() {
     this.baseUrl = '/api/realtime';
+  }
+
+  /**
+   * Fetch with timeout and network detection
+   */
+  private async fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+    // Check network status first
+    if (!navigator.onLine) {
+      throw new Error('No internet connection');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.fetchTimeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout - server may be slow or unreachable');
+      }
+      throw error;
+    }
   }
 
   /**
@@ -174,6 +206,23 @@ class RealtimeService {
     }
 
     this.refreshInterval = setInterval(async () => {
+      // Circuit breaker: stop polling if too many consecutive errors
+      if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
+        console.warn('⚠️ Too many consecutive errors, pausing real-time updates');
+        this.emit('error', {
+          message: 'Real-time updates paused due to connection issues',
+          consecutiveErrors: this.consecutiveErrors
+        });
+        return;
+      }
+
+      // Skip if offline
+      if (!navigator.onLine) {
+        console.log('📡 Offline - skipping real-time update');
+        this.consecutiveErrors++;
+        return;
+      }
+
       try {
         // Get latest crew locations
         const crewData = await this.getCrewLocations();
@@ -187,8 +236,12 @@ class RealtimeService {
         const statsData = await this.getDashboardStats();
         this.emit('dashboard-stats', statsData);
 
+        // Reset error counter on success
+        this.consecutiveErrors = 0;
+
       } catch (error) {
-        console.error('Real-time update error:', error);
+        this.consecutiveErrors++;
+        console.error(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
         this.emit('error', error);
       }
     }, intervalMs);
@@ -203,8 +256,17 @@ class RealtimeService {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
       this.refreshInterval = undefined;
+      this.consecutiveErrors = 0; // Reset error counter
       console.log('⏹️ Real-time updates stopped');
     }
+  }
+
+  /**
+   * Reset error counter (useful after connection is restored)
+   */
+  resetErrorCounter(): void {
+    this.consecutiveErrors = 0;
+    console.log('✅ Error counter reset - resuming normal operation');
   }
 
   // ============================================================================
@@ -216,7 +278,7 @@ class RealtimeService {
    */
   async updateCrewLocation(data: LocationUpdate): Promise<{ success: boolean; location_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/location`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/location`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +287,7 @@ class RealtimeService {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update location');
       }
@@ -233,7 +295,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update crew location error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -242,9 +304,9 @@ class RealtimeService {
    */
   async getCrewLocations(): Promise<{ success: boolean; crews?: CrewLocation[]; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/locations`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/locations`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to get crew locations');
       }
@@ -252,7 +314,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get crew locations error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -265,7 +327,7 @@ class RealtimeService {
    */
   async updateCrewStatus(data: StatusUpdate): Promise<{ success: boolean; status_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/status`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,7 +344,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update crew status error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -291,7 +353,7 @@ class RealtimeService {
    */
   async getCrewStatusHistory(crewId: number, limit: number = 50): Promise<{ success: boolean; history?: any[]; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew/${crewId}/status-history?limit=${limit}`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/crew/${crewId}/status-history?limit=${limit}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -301,7 +363,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get status history error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -314,7 +376,7 @@ class RealtimeService {
    */
   async updateJob(data: JobUpdate): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/jobs/update`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/jobs/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -331,7 +393,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Update job error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -340,7 +402,7 @@ class RealtimeService {
    */
   async getActiveJobs(): Promise<{ success: boolean; jobs?: ActiveJob[]; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/jobs/active`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/jobs/active`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -350,7 +412,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get active jobs error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -363,7 +425,7 @@ class RealtimeService {
    */
   async getDashboardStats(): Promise<{ success: boolean; stats?: DashboardStats; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/dashboard/stats`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/dashboard/stats`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -373,7 +435,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get dashboard stats error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -396,7 +458,7 @@ class RealtimeService {
     priority?: 'low' | 'normal' | 'high' | 'urgent';
   }): Promise<{ success: boolean; message_id?: number; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/messages/send`, {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -413,7 +475,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Send message error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -422,7 +484,7 @@ class RealtimeService {
    */
   async getMessages(recipientType: string, recipientId: number, limit: number = 50): Promise<{ success: boolean; messages?: RealtimeMessage[]; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/messages/${recipientType}/${recipientId}?limit=${limit}`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/messages/${recipientType}/${recipientId}?limit=${limit}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -432,7 +494,7 @@ class RealtimeService {
       return result;
     } catch (error) {
       console.error('Get messages error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -445,13 +507,13 @@ class RealtimeService {
    */
   async checkHealth(): Promise<{ success: boolean; status?: string; database?: string; error?: string; timestamp?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`);
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/health`);
       const result = await response.json();
       
       return result;
     } catch (error) {
       console.error('Health check error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 

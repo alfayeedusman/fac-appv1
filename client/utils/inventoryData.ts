@@ -21,12 +21,13 @@ export interface Product {
 export interface StockMovement {
   id: string;
   productId: string;
+  productName: string;
   type: "in" | "out" | "adjustment" | "transfer";
   quantity: number;
   reason: string;
   reference?: string; // PO number, sale ID, etc.
-  previousStock: number;
-  newStock: number;
+  previousStock?: number;
+  newBalance: number;
   performedBy: string;
   timestamp: string;
   notes?: string;
@@ -39,8 +40,11 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  status: "active" | "inactive";
-  createdDate: string;
+  website?: string;
+  notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Sample products for demo
@@ -108,8 +112,11 @@ const sampleSuppliers: Supplier[] = [
     email: "john@autocaresupplies.com",
     phone: "+63 917 123 4567",
     address: "123 Industrial Ave, Makati City",
-    status: "active",
-    createdDate: new Date().toISOString(),
+    website: "https://www.autocaresupplies.com",
+    notes: "Premium car care products supplier. Reliable delivery.",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: "SUP002",
@@ -118,8 +125,24 @@ const sampleSuppliers: Supplier[] = [
     email: "maria@detailpro.com",
     phone: "+63 918 234 5678",
     address: "456 Commerce St, Quezon City",
-    status: "active",
-    createdDate: new Date().toISOString(),
+    website: "https://www.detailpro.com",
+    notes: "Professional detailing tools and accessories.",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "SUP003",
+    name: "ChemClean Solutions",
+    contactPerson: "Roberto Cruz",
+    email: "roberto@chemclean.com",
+    phone: "+63 919 345 6789",
+    address: "789 Chemical Drive, Pasig City",
+    website: "https://www.chemclean.com",
+    notes: "Chemical solutions and professional-grade cleaners.",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -154,11 +177,12 @@ export const addProduct = (
   // Log stock movement
   addStockMovement({
     productId: newProduct.id,
+    productName: newProduct.name,
     type: "in",
     quantity: newProduct.currentStock,
     reason: "Initial stock",
     previousStock: 0,
-    newStock: newProduct.currentStock,
+    newBalance: newProduct.currentStock,
     performedBy: localStorage.getItem("userEmail") || "system",
     notes: "Product added to inventory",
   });
@@ -194,19 +218,65 @@ export const updateProductStock = (
     // Log stock movement
     addStockMovement({
       productId,
+      productName: products[productIndex].name,
       type: newStock > oldStock ? "in" : "out",
       quantity: Math.abs(newStock - oldStock),
       reason,
       previousStock: oldStock,
-      newStock,
+      newBalance: newStock,
       performedBy: localStorage.getItem("userEmail") || "system",
     });
   }
 };
 
+// Sample stock movements
+const sampleStockMovements: StockMovement[] = [
+  {
+    id: "STK001",
+    productId: "PRD001",
+    productName: "Car Shampoo Premium",
+    type: "in",
+    quantity: 50,
+    reason: "Initial stock",
+    newBalance: 25,
+    performedBy: "Admin",
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    notes: "First stock delivery"
+  },
+  {
+    id: "STK002",
+    productId: "PRD002",
+    productName: "Microfiber Towel Set",
+    type: "in",
+    quantity: 30,
+    reason: "Restock",
+    newBalance: 15,
+    performedBy: "Manager",
+    timestamp: new Date(Date.now() - 43200000).toISOString(),
+    notes: "Regular restock from supplier"
+  },
+  {
+    id: "STK003",
+    productId: "PRD001",
+    productName: "Car Shampoo Premium",
+    type: "out",
+    quantity: 25,
+    reason: "Daily usage",
+    newBalance: 25,
+    performedBy: "Staff",
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    notes: "Used for service operations"
+  }
+];
+
 export const getStockMovements = (): StockMovement[] => {
   const stored = localStorage.getItem("fac_stock_movements");
-  return stored ? JSON.parse(stored) : [];
+  if (stored) {
+    return JSON.parse(stored);
+  }
+
+  localStorage.setItem("fac_stock_movements", JSON.stringify(sampleStockMovements));
+  return sampleStockMovements;
 };
 
 export const addStockMovement = (
@@ -242,19 +312,68 @@ export const getSuppliers = (): Supplier[] => {
 };
 
 export const addSupplier = (
-  supplierData: Omit<Supplier, "id" | "createdDate">,
+  supplierData: Omit<Supplier, "id" | "createdAt" | "updatedAt">,
 ): Supplier => {
   const suppliers = getSuppliers();
 
   const newSupplier: Supplier = {
     ...supplierData,
     id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
-    createdDate: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   suppliers.push(newSupplier);
   localStorage.setItem("fac_suppliers", JSON.stringify(suppliers));
   return newSupplier;
+};
+
+export const updateProduct = (
+  productId: string,
+  updates: Partial<Omit<Product, "id" | "createdDate">>,
+): Product | null => {
+  const products = getProducts();
+  const productIndex = products.findIndex((p) => p.id === productId);
+
+  if (productIndex === -1) {
+    return null;
+  }
+
+  const updatedProduct: Product = {
+    ...products[productIndex],
+    ...updates,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  products[productIndex] = updatedProduct;
+  localStorage.setItem("fac_inventory_products", JSON.stringify(products));
+  return updatedProduct;
+};
+
+export const deleteProduct = (productId: string): boolean => {
+  const products = getProducts();
+  const initialLength = products.length;
+  const filteredProducts = products.filter((p) => p.id !== productId);
+
+  if (filteredProducts.length === initialLength) {
+    return false; // Product not found
+  }
+
+  localStorage.setItem("fac_inventory_products", JSON.stringify(filteredProducts));
+  return true;
+};
+
+export const deleteSupplier = (supplierId: string): boolean => {
+  const suppliers = getSuppliers();
+  const initialLength = suppliers.length;
+  const filteredSuppliers = suppliers.filter((s) => s.id !== supplierId);
+
+  if (filteredSuppliers.length === initialLength) {
+    return false; // Supplier not found
+  }
+
+  localStorage.setItem("fac_suppliers", JSON.stringify(filteredSuppliers));
+  return true;
 };
 
 export const getLowStockProducts = (): Product[] => {

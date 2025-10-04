@@ -36,6 +36,7 @@ import {
   Edit,
   AlertTriangle,
   TrendingDown,
+  TrendingUp,
   BarChart3,
   Eye,
   History,
@@ -46,6 +47,10 @@ import {
   Settings,
   Trash2,
   Save,
+  DollarSign,
+  Mail,
+  Phone,
+  Globe,
 } from "lucide-react";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
 import {
@@ -73,6 +78,7 @@ import {
   CarWashService,
 } from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 // Enhanced category system
 interface ProductCategory {
@@ -111,6 +117,8 @@ export default function EnhancedInventoryManagement() {
   const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddProductModal, setShowAddProductModal] = useState(false);
@@ -170,7 +178,7 @@ export default function EnhancedInventoryManagement() {
   // Default categories with variants
   const defaultCategories: ProductCategory[] = [
     {
-      id: "car_care_products",
+      id: "car_care",
       name: "Car Care Products",
       description: "Cleaning and maintenance products",
       icon: "🧴",
@@ -198,41 +206,29 @@ export default function EnhancedInventoryManagement() {
       isActive: true,
     },
     {
-      id: "car_wash_services",
-      name: "Car Wash Services",
-      description: "Vehicle cleaning services with dynamic pricing",
-      icon: "🚗",
+      id: "chemicals",
+      name: "Chemicals & Solutions",
+      description: "Chemical products for cleaning and detailing",
+      icon: "🧪",
       color: "#F59E0B",
       variants: [
         {
-          id: "sedan",
-          name: "Sedan",
-          priceMultiplier: 1.0,
-          description: "Standard cars",
-        },
-        {
-          id: "suv",
-          name: "SUV",
-          priceMultiplier: 1.3,
-          description: "Sport utility vehicles",
-        },
-        {
-          id: "van",
-          name: "Van",
+          id: "concentrated",
+          name: "Concentrated",
           priceMultiplier: 1.5,
-          description: "Large vehicles",
+          description: "High-concentration formulas",
         },
         {
-          id: "pickup",
-          name: "Pick-up",
-          priceMultiplier: 1.4,
-          description: "Pickup trucks",
+          id: "ready_to_use",
+          name: "Ready-to-Use",
+          priceMultiplier: 1.0,
+          description: "Pre-diluted solutions",
         },
         {
-          id: "motorcycle",
-          name: "Motorcycle",
-          priceMultiplier: 0.6,
-          description: "Two-wheelers",
+          id: "eco_friendly",
+          name: "Eco-Friendly",
+          priceMultiplier: 1.2,
+          description: "Environmentally safe formulas",
         },
       ],
       isActive: true,
@@ -293,6 +289,28 @@ export default function EnhancedInventoryManagement() {
       ],
       isActive: true,
     },
+    {
+      id: "parts",
+      name: "Car Parts",
+      description: "Vehicle parts and components",
+      icon: "⚙️",
+      color: "#EF4444",
+      variants: [
+        {
+          id: "oem",
+          name: "OEM",
+          priceMultiplier: 1.5,
+          description: "Original equipment manufacturer",
+        },
+        {
+          id: "aftermarket",
+          name: "Aftermarket",
+          priceMultiplier: 1.0,
+          description: "Third-party parts",
+        },
+      ],
+      isActive: true,
+    },
   ];
 
   useEffect(() => {
@@ -305,37 +323,61 @@ export default function EnhancedInventoryManagement() {
   }, [searchQuery, selectedCategory, products]);
 
   const initializeCategories = () => {
-    const stored = localStorage.getItem("fac_product_categories");
-    if (!stored) {
-      localStorage.setItem(
-        "fac_product_categories",
-        JSON.stringify(defaultCategories),
-      );
+    try {
+      const stored = localStorage.getItem("fac_product_categories");
+      if (!stored) {
+        localStorage.setItem(
+          "fac_product_categories",
+          JSON.stringify(defaultCategories),
+        );
+        setCategories(defaultCategories);
+      } else {
+        const parsedCategories = JSON.parse(stored);
+        // Validate that parsed data is an array
+        if (Array.isArray(parsedCategories)) {
+          setCategories(parsedCategories);
+        } else {
+          console.warn("Invalid categories data in localStorage, using defaults");
+          setCategories(defaultCategories);
+        }
+      }
+    } catch (error) {
+      console.error("Error initializing categories:", error);
       setCategories(defaultCategories);
-    } else {
-      setCategories(JSON.parse(stored));
     }
   };
 
-  const loadData = () => {
-    // Load regular products and convert to enhanced format
-    const regularProducts = getProducts();
-    const enhancedProducts: EnhancedProduct[] = regularProducts.map(
-      (product) => ({
-        ...product,
-        categoryId: product.category,
-        tags: [],
-        images: [],
-        specifications: {},
-        isService: false,
-      }),
-    );
-    setProducts(enhancedProducts);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Load car wash services
-    setCarWashServices(getCarWashServices());
-    setStockMovements(getStockMovements());
-    setSuppliers(getSuppliers());
+      // Load regular products and convert to enhanced format
+      const regularProducts = getProducts();
+      const enhancedProducts: EnhancedProduct[] = regularProducts.map(
+        (product) => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }),
+      );
+      setProducts(enhancedProducts);
+
+      // Load car wash services
+      setCarWashServices(getCarWashServices());
+      setStockMovements(getStockMovements());
+      setSuppliers(getSuppliers());
+
+    } catch (error) {
+      console.error("Error loading inventory data:", error);
+      setError("Failed to load inventory data. Please refresh the page.");
+      notificationManager.showError("Data Load Failed", "Could not load inventory data.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filterProducts = () => {
@@ -392,6 +434,200 @@ export default function EnhancedInventoryManagement() {
     setShowServicePricingModal(true);
   };
 
+  // Product CRUD Functions
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.categoryId) {
+      alert("Please fill in all required fields (Name and Category)");
+      return;
+    }
+
+    try {
+      if (editingProductId) {
+        // Update existing product
+        const updateData = {
+          name: newProduct.name,
+          category: categories.find(c => c.id === newProduct.categoryId)?.name || "Unknown",
+          description: newProduct.description,
+          sku: newProduct.sku || `SKU-${Date.now()}`,
+          barcode: newProduct.barcode,
+          currentStock: newProduct.currentStock,
+          minStockLevel: newProduct.minStockLevel,
+          maxStockLevel: newProduct.maxStockLevel,
+          unitPrice: newProduct.unitPrice,
+          costPrice: newProduct.costPrice,
+          supplier: newProduct.supplier,
+          location: newProduct.location,
+          status: "active" as const,
+        };
+
+        const updatedProduct = updateProduct(editingProductId, updateData);
+        if (updatedProduct) {
+          // Refresh products from storage and convert to enhanced format
+          const refreshedProducts = getProducts().map(product => ({
+            ...product,
+            categoryId: product.category,
+            tags: [],
+            images: [],
+            specifications: {},
+            isService: false,
+          }));
+          setProducts(refreshedProducts);
+
+          notificationManager.showSuccess(
+            "Product Updated!",
+            `${updatedProduct.name} has been updated successfully.`
+          );
+        }
+        setEditingProductId(null);
+      } else {
+        // Create new product using utility
+        const productData = {
+          name: newProduct.name,
+          category: newProduct.categoryId as "car_care" | "accessories" | "tools" | "chemicals" | "parts",
+          description: newProduct.description,
+          sku: newProduct.sku || `SKU-${Date.now()}`,
+          barcode: newProduct.barcode,
+          currentStock: newProduct.currentStock,
+          minStockLevel: newProduct.minStockLevel,
+          maxStockLevel: newProduct.maxStockLevel,
+          unitPrice: newProduct.unitPrice,
+          costPrice: newProduct.costPrice,
+          supplier: newProduct.supplier,
+          location: newProduct.location,
+        };
+
+        const persistedProduct = addProduct(productData);
+
+        // Refresh products from storage and convert to enhanced format
+        const refreshedProducts = getProducts().map(product => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }));
+        setProducts(refreshedProducts);
+
+        notificationManager.showSuccess(
+          "Product Created!",
+          `${persistedProduct.name} has been added to inventory successfully.`
+        );
+      }
+
+      // Clear form
+      setNewProduct({
+        name: "",
+        categoryId: "",
+        variantId: "",
+        description: "",
+        sku: "",
+        barcode: "",
+        currentStock: 0,
+        minStockLevel: 5,
+        maxStockLevel: 100,
+        unitPrice: 0,
+        costPrice: 0,
+        supplier: "",
+        location: "",
+        tags: "",
+        specifications: "",
+        isService: false,
+      });
+
+      setShowAddProductModal(false);
+
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Error saving product. Please try again.");
+    }
+  };
+
+  const handleEditProduct = (product: EnhancedProduct) => {
+    setEditingProductId(product.id);
+    setNewProduct({
+      name: product.name,
+      categoryId: product.categoryId,
+      variantId: product.variantId || "",
+      description: product.description || "",
+      sku: product.sku,
+      barcode: product.barcode || "",
+      currentStock: product.currentStock,
+      minStockLevel: product.minStockLevel,
+      maxStockLevel: product.maxStockLevel,
+      unitPrice: product.unitPrice || 0,
+      costPrice: product.costPrice || 0,
+      supplier: product.supplier || "",
+      location: product.location || "",
+      tags: product.tags.join(', '),
+      specifications: JSON.stringify(product.specifications),
+      isService: product.isService,
+    });
+    setShowAddProductModal(true);
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      const success = deleteProduct(productId);
+      if (success) {
+        // Refresh products from storage
+        const refreshedProducts = getProducts().map(product => ({
+          ...product,
+          categoryId: product.category,
+          tags: [],
+          images: [],
+          specifications: {},
+          isService: false,
+        }));
+        setProducts(refreshedProducts);
+        notificationManager.showSuccess("Product Deleted", "Product removed from inventory.");
+      } else {
+        notificationManager.showError("Delete Failed", "Product not found or could not be deleted.");
+      }
+    }
+  };
+
+  const handleStockAdjustment = (productId: string, newStock: number, reason: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Prevent unnecessary movements for same stock level
+    if (newStock === product.currentStock) {
+      notificationManager.showWarning("No Change", "Stock level is already at the specified amount.");
+      return;
+    }
+
+    try {
+      // Use utility function to persist stock update and log movement
+      updateProductStock(productId, newStock, reason);
+
+      // Refresh products from storage
+      const refreshedProducts = getProducts().map(product => ({
+        ...product,
+        categoryId: product.category,
+        tags: [],
+        images: [],
+        specifications: {},
+        isService: false,
+      }));
+      setProducts(refreshedProducts);
+
+      // Refresh stock movements from storage
+      setStockMovements(getStockMovements());
+
+      notificationManager.showSuccess(
+        "Stock Updated",
+        `${product.name} stock updated to ${newStock} units`
+      );
+
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      notificationManager.showError("Update Failed", "Could not update stock level.");
+    }
+  };
+
   // Category CRUD Functions
   const handleAddCategory = () => {
     if (!newCategory.name || !newCategory.description) {
@@ -409,7 +645,10 @@ export default function EnhancedInventoryManagement() {
       isActive: true,
     };
 
-    setCategories([...categories, category]);
+    const updatedCategories = [...categories, category];
+    setCategories(updatedCategories);
+    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+
     setNewCategory({
       name: "",
       description: "",
@@ -448,11 +687,12 @@ export default function EnhancedInventoryManagement() {
       variants: newCategory.variants,
     };
 
-    setCategories(
-      categories.map((c) =>
-        c.id === editingCategory.id ? updatedCategory : c,
-      ),
+    const updatedCategories = categories.map((c) =>
+      c.id === editingCategory.id ? updatedCategory : c,
     );
+    setCategories(updatedCategories);
+    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+
     setNewCategory({
       name: "",
       description: "",
@@ -466,8 +706,17 @@ export default function EnhancedInventoryManagement() {
   };
 
   const handleDeleteCategory = (categoryId: string) => {
+    // Check if any products use this category
+    const categoryProducts = products.filter(p => p.categoryId === categoryId);
+    if (categoryProducts.length > 0) {
+      alert(`Cannot delete category. ${categoryProducts.length} products are using this category. Please reassign or delete those products first.`);
+      return;
+    }
+
     if (confirm("Are you sure you want to delete this category?")) {
-      setCategories(categories.filter((c) => c.id !== categoryId));
+      const updatedCategories = categories.filter((c) => c.id !== categoryId);
+      setCategories(updatedCategories);
+      localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
       alert("Category deleted successfully!");
     }
   };
@@ -626,6 +875,200 @@ export default function EnhancedInventoryManagement() {
     return variant ? basePrice * variant.priceMultiplier : basePrice;
   };
 
+  // Supplier Management Functions
+  const [newSupplier, setNewSupplier] = useState({
+    name: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    address: "",
+    website: "",
+    notes: ""
+  });
+  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+
+  const handleAddSupplier = () => {
+    if (!newSupplier.name || !newSupplier.contactPerson) {
+      alert("Please fill in required fields (Name and Contact Person)");
+      return;
+    }
+
+    try {
+      const supplierData = {
+        name: newSupplier.name,
+        contactPerson: newSupplier.contactPerson,
+        email: newSupplier.email,
+        phone: newSupplier.phone,
+        address: newSupplier.address,
+        website: newSupplier.website,
+        notes: newSupplier.notes,
+        isActive: true,
+      };
+
+      const persistedSupplier = addSupplier(supplierData);
+
+      // Refresh suppliers from storage
+      setSuppliers(getSuppliers());
+
+      // Clear form
+      setNewSupplier({
+        name: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+        address: "",
+        website: "",
+        notes: ""
+      });
+
+      setShowAddSupplierModal(false);
+
+      notificationManager.showSuccess(
+        "Supplier Added!",
+        `${persistedSupplier.name} has been added to your supplier list.`
+      );
+
+    } catch (error) {
+      console.error("Error adding supplier:", error);
+      alert("Error adding supplier. Please try again.");
+    }
+  };
+
+  const handleDeleteSupplier = (supplierId: string) => {
+    if (confirm("Are you sure you want to delete this supplier?")) {
+      const success = deleteSupplier(supplierId);
+      if (success) {
+        // Refresh suppliers from storage
+        setSuppliers(getSuppliers());
+        notificationManager.showSuccess("Supplier Deleted", "Supplier removed from list.");
+      } else {
+        notificationManager.showError("Delete Failed", "Supplier not found or could not be deleted.");
+      }
+    }
+  };
+
+  // Analytics Functions
+  const getInventoryAnalytics = () => {
+    try {
+      const totalProducts = products?.length || 0;
+      const totalValue = products?.reduce((sum, p) => {
+        const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
+        const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
+        return sum + (stock * cost);
+      }, 0) || 0;
+
+      const lowStockProducts = products?.filter(p =>
+        typeof p.currentStock === 'number' &&
+        typeof p.minStockLevel === 'number' &&
+        p.currentStock <= p.minStockLevel
+      ) || [];
+
+      const outOfStockProducts = products?.filter(p =>
+        typeof p.currentStock === 'number' && p.currentStock === 0
+      ) || [];
+
+      const topProducts = [...(products || [])]
+        .sort((a, b) => {
+          const aValue = (a.currentStock || 0) * (a.unitPrice || 0);
+          const bValue = (b.currentStock || 0) * (b.unitPrice || 0);
+          return bValue - aValue;
+        })
+        .slice(0, 5);
+
+      const categoryBreakdown = (categories || []).map(category => {
+        const categoryProducts = (products || []).filter(p => p.categoryId === category.id);
+        const categoryValue = categoryProducts.reduce((sum, p) => {
+          const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
+          const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
+          return sum + (stock * cost);
+        }, 0);
+        return {
+          category: category.name || 'Unknown',
+          count: categoryProducts.length,
+          value: categoryValue,
+          color: category.color || '#3B82F6'
+        };
+      });
+
+      return {
+        totalProducts,
+        totalValue,
+        lowStockCount: lowStockProducts.length,
+        outOfStockCount: outOfStockProducts.length,
+        lowStockProducts,
+        outOfStockProducts,
+        topProducts,
+        categoryBreakdown,
+        recentMovements: (stockMovements || []).slice(0, 10)
+      };
+    } catch (error) {
+      console.error('Error calculating analytics:', error);
+      return {
+        totalProducts: 0,
+        totalValue: 0,
+        lowStockCount: 0,
+        outOfStockCount: 0,
+        lowStockProducts: [],
+        outOfStockProducts: [],
+        topProducts: [],
+        categoryBreakdown: [],
+        recentMovements: []
+      };
+    }
+  };
+
+  // Debug function to test database connection
+  const handleDebugConnection = async () => {
+    try {
+      console.log('🔍 Starting database debug...');
+      const debugResult = await neonDbClient.debugConnection();
+
+      const message = `
+Base URL: ${debugResult.baseUrl}
+Connected: ${debugResult.isConnected}
+Test: ${JSON.stringify(debugResult.testResults, null, 2)}
+Init: ${JSON.stringify(debugResult.initResults, null, 2)}
+      `;
+
+      alert(`Database Debug Results:\n${message}`);
+      console.log('🔍 Full debug result:', debugResult);
+    } catch (error) {
+      console.error('❌ Debug failed:', error);
+      alert(`Debug failed: ${error}`);
+    }
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Loading inventory data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Inventory</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => {
+            setError(null);
+            loadData();
+          }}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="products" className="space-y-6">
@@ -739,6 +1182,16 @@ export default function EnhancedInventoryManagement() {
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
+                {import.meta.env.DEV && (
+                  <Button
+                    onClick={handleDebugConnection}
+                    variant="outline"
+                    size="sm"
+                    className="hidden lg:flex"
+                  >
+                    🔍 Debug DB
+                  </Button>
+                )}
               </div>
 
               {/* Products Table */}
@@ -825,11 +1278,22 @@ export default function EnhancedInventoryManagement() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditProduct(product)}
+                                  title="Edit Product"
+                                >
                                   <Edit className="h-3 w-3" />
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                  <Eye className="h-3 w-3" />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                  title="Delete Product"
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </TableCell>
@@ -1034,43 +1498,315 @@ export default function EnhancedInventoryManagement() {
             </TabsContent>
 
         {/* Other tabs remain the same... */}
-        <TabsContent value="movements">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stock Movements</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Stock movement tracking will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+        {/* Stock Movements Tab */}
+        <TabsContent value="movements" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Stock Movements</h2>
+              <p className="text-muted-foreground">Track all inventory movements and changes</p>
+            </div>
+          </div>
 
-        <TabsContent value="suppliers">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Suppliers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Supplier management will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Recent Stock Movements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {stockMovements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No stock movements recorded yet</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Performed By</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stockMovements.map((movement) => (
+                        <TableRow key={movement.id}>
+                          <TableCell className="font-medium">
+                            {movement.productName}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={movement.type === 'in' ? 'default' : 'destructive'}>
+                              {movement.type === 'in' ? 'Stock In' : 'Stock Out'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{movement.quantity}</TableCell>
+                          <TableCell>{movement.reason}</TableCell>
+                          <TableCell>
+                            {new Date(movement.timestamp).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{movement.performedBy}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <TabsContent value="analytics">
-              <Card>
+        {/* Suppliers Tab */}
+        <TabsContent value="suppliers" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Suppliers</h2>
+              <p className="text-muted-foreground">Manage your supplier network</p>
+            </div>
+            <Button onClick={() => setShowAddSupplierModal(true)} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Supplier
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {suppliers.map((supplier) => (
+              <Card key={supplier.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Analytics</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Building className="h-5 w-5 text-blue-500" />
+                      <span className="truncate">{supplier.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteSupplier(supplier.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Analytics and reports will be displayed here.
-                  </p>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-gray-500" />
+                    <span>{supplier.contactPerson}</span>
+                  </div>
+                  {supplier.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="truncate">{supplier.email}</span>
+                    </div>
+                  )}
+                  {supplier.phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-gray-500" />
+                      <span>{supplier.phone}</span>
+                    </div>
+                  )}
+                  {supplier.website && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-gray-500" />
+                      <a href={supplier.website} target="_blank" rel="noopener noreferrer"
+                         className="text-blue-500 hover:underline truncate">
+                        Website
+                      </a>
+                    </div>
+                  )}
+                  {supplier.notes && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                      <p className="line-clamp-2">{supplier.notes}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+            ))}
+          </div>
+
+          {suppliers.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Building className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No suppliers yet</h3>
+                <p className="text-gray-500 mb-4">Start by adding your first supplier to track your supply chain.</p>
+                <Button onClick={() => setShowAddSupplierModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Supplier
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Inventory Analytics</h2>
+            <p className="text-muted-foreground">Comprehensive inventory insights and reports</p>
+          </div>
+
+          {(() => {
+            const analytics = getInventoryAnalytics();
+            return (
+              <div className="space-y-6">
+                {/* Overview Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Package className="h-8 w-8 text-blue-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.totalProducts}</p>
+                          <p className="text-sm text-muted-foreground">Total Products</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-8 w-8 text-green-500" />
+                        <div>
+                          <p className="text-2xl font-bold">₱{analytics.totalValue.toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground">Inventory Value</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-8 w-8 text-orange-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.lowStockCount}</p>
+                          <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <TrendingDown className="h-8 w-8 text-red-500" />
+                        <div>
+                          <p className="text-2xl font-bold">{analytics.outOfStockCount}</p>
+                          <p className="text-sm text-muted-foreground">Out of Stock</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Category Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Category Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.categoryBreakdown.map((cat) => (
+                        <div key={cat.category} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded"
+                              style={{ backgroundColor: cat.color }}
+                            ></div>
+                            <span className="font-medium">{cat.category}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">{cat.count} products</div>
+                            <div className="text-sm text-muted-foreground">₱{cat.value.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Low Stock Alert */}
+                {analytics.lowStockProducts.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-600">
+                        <AlertTriangle className="h-5 w-5" />
+                        Low Stock Alert
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Product</TableHead>
+                              <TableHead>Current Stock</TableHead>
+                              <TableHead>Min Level</TableHead>
+                              <TableHead>Action Needed</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {analytics.lowStockProducts.map((product) => (
+                              <TableRow key={product.id}>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>
+                                  <Badge variant="destructive">{product.currentStock}</Badge>
+                                </TableCell>
+                                <TableCell>{product.minStockLevel}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Reorder Soon</Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Top Products by Value */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Top Products by Inventory Value
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.topProducts.map((product, index) => (
+                        <div key={product.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">{product.currentStock} units</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">₱{((product.costPrice || 0) * product.currentStock).toLocaleString()}</div>
+                            <div className="text-sm text-muted-foreground">@₱{product.costPrice || 0} each</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })()}
         </TabsContent>
       </Tabs>
 
@@ -1489,7 +2225,7 @@ export default function EnhancedInventoryManagement() {
                   onChange={(e) =>
                     setNewService({
                       ...newService,
-                      basePrice: parseInt(e.target.value) || 0,
+                      basePrice: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -1583,6 +2319,377 @@ export default function EnhancedInventoryManagement() {
               }
             >
               {serviceModalMode === "add" ? "Add Service" : "Update Service"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Product Modal */}
+      <Dialog open={showAddProductModal} onOpenChange={(open) => {
+        setShowAddProductModal(open);
+        if (!open) {
+          setEditingProductId(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProductId ? "Edit Product" : "Add New Product"}</DialogTitle>
+            <DialogDescription>
+              {editingProductId ? "Update product details" : "Add a new product to your inventory with complete details"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="productName">Product Name *</Label>
+                <Input
+                  id="productName"
+                  placeholder="Car Shampoo Premium"
+                  value={newProduct.name}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="productCategory">Category *</Label>
+                <Select
+                  value={newProduct.categoryId}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, categoryId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SafeSelectItem key={category.id} value={category.id}>
+                        {category.icon} {category.name}
+                      </SafeSelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {newProduct.categoryId && (
+              <div>
+                <Label htmlFor="productVariant">Variant</Label>
+                <Select
+                  value={newProduct.variantId}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, variantId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select variant (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories
+                      .find((c) => c.id === newProduct.categoryId)
+                      ?.variants?.map((variant) => (
+                        <SafeSelectItem key={variant.id} value={variant.id}>
+                          {variant.name} (×{variant.priceMultiplier})
+                        </SafeSelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="productDescription">Description</Label>
+              <Textarea
+                id="productDescription"
+                placeholder="Product description and features"
+                value={newProduct.description}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="productSku">SKU</Label>
+                <Input
+                  id="productSku"
+                  placeholder="SKU-001"
+                  value={newProduct.sku}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, sku: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="productBarcode">Barcode</Label>
+                <Input
+                  id="productBarcode"
+                  placeholder="1234567890123"
+                  value={newProduct.barcode}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, barcode: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="currentStock">Current Stock</Label>
+                <Input
+                  id="currentStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.currentStock}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      currentStock: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="minStock">Min Stock Level</Label>
+                <Input
+                  id="minStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.minStockLevel}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      minStockLevel: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="maxStock">Max Stock Level</Label>
+                <Input
+                  id="maxStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.maxStockLevel}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      maxStockLevel: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="unitPrice">Unit Price (₱)</Label>
+                <Input
+                  id="unitPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.unitPrice}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      unitPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="costPrice">Cost Price (₱)</Label>
+                <Input
+                  id="costPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.costPrice}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      costPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplier">Supplier</Label>
+                <Input
+                  id="supplier"
+                  placeholder="Supplier name"
+                  value={newProduct.supplier}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, supplier: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Storage Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Warehouse A, Shelf 1"
+                  value={newProduct.location}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, location: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="tags">Tags (comma separated)</Label>
+              <Input
+                id="tags"
+                placeholder="premium, car care, cleaning"
+                value={newProduct.tags}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, tags: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="specifications">Specifications (JSON format)</Label>
+              <Textarea
+                id="specifications"
+                placeholder='{"volume": "500ml", "ph": "7.0"}'
+                value={newProduct.specifications}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, specifications: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddProductModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddProduct}>
+              {editingProductId ? "Update Product" : "Add Product"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Supplier Modal */}
+      <Dialog open={showAddSupplierModal} onOpenChange={setShowAddSupplierModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Supplier</DialogTitle>
+            <DialogDescription>
+              Add a new supplier to your supplier database
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="supplierName">Supplier Name *</Label>
+              <Input
+                id="supplierName"
+                placeholder="ABC Supply Co."
+                value={newSupplier.name}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, name: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contactPerson">Contact Person *</Label>
+              <Input
+                id="contactPerson"
+                placeholder="John Smith"
+                value={newSupplier.contactPerson}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplierEmail">Email</Label>
+                <Input
+                  id="supplierEmail"
+                  type="email"
+                  placeholder="contact@abcsupply.com"
+                  value={newSupplier.email}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, email: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="supplierPhone">Phone</Label>
+                <Input
+                  id="supplierPhone"
+                  placeholder="+63 912 345 6789"
+                  value={newSupplier.phone}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, phone: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="supplierAddress">Address</Label>
+              <Textarea
+                id="supplierAddress"
+                placeholder="Complete address"
+                value={newSupplier.address}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, address: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="supplierWebsite">Website</Label>
+              <Input
+                id="supplierWebsite"
+                placeholder="https://www.abcsupply.com"
+                value={newSupplier.website}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, website: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="supplierNotes">Notes</Label>
+              <Textarea
+                id="supplierNotes"
+                placeholder="Additional notes about this supplier"
+                value={newSupplier.notes}
+                onChange={(e) =>
+                  setNewSupplier({ ...newSupplier, notes: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddSupplierModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddSupplier}>
+              Add Supplier
             </Button>
           </DialogFooter>
         </DialogContent>

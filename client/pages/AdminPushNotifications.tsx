@@ -84,7 +84,7 @@ export default function AdminPushNotifications() {
   const [stats, setStats] = useState<NotificationStats>({
     activeTokens: 0,
     recentNotifications: [],
-    dateRange: { from: '', to: '' }
+    dateRange: { from: "", to: "" },
   });
   const [notifications, setNotifications] = useState<NotificationHistory[]>([]);
   const [newNotification, setNewNotification] = useState({
@@ -107,28 +107,54 @@ export default function AdminPushNotifications() {
   }, []);
 
   const loadStats = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch('/api/notifications/stats');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/notifications/stats`,
+        {
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load notification stats:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== "AbortError") {
+        console.error("Failed to load notification stats:", error);
+      }
     }
   };
 
   const loadNotificationHistory = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch('/api/notifications/history?limit=20');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/notifications/history?limit=20`,
+        {
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setNotifications(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load notification history:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== "AbortError") {
+        console.error("Failed to load notification history:", error);
+      }
     }
   };
 
@@ -141,24 +167,33 @@ export default function AdminPushNotifications() {
     setIsLoading(true);
     setError(null);
 
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
     try {
-      const response = await fetch('/api/notifications/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/notifications/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: newNotification.title,
+            body: newNotification.body,
+            targetType: newNotification.targetType,
+            targetValues: newNotification.targetValues,
+            notificationType: newNotification.notificationType,
+            imageUrl: newNotification.imageUrl || undefined,
+            clickAction: newNotification.clickAction || undefined,
+            campaign: newNotification.campaign || undefined,
+            adminUserId: userId,
+          }),
+          signal: ac.signal,
         },
-        body: JSON.stringify({
-          title: newNotification.title,
-          body: newNotification.body,
-          targetType: newNotification.targetType,
-          targetValues: newNotification.targetValues,
-          notificationType: newNotification.notificationType,
-          imageUrl: newNotification.imageUrl || undefined,
-          clickAction: newNotification.clickAction || undefined,
-          campaign: newNotification.campaign || undefined,
-          adminUserId: userId,
-        }),
-      });
+      );
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -184,11 +219,15 @@ export default function AdminPushNotifications() {
         await loadStats();
         await loadNotificationHistory();
       } else {
-        setError(result.error || 'Failed to send notification');
+        setError(result.error || "Failed to send notification");
       }
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      setError('Failed to send notification');
+    } catch (error: any) {
+      if (error?.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        console.error("Error sending notification:", error);
+        setError("Failed to send notification");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -198,18 +237,27 @@ export default function AdminPushNotifications() {
     setIsLoading(true);
     setError(null);
 
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
+
     try {
-      const response = await fetch('/api/notifications/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/notifications/test`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId,
+            title: "🧪 Test Notification",
+            message: "This is a test push notification from your admin panel!",
+          }),
+          signal: ac.signal,
         },
-        body: JSON.stringify({
-          userId: userId,
-          title: '🧪 Test Notification',
-          message: 'This is a test push notification from your admin panel!',
-        }),
-      });
+      );
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -219,11 +267,15 @@ export default function AdminPushNotifications() {
           description: `Test delivered to ${result.stats.successfulDeliveries} device(s)`,
         });
       } else {
-        setError(result.error || 'Failed to send test notification');
+        setError(result.error || "Failed to send test notification");
       }
-    } catch (error) {
-      console.error('Error sending test notification:', error);
-      setError('Failed to send test notification');
+    } catch (error: any) {
+      if (error?.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        console.error("Error sending test notification:", error);
+        setError("Failed to send test notification");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -261,9 +313,12 @@ export default function AdminPushNotifications() {
     return new Date(dateString).toLocaleString();
   };
 
-  const deliveryRate = stats.activeTokens > 0 
-    ? ((stats.recentNotifications.reduce((sum, n) => sum + n.count, 0) / stats.activeTokens) * 100)
-    : 0;
+  const deliveryRate =
+    stats.activeTokens > 0
+      ? (stats.recentNotifications.reduce((sum, n) => sum + n.count, 0) /
+          stats.activeTokens) *
+        100
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -285,12 +340,10 @@ export default function AdminPushNotifications() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={loadStats}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" onClick={loadStats} disabled={isLoading}>
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <Button
@@ -338,7 +391,9 @@ export default function AdminPushNotifications() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
-                  {stats.recentNotifications.filter(n => n.status === 'sent').reduce((sum, n) => sum + n.count, 0)}
+                  {stats.recentNotifications
+                    .filter((n) => n.status === "sent")
+                    .reduce((sum, n) => sum + n.count, 0)}
                 </p>
                 <p className="text-sm text-muted-foreground">Sent (7 days)</p>
               </div>
@@ -402,11 +457,12 @@ export default function AdminPushNotifications() {
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      As an admin, you should subscribe to push notifications to test the system and receive important updates.
+                      As an admin, you should subscribe to push notifications to
+                      test the system and receive important updates.
                     </AlertDescription>
                   </Alert>
-                  
-                  <PushNotificationSubscriber 
+
+                  <PushNotificationSubscriber
                     userId={userId}
                     className="max-w-2xl"
                   />
@@ -449,17 +505,28 @@ export default function AdminPushNotifications() {
                   <Select
                     value={newNotification.notificationType}
                     onValueChange={(value) =>
-                      setNewNotification({ ...newNotification, notificationType: value })
+                      setNewNotification({
+                        ...newNotification,
+                        notificationType: value,
+                      })
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="system_notification">System Notification</SelectItem>
-                      <SelectItem value="booking_update">Booking Update</SelectItem>
-                      <SelectItem value="loyalty_update">Loyalty Update</SelectItem>
-                      <SelectItem value="achievement_unlocked">Achievement</SelectItem>
+                      <SelectItem value="system_notification">
+                        System Notification
+                      </SelectItem>
+                      <SelectItem value="booking_update">
+                        Booking Update
+                      </SelectItem>
+                      <SelectItem value="loyalty_update">
+                        Loyalty Update
+                      </SelectItem>
+                      <SelectItem value="achievement_unlocked">
+                        Achievement
+                      </SelectItem>
                       <SelectItem value="promotion">Promotion</SelectItem>
                     </SelectContent>
                   </Select>
@@ -536,7 +603,9 @@ export default function AdminPushNotifications() {
                 </div>
 
                 <div>
-                  <Label htmlFor="clickAction">Click Action URL (Optional)</Label>
+                  <Label htmlFor="clickAction">
+                    Click Action URL (Optional)
+                  </Label>
                   <Input
                     id="clickAction"
                     value={newNotification.clickAction}
@@ -554,16 +623,18 @@ export default function AdminPushNotifications() {
               <div className="flex justify-end space-x-3">
                 <Button
                   variant="outline"
-                  onClick={() => setNewNotification({
-                    title: "",
-                    body: "",
-                    targetType: "all",
-                    targetValues: [],
-                    notificationType: "system_notification",
-                    imageUrl: "",
-                    clickAction: "",
-                    campaign: "",
-                  })}
+                  onClick={() =>
+                    setNewNotification({
+                      title: "",
+                      body: "",
+                      targetType: "all",
+                      targetValues: [],
+                      notificationType: "system_notification",
+                      imageUrl: "",
+                      clickAction: "",
+                      campaign: "",
+                    })
+                  }
                 >
                   Clear
                 </Button>
@@ -615,7 +686,9 @@ export default function AdminPushNotifications() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
-                          <div className={`${getStatusColor(notification.status)} p-2 rounded-lg`}>
+                          <div
+                            className={`${getStatusColor(notification.status)} p-2 rounded-lg`}
+                          >
                             {getTypeIcon(notification.notificationType)}
                           </div>
                           <div className="flex-1">
@@ -628,7 +701,8 @@ export default function AdminPushNotifications() {
                             <div className="flex items-center space-x-4 mt-3 text-sm text-muted-foreground">
                               <span className="flex items-center">
                                 <Users className="h-4 w-4 mr-1" />
-                                {notification.successfulDeliveries}/{notification.totalTargets} delivered
+                                {notification.successfulDeliveries}/
+                                {notification.totalTargets} delivered
                               </span>
                               <span className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-1" />
@@ -647,7 +721,9 @@ export default function AdminPushNotifications() {
                           <Badge variant="outline">
                             {notification.targetType}
                           </Badge>
-                          <Badge className={getStatusColor(notification.status)}>
+                          <Badge
+                            className={getStatusColor(notification.status)}
+                          >
                             {notification.status}
                           </Badge>
                         </div>
@@ -722,7 +798,7 @@ export default function AdminPushNotifications() {
                           <div className="flex items-center space-x-2">
                             {getTypeIcon(stat.type)}
                             <span className="font-medium text-foreground">
-                              {stat.type.replace(/_/g, ' ').toUpperCase()}
+                              {stat.type.replace(/_/g, " ").toUpperCase()}
                             </span>
                           </div>
                           <div className="flex items-center space-x-4 text-sm">

@@ -31,7 +31,7 @@ export async function runMigrations() {
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     // Create crew tracking tables first
-    console.log("📊 Creating crew tracking tables...");
+    console.log("�� Creating crew tracking tables...");
 
     // Create crew groups table
     await sql`
@@ -122,7 +122,7 @@ export async function runMigrations() {
       )
     `;
 
-    console.log("✅ Crew tracking tables created successfully");
+    console.log("�� Crew tracking tables created successfully");
 
     // Create users table
     await sql`
@@ -134,6 +134,7 @@ export async function runMigrations() {
         role VARCHAR(50) NOT NULL DEFAULT 'user',
         contact_number VARCHAR(20),
         address TEXT,
+        default_address TEXT,
         car_unit VARCHAR(255),
         car_plate_number VARCHAR(20),
         car_type VARCHAR(100),
@@ -150,6 +151,49 @@ export async function runMigrations() {
         crew_rating DECIMAL(3,2),
         crew_experience INTEGER,
         last_login_at TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Add missing columns to existing users table (safe migration)
+    console.log("🔧 Checking for missing columns in users table...");
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS default_address TEXT;
+      `;
+      console.log("✅ default_address column check complete");
+    } catch (error: any) {
+      console.warn(
+        "⚠️ Could not add default_address column (may already exist):",
+        error.message,
+      );
+    }
+
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS can_view_all_branches BOOLEAN NOT NULL DEFAULT false;
+      `;
+      console.log("✅ can_view_all_branches column check complete");
+    } catch (error: any) {
+      console.warn(
+        "⚠️ Could not add can_view_all_branches column (may already exist):",
+        error.message,
+      );
+    }
+
+    // Create user_vehicles table for multiple vehicle support
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_vehicles (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        unit_type VARCHAR(20) NOT NULL,
+        unit_size VARCHAR(50) NOT NULL,
+        plate_number VARCHAR(20) NOT NULL,
+        vehicle_model VARCHAR(255) NOT NULL,
+        is_default BOOLEAN NOT NULL DEFAULT false,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
@@ -745,6 +789,46 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= VOUCHER SYSTEM =============
+
+    // Create vouchers table
+    await sql`
+      CREATE TABLE IF NOT EXISTS vouchers (
+        id TEXT PRIMARY KEY,
+        code VARCHAR(100) NOT NULL UNIQUE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        discount_type VARCHAR(20) NOT NULL, -- 'percentage' | 'fixed_amount'
+        discount_value DECIMAL(10,2) NOT NULL,
+        minimum_amount DECIMAL(10,2) DEFAULT 0.00,
+        audience VARCHAR(20) NOT NULL DEFAULT 'registered', -- 'all' | 'registered'
+        valid_from TIMESTAMP,
+        valid_until TIMESTAMP,
+        usage_limit INTEGER,
+        per_user_limit INTEGER DEFAULT 1,
+        total_used INTEGER DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create voucher_redemptions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS voucher_redemptions (
+        id TEXT PRIMARY KEY,
+        voucher_code VARCHAR(100) NOT NULL,
+        user_email VARCHAR(255), -- null allowed for guest if voucher audience = 'all'
+        booking_id TEXT,
+        discount_amount DECIMAL(10,2) NOT NULL,
+        redeemed_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Add voucher fields to bookings if not exists
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
+
     // ============= PUSH NOTIFICATION SYSTEM =============
 
     // Create fcm_tokens table
@@ -807,6 +891,8 @@ export async function runMigrations() {
     // Create indexes for better performance
     await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_vehicles_user_id ON user_vehicles(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_vehicles_is_default ON user_vehicles(user_id, is_default);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(date);`;
@@ -858,6 +944,77 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification ON notification_deliveries(notification_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_user ON notification_deliveries(user_id);`;
 
+    // ============= CMS CONTENT MANAGEMENT SYSTEM =============
+
+    console.log("🎨 Creating CMS tables...");
+
+    // Create homepage_content table
+    await sql`
+      CREATE TABLE IF NOT EXISTS homepage_content (
+        id TEXT PRIMARY KEY,
+        hero_section JSONB,
+        services_section JSONB,
+        vision_mission_section JSONB,
+        locations_section JSONB,
+        footer_section JSONB,
+        theme_settings JSONB,
+        version VARCHAR(50) DEFAULT '1.0.0',
+        is_active BOOLEAN DEFAULT true,
+        published_at TIMESTAMP,
+        created_by TEXT,
+        updated_by TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create cms_content_history table
+    await sql`
+      CREATE TABLE IF NOT EXISTS cms_content_history (
+        id TEXT PRIMARY KEY,
+        content_id TEXT NOT NULL,
+        action VARCHAR(50) NOT NULL,
+        content_snapshot JSONB,
+        changed_fields JSONB,
+        change_description TEXT,
+        changed_by TEXT,
+        changed_by_name VARCHAR(255),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create cms_settings table
+    await sql`
+      CREATE TABLE IF NOT EXISTS cms_settings (
+        id TEXT PRIMARY KEY,
+        setting_key VARCHAR(100) NOT NULL UNIQUE,
+        setting_value JSONB,
+        description TEXT,
+        category VARCHAR(50) DEFAULT 'general',
+        is_system BOOLEAN DEFAULT false,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create indexes for CMS tables
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_homepage_content_active
+      ON homepage_content(is_active, updated_at DESC);
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_cms_content_history_content_id
+      ON cms_content_history(content_id, created_at DESC);
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_cms_settings_key
+      ON cms_settings(setting_key);
+    `;
+
+    console.log("✅ CMS tables created successfully!");
+
     console.log("✅ Database migrations completed successfully!");
     return true;
   } catch (error) {
@@ -879,7 +1036,11 @@ export async function seedInitialData() {
     // Create or update superadmin user
     const superAdminExists =
       await sql`SELECT id FROM users WHERE email = 'superadmin@fayeedautocare.com' LIMIT 1`;
-    const superAdminPassword = await bcrypt.hash("SuperAdmin2025!", 10);
+
+    // Use environment variable for superadmin password, fallback to secure default
+    const defaultPassword =
+      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
+    const superAdminPassword = await bcrypt.hash(defaultPassword, 10);
 
     if (superAdminExists.length === 0) {
       await sql`
@@ -898,9 +1059,7 @@ export async function seedInitialData() {
           'vip'
         );
       `;
-      console.log(
-        "✅ Superadmin user created: superadmin@fayeedautocare.com / SuperAdmin2025!",
-      );
+      console.log("✅ Superadmin user created: superadmin@fayeedautocare.com");
     } else {
       await sql`
         UPDATE users
@@ -913,7 +1072,10 @@ export async function seedInitialData() {
     // Create or update default admin user
     const adminExists =
       await sql`SELECT id FROM users WHERE email = 'admin@fayeedautocare.com' LIMIT 1`;
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+
+    // Use environment variable for admin password, fallback to secure default
+    const defaultAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const hashedPassword = await bcrypt.hash(defaultAdminPassword, 10);
 
     if (adminExists.length === 0) {
       await sql`
@@ -932,16 +1094,14 @@ export async function seedInitialData() {
           'premium'
         );
       `;
-      console.log(
-        "✅ Default admin user created with properly hashed password",
-      );
+      console.log("✅ Default admin user created");
     } else {
       await sql`
         UPDATE users
         SET password = ${hashedPassword}, updated_at = NOW()
         WHERE email = 'admin@fayeedautocare.com';
       `;
-      console.log("✅ Default admin user password updated with proper hash");
+      console.log("✅ Default admin user password updated");
     }
 
     // Insert default admin settings

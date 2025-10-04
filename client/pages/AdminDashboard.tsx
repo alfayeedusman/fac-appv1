@@ -75,8 +75,8 @@ import { formatDistanceToNow } from "date-fns";
 import AdminAdManagement from "@/components/AdminAdManagement";
 import UserRoleManagement from "@/components/UserRoleManagement";
 import SalesDashboard from "@/components/SalesDashboard";
-import InventoryDashboard from "@/components/InventoryDashboard";
 import EnhancedBookingManagement from "@/components/EnhancedBookingManagement";
+import EnhancedInventoryManagement from "./EnhancedInventoryManagement";
 import ImageUploadManager from "@/components/ImageUploadManager";
 import NotificationService from "@/components/NotificationService";
 import NeonDatabaseSetup from "@/components/NeonDatabaseSetup";
@@ -87,8 +87,8 @@ import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
 import POS from "./POS";
-import AdminInventory from "./AdminInventory";
 import AdminUserManagement from "./AdminUserManagement";
+import AdminCrewManagement from "./AdminCrewManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
@@ -268,22 +268,34 @@ export default function AdminDashboard() {
   const loadRealStats = async () => {
     try {
       setStatsLoading(true);
+      console.log('📊 Loading real stats...');
+
       const result = await neonDbClient.getStats();
+      console.log('📈 Stats result:', result);
 
       if (result.success && result.stats) {
-        setStats({
+        const newStats = {
           totalCustomers: result.stats.totalUsers || 0,
           totalRevenue: result.stats.totalRevenue || 0,
           totalWashes: result.stats.totalWashes || 0,
           activeSubscriptions: result.stats.activeSubscriptions || 0,
           monthlyGrowth: result.stats.monthlyGrowth || 0,
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
-        });
+        };
+        console.log('✅ Setting new stats:', newStats);
+        setStats(newStats);
       } else {
-        console.warn("Failed to load real stats, using defaults");
+        console.warn("⚠️ Failed to load real stats, using defaults. Result:", result);
+        // Keep existing stats instead of resetting
       }
     } catch (error) {
-      console.error("Error loading statistics:", error);
+      console.error("❌ Error loading statistics:", error);
+      // Don't crash the component, just log the error and continue with existing stats
+      toast({
+        title: "Stats Loading Issue",
+        description: "Using cached data. Check console for details.",
+        variant: "destructive",
+      });
     } finally {
       setStatsLoading(false);
     }
@@ -293,7 +305,7 @@ export default function AdminDashboard() {
   const loadRealCustomers = async () => {
     try {
       setCustomersLoading(true);
-      console.log("🔍 Loading customers from database...");
+      console.log("������ Loading customers from database...");
 
       // Ensure database connection is ready
       const connectionStatus = neonDbClient.getConnectionStatus();
@@ -361,20 +373,27 @@ export default function AdminDashboard() {
   const loadRealtimeStats = async () => {
     try {
       setRealtimeLoading(true);
+      console.log('📡 Loading realtime stats...');
+
       const result = await neonDbClient.getRealtimeStats();
+      console.log('🔄 Realtime stats result:', result);
 
       if (result.success && result.stats) {
-        setRealtimeStats({
+        const newRealtimeStats = {
           onlineCrew: result.stats.onlineCrew || 0,
           busyCrew: result.stats.busyCrew || 0,
           activeCustomers: result.stats.activeCustomers || 0,
           activeGroups: result.stats.activeGroups || 0,
-        });
+        };
+        console.log('✅ Setting new realtime stats:', newRealtimeStats);
+        setRealtimeStats(newRealtimeStats);
       } else {
-        console.warn("Failed to load realtime stats, using defaults");
+        console.warn("⚠️ Failed to load realtime stats, using defaults. Result:", result);
+        // Keep existing stats instead of resetting
       }
     } catch (error) {
-      console.error("Error loading realtime statistics:", error);
+      console.error("❌ Error loading realtime statistics:", error);
+      // Don't crash the component, just log the error
     } finally {
       setRealtimeLoading(false);
     }
@@ -766,10 +785,10 @@ export default function AdminDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-3 sm:p-4 lg:p-6">
+      <div className="flex-1 ml-0 lg:ml-64 min-h-screen">
+        <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-6">
           {/* Header */}
-          <div className="mb-8 ml-12 lg:ml-0">
+          <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
@@ -1826,8 +1845,6 @@ export default function AdminDashboard() {
 
           {activeTab === "sales" && <SalesDashboard />}
 
-          {activeTab === "inventory" && <InventoryDashboard />}
-
           {activeTab === "old_sales" && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1970,15 +1987,17 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === "inventory" && (
-            <div className="space-y-6">
-              <AdminInventory />
-            </div>
-          )}
+          {activeTab === "inventory" && <EnhancedInventoryManagement />}
 
           {activeTab === "user-management" && (
             <div className="space-y-6">
               <AdminUserManagement />
+            </div>
+          )}
+
+          {activeTab === "crew" && (
+            <div className="space-y-6">
+              <AdminCrewManagement />
             </div>
           )}
 

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import RegistrationSuccessModal from "@/components/RegistrationSuccessModal";
+import { authService } from "@/services/authService";
 
 interface SignUpFormData {
   fullName: string;
@@ -63,7 +64,7 @@ export default function SignUp() {
     carPlateNumber: "",
     carType: "",
     branchLocation: "",
-    packageToAvail: "",
+    packageToAvail: "regular",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -174,129 +175,73 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Registration form submitted');
 
-    // Validate all steps
     const isStep1Valid = validateStep(1);
     const isStep2Valid = validateStep(2);
     const isStep3Valid = validateStep(3);
 
+    console.log('✅ Validation results:', {
+      step1: isStep1Valid,
+      step2: isStep2Valid,
+      step3: isStep3Valid
+    });
+
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
-      alert("Please fill all required fields correctly before submitting.");
+      console.error('❌ Validation failed:', errors);
+      toast({
+        title: 'Please Complete All Fields',
+        description: 'Fill in all required fields correctly before submitting.',
+        variant: 'destructive',
+      });
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate API call with modern loading
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Store form data for demo purposes
-    localStorage.setItem("signUpData", JSON.stringify(formData));
-
-    // Save user credentials for authentication
-    const newUser = {
-      email: formData.email,
-      password: formData.password,
-      role: "user",
-      fullName: formData.fullName,
-      registeredAt: new Date().toISOString(),
-    };
-
-    // Get existing registered users or create new array
-    const existingUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-
-    // Check if user already exists
-    const userExists = existingUsers.find(
-      (user: any) => user.email === formData.email,
-    );
-
-    if (!userExists) {
-      existingUsers.push(newUser);
-      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-
-      // Create user-specific subscription data based on selected package
-      const getPackageData = (packageType: string) => {
-        const now = new Date();
-        const cycleEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-        switch (packageType) {
-          case "classic":
-            return {
-              package: "Classic Pro",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 4, vipProMax: 0, premium: 0 },
-              totalWashes: { classic: 4, vipProMax: 0, premium: 0 },
-            };
-          case "vip-silver":
-            return {
-              package: "VIP Silver Elite",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 8, vipProMax: 2, premium: 0 },
-              totalWashes: { classic: 8, vipProMax: 2, premium: 0 },
-            };
-          case "vip-gold":
-            return {
-              package: "VIP Gold Ultimate",
-              daysLeft: 30,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 999, vipProMax: 5, premium: 1 },
-              totalWashes: { classic: 999, vipProMax: 5, premium: 1 },
-            };
-          default:
-            return {
-              package: "Regular Member",
-              daysLeft: 0,
-              currentCycleStart: now.toISOString().split("T")[0],
-              currentCycleEnd: cycleEnd.toISOString().split("T")[0],
-              daysLeftInCycle: 30,
-              autoRenewal: false,
-              remainingWashes: { classic: 0, vipProMax: 0, premium: 0 },
-              totalWashes: { classic: 0, vipProMax: 0, premium: 0 },
-            };
-        }
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        branchLocation: formData.branchLocation || 'Tumaga',
+        role: 'user' as const,
+        carUnit: formData.carUnit,
+        carPlateNumber: formData.carPlateNumber,
+        carType: formData.carType,
       };
 
-      // Save user subscription data
-      const userSubscription = getPackageData(formData.packageToAvail);
-      localStorage.setItem(
-        `subscription_${formData.email}`,
-        JSON.stringify(userSubscription),
-      );
+      console.log('📤 Sending registration request for:', payload.email);
+      const result = await authService.register(payload);
+      console.log('📥 Registration response:', result);
 
-      // Initialize empty wash logs for the user
-      localStorage.setItem(`washLogs_${formData.email}`, JSON.stringify([]));
-
+      if (result.success) {
+        console.log('✅ Registration successful!');
+        toast({
+          title: 'Welcome to FAC! 🎉',
+          description: 'Your account has been created successfully. You can now book car wash services!'
+        });
+        setShowSuccessModal(true);
+      } else {
+        console.error('❌ Registration failed:', result.error);
+        toast({
+          title: 'Registration Failed',
+          description: result.error || 'Please check your details and try again.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('��� Registration error:', error);
       toast({
-        title: "Registration Successful! 🎉",
-        description: "Your account has been created successfully!",
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
+        title: 'Connection Error',
+        description: 'Unable to connect to server. Please check your internet connection and try again.',
+        variant: 'destructive'
       });
-    } else {
-      toast({
-        title: "Registration Failed",
-        description: "An account with this email already exists.",
-        variant: "destructive",
-      });
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    setIsSubmitting(false);
-    setShowSuccessModal(true);
   };
 
   const handleContinueToLogin = () => {
@@ -363,13 +308,31 @@ export default function SignUp() {
   ];
 
   const nextStep = () => {
-    if (validateStep(currentStep) && currentStep < 3) {
+    console.log(`🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`);
+    const isValid = validateStep(currentStep);
+    console.log(`✅ Step ${currentStep} validation:`, isValid);
+
+    if (!isValid) {
+      console.error(`❌ Step ${currentStep} validation failed:`, errors);
+      toast({
+        title: 'Please Complete This Step',
+        description: 'Fill in all required fields before continuing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+      console.log(`✅ Moved to step ${currentStep + 1}`);
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      console.log(`⬅️ Moved back to step ${currentStep - 1}`);
+    }
   };
 
   return (
@@ -377,21 +340,21 @@ export default function SignUp() {
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl animate-breathe"></div>
-        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl animate-float"></div>
-        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl animate-float animate-delay-300"></div>
+        <div className="absolute top-1/4 left-1/6 w-72 h-72 rounded-full bg-gradient-to-r from-fac-orange-500/5 to-purple-500/5 blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/5 to-fac-orange-500/5 blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-xl"></div>
       </div>
 
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-20">
-        <div className="glass rounded-full p-1 animate-fade-in-scale">
+        <div className="glass rounded-full p-1">
           <ThemeToggle />
         </div>
       </div>
 
       <div className="px-6 py-8 max-w-md mx-auto relative z-10">
         {/* Modern Header */}
-        <div className="flex items-center mb-8 animate-fade-in-up">
+        <div className="flex items-center mb-8">
           <Link to="/" className="mr-4">
             <Button
               variant="ghost"
@@ -420,7 +383,7 @@ export default function SignUp() {
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-8 animate-fade-in-up animate-delay-100">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3].map((step) => (
               <div
@@ -456,7 +419,7 @@ export default function SignUp() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Step 1: Personal Information */}
           {currentStep === 1 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -487,7 +450,7 @@ export default function SignUp() {
                           handleInputChange("fullName", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.fullName
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -519,7 +482,7 @@ export default function SignUp() {
                             handleInputChange("email", e.target.value)
                           }
                           required
-                          className={`pl-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.email
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -552,7 +515,7 @@ export default function SignUp() {
                             handleInputChange("password", e.target.value)
                           }
                           required
-                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 pr-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.password
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -598,7 +561,7 @@ export default function SignUp() {
                             handleInputChange("confirmPassword", e.target.value)
                           }
                           required
-                          className={`pl-12 pr-12 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-12 pr-12 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.confirmPassword
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -656,7 +619,7 @@ export default function SignUp() {
                             );
                           }}
                           required
-                          className={`pl-16 py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                          className={`pl-16 py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                             errors.contactNumber
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : ""
@@ -686,7 +649,7 @@ export default function SignUp() {
                           handleInputChange("address", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.address
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -706,7 +669,7 @@ export default function SignUp() {
 
           {/* Step 2: Vehicle Information */}
           {currentStep === 2 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -737,7 +700,7 @@ export default function SignUp() {
                           handleInputChange("carUnit", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.carUnit
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -766,7 +729,7 @@ export default function SignUp() {
                           handleInputChange("carPlateNumber", e.target.value)
                         }
                         required
-                        className={`py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
+                        className={`py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300 focus:scale-[1.02] ${
                           errors.carPlateNumber
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : ""
@@ -792,10 +755,10 @@ export default function SignUp() {
                           handleInputChange("carType", value)
                         }
                       >
-                        <SelectTrigger className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
+                        <SelectTrigger className="py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
                           <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
+                        <SelectContent className="bg-background/90 border-border">
                           <SelectItem value="sedan">Sedan</SelectItem>
                           <SelectItem value="suv">SUV</SelectItem>
                           <SelectItem value="hatchback">Hatchback</SelectItem>
@@ -819,10 +782,10 @@ export default function SignUp() {
                           handleInputChange("branchLocation", value)
                         }
                       >
-                        <SelectTrigger className="py-4 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
+                        <SelectTrigger className="py-4 bg-background/50 border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500 transition-all duration-300">
                           <SelectValue placeholder="Choose your preferred hub" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
+                        <SelectContent className="bg-background/90 border-border">
                           {branches.map((branch) => (
                             <SelectItem
                               key={branch}
@@ -842,7 +805,7 @@ export default function SignUp() {
 
           {/* Step 3: Package Selection */}
           {currentStep === 3 && (
-            <div className="animate-fade-in-scale">
+            <div>
               <Card className="glass border-border shadow-2xl hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center text-foreground text-xl">
@@ -964,7 +927,7 @@ export default function SignUp() {
         </form>
 
         {/* Footer */}
-        <div className="text-center mt-8 space-y-4 animate-fade-in-up animate-delay-500">
+        <div className="text-center mt-8 space-y-4">
           <div className="glass rounded-2xl p-4">
             <p className="text-muted-foreground">
               Already have an account?{" "}

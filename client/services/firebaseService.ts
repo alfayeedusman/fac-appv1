@@ -129,7 +129,11 @@ export class FirebasePushNotificationService {
    */
   private async sendTokenToServer(token: string): Promise<void> {
     try {
-      const response = await fetch('/api/notifications/register-token', {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/register-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,15 +144,22 @@ export class FirebasePushNotificationService {
           userAgent: navigator.userAgent,
           timestamp: new Date().toISOString(),
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         console.log('✅ FCM token sent to server successfully');
       } else {
-        console.error('❌ Failed to send FCM token to server');
+        console.error('❌ Failed to send FCM token to server:', response.status);
       }
     } catch (error) {
-      console.error('Error sending FCM token to server:', error);
+      if (error.name === 'AbortError') {
+        console.warn('⏱️ FCM token registration timeout - will retry later');
+      } else {
+        console.error('Error sending FCM token to server:', error);
+      }
     }
   }
 
@@ -418,16 +429,26 @@ export class FirebasePushNotificationService {
       
       // Notify server to remove token
       if (this.fcmToken) {
-        await fetch('/api/notifications/unregister-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token: this.fcmToken,
-            userId: this.getCurrentUserId(),
-          }),
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        try {
+          await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/unregister-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token: this.fcmToken,
+              userId: this.getCurrentUserId(),
+            }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+        } catch (unregError) {
+          clearTimeout(timeoutId);
+          console.warn('Failed to unregister token:', unregError);
+        }
       }
 
       this.fcmToken = null;

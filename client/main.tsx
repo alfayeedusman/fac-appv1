@@ -10,6 +10,7 @@ import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ChatWidget from "@/components/ChatWidget";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -24,6 +25,8 @@ import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import GuestBooking from "./pages/GuestBooking";
 import BookingManagement from "./pages/BookingManagement";
+import BookingSuccess from "./pages/BookingSuccess";
+import BookingFailed from "./pages/BookingFailed";
 import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
 import NotificationHistory from "./pages/NotificationHistory";
@@ -54,16 +57,12 @@ import FlutterCustomerApp from "./pages/FlutterCustomerApp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DatabaseConnectionTest from "./components/DatabaseConnectionTest";
-import NeonConnectionTest from "./components/NeonConnectionTest";
-import LoginDebugger from "./components/LoginDebugger";
-import FixAdminPassword from "./components/FixAdminPassword";
-import SuperAdminSetup from "./components/SuperAdminSetup";
 import QuickSuperAdminLogin from "./components/QuickSuperAdminLogin";
-import NetworkDiagnostics from "./components/NetworkDiagnostics";
 import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
+import "./utils/networkDiagnostics"; // Load network diagnostics tool
 
 const queryClient = new QueryClient();
 
@@ -74,12 +73,12 @@ const AppComponent = () => {
       try {
         const result = await neonDbClient.testConnection();
         if (result.connected) {
-          console.log('✅ Neon database available');
+          console.log("✅ Neon database available");
         } else {
-          console.warn('⚠️ Neon database not connected');
+          console.warn("⚠️ Neon database not connected");
         }
       } catch (error) {
-        console.error('❌ Error during Neon database test:', error);
+        console.error("❌ Error during Neon database test:", error);
       }
     };
 
@@ -95,6 +94,8 @@ const AppComponent = () => {
             <Sonner />
             <GlobalNotificationProvider />
             <AdminNotificationListener />
+            {/* Universal Chat Widget (Crisp / Tawk.to / WhatsApp) */}
+            <ChatWidget />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -151,6 +152,8 @@ const AppComponent = () => {
                   }
                 />
                 <Route path="/guest-booking" element={<GuestBooking />} />
+                <Route path="/booking-success" element={<BookingSuccess />} />
+                <Route path="/booking-failed" element={<BookingFailed />} />
                 <Route
                   path="/my-bookings"
                   element={
@@ -372,50 +375,10 @@ const AppComponent = () => {
                   }
                 />
                 <Route
-                  path="/neon-test"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <NeonConnectionTest />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/login-debug"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <LoginDebugger />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/fix-admin"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <FixAdminPassword />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/superadmin-setup"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <SuperAdminSetup />
-                    </div>
-                  }
-                />
-                <Route
                   path="/quick-superadmin"
                   element={
                     <div className="min-h-screen bg-background flex items-center justify-center p-4">
                       <QuickSuperAdminLogin />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/network-test"
-                  element={
-                    <div className="min-h-screen bg-background p-4">
-                      <NetworkDiagnostics />
                     </div>
                   }
                 />
@@ -451,5 +414,5 @@ const AppComponent = () => {
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <AppComponent />
-  </ErrorBoundary>
+  </ErrorBoundary>,
 );

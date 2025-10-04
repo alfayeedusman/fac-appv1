@@ -26,6 +26,7 @@ interface DatabaseProviderProps {
 export function DatabaseProvider({ children }: DatabaseProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasShownOfflineToast, setHasShownOfflineToast] = useState(false);
 
   // Initialize database connection
   useEffect(() => {
@@ -36,50 +37,78 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     try {
       setIsLoading(true);
 
-      // Try to connect to the backend with a shorter timeout
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), 3000)
-      );
+      // Retry logic with multiple attempts
+      let attempts = 0;
+      const maxAttempts = 3;
+      let connected = false;
+      let lastError = null;
 
-      const health = await Promise.race([
-        neonDbClient.testConnection(),
-        timeoutPromise
-      ]);
+      while (attempts < maxAttempts && !connected) {
+        try {
+          // Try to connect with a reasonable timeout
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Connection timeout')), 5000)
+          );
 
-      const healthStatus = health.connected ? { status: 'healthy' } : { status: 'offline' };
+          const health = await Promise.race([
+            neonDbClient.testConnection(),
+            timeoutPromise
+          ]);
 
-      if (healthStatus && healthStatus.status === 'healthy') {
-        setIsConnected(true);
-        console.log('✅ Database connected successfully');
+          if (health.connected) {
+            connected = true;
+            setIsConnected(true);
+            console.log('✅ Database connected successfully');
 
-        // Auto-migrate localStorage data if user is logged in
-        const userId = localStorage.getItem('currentUserId');
-        if (userId) {
-          await migrateUserData(userId);
+            // Auto-migrate localStorage data if user is logged in
+            const userId = localStorage.getItem('currentUserId');
+            if (userId) {
+              await migrateUserData(userId);
+            }
+
+            // Reset offline toast flag if we're now connected
+            setHasShownOfflineToast(false);
+            break;
+          }
+        } catch (error) {
+          lastError = error;
+          attempts++;
+
+          if (attempts < maxAttempts) {
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+          }
         }
-      } else if (healthStatus && healthStatus.status === 'offline') {
+      }
+
+      // If all attempts failed, mark as offline
+      if (!connected) {
         setIsConnected(false);
-        console.log('ℹ️ Running in offline/demo mode');
-      } else {
-        setIsConnected(false);
-        console.warn('Database health check failed:', healthStatus);
+        console.log('ℹ️ Database connection unavailable after', attempts, 'attempts');
+
+        // Only show toast once and only if truly necessary
+        // Don't show in development or if already shown
+        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+        if (!isDevelopment && !hasShownOfflineToast) {
+          // Only show if user is trying to access protected features
+          const isProtectedRoute = window.location.pathname.includes('/admin') ||
+                                   window.location.pathname.includes('/dashboard') ||
+                                   window.location.pathname.includes('/booking');
+
+          if (isProtectedRoute) {
+            toast({
+              title: "Connection Issue",
+              description: "Some features may be limited. Please check your connection.",
+              variant: "default",
+            });
+            setHasShownOfflineToast(true);
+          }
+        }
       }
     } catch (error: any) {
       setIsConnected(false);
       console.log('ℹ️ Running in offline mode - backend not available');
-
-      // Only show user-facing error for actual connection issues
-      // Don't show error for development mode without backend
-      const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-      if (!isDevelopment) {
-        // In production, show connection error
-        toast({
-          title: "Offline Mode",
-          description: "Working offline. Some features may be limited.",
-          variant: "default", // Changed from destructive to default for less alarming appearance
-        });
-      }
     } finally {
       setIsLoading(false);
     }
