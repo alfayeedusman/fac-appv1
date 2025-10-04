@@ -3,6 +3,16 @@ import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
 
 // Types based on our database schema
+export interface UserVehicle {
+  id: string;
+  unitType: "car" | "motorcycle";
+  unitSize: string; // sedan, suv, pickup, etc.
+  plateNumber: string;
+  vehicleModel: string; // e.g., "Toyota Hilux 2024"
+  isDefault: boolean;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -17,9 +27,11 @@ export interface User {
     | "crew";
   contactNumber?: string;
   address?: string;
-  carUnit?: string;
-  carPlateNumber?: string;
-  carType?: string;
+  defaultAddress?: string; // For home service bookings
+  vehicles?: UserVehicle[]; // Multiple vehicles support
+  carUnit?: string; // Legacy field - kept for backward compatibility
+  carPlateNumber?: string; // Legacy field - kept for backward compatibility
+  carType?: string; // Legacy field - kept for backward compatibility
   branchLocation: string;
   profileImage?: string;
   isActive: boolean;
