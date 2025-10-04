@@ -31,6 +31,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import LevelProgress from "@/components/LevelProgress";
 import UserQRCode from "@/components/UserQRCode";
+import MembershipBadge from "@/components/MembershipBadge";
 
 interface UserProfile {
   name: string;
