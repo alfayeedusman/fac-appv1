@@ -206,7 +206,7 @@ class NeonDatabaseClient {
       if (res.ok) {
         const result = await res.json();
         this.isConnected = !!(result.connected || result.success);
-        console.log(`🔗 Test connection result: ${this.isConnected}`);
+        console.log(`�� Test connection result: ${this.isConnected}`);
         return this.isConnected;
       }
     } catch (e) {
@@ -516,15 +516,10 @@ class NeonDatabaseClient {
     email: string,
     password: string,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    const connected = await this.ensureConnection();
-    if (!connected) {
-      console.error("❌ Unable to establish database connection for login");
-      return {
-        success: false,
-        error:
-          "Database connection failed. Please check your internet connection and try again.",
-      };
-    }
+    // Attempt background connection check but don't block login
+    this.ensureConnection().catch((err) =>
+      console.warn("Background connection check failed:", err)
+    );
 
     try {
       const url = `${this.baseUrl}/auth/login`;
@@ -542,7 +537,12 @@ class NeonDatabaseClient {
 
       clearTimeout(to);
       const processed = await this.processLoginResponse(response);
-      if (processed.success) return processed;
+
+      // Update connection status on successful login
+      if (processed.success) {
+        this.isConnected = true;
+        return processed;
+      }
 
       if (
         processed.error?.toLowerCase().includes("cors") ||
@@ -559,7 +559,11 @@ class NeonDatabaseClient {
             signal: ac2.signal,
           });
           clearTimeout(to2);
-          return await this.processLoginResponse(resp2);
+          const result = await this.processLoginResponse(resp2);
+          if (result.success) {
+            this.isConnected = true;
+          }
+          return result;
         } catch (retryErr: any) {
           clearTimeout(to2);
           console.error(
@@ -568,7 +572,7 @@ class NeonDatabaseClient {
           );
           return {
             success: false,
-            error: "Login failed after retry. Please try again.",
+            error: "Login failed. Please try again.",
           };
         }
       }
@@ -589,39 +593,28 @@ class NeonDatabaseClient {
         error.message?.includes("Failed to fetch") ||
         error.name === "TypeError"
       ) {
+        // Try fallback URL directly on network error
         try {
-          const health = await fetch("/api/health", {
-            method: "GET",
-            signal: AbortSignal.timeout(5000),
+          console.log("🔄 Network error, trying fallback login...");
+          const resp3 = await fetch(`/api/neon/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+            signal: AbortSignal.timeout(10000),
           });
-          if (health.ok) {
-            return {
-              success: false,
-              error: "Network looks fine, but login failed. Please try again.",
-            };
+          const result = await this.processLoginResponse(resp3);
+          if (result.success) {
+            this.isConnected = true;
           }
-        } catch {}
-        this.isConnected = false;
-        const recon = await this.testConnection();
-        if (recon.connected) {
-          console.log("✅ Reconnected, retrying login once...");
-          try {
-            const resp3 = await fetch(`/api/neon/auth/login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-              signal: AbortSignal.timeout(10000),
-            });
-            return await this.processLoginResponse(resp3);
-          } catch (e3: any) {
-            console.error("❌ Retry login also failed:", e3?.message || e3);
-          }
+          return result;
+        } catch (e3: any) {
+          console.error("❌ Fallback login also failed:", e3?.message || e3);
+          return {
+            success: false,
+            error:
+              "Unable to connect to server. Please check your internet connection.",
+          };
         }
-        return {
-          success: false,
-          error:
-            "Network connection error. Please check your internet and try again.",
-        };
       }
 
       return {
