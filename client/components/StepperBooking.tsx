@@ -270,7 +270,7 @@ const SERVICE_CATEGORIES = {
   auto_detailing: {
     name: "Auto Detailing",
     icon: Star,
-    iconText: "⭐", // Safe for SelectItem
+    iconText: "���", // Safe for SelectItem
     gradient: "from-purple-500 to-pink-500",
     description: "Professional interior and exterior detailing",
   },
@@ -734,7 +734,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       case 3:
         return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} goBackToStep1={goBackToStep1} />;
       case 4:
-        return <PaymentStep bookingData={bookingData} updateBookingData={updateBookingData} handleFileUpload={handleFileUpload} />;
+        return <PaymentStep bookingData={bookingData} updateBookingData={updateBookingData} handleFileUpload={handleFileUpload} voucherInput={voucherInput} setVoucherInput={setVoucherInput} validateVoucherCode={validateVoucherCode} removeVoucher={removeVoucher} isValidatingVoucher={isValidatingVoucher} />;
       case 5:
         return <ReviewStep bookingData={bookingData} updateBookingData={updateBookingData} isGuest={isGuest} />;
       default:
@@ -1551,7 +1551,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   );
 };
 
-const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) => (
+const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload, voucherInput, setVoucherInput, validateVoucherCode, removeVoucher, isValidatingVoucher }: any) => (
   <Card className="glass border-border shadow-xl">
     <CardHeader>
       <CardTitle className="flex items-center text-2xl">
@@ -1560,6 +1560,42 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload }: any) 
       </CardTitle>
     </CardHeader>
     <CardContent className="space-y-6">
+      {/* Voucher Section */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-700">
+        <div className="flex items-center mb-3">
+          <Tag className="h-5 w-5 mr-2 text-purple-600" />
+          <h4 className="font-bold text-foreground">Have a Voucher Code?</h4>
+        </div>
+        {bookingData.voucherCode ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200">
+              <div className="flex-1">
+                <p className="font-bold text-green-700 dark:text-green-300">{bookingData.voucherData?.title}</p>
+                <p className="text-sm text-green-600 dark:text-green-400">Code: {bookingData.voucherCode}</p>
+                <p className="text-xs text-green-600 dark:text-green-400">Discount: ₱{bookingData.voucherDiscount?.toFixed(2)}</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={removeVoucher} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter voucher code"
+              value={voucherInput}
+              onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+              onKeyPress={(e) => e.key === 'Enter' && validateVoucherCode()}
+              className="flex-1"
+              disabled={isValidatingVoucher}
+            />
+            <Button onClick={validateVoucherCode} disabled={isValidatingVoucher || !voucherInput.trim()} className="bg-purple-600 hover:bg-purple-700 text-white">
+              {isValidatingVoucher ? "Checking..." : "Apply"}
+            </Button>
+          </div>
+        )}
+      </div>
+
       <div className="space-y-4">
         {adminConfig.paymentMethods.branch.enabled && (
           <div
