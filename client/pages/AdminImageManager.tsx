@@ -119,19 +119,32 @@ export default function AdminImageManager() {
   }, [selectedCategory, searchTerm]);
 
   const loadStats = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/stats`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/stats`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load image stats:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to load image stats:', error);
+      }
     }
   };
 
   const loadImages = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -141,41 +154,66 @@ export default function AdminImageManager() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setImages(result.data);
       } else {
         setError('Failed to load images');
       }
-    } catch (error) {
-      console.error('Failed to load images:', error);
-      setError('Failed to load images');
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        console.error('Failed to load images:', error);
+        setError('Failed to load images');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   const loadCollections = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/collections`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/collections`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setCollections(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load collections:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to load collections:', error);
+      }
     }
   };
 
   const handleDeleteImage = async (imageId: string) => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/${imageId}`, {
         method: 'DELETE',
+        signal: ac.signal,
       });
 
+      clearTimeout(timeout);
       const result = await response.json();
 
       if (result.success) {
@@ -183,21 +221,34 @@ export default function AdminImageManager() {
           title: "✅ Image Deleted",
           description: "Image has been successfully deleted",
         });
-        
+
         await loadImages();
         await loadStats();
       } else {
         setError('Failed to delete image');
       }
-    } catch (error) {
-      console.error('Failed to delete image:', error);
-      setError('Failed to delete image');
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        console.error('Failed to delete image:', error);
+        setError('Failed to delete image');
+      }
     }
   };
 
   const handleDownloadImage = async (image: ImageData) => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
+
     try {
-      const response = await fetch(image.publicUrl);
+      const response = await fetch(image.publicUrl, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -212,9 +263,13 @@ export default function AdminImageManager() {
         title: "✅ Download Started",
         description: `Downloading ${image.originalName}`,
       });
-    } catch (error) {
-      console.error('Download failed:', error);
-      setError('Failed to download image');
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        setError('Download timed out. Please try again.');
+      } else {
+        console.error('Download failed:', error);
+        setError('Failed to download image');
+      }
     }
   };
 
@@ -225,6 +280,9 @@ export default function AdminImageManager() {
     }
 
     try {
+      const ac = new AbortController();
+      const timeout = setTimeout(() => ac.abort(), 10000);
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/collections`, {
         method: 'POST',
         headers: {
@@ -234,7 +292,10 @@ export default function AdminImageManager() {
           ...newCollection,
           createdBy: userId,
         }),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
