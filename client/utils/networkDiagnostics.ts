@@ -25,10 +25,13 @@ export class NetworkDiagnostics {
 
   private async testHealthEndpoint(): Promise<void> {
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
       const response = await fetch('/api/health', {
         method: 'GET',
-        signal: AbortSignal.timeout(5000),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       if (response.ok) {
         const data = await response.json();
@@ -56,10 +59,13 @@ export class NetworkDiagnostics {
 
   private async testNeonConnection(): Promise<void> {
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
       const response = await fetch('/api/neon/test', {
         method: 'GET',
-        signal: AbortSignal.timeout(5000),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       if (response.ok) {
         const data = await response.json();
@@ -88,12 +94,15 @@ export class NetworkDiagnostics {
   private async testRegistrationEndpoint(): Promise<void> {
     try {
       // Test with invalid data to see if endpoint is reachable
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
       const response = await fetch('/api/neon/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ test: 'diagnostic' }),
-        signal: AbortSignal.timeout(5000),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       // We expect 400 or 500 (invalid data), not network error
       this.results.push({
@@ -113,13 +122,16 @@ export class NetworkDiagnostics {
 
   private async testCORS(): Promise<void> {
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
       const response = await fetch('/api/health', {
         method: 'GET',
         headers: {
           'Origin': window.location.origin,
         },
-        signal: AbortSignal.timeout(5000),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       const corsHeaders = {
         'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
