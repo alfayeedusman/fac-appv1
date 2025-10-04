@@ -647,10 +647,11 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
     try {
       // Prepare booking data for database
-      const currentUser = localStorage.getItem("userEmail");
+      const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
 
       const bookingPayload: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'confirmationCode'> = {
-        userId: isGuest ? undefined : currentUser || undefined,
+        userId: isGuest ? undefined : userId || undefined,
         guestInfo: isGuest ? {
           firstName: bookingData.fullName.split(' ')[0] || '',
           lastName: bookingData.fullName.split(' ').slice(1).join(' ') || '',
