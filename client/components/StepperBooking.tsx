@@ -351,6 +351,13 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
   const [voucherInput, setVoucherInput] = useState("");
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
 
+  // User vehicles and data for registered users
+  const [savedVehicles, setSavedVehicles] = useState<any[]>([]);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
+  const [showNewVehicleForm, setShowNewVehicleForm] = useState(false);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+
   // Cleanup object URLs when component unmounts
   useEffect(() => {
     return () => {
