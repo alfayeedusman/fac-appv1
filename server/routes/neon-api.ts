@@ -1195,3 +1195,212 @@ export const getLowStockItems: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// ============= USER VEHICLES & ADDRESS MANAGEMENT API =============
+
+// Get user vehicles
+export const getUserVehicles: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await sql`
+      SELECT * FROM user_vehicles
+      WHERE user_id = ${userId}
+      ORDER BY is_default DESC, created_at DESC
+    `;
+
+    const vehicles = result.map((v: any) => ({
+      id: v.id,
+      unitType: v.unit_type,
+      unitSize: v.unit_size,
+      plateNumber: v.plate_number,
+      vehicleModel: v.vehicle_model,
+      isDefault: v.is_default,
+      createdAt: v.created_at,
+    }));
+
+    res.json({
+      success: true,
+      vehicles,
+    });
+  } catch (error) {
+    console.error("Get user vehicles error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch user vehicles",
+    });
+  }
+};
+
+// Add user vehicle
+export const addUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { unitType, unitSize, plateNumber, vehicleModel, isDefault } = req.body;
+
+    // If this is set as default, unset other defaults
+    if (isDefault) {
+      await sql`
+        UPDATE user_vehicles
+        SET is_default = false
+        WHERE user_id = ${userId}
+      `;
+    }
+
+    const result = await sql`
+      INSERT INTO user_vehicles (
+        user_id, unit_type, unit_size, plate_number, vehicle_model, is_default
+      ) VALUES (
+        ${userId}, ${unitType}, ${unitSize}, ${plateNumber}, ${vehicleModel}, ${isDefault || false}
+      ) RETURNING *
+    `;
+
+    const vehicle = {
+      id: result[0].id,
+      unitType: result[0].unit_type,
+      unitSize: result[0].unit_size,
+      plateNumber: result[0].plate_number,
+      vehicleModel: result[0].vehicle_model,
+      isDefault: result[0].is_default,
+      createdAt: result[0].created_at,
+    };
+
+    res.status(201).json({
+      success: true,
+      vehicle,
+      message: "Vehicle added successfully",
+    });
+  } catch (error) {
+    console.error("Add user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to add vehicle",
+    });
+  }
+};
+
+// Update user vehicle
+export const updateUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId, vehicleId } = req.params;
+    const updates = req.body;
+
+    // If this is set as default, unset other defaults
+    if (updates.isDefault) {
+      await sql`
+        UPDATE user_vehicles
+        SET is_default = false
+        WHERE user_id = ${userId} AND id != ${vehicleId}
+      `;
+    }
+
+    const result = await sql`
+      UPDATE user_vehicles
+      SET
+        unit_type = COALESCE(${updates.unitType}, unit_type),
+        unit_size = COALESCE(${updates.unitSize}, unit_size),
+        plate_number = COALESCE(${updates.plateNumber}, plate_number),
+        vehicle_model = COALESCE(${updates.vehicleModel}, vehicle_model),
+        is_default = COALESCE(${updates.isDefault}, is_default),
+        updated_at = NOW()
+      WHERE id = ${vehicleId} AND user_id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found",
+      });
+    }
+
+    const vehicle = {
+      id: result[0].id,
+      unitType: result[0].unit_type,
+      unitSize: result[0].unit_size,
+      plateNumber: result[0].plate_number,
+      vehicleModel: result[0].vehicle_model,
+      isDefault: result[0].is_default,
+      createdAt: result[0].created_at,
+    };
+
+    res.json({
+      success: true,
+      vehicle,
+      message: "Vehicle updated successfully",
+    });
+  } catch (error) {
+    console.error("Update user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update vehicle",
+    });
+  }
+};
+
+// Delete user vehicle
+export const deleteUserVehicle: RequestHandler = async (req, res) => {
+  try {
+    const { userId, vehicleId } = req.params;
+
+    const result = await sql`
+      DELETE FROM user_vehicles
+      WHERE id = ${vehicleId} AND user_id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Vehicle deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete user vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete vehicle",
+    });
+  }
+};
+
+// Update user default address
+export const updateUserAddress: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { defaultAddress } = req.body;
+
+    const result = await sql`
+      UPDATE users
+      SET default_address = ${defaultAddress}, updated_at = NOW()
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: result[0].id,
+        defaultAddress: result[0].default_address,
+      },
+      message: "Address updated successfully",
+    });
+  } catch (error) {
+    console.error("Update user address error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update address",
+    });
+  }
+};
