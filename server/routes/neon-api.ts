@@ -359,6 +359,33 @@ async function ensureVoucherTables() {
   await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
 }
 
+export const getVouchers: RequestHandler = async (req, res) => {
+  try {
+    await ensureVoucherTables();
+    const { audience, status } = req.query;
+
+    let query = sql`SELECT * FROM vouchers WHERE 1=1`;
+
+    if (audience) {
+      query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all')`;
+    }
+
+    if (status === 'active') {
+      query = sql`SELECT * FROM vouchers WHERE is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
+    }
+
+    if (audience && status === 'active') {
+      query = sql`SELECT * FROM vouchers WHERE (audience = ${audience} OR audience = 'all') AND is_active = true AND (valid_until IS NULL OR valid_until >= NOW())`;
+    }
+
+    const vouchers = await query;
+    res.json({ success: true, vouchers: Array.isArray(vouchers) ? vouchers : vouchers?.rows || [] });
+  } catch (err: any) {
+    console.error('Get vouchers error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch vouchers' });
+  }
+};
+
 export const validateVoucher: RequestHandler = async (req, res) => {
   try {
     const { code, bookingAmount, userEmail, bookingType } = req.body || {};
