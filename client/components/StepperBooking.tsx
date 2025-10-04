@@ -1659,114 +1659,35 @@ const PackageStep = ({
   updateBookingData,
   goBackToStep1,
 }: any) => {
-  const availableServices = getAvailableServices(
-    bookingData.serviceType || "branch",
-  );
-  const [branches, setBranches] = useState<
-    { id: string; name: string; address?: string }[]
-  >([]);
-  const [loadingBranches, setLoadingBranches] = useState(false);
-  const isAdmin =
-    localStorage.getItem("userRole") === "admin" ||
-    localStorage.getItem("userRole") === "superadmin";
+  // Get selected category info
+  const selectedCategory = SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES];
+  const categoryName = selectedCategory?.name || "Service";
 
-  useEffect(() => {
-    const load = async () => {
-      setLoadingBranches(true);
-      try {
-        const res = await neonDbClient.getBranches();
-        if (res.success && res.branches && Array.isArray(res.branches)) {
-          setBranches(
-            res.branches.map((b: any) => ({
-              id: b.id || b.code || b.name,
-              name: b.name,
-              address: b.address,
-            })),
-          );
-        } else {
-          // Fallback to local admin config
-          setBranches(
-            (adminConfig.branches || [])
-              .filter((b: any) => b.enabled)
-              .map((b: any) => ({
-                id: b.id,
-                name: b.name,
-                address: b.address,
-              })),
-          );
-        }
-      } catch (e) {
-        setBranches(
-          (adminConfig.branches || [])
-            .filter((b: any) => b.enabled)
-            .map((b: any) => ({ id: b.id, name: b.name, address: b.address })),
-        );
-      } finally {
-        setLoadingBranches(false);
-      }
-    };
-    load();
-  }, []);
-
-  const handleAddBranch = async () => {
-    const name = window.prompt("New branch name");
-    if (!name) return;
-    const code =
-      name
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "")
-        .slice(0, 6) + String(Date.now()).slice(-2);
-    const address = window.prompt("Branch address (optional)") || undefined;
-    const city = "Zamboanga City";
-    try {
-      const resp = await neonDbClient.createBranch({
-        name,
-        code,
-        address,
-        city,
-      });
-      if (resp.success) {
-        toast({ title: "Branch created", description: `${name} added.` });
-        // reload branches - silently handle errors
-        try {
-          const res = await neonDbClient.getBranches();
-          if (res.success && res.branches) {
-            setBranches(
-              res.branches.map((b: any) => ({
-                id: b.id || b.code || b.name,
-                name: b.name,
-                address: b.address,
-              })),
-            );
-          }
-        } catch {
-          // Ignore errors, keep existing branches
-        }
-      } else {
-        toast({
-          title: "Failed to create branch",
-          description: resp.error || "Please try again",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Connection error",
-        description: "Unable to create branch. Please try again.",
-        variant: "destructive",
-      });
+  // Get available packages based on category
+  const getPackages = () => {
+    if (bookingData.category === "carwash" || bookingData.category === "motorwash") {
+      // Show car wash packages
+      const allCarwashServices = getCarWashServices();
+      return allCarwashServices.filter((service) => service.isActive);
+    } else if (bookingData.category === "auto_detailing") {
+      return []; // Auto detailing packages will be shown based on pricing
+    } else if (bookingData.category === "graphene_coating") {
+      return []; // Graphene coating packages will be shown based on pricing
     }
+    return [];
   };
+
+  const packages = getPackages();
 
   return (
     <Card className="glass border-border shadow-xl">
       <CardHeader className="pb-4 md:pb-6">
         <CardTitle className="flex items-center text-xl md:text-2xl">
-          <Sparkles className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
-          Choose Your Service
+          <Star className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+          Select {categoryName} Package
         </CardTitle>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Select the perfect car care service for your vehicle
+          Choose the perfect package for your {bookingData.unitType === "motorcycle" ? "motorcycle" : "vehicle"}
           {bookingData.serviceType === "home" && (
             <span className="block text-xs text-orange-600 mt-1">
               Only selected services are available for home service
