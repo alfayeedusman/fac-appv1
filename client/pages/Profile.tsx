@@ -32,6 +32,7 @@ import PremiumMembershipCard from "@/components/PremiumMembershipCard";
 import LevelProgress from "@/components/LevelProgress";
 import UserQRCode from "@/components/UserQRCode";
 import MembershipBadge from "@/components/MembershipBadge";
+import { swalHelpers } from "@/utils/swalHelpers";
 
 interface UserProfile {
   name: string;
