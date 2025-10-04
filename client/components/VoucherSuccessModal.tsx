@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Gift, Percent, ShoppingCart } from "lucide-react";
+import { CheckCircle, Gift, Percent, Calendar } from "lucide-react";
 
 interface VoucherSuccessModalProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ interface VoucherSuccessModalProps {
   voucherTitle: string;
   discountValue: number;
   discountType: "percentage" | "fixed";
+  onBookNow?: () => void;
 }
 
 export default function VoucherSuccessModal({
@@ -24,7 +25,16 @@ export default function VoucherSuccessModal({
   voucherTitle,
   discountValue,
   discountType,
+  onBookNow,
 }: VoucherSuccessModalProps) {
+  const handleBookNow = () => {
+    if (onBookNow) {
+      onBookNow();
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -35,7 +45,7 @@ export default function VoucherSuccessModal({
             </div>
           </div>
           <DialogTitle className="text-2xl font-bold text-green-600">
-            Voucher Applied Successfully! 🎉
+            Voucher Activated! 🎉
           </DialogTitle>
         </DialogHeader>
 
@@ -59,7 +69,7 @@ export default function VoucherSuccessModal({
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Discount Applied:
+                Your Discount:
               </span>
               <Badge className="bg-green-500 text-white text-lg px-3 py-1">
                 <Percent className="h-4 w-4 mr-1" />
@@ -73,22 +83,21 @@ export default function VoucherSuccessModal({
           {/* Success Message */}
           <div className="text-center space-y-2">
             <p className="text-lg font-semibold text-foreground">
-              Your discount is now active!
+              Your voucher is ready to use!
             </p>
             <p className="text-sm text-muted-foreground">
-              You can now use this discount during checkout. The voucher has
-              been added to your cart.
+              This discount will be automatically applied when you book a service.
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="space-y-3">
             <Button
-              onClick={onClose}
+              onClick={handleBookNow}
               className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-semibold"
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Continue Shopping
+              <Calendar className="h-4 w-4 mr-2" />
+              Book Now
             </Button>
 
             <Button variant="outline" onClick={onClose} className="w-full">
