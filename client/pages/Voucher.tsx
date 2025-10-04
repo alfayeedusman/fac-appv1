@@ -170,8 +170,8 @@ export default function Voucher() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden pb-20">
-      <StickyHeader showBack={true} title="Vouchers" />
+    <div className="min-h-screen bg-background theme-transition relative overflow-y-auto pb-24">
+      <StickyHeader showBack={true} title="Vouchers" alwaysVisible />
 
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -179,7 +179,7 @@ export default function Voucher() {
         <div className="absolute bottom-1/3 left-1/6 w-80 h-80 rounded-full bg-fac-orange-500/[0.03] blur-2xl"></div>
       </div>
 
-      <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto relative z-10">
+      <div className="px-4 sm:px-6 pt-24 pb-8 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto relative z-10">
         {/* Clean Header */}
         <div className="mb-6 text-center">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-purple-600 flex items-center justify-center mx-auto mb-3 shadow-lg">
