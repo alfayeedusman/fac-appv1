@@ -492,10 +492,34 @@ export default function StepperBooking({
     let price = 0;
 
     if (bookingData.category === "carwash" && bookingData.service) {
-      price =
-        adminConfig.pricing.carwash[
-          bookingData.service as keyof typeof adminConfig.pricing.carwash
-        ]?.price || 0;
+      // Get the service from carWashServices
+      const services = getCarWashServices();
+      const selectedService = services.find(s => s.id === bookingData.service);
+
+      if (selectedService && bookingData.unitType) {
+        // For motorcycle, use unitType as "motorcycle" and unitSize for subtype
+        const vehicleTypeId = bookingData.unitType === "motorcycle"
+          ? "motorcycle"
+          : bookingData.unitSize || "sedan"; // For cars, use unitSize (sedan, suv, pickup, etc)
+
+        const motorcycleSubtypeId = bookingData.unitType === "motorcycle"
+          ? bookingData.unitSize // For motorcycles, unitSize contains the subtype (small, medium, big)
+          : undefined;
+
+        // Calculate price using the service variant system
+        const { calculateServicePrice } = await import("@/utils/carWashServices");
+        price = calculateServicePrice(
+          selectedService.basePrice,
+          vehicleTypeId,
+          motorcycleSubtypeId
+        );
+      } else {
+        // Fallback to old system
+        price =
+          adminConfig.pricing.carwash[
+            bookingData.service as keyof typeof adminConfig.pricing.carwash
+          ]?.price || 0;
+      }
     } else if (
       bookingData.category === "auto_detailing" &&
       bookingData.unitType &&
