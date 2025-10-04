@@ -375,13 +375,25 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
       const userEmail = localStorage.getItem("userEmail");
       const userId = localStorage.getItem("userId");
-      const userName = localStorage.getItem("userName") || "";
-      const userContact = localStorage.getItem("userContact") || "";
-      const userAddress = localStorage.getItem("userAddress") || "";
+      const currentUserStr = localStorage.getItem("currentUser");
 
       if (!userEmail || !userId) return;
 
+      // Parse current user object if available
+      let currentUser: any = null;
+      try {
+        if (currentUserStr) {
+          currentUser = JSON.parse(currentUserStr);
+        }
+      } catch (e) {
+        console.error("Failed to parse currentUser:", e);
+      }
+
       // Set user basic data
+      const userName = currentUser?.fullName || localStorage.getItem("userFullName") || "";
+      const userContact = currentUser?.contactNumber || "";
+      const userAddress = currentUser?.address || currentUser?.defaultAddress || "";
+
       const user = {
         id: userId,
         email: userEmail,
