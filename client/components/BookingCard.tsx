@@ -170,10 +170,13 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
             </div>
             <div>
               <p className="font-medium text-foreground capitalize">
-                {booking.vehicleType}
+                {booking.vehicleModel || booking.unitType || booking.vehicleType}
                 {booking.motorcycleType && ` (${booking.motorcycleType})`}
               </p>
-              <p className="text-sm text-muted-foreground">Vehicle Type</p>
+              <p className="text-sm text-muted-foreground">
+                {booking.plateNumber || booking.plateNo ? `${booking.plateNumber || booking.plateNo} • ` : ''}
+                {booking.unitSize || 'Vehicle'}
+              </p>
             </div>
           </div>
 
