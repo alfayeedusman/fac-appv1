@@ -429,21 +429,36 @@ export class AdminConfigManager {
 
   static isSlotAvailable(date: string, timeSlot: string, branch: string): boolean {
     const config = this.getConfig();
-    
+
     // Check blackout dates
     if (config.scheduling.blackoutDates.includes(date)) {
       return false;
     }
-    
+
+    // Convert 12-hour format to 24-hour for Date object
+    const convert12To24 = (time12: string): string => {
+      const [time, period] = time12.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     // Check lead time
     const now = new Date();
-    const appointmentTime = new Date(`${date}T${timeSlot}:00`);
+    const time24 = convert12To24(timeSlot);
+    const appointmentTime = new Date(`${date}T${time24}:00`);
     const leadTimeMs = config.scheduling.leadTime * 60 * 60 * 1000;
-    
+
     if (appointmentTime.getTime() - now.getTime() < leadTimeMs) {
       return false;
     }
-    
+
     // Check existing bookings capacity
     const existingBookings = this.getBookingsForSlot(date, timeSlot, branch);
     return existingBookings.length < config.scheduling.capacityPerSlot;
