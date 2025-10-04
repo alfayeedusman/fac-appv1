@@ -62,6 +62,10 @@ export default function Profile() {
   );
 
   const getUserProfile = (): UserProfile => {
+    const picture =
+      currentUser?.profilePicture ||
+      localStorage.getItem(`userProfilePicture_${userEmail}`) ||
+      "";
     return {
       name: currentUser?.fullName || signUpData.fullName || "User",
       email: currentUser?.email || userEmail,
@@ -73,6 +77,7 @@ export default function Profile() {
       joinDate:
         currentUser?.registeredAt?.split("T")[0] ||
         new Date().toISOString().split("T")[0],
+      profilePicture: picture,
     };
   };
 
