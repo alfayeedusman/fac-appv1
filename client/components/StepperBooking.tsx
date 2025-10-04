@@ -305,7 +305,7 @@ const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
     icon: Car,
-    iconText: "🚗", // Safe for SelectItem
+    iconText: "����", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
     vehicleTypes: ["car"],
@@ -324,6 +324,7 @@ const SERVICE_CATEGORIES = {
     iconText: "���", // Safe for SelectItem
     gradient: "from-purple-500 to-pink-500",
     description: "Professional interior and exterior detailing",
+    vehicleTypes: ["car", "motorcycle"],
   },
   graphene_coating: {
     name: "Graphene Coating",
