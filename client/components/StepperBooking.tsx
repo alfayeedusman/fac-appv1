@@ -2890,22 +2890,133 @@ const PaymentStep = ({
 );
 
 const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
-  const [useNewDetails, setUseNewDetails] = useState(false);
-
-  // For registered users, check if we have saved data
-  const hasSavedData = !isGuest && bookingData.fullName && bookingData.mobile;
-
   return (
-    <div className="space-y-6">
-      {/* Customer Details */}
+    <div className="space-y-4 md:space-y-6">
+      {/* Booking Summary */}
       <Card className="glass border-border shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center text-2xl">
-            <User className="h-6 w-6 mr-3 text-fac-orange-500" />
-            Customer Details
+        <CardHeader className="pb-4 md:pb-6">
+          <CardTitle className="flex items-center text-xl md:text-2xl">
+            <CheckCircle className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+            Review Your Booking
           </CardTitle>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
+            Please review your booking details before confirming
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Service Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <Sparkles className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Service Information
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Service Type:</span>
+                <span className="font-medium">{bookingData.serviceType === "home" ? "Home Service" : "Branch Visit"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Category:</span>
+                <span className="font-medium">
+                  {SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || "-"}
+                </span>
+              </div>
+              {bookingData.service && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Package:</span>
+                  <span className="font-medium">{bookingData.service}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Vehicle:</span>
+                <span className="font-medium">{bookingData.unitType} - {bookingData.unitSize}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Schedule Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Schedule
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Date:</span>
+                <span className="font-medium">{bookingData.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Time:</span>
+                <span className="font-medium">{bookingData.timeSlot}</span>
+              </div>
+              {bookingData.serviceType === "branch" && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Branch:</span>
+                  <span className="font-medium">{bookingData.branch}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Customer Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <User className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Contact Information
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Name:</span>
+                <span className="font-medium">{bookingData.fullName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Mobile:</span>
+                <span className="font-medium">{bookingData.mobile}</span>
+              </div>
+              {bookingData.email && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-medium">{bookingData.email}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Vehicle:</span>
+                <span className="font-medium">{bookingData.carModel} ({bookingData.plateNo})</span>
+              </div>
+              {bookingData.serviceType === "home" && bookingData.address && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Address:</span>
+                  <span className="font-medium text-right ml-4">{bookingData.address}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <CreditCard className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Payment
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Method:</span>
+                <span className="font-medium capitalize">{bookingData.paymentMethod}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-border">
+                <span className="font-bold text-foreground">Total Amount:</span>
+                <span className="font-black text-fac-orange-500 text-lg">
+                  ₱{bookingData.totalPrice.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Terms and Conditions */}
+      <Card className="glass border-border shadow-xl">
+        <CardContent className="p-4 md:p-6">
           {/* For registered users with saved data - show option */}
           {hasSavedData && !useNewDetails && (
             <div className="space-y-4">
