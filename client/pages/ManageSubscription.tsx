@@ -864,6 +864,24 @@ export default function ManageSubscription() {
         }}
       />
 
+      {/* FACPay Modal */}
+      <FACPayModal
+        isOpen={showFACPayModal}
+        onClose={() => {
+          setShowFACPayModal(false);
+          setTimeout(() => {
+            refreshSubscriptionStatus();
+          }, 1000);
+        }}
+        currentPlan={currentPlan}
+        selectedPlan={selectedPlan}
+        planPrice={pricing.total}
+        paymentType="upgrade"
+        onPaymentSuccess={() => {
+          refreshSubscriptionStatus();
+        }}
+      />
+
       {/* Subscription Submission Modal */}
       <SubscriptionSubmission
         isOpen={showSubscriptionSubmission}
