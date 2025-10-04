@@ -1171,7 +1171,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
             {currentStep === 5 ? (
               bookingData.paymentMethod === 'online' ? (
                 <FACPayButton
-                  amount={0}
+                  amount={bookingData.totalPrice}
                   onPaymentClick={submitBooking}
                   isLoading={isLoading}
                   disabled={!canProceed() || isLoading}
