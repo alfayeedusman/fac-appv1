@@ -400,7 +400,7 @@ export class AdminConfigManager {
   static generateTimeSlots(dayOfWeek: string): string[] {
     const config = this.getConfig();
     const dayConfig = config.scheduling.workingHours[dayOfWeek.toLowerCase()];
-    
+
     if (!dayConfig || !dayConfig.enabled) {
       return [];
     }
@@ -408,16 +408,22 @@ export class AdminConfigManager {
     const slots: string[] = [];
     const [startHour, startMinute] = dayConfig.startTime.split(':').map(Number);
     const [endHour, endMinute] = dayConfig.endTime.split(':').map(Number);
-    
+
     const startTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;
-    
+
     for (let time = startTime; time < endTime; time += dayConfig.slotDuration) {
       const hours = Math.floor(time / 60);
       const minutes = time % 60;
-      slots.push(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
+
+      // Convert to 12-hour format with AM/PM
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12; // Convert 0 to 12 for midnight, 13-23 to 1-11
+      const displayMinutes = minutes.toString().padStart(2, '0');
+
+      slots.push(`${displayHours}:${displayMinutes} ${period}`);
     }
-    
+
     return slots;
   }
 
