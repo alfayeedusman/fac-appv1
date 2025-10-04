@@ -549,9 +549,9 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         return true;
       }
       case 4: { // Payment
-        const paymentValid = !!bookingData.paymentMethod;
-        const receiptValid = bookingData.paymentMethod === "online" ? !!bookingData.receiptFile : true;
-        return paymentValid && receiptValid;
+        // For online payment (FACPay), no receipt needed at this stage
+        // Payment will be processed through Xendit gateway
+        return !!bookingData.paymentMethod;
       }
       case 5: { // Review
         const basicCustomerValid = !!(bookingData.fullName && bookingData.mobile);
