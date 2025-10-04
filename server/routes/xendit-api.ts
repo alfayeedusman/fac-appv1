@@ -4,6 +4,7 @@ const router = express.Router();
 
 // Xendit Secret Key (use environment variable in production)
 const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY || 'xnd_production_YOUR_SECRET_KEY_HERE';
+const XENDIT_WEBHOOK_TOKEN = process.env.XENDIT_WEBHOOK_TOKEN || '';
 const XENDIT_API_URL = 'https://api.xendit.co/v2';
 
 // Create Invoice
