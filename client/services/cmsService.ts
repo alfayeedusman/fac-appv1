@@ -108,28 +108,40 @@ class CMSService {
    * Get current homepage content
    */
   async getHomepageContent(): Promise<HomepageContent> {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
       const response = await fetch(`${API_BASE_URL}/homepage`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result: CMSApiResponse<HomepageContent> = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to get homepage content');
       }
 
       return result.data;
-    } catch (error) {
-      console.error('Error getting homepage content:', error);
-      
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        console.warn('⏱️ CMS content request timed out, using default content');
+      } else {
+        console.error('Error getting homepage content:', error);
+      }
+
       // Return default content as fallback
       return this.getDefaultContent();
     }
@@ -139,6 +151,9 @@ class CMSService {
    * Save homepage content
    */
   async saveHomepageContent(content: HomepageContent, userId?: string, userName?: string): Promise<boolean> {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
+
     try {
       const response = await fetch(`${API_BASE_URL}/homepage`, {
         method: 'POST',
@@ -150,20 +165,30 @@ class CMSService {
           userId: userId || 'admin',
           userName: userName || 'Admin User',
         }),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to save homepage content');
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        console.error('⏱️ CMS save request timed out');
+        throw new Error('Request timed out. Please try again.');
+      }
+
       console.error('Error saving homepage content:', error);
       throw error;
     }
@@ -173,27 +198,39 @@ class CMSService {
    * Get content history
    */
   async getContentHistory(limit = 20, offset = 0): Promise<ContentHistory[]> {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
       const response = await fetch(`${API_BASE_URL}/history?limit=${limit}&offset=${offset}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result: CMSApiResponse<ContentHistory[]> = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to get content history');
       }
 
       return result.data;
-    } catch (error) {
-      console.error('Error getting content history:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        console.warn('⏱️ CMS history request timed out');
+      } else {
+        console.error('Error getting content history:', error);
+      }
       return [];
     }
   }
@@ -202,6 +239,9 @@ class CMSService {
    * Initialize CMS with default content
    */
   async initializeContent(userId?: string, userName?: string): Promise<boolean> {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
+
     try {
       const response = await fetch(`${API_BASE_URL}/initialize`, {
         method: 'POST',
@@ -212,20 +252,30 @@ class CMSService {
           userId: userId || 'admin',
           userName: userName || 'Admin User',
         }),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to initialize content');
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        console.error('⏱️ CMS initialize request timed out');
+        throw new Error('Request timed out. Please try again.');
+      }
+
       console.error('Error initializing content:', error);
       throw error;
     }
