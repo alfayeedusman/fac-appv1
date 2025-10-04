@@ -52,7 +52,7 @@ import {
   isSlotAvailable,
 } from "@/utils/adminConfig";
 import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
-import { getCarWashServices } from "@/utils/carWashServices";
+import { getCarWashServices, calculateServicePrice } from "@/utils/carWashServices";
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
@@ -507,7 +507,6 @@ export default function StepperBooking({
           : undefined;
 
         // Calculate price using the service variant system
-        const { calculateServicePrice } = await import("@/utils/carWashServices");
         price = calculateServicePrice(
           selectedService.basePrice,
           vehicleTypeId,
