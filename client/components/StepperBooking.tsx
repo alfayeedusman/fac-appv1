@@ -784,9 +784,22 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         }
       }
 
+      // Trigger Xendit payment if online payment method is selected
+      if (bookingData.paymentMethod === 'online') {
+        const paymentSuccess = await handleXenditPayment(createdBooking.id, bookingData.totalPrice);
+        if (!paymentSuccess) {
+          // Payment initialization failed, but booking is created
+          toast({
+            title: "Booking Created",
+            description: "Booking created but payment initialization failed. Please contact support.",
+            variant: "default",
+          });
+        }
+      }
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
-        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\nYou will receive confirmation shortly.`,
+        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\n${bookingData.paymentMethod === 'online' ? 'Complete your payment in the popup window.' : 'You will receive confirmation shortly.'}`,
         { autoClose: 5000 }
       );
 
