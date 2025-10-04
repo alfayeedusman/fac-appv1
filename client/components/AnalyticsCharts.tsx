@@ -78,9 +78,16 @@ export default function AnalyticsCharts({
       setError(null);
       console.log("📊 Fetching analytics data for filter:", timeFilter);
 
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
+
       const response = await fetch(
         `/api/neon/analytics?timeFilter=${timeFilter}`,
+        { signal: ac.signal }
       );
+
+      clearTimeout(to);
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
