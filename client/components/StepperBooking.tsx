@@ -817,17 +817,41 @@ export default function StepperBooking({
       });
 
       if (invoiceData && invoiceData.invoice_url) {
-        // Redirect to Xendit payment page
+        // Save booking + invoice for success page to confirm and render receipt
+        try {
+          const payload = {
+            bookingId,
+            invoiceId: invoiceData.invoice_id,
+            bookingData: {
+              fullName: bookingData.fullName,
+              email: customerEmail,
+              mobile: bookingData.mobile,
+              category: bookingData.category,
+              service: bookingData.service,
+              serviceType: bookingData.serviceType,
+              unitType: bookingData.unitType,
+              unitSize: bookingData.unitSize,
+              plateNo: bookingData.plateNo,
+              carModel: bookingData.carModel,
+              date: bookingData.date,
+              timeSlot: bookingData.timeSlot,
+              branch: bookingData.branch,
+              totalPrice: bookingData.totalPrice,
+              paymentMethod: bookingData.paymentMethod,
+            },
+          };
+          localStorage.setItem("fac_last_booking", JSON.stringify(payload));
+          localStorage.setItem("fac_last_invoice_id", String(invoiceData.invoice_id));
+        } catch (_) {}
+
+        // Redirect to Xendit payment page (same tab)
         toast({
           title: "Redirecting to Payment",
-          description:
-            "You will be redirected to FACPay to complete your payment",
+          description: "You will be redirected to FACPay to complete your payment",
         });
-
-        // Small delay to show the toast before redirect
         setTimeout(() => {
           xenditService.openInvoice(invoiceData.invoice_url);
-        }, 1000);
+        }, 800);
 
         return true;
       } else {
