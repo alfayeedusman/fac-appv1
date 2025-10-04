@@ -17,11 +17,11 @@ export default function MembershipBadge({ membershipType, className }: Membershi
     return (
       <span
         className={
-          "inline-flex items-center rounded-full border border-fac-orange-200 bg-fac-orange-50 px-2.5 py-1 text-xs font-semibold text-fac-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-200 " +
+          "inline-flex items-center rounded-full border border-border bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/80 dark:bg-neutral-900/50 " +
           (className || "")
         }
       >
-        <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-fac-orange-500" />
+        <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foreground/60" />
         Regular Member
       </span>
     );
