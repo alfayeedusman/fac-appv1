@@ -516,15 +516,10 @@ class NeonDatabaseClient {
     email: string,
     password: string,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    const connected = await this.ensureConnection();
-    if (!connected) {
-      console.error("❌ Unable to establish database connection for login");
-      return {
-        success: false,
-        error:
-          "Database connection failed. Please check your internet connection and try again.",
-      };
-    }
+    // Attempt background connection check but don't block login
+    this.ensureConnection().catch((err) =>
+      console.warn("Background connection check failed:", err),
+    );
 
     try {
       const url = `${this.baseUrl}/auth/login`;
@@ -542,7 +537,12 @@ class NeonDatabaseClient {
 
       clearTimeout(to);
       const processed = await this.processLoginResponse(response);
-      if (processed.success) return processed;
+
+      // Update connection status on successful login
+      if (processed.success) {
+        this.isConnected = true;
+        return processed;
+      }
 
       if (
         processed.error?.toLowerCase().includes("cors") ||
@@ -559,7 +559,11 @@ class NeonDatabaseClient {
             signal: ac2.signal,
           });
           clearTimeout(to2);
-          return await this.processLoginResponse(resp2);
+          const result = await this.processLoginResponse(resp2);
+          if (result.success) {
+            this.isConnected = true;
+          }
+          return result;
         } catch (retryErr: any) {
           clearTimeout(to2);
           console.error(
@@ -568,7 +572,7 @@ class NeonDatabaseClient {
           );
           return {
             success: false,
-            error: "Login failed after retry. Please try again.",
+            error: "Login failed. Please try again.",
           };
         }
       }
@@ -589,39 +593,31 @@ class NeonDatabaseClient {
         error.message?.includes("Failed to fetch") ||
         error.name === "TypeError"
       ) {
+        // Try fallback URL directly on network error
         try {
-          const health = await fetch("/api/health", {
-            method: "GET",
-            signal: AbortSignal.timeout(5000),
+          console.log("🔄 Network error, trying fallback login...");
+          const ac4 = new AbortController();
+          const to4 = setTimeout(() => ac4.abort(), 10000);
+          const resp3 = await fetch(`/api/neon/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+            signal: ac4.signal,
           });
-          if (health.ok) {
-            return {
-              success: false,
-              error: "Network looks fine, but login failed. Please try again.",
-            };
+          clearTimeout(to4);
+          const result = await this.processLoginResponse(resp3);
+          if (result.success) {
+            this.isConnected = true;
           }
-        } catch {}
-        this.isConnected = false;
-        const recon = await this.testConnection();
-        if (recon.connected) {
-          console.log("✅ Reconnected, retrying login once...");
-          try {
-            const resp3 = await fetch(`/api/neon/auth/login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-              signal: AbortSignal.timeout(10000),
-            });
-            return await this.processLoginResponse(resp3);
-          } catch (e3: any) {
-            console.error("❌ Retry login also failed:", e3?.message || e3);
-          }
+          return result;
+        } catch (e3: any) {
+          console.error("❌ Fallback login also failed:", e3?.message || e3);
+          return {
+            success: false,
+            error:
+              "Unable to connect to server. Please check your internet connection.",
+          };
         }
-        return {
-          success: false,
-          error:
-            "Network connection error. Please check your internet and try again.",
-        };
       }
 
       return {
@@ -635,6 +631,11 @@ class NeonDatabaseClient {
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     console.log("📝 Starting registration for:", userData.email);
+
+    // Attempt background connection check but don't block registration
+    this.ensureConnection().catch((err) =>
+      console.warn("Background connection check failed:", err),
+    );
 
     const tryRegister = async (
       url: string,
@@ -682,6 +683,8 @@ class NeonDatabaseClient {
         }
 
         console.log("✅ Registration successful!");
+        // Update connection status on successful registration
+        this.isConnected = true;
         return data;
       } catch (error: any) {
         console.error("❌ Registration attempt failed:", error);
@@ -724,40 +727,62 @@ class NeonDatabaseClient {
       "id" | "createdAt" | "updatedAt" | "confirmationCode"
     >,
   ): Promise<{ success: boolean; booking?: Booking; error?: string }> {
-    if (!this.isConnected) {
-      return {
-        success: false,
-        error: "Database not connected. Please connect to Neon database first.",
-      };
-    }
+    // Do not block on connection state; attempt request with fallback
+    this.ensureConnection().catch(() => {});
 
-    try {
+    const tryCreate = async (url: string) => {
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 10000);
-
-      const response = await fetch(`${this.baseUrl}/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingData),
-        signal: ac.signal,
-      });
-
-      clearTimeout(to);
-      const result = await response.json();
-      return result;
-    } catch (error: any) {
-      console.error("Database booking creation failed:", error);
-      if (error?.name === "AbortError") {
-        return {
-          success: false,
-          error: "Request timed out. Please try again.",
-        };
+      const to = setTimeout(() => ac.abort(), 15000);
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingData),
+          signal: ac.signal,
+        });
+        clearTimeout(to);
+        const ct = response.headers.get("content-type") || "";
+        const data = ct.includes("application/json")
+          ? await response.json()
+          : await response
+              .text()
+              .then((t) => {
+                try {
+                  return JSON.parse(t);
+                } catch {
+                  return { success: false, error: t || "Unknown error" };
+                }
+              })
+              .catch(() => ({ success: false, error: "Unknown error" }));
+        if (!response.ok || !data?.success) {
+          return {
+            success: false,
+            error:
+              data?.error ||
+              `HTTP ${response.status}: Failed to create booking`,
+          };
+        }
+        this.isConnected = true;
+        return data;
+      } catch (e: any) {
+        clearTimeout(to);
+        if (e?.name === "AbortError") {
+          return {
+            success: false,
+            error: "Request timed out. Please try again.",
+          };
+        }
+        return { success: false, error: e?.message || "Network error" };
       }
-      return {
-        success: false,
-        error: "Failed to create booking. Please check your connection.",
-      };
-    }
+    };
+
+    // Primary
+    const primary = await tryCreate(`${this.baseUrl}/bookings`);
+    if (primary.success) return primary;
+
+    // Fallback same-origin
+    const fallback = await tryCreate(`/api/neon/bookings`);
+    return fallback;
   }
 
   async getBookings(params?: {

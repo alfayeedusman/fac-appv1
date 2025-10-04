@@ -52,10 +52,14 @@ import {
   isSlotAvailable,
 } from "@/utils/adminConfig";
 import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
-import { getCarWashServices } from "@/utils/carWashServices";
+import {
+  getCarWashServices,
+  calculateServicePrice,
+} from "@/utils/carWashServices";
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
+import BookingReceiptModal from "@/components/BookingReceiptModal";
 
 interface BookingData {
   // Service Selection
@@ -104,15 +108,17 @@ interface StepperBookingProps {
 
 const STEPS = [
   { id: 1, title: "Schedule", icon: Calendar, description: "Pick date & time" },
-  { id: 2, title: "Unit", icon: Car, description: "Select vehicle type" },
+  { id: 2, title: "Vehicle", icon: Car, description: "Select vehicle type" },
   {
     id: 3,
-    title: "Service",
+    title: "Category",
     icon: Sparkles,
-    description: "Choose your service",
+    description: "Choose service category",
   },
-  { id: 4, title: "Payment", icon: CreditCard, description: "Payment method" },
-  { id: 5, title: "Review", icon: CheckCircle, description: "Confirm booking" },
+  { id: 4, title: "Package", icon: Star, description: "Select package" },
+  { id: 5, title: "Details", icon: User, description: "Your information" },
+  { id: 6, title: "Payment", icon: CreditCard, description: "Payment method" },
+  { id: 7, title: "Review", icon: CheckCircle, description: "Confirm booking" },
 ];
 
 // Load admin configuration with error handling
@@ -305,6 +311,15 @@ const SERVICE_CATEGORIES = {
     iconText: "🚗", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
+    vehicleTypes: ["car"],
+  },
+  motorwash: {
+    name: "Motorwash",
+    icon: Car,
+    iconText: "🏍️", // Safe for SelectItem
+    gradient: "from-cyan-500 to-blue-600",
+    description: "Professional motorcycle washing and care",
+    vehicleTypes: ["motorcycle"],
   },
   auto_detailing: {
     name: "Auto Detailing",
@@ -312,6 +327,7 @@ const SERVICE_CATEGORIES = {
     iconText: "���", // Safe for SelectItem
     gradient: "from-purple-500 to-pink-500",
     description: "Professional interior and exterior detailing",
+    vehicleTypes: ["car", "motorcycle"],
   },
   graphene_coating: {
     name: "Graphene Coating",
@@ -319,6 +335,7 @@ const SERVICE_CATEGORIES = {
     iconText: "🛡️", // Safe for SelectItem
     gradient: "from-orange-500 to-red-500",
     description: "Advanced protection coating",
+    vehicleTypes: ["car", "motorcycle"],
   },
 };
 
@@ -365,6 +382,8 @@ export default function StepperBooking({
   const receiptObjectUrlRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [completedBooking, setCompletedBooking] = useState<any>(null);
 
   const [bookingData, setBookingData] = useState<BookingData>({
     category: "",
@@ -492,10 +511,37 @@ export default function StepperBooking({
     let price = 0;
 
     if (bookingData.category === "carwash" && bookingData.service) {
-      price =
-        adminConfig.pricing.carwash[
-          bookingData.service as keyof typeof adminConfig.pricing.carwash
-        ]?.price || 0;
+      // Get the service from carWashServices
+      const services = getCarWashServices();
+      const selectedService = services.find(
+        (s) => s.id === bookingData.service,
+      );
+
+      if (selectedService && bookingData.unitType) {
+        // For motorcycle, use unitType as "motorcycle" and unitSize for subtype
+        const vehicleTypeId =
+          bookingData.unitType === "motorcycle"
+            ? "motorcycle"
+            : bookingData.unitSize || "sedan"; // For cars, use unitSize (sedan, suv, pickup, etc)
+
+        const motorcycleSubtypeId =
+          bookingData.unitType === "motorcycle"
+            ? bookingData.unitSize // For motorcycles, unitSize contains the subtype (small, medium, big)
+            : undefined;
+
+        // Calculate price using the service variant system
+        price = calculateServicePrice(
+          selectedService.basePrice,
+          vehicleTypeId,
+          motorcycleSubtypeId,
+        );
+      } else {
+        // Fallback to old system
+        price =
+          adminConfig.pricing.carwash[
+            bookingData.service as keyof typeof adminConfig.pricing.carwash
+          ]?.price || 0;
+      }
     } else if (
       bookingData.category === "auto_detailing" &&
       bookingData.unitType &&
@@ -619,37 +665,41 @@ export default function StepperBooking({
           bookingData.serviceType === "home" || !!bookingData.branch;
         return serviceTypeValid && scheduleValid && locationValid;
       }
-      case 2: // Unit
+      case 2: // Vehicle
         return !!(bookingData.unitType && bookingData.unitSize);
-      case 3: {
-        // Service
-        if (!bookingData.category) return false;
-        // For carwash require specific service; others rely on unit selection already made
-        if (bookingData.category === "carwash") {
+      case 3: // Category
+        return !!bookingData.category;
+      case 4: {
+        // Package
+        // For carwash/motorwash require specific service package
+        if (
+          bookingData.category === "carwash" ||
+          bookingData.category === "motorwash"
+        ) {
           return !!bookingData.service;
         }
         return true;
       }
-      case 4: {
-        // Payment
-        // For online payment (FACPay), no receipt needed at this stage
-        // Payment will be processed through Xendit gateway
-        return !!bookingData.paymentMethod;
-      }
       case 5: {
-        // Review
+        // Details (Customer information)
         const basicCustomerValid = !!(
-          bookingData.fullName && bookingData.mobile
+          bookingData.fullName &&
+          bookingData.mobile &&
+          bookingData.plateNo &&
+          bookingData.carModel
         );
         const homeServiceAddressValid =
           bookingData.serviceType !== "home" || !!bookingData.address;
         const emailValid = !isGuest || !!bookingData.email; // Email required for guests
-        return (
-          basicCustomerValid &&
-          homeServiceAddressValid &&
-          emailValid &&
-          bookingData.acceptTerms
-        );
+        return basicCustomerValid && homeServiceAddressValid && emailValid;
+      }
+      case 6: {
+        // Payment
+        return !!bookingData.paymentMethod;
+      }
+      case 7: {
+        // Review (Final confirmation)
+        return bookingData.acceptTerms;
       }
       default:
         return false;
@@ -659,7 +709,7 @@ export default function StepperBooking({
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
-    if (canProceed() && currentStep < 5) {
+    if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -791,17 +841,45 @@ export default function StepperBooking({
       });
 
       if (invoiceData && invoiceData.invoice_url) {
-        // Redirect to Xendit payment page
+        // Save booking + invoice for success page to confirm and render receipt
+        try {
+          const payload = {
+            bookingId,
+            invoiceId: invoiceData.invoice_id,
+            bookingData: {
+              fullName: bookingData.fullName,
+              email: customerEmail,
+              mobile: bookingData.mobile,
+              category: bookingData.category,
+              service: bookingData.service,
+              serviceType: bookingData.serviceType,
+              unitType: bookingData.unitType,
+              unitSize: bookingData.unitSize,
+              plateNo: bookingData.plateNo,
+              carModel: bookingData.carModel,
+              date: bookingData.date,
+              timeSlot: bookingData.timeSlot,
+              branch: bookingData.branch,
+              totalPrice: bookingData.totalPrice,
+              paymentMethod: bookingData.paymentMethod,
+            },
+          };
+          localStorage.setItem("fac_last_booking", JSON.stringify(payload));
+          localStorage.setItem(
+            "fac_last_invoice_id",
+            String(invoiceData.invoice_id),
+          );
+        } catch (_) {}
+
+        // Redirect to Xendit payment page (same tab)
         toast({
           title: "Redirecting to Payment",
           description:
             "You will be redirected to FACPay to complete your payment",
         });
-
-        // Small delay to show the toast before redirect
         setTimeout(() => {
           xenditService.openInvoice(invoiceData.invoice_url);
-        }, 1000);
+        }, 800);
 
         return true;
       } else {
@@ -974,48 +1052,40 @@ export default function StepperBooking({
         }
       }
 
+      // Store completed booking data for receipt
+      setCompletedBooking({
+        id: createdBooking.id,
+        confirmationCode: createdBooking.confirmationCode,
+        service:
+          SERVICE_CATEGORIES[
+            bookingData.category as keyof typeof SERVICE_CATEGORIES
+          ].name,
+        category: bookingData.category,
+        date: bookingData.date,
+        timeSlot: bookingData.timeSlot,
+        branch: bookingData.branch,
+        serviceType: bookingData.serviceType,
+        unitType: bookingData.unitType,
+        unitSize: bookingData.unitSize,
+        plateNumber: bookingData.plateNo,
+        vehicleModel: bookingData.carModel,
+        totalPrice: bookingData.totalPrice,
+        paymentMethod: bookingData.paymentMethod,
+        customerName: bookingData.fullName,
+        customerEmail: bookingData.email,
+        customerPhone: bookingData.mobile,
+      });
+
+      // Show receipt modal only for non-online payments; for online we show it on success page after gateway confirmation
+      if (bookingData.paymentMethod !== "online") {
+        setShowReceiptModal(true);
+      }
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
-        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\n${bookingData.paymentMethod === "online" ? "Redirecting to FACPay for payment..." : "You will receive confirmation shortly."}`,
-        { autoClose: 5000 },
+        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}`,
+        { autoClose: 3000 },
       );
-
-      // Reset form
-      setBookingData({
-        category: "",
-        service: "",
-        serviceType: "branch",
-        unitType: "",
-        unitSize: "",
-        fullName: "",
-        mobile: "",
-        email: "",
-        plateNo: "",
-        carModel: "",
-        address: "",
-        date: "",
-        timeSlot: "",
-        branch: "",
-        paymentMethod: "",
-        receiptFile: null,
-        acceptTerms: false,
-        basePrice: 0,
-        totalPrice: 0,
-        voucherCode: undefined,
-        voucherDiscount: 0,
-        voucherData: undefined,
-      });
-      setVoucherInput("");
-      setCurrentStep(1);
-
-      // Navigate based on user type
-      setTimeout(() => {
-        if (isGuest) {
-          navigate("/login?message=booking_created");
-        } else {
-          navigate("/my-bookings");
-        }
-      }, 3000);
     } catch (error) {
       console.error("Booking submission error:", error);
       toast({
@@ -1104,13 +1174,28 @@ export default function StepperBooking({
         );
       case 3:
         return (
-          <ServiceStep
+          <CategoryStep
+            bookingData={bookingData}
+            updateBookingData={updateBookingData}
+          />
+        );
+      case 4:
+        return (
+          <PackageStep
             bookingData={bookingData}
             updateBookingData={updateBookingData}
             goBackToStep1={goBackToStep1}
           />
         );
-      case 4:
+      case 5:
+        return (
+          <DetailsStep
+            bookingData={bookingData}
+            updateBookingData={updateBookingData}
+            isGuest={isGuest}
+          />
+        );
+      case 6:
         return (
           <PaymentStep
             bookingData={bookingData}
@@ -1123,7 +1208,7 @@ export default function StepperBooking({
             isValidatingVoucher={isValidatingVoucher}
           />
         );
-      case 5:
+      case 7:
         return (
           <ReviewStep
             bookingData={bookingData}
@@ -1136,8 +1221,56 @@ export default function StepperBooking({
     }
   };
 
+  const handleCloseReceipt = () => {
+    setShowReceiptModal(false);
+
+    // Reset form after closing receipt
+    setBookingData({
+      category: "",
+      service: "",
+      serviceType: "branch",
+      unitType: "",
+      unitSize: "",
+      fullName: "",
+      mobile: "",
+      email: "",
+      plateNo: "",
+      carModel: "",
+      address: "",
+      date: "",
+      timeSlot: "",
+      branch: "",
+      paymentMethod: "",
+      receiptFile: null,
+      acceptTerms: false,
+      basePrice: 0,
+      totalPrice: 0,
+      voucherCode: undefined,
+      voucherDiscount: 0,
+      voucherData: undefined,
+    });
+    setVoucherInput("");
+    setCurrentStep(1);
+
+    // Navigate based on user type
+    if (isGuest) {
+      navigate("/login?message=booking_created");
+    } else {
+      navigate("/my-bookings");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent relative">
+      {/* Booking Receipt Modal */}
+      {completedBooking && (
+        <BookingReceiptModal
+          isOpen={showReceiptModal}
+          onClose={handleCloseReceipt}
+          bookingData={completedBooking}
+        />
+      )}
+
       {/* Mobile Bottom Sheet for Booking Summary */}
       <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
         <SheetContent side="bottom" className="rounded-t-2xl p-0 md:hidden">
@@ -1190,7 +1323,7 @@ export default function StepperBooking({
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8">
+            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-44 md:pb-8">
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
@@ -1388,8 +1521,8 @@ export default function StepperBooking({
       </div>
 
       {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
-      <div className="fixed bottom-20 left-3 right-3 z-50 md:hidden">
-        <div className="glass border-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-2xl shadow-2xl p-4 space-y-4">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <div className="glass border-t-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-t-2xl shadow-2xl p-4 space-y-3">
           {/* Progress Info */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -1428,7 +1561,7 @@ export default function StepperBooking({
             </Button>
 
             {/* Next/Confirm Button */}
-            {currentStep === 5 ? (
+            {currentStep === 7 ? (
               bookingData.paymentMethod === "online" ? (
                 <FACPayButton
                   amount={bookingData.totalPrice}
@@ -1464,119 +1597,120 @@ export default function StepperBooking({
 }
 
 // Step Components
-const ServiceStep = ({
-  bookingData,
-  updateBookingData,
-  goBackToStep1,
-}: any) => {
-  const availableServices = getAvailableServices(
-    bookingData.serviceType || "branch",
+const CategoryStep = ({ bookingData, updateBookingData }: any) => {
+  const vehicleType = bookingData.unitType;
+
+  // Filter categories based on vehicle type
+  const availableCategories = Object.entries(SERVICE_CATEGORIES).filter(
+    ([key, category]: [string, any]) => {
+      if (!category.vehicleTypes) return true;
+      return category.vehicleTypes.includes(vehicleType);
+    },
   );
-  const [branches, setBranches] = useState<
-    { id: string; name: string; address?: string }[]
-  >([]);
-  const [loadingBranches, setLoadingBranches] = useState(false);
-  const isAdmin =
-    localStorage.getItem("userRole") === "admin" ||
-    localStorage.getItem("userRole") === "superadmin";
-
-  useEffect(() => {
-    const load = async () => {
-      setLoadingBranches(true);
-      try {
-        const res = await neonDbClient.getBranches();
-        if (res.success && res.branches && Array.isArray(res.branches)) {
-          setBranches(
-            res.branches.map((b: any) => ({
-              id: b.id || b.code || b.name,
-              name: b.name,
-              address: b.address,
-            })),
-          );
-        } else {
-          // Fallback to local admin config
-          setBranches(
-            (adminConfig.branches || [])
-              .filter((b: any) => b.enabled)
-              .map((b: any) => ({
-                id: b.id,
-                name: b.name,
-                address: b.address,
-              })),
-          );
-        }
-      } catch (e) {
-        setBranches(
-          (adminConfig.branches || [])
-            .filter((b: any) => b.enabled)
-            .map((b: any) => ({ id: b.id, name: b.name, address: b.address })),
-        );
-      } finally {
-        setLoadingBranches(false);
-      }
-    };
-    load();
-  }, []);
-
-  const handleAddBranch = async () => {
-    const name = window.prompt("New branch name");
-    if (!name) return;
-    const code =
-      name
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "")
-        .slice(0, 6) + String(Date.now()).slice(-2);
-    const address = window.prompt("Branch address (optional)") || undefined;
-    const city = "Zamboanga City";
-    try {
-      const resp = await neonDbClient.createBranch({
-        name,
-        code,
-        address,
-        city,
-      });
-      if (resp.success) {
-        toast({ title: "Branch created", description: `${name} added.` });
-        // reload branches - silently handle errors
-        try {
-          const res = await neonDbClient.getBranches();
-          if (res.success && res.branches) {
-            setBranches(
-              res.branches.map((b: any) => ({
-                id: b.id || b.code || b.name,
-                name: b.name,
-                address: b.address,
-              })),
-            );
-          }
-        } catch {
-          // Ignore errors, keep existing branches
-        }
-      } else {
-        toast({
-          title: "Failed to create branch",
-          description: resp.error || "Please try again",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Connection error",
-        description: "Unable to create branch. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <Card className="glass border-border shadow-xl">
       <CardHeader className="pb-4 md:pb-6">
         <CardTitle className="flex items-center text-xl md:text-2xl">
           <Sparkles className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
-          Choose Your Service
+          Select Service Category
         </CardTitle>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Select the perfect car care service for your vehicle
+          Choose the type of service you need for your{" "}
+          {vehicleType === "motorcycle" ? "motorcycle" : "car"}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          {availableCategories.map(([key, category]: [string, any]) => {
+            const Icon = category.icon;
+            const isSelected = bookingData.category === key;
+
+            return (
+              <div
+                key={key}
+                onClick={() => {
+                  updateBookingData("category", key);
+                  updateBookingData("service", ""); // Reset service when category changes
+                }}
+                className={`
+                  relative cursor-pointer transition-all duration-300 rounded-xl p-4 md:p-6
+                  border-2 hover:scale-[1.02] active:scale-[0.98]
+                  ${
+                    isSelected
+                      ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/30 shadow-lg"
+                      : "border-border hover:border-fac-orange-300 bg-card"
+                  }
+                `}
+              >
+                {isSelected && (
+                  <div className="absolute top-2 right-2">
+                    <div className="bg-fac-orange-500 rounded-full p-1">
+                      <CheckCircle className="h-4 w-4 text-white" />
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`bg-gradient-to-br ${category.gradient} rounded-lg p-3 mb-3 inline-block`}
+                >
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-bold text-base md:text-lg mb-1">
+                  {category.name}
+                </h3>
+                {category.description && (
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const PackageStep = ({
+  bookingData,
+  updateBookingData,
+  goBackToStep1,
+}: any) => {
+  // Get selected category info
+  const selectedCategory =
+    SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES];
+  const categoryName = selectedCategory?.name || "Service";
+
+  // Get available packages based on category
+  const getPackages = () => {
+    if (
+      bookingData.category === "carwash" ||
+      bookingData.category === "motorwash"
+    ) {
+      // Show car wash packages
+      const allCarwashServices = getCarWashServices();
+      return allCarwashServices.filter((service) => service.isActive);
+    } else if (bookingData.category === "auto_detailing") {
+      return []; // Auto detailing packages will be shown based on pricing
+    } else if (bookingData.category === "graphene_coating") {
+      return []; // Graphene coating packages will be shown based on pricing
+    }
+    return [];
+  };
+
+  const packages = getPackages();
+
+  return (
+    <Card className="glass border-border shadow-xl">
+      <CardHeader className="pb-4 md:pb-6">
+        <CardTitle className="flex items-center text-xl md:text-2xl">
+          <Star className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+          Select {categoryName} Package
+        </CardTitle>
+        <p className="text-sm md:text-base text-muted-foreground mt-2">
+          Choose the perfect package for your{" "}
+          {bookingData.unitType === "motorcycle" ? "motorcycle" : "vehicle"}
           {bookingData.serviceType === "home" && (
             <span className="block text-xs text-orange-600 mt-1">
               Only selected services are available for home service
@@ -1585,201 +1719,131 @@ const ServiceStep = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-4 md:space-y-6">
-        {Object.entries(availableServices).map(([categoryKey, category]) => (
-          <div
-            key={categoryKey}
-            className={`p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
-              bookingData.category === categoryKey
-                ? "border-fac-orange-500 bg-gradient-to-r from-fac-orange-50/80 to-orange-50/80 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl shadow-fac-orange-500/20"
-                : "border-border/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-fac-orange-300 hover:shadow-xl hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30"
-            }`}
-            onClick={async () => {
-              // No need to validate category here - getAvailableServices already filtered
-              // Only validate specific service selections (handled in service onClick)
-              updateBookingData("category", categoryKey);
-              updateBookingData("service", ""); // Reset service when category changes
-            }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-              <div className="flex items-center space-x-4">
+        {packages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {packages.map((pkg: any) => {
+              const price = calculateServicePrice(
+                pkg.basePrice,
+                bookingData.unitSize,
+                bookingData.unitType === "motorcycle"
+                  ? bookingData.unitSize
+                  : undefined,
+              );
+
+              return (
                 <div
-                  className={`bg-gradient-to-r ${category.gradient} p-3 md:p-4 rounded-2xl shadow-lg`}
+                  key={pkg.id}
+                  className={`relative p-4 md:p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                    bookingData.service === pkg.id
+                      ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50 shadow-lg"
+                      : "border-border hover:border-fac-orange-300 hover:shadow-md"
+                  }`}
+                  onClick={() => {
+                    updateBookingData("service", pkg.id);
+                    updateBookingData("basePrice", price);
+                  }}
                 >
-                  <category.icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-black text-foreground text-lg md:text-xl">
-                    {category.name}
-                  </h3>
-                  {category.description && (
-                    <p className="text-muted-foreground text-sm md:text-base mt-1">
-                      {category.description}
-                    </p>
+                  {pkg.category === "premium" && (
+                    <div className="absolute -top-2 -right-2">
+                      <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs">
+                        Popular
+                      </Badge>
+                    </div>
                   )}
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h4 className="font-bold text-foreground text-sm md:text-base">
+                        {pkg.name}
+                      </h4>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {pkg.description}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {pkg.duration}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base md:text-lg font-black text-fac-orange-500">
+                        ₱{price.toLocaleString()}
+                      </p>
+                      {bookingData.service === pkg.id && (
+                        <div className="flex items-center justify-end mt-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div>
+            {bookingData.unitType && bookingData.unitSize ? (
+              <div className="p-4 md:p-5 rounded-lg bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 border-2 border-fac-orange-200 dark:border-fac-orange-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <p className="text-sm md:text-base text-foreground font-semibold">
+                      Service Price
+                    </p>
+                  </div>
+                  <p className="text-xl md:text-2xl font-black text-fac-orange-500">
+                    ₱
+                    {(() => {
+                      const getPrice = () => {
+                        if (bookingData.category === "auto_detailing") {
+                          return (
+                            adminConfig.pricing.autoDetailing[
+                              bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing
+                            ]?.[
+                              bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car
+                            ] || 0
+                          );
+                        } else if (
+                          bookingData.category === "graphene_coating"
+                        ) {
+                          return (
+                            adminConfig.pricing.grapheneCoating[
+                              bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating
+                            ]?.[
+                              bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car
+                            ] || 0
+                          );
+                        }
+                        return 0;
+                      };
+                      const price = getPrice();
+                      updateBookingData("basePrice", price);
+                      return price.toLocaleString();
+                    })()}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Price for{" "}
+                  {
+                    UNIT_TYPES[bookingData.unitType as keyof typeof UNIT_TYPES]
+                      ?.sizes[
+                      bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes
+                    ]
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
+                    Selected — price will be shown after vehicle selection.
+                  </p>
                 </div>
               </div>
-              {bookingData.category === categoryKey && (
-                <div className="mt-3 sm:mt-0 flex-shrink-0">
-                  <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
-                    ✓ Selected
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {bookingData.category === categoryKey &&
-              categoryKey === "carwash" && (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-1 w-6 bg-fac-orange-500 rounded-full"></div>
-                    <p className="text-sm md:text-base font-semibold text-foreground">
-                      Select wash type:
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {Object.entries(category.services).map(
-                      ([serviceKey, service]) => (
-                        <div
-                          key={serviceKey}
-                          className={`relative p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
-                            bookingData.service === serviceKey
-                              ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-xl shadow-fac-orange-500/30"
-                              : "border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/50 dark:hover:bg-fac-orange-950/50"
-                          }`}
-                          onClick={async (e) => {
-                            e.stopPropagation();
-
-                            // Check if this service is available for current service type
-                            if (bookingData.serviceType === "home") {
-                              const isAvailable = isServiceAvailableForHome(
-                                "carwash",
-                                serviceKey,
-                                bookingData.unitType,
-                              );
-                              if (!isAvailable) {
-                                if (bookingData.unitType === "motorcycle") {
-                                  showHomeServiceUnavailableAlert(
-                                    `${service.name} is not available for motorcycle home service. Please check available motorcycle services in admin settings.`,
-                                    goBackToStep1,
-                                  );
-                                } else {
-                                  showHomeServiceUnavailableAlert(
-                                    service.name,
-                                    goBackToStep1,
-                                  );
-                                }
-                                return;
-                              }
-                            }
-
-                            updateBookingData("service", serviceKey);
-                          }}
-                        >
-                          {service.popular && (
-                            <div className="absolute -top-2 -right-2">
-                              <Badge className="bg-gradient-to-r from-fac-orange-500 to-red-500 text-white text-xs">
-                                Popular
-                              </Badge>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0 pr-2">
-                              <h4 className="font-bold text-foreground text-sm md:text-base">
-                                {service.name}
-                              </h4>
-                              <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {service.description}
-                              </p>
-                              <div className="flex items-center space-x-2 mt-2">
-                                <Clock className="h-3 w-3 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">
-                                  {service.duration}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-base md:text-lg font-black text-fac-orange-500">
-                                ₱{service.price.toLocaleString()}
-                              </p>
-                              {bookingData.service === serviceKey && (
-                                <div className="flex items-center justify-end mt-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-            {bookingData.category === categoryKey &&
-              categoryKey !== "carwash" && (
-                <div className="mt-4">
-                  {bookingData.unitType && bookingData.unitSize ? (
-                    <div className="p-4 md:p-5 rounded-lg bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 border-2 border-fac-orange-200 dark:border-fac-orange-700">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                          <p className="text-sm md:text-base text-foreground font-semibold">
-                            Service Price
-                          </p>
-                        </div>
-                        <p className="text-xl md:text-2xl font-black text-fac-orange-500">
-                          ₱
-                          {(() => {
-                            const getPrice = () => {
-                              if (categoryKey === "auto_detailing") {
-                                return (
-                                  adminConfig.pricing.autoDetailing[
-                                    bookingData.unitType as keyof typeof adminConfig.pricing.autoDetailing
-                                  ]?.[
-                                    bookingData.unitSize as keyof typeof adminConfig.pricing.autoDetailing.car
-                                  ] || 0
-                                );
-                              } else if (categoryKey === "graphene_coating") {
-                                return (
-                                  adminConfig.pricing.grapheneCoating[
-                                    bookingData.unitType as keyof typeof adminConfig.pricing.grapheneCoating
-                                  ]?.[
-                                    bookingData.unitSize as keyof typeof adminConfig.pricing.grapheneCoating.car
-                                  ] || 0
-                                );
-                              }
-                              return 0;
-                            };
-                            return getPrice().toLocaleString();
-                          })()}
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Price for{" "}
-                        {
-                          UNIT_TYPES[
-                            bookingData.unitType as keyof typeof UNIT_TYPES
-                          ]?.sizes[
-                            bookingData.unitSize as keyof typeof UNIT_TYPES.car.sizes
-                          ]
-                        }
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border border-blue-200 dark:border-blue-700">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                        <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 font-medium">
-                          Selected — price will be shown after vehicle
-                          selection.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+            )}
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
   );
@@ -2421,6 +2485,166 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   );
 };
 
+const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <Card className="glass border-border shadow-xl">
+        <CardHeader className="pb-4 md:pb-6">
+          <CardTitle className="flex items-center text-xl md:text-2xl">
+            <User className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+            Your Information
+          </CardTitle>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
+            Please provide your contact and vehicle details
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-foreground font-semibold">
+                Full Name *
+              </Label>
+              <Input
+                value={bookingData.fullName}
+                onChange={(e) => updateBookingData("fullName", e.target.value)}
+                placeholder="Enter your full name"
+                className={`mt-1 ${!bookingData.fullName.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.fullName.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Full name is required
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Mobile Number *
+              </Label>
+              <Input
+                value={bookingData.mobile}
+                onChange={(e) => {
+                  // Auto-format mobile number
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.startsWith("0")) value = "63" + value.substring(1);
+                  updateBookingData("mobile", value);
+                }}
+                placeholder="+63 912 345 6789"
+                className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, "").length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {(!bookingData.mobile.trim() ||
+                bookingData.mobile.replace(/\D/g, "").length < 10) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {!bookingData.mobile.trim()
+                    ? "Mobile number is required"
+                    : "Please enter a valid mobile number"}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Email {isGuest && <span className="text-red-500">*</span>}
+              </Label>
+              <Input
+                type="email"
+                value={bookingData.email}
+                onChange={(e) => updateBookingData("email", e.target.value)}
+                placeholder="your.email@example.com"
+                className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? "border-red-500 focus:border-red-500" : ""}`}
+                required={isGuest}
+              />
+              {((isGuest && !bookingData.email.trim()) ||
+                (bookingData.email.trim() &&
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {isGuest && !bookingData.email.trim()
+                    ? "Email is required for guest bookings"
+                    : "Please enter a valid email address"}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Plate Number *
+              </Label>
+              <Input
+                value={bookingData.plateNo}
+                onChange={(e) =>
+                  updateBookingData("plateNo", e.target.value.toUpperCase())
+                }
+                placeholder="ABC 1234"
+                className={`mt-1 ${!bookingData.plateNo.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.plateNo.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Plate number is required
+                </p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-foreground font-semibold">
+                Vehicle Model & Year *
+              </Label>
+              <Input
+                value={bookingData.carModel}
+                onChange={(e) => updateBookingData("carModel", e.target.value)}
+                placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
+                className={`mt-1 ${!bookingData.carModel.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.carModel.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Vehicle model is required
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R
+                2023"
+              </p>
+            </div>
+          </div>
+
+          {/* Address - Only show for Home Service */}
+          {bookingData.serviceType === "home" && (
+            <div>
+              <Label className="text-foreground font-semibold">
+                Service Address *
+              </Label>
+              <Textarea
+                value={bookingData.address}
+                onChange={(e) => updateBookingData("address", e.target.value)}
+                placeholder="Enter your complete address (street, barangay, city, province)"
+                className={`mt-2 ${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
+                rows={3}
+                required
+              />
+              {(!bookingData.address.trim() ||
+                bookingData.address.trim().length < 10) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {!bookingData.address.trim()
+                    ? "Address is required for home service"
+                    : "Please provide a complete address"}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 Provide complete address for accurate service delivery
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const PaymentStep = ({
   bookingData,
   updateBookingData,
@@ -2573,7 +2797,7 @@ const PaymentStep = ({
                     ✓ You will be redirected to FACPay to complete your payment
                   </p>
                   <p>
-                    ✓ Accept multiple payment methods (Cards, GCash, PayMaya)
+                    �� Accept multiple payment methods (Cards, GCash, PayMaya)
                   </p>
                   <p>✓ Secure payment powered by Xendit</p>
                   <div className="mt-3 pt-3 border-t border-fac-orange-200">
@@ -2612,316 +2836,141 @@ const PaymentStep = ({
 );
 
 const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
-  const [useNewDetails, setUseNewDetails] = useState(false);
-
-  // For registered users, check if we have saved data
-  const hasSavedData = !isGuest && bookingData.fullName && bookingData.mobile;
-
   return (
-    <div className="space-y-6">
-      {/* Customer Details */}
+    <div className="space-y-4 md:space-y-6">
+      {/* Booking Summary */}
       <Card className="glass border-border shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center text-2xl">
-            <User className="h-6 w-6 mr-3 text-fac-orange-500" />
-            Customer Details
+        <CardHeader className="pb-4 md:pb-6">
+          <CardTitle className="flex items-center text-xl md:text-2xl">
+            <CheckCircle className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+            Review Your Booking
           </CardTitle>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
+            Please review your booking details before confirming
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* For registered users with saved data - show option */}
-          {hasSavedData && !useNewDetails && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <h4 className="font-bold text-green-900 dark:text-green-100">
-                      Using Your Saved Details
-                    </h4>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setUseNewDetails(true)}
-                    className="text-xs"
-                  >
-                    Edit Details
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold text-foreground">
-                      {bookingData.fullName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      {bookingData.mobile}
-                    </span>
-                  </div>
-                  {bookingData.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {bookingData.email}
-                      </span>
-                    </div>
-                  )}
-                  {bookingData.plateNo && (
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        Plate: {bookingData.plateNo}
-                      </span>
-                    </div>
-                  )}
-                  {bookingData.carModel && (
-                    <div className="flex items-center gap-2">
-                      <Car className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {bookingData.carModel}
-                      </span>
-                    </div>
-                  )}
-                </div>
+          {/* Service Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <Sparkles className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Service Information
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Service Type:</span>
+                <span className="font-medium">
+                  {bookingData.serviceType === "home"
+                    ? "Home Service"
+                    : "Branch Visit"}
+                </span>
               </div>
-            </div>
-          )}
-
-          {/* Show form for guests or when registered user wants to edit */}
-          {(isGuest || useNewDetails || !hasSavedData) && (
-            <>
-              {!isGuest && useNewDetails && (
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-muted-foreground">
-                    Editing your details for this booking only
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setUseNewDetails(false)}
-                    className="text-xs"
-                  >
-                    Cancel
-                  </Button>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Category:</span>
+                <span className="font-medium">
+                  {SERVICE_CATEGORIES[
+                    bookingData.category as keyof typeof SERVICE_CATEGORIES
+                  ]?.name || "-"}
+                </span>
+              </div>
+              {bookingData.service && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Package:</span>
+                  <span className="font-medium">{bookingData.service}</span>
                 </div>
               )}
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-foreground font-semibold">
-                    Full Name *
-                  </Label>
-                  <Input
-                    value={bookingData.fullName}
-                    onChange={(e) =>
-                      updateBookingData("fullName", e.target.value)
-                    }
-                    placeholder="Enter your full name"
-                    className={`mt-1 ${!bookingData.fullName.trim() ? "border-red-500 focus:border-red-500" : ""}`}
-                    required
-                  />
-                  {!bookingData.fullName.trim() && (
-                    <p className="text-red-500 text-xs mt-1 flex items-center">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Full name is required
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label className="text-foreground font-semibold">
-                    Mobile Number *
-                  </Label>
-                  <Input
-                    value={bookingData.mobile}
-                    onChange={(e) => {
-                      // Auto-format mobile number
-                      let value = e.target.value.replace(/\D/g, "");
-                      if (value.startsWith("0"))
-                        value = "63" + value.substring(1);
-                      updateBookingData("mobile", value);
-                    }}
-                    placeholder="+63 912 345 6789"
-                    className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, "").length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
-                    required
-                  />
-                  {(!bookingData.mobile.trim() ||
-                    bookingData.mobile.replace(/\D/g, "").length < 10) && (
-                    <p className="text-red-500 text-xs mt-1 flex items-center">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      {!bookingData.mobile.trim()
-                        ? "Mobile number is required"
-                        : "Please enter a valid mobile number"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label className="text-foreground font-semibold">
-                    Email {isGuest && <span className="text-red-500">*</span>}
-                  </Label>
-                  <Input
-                    type="email"
-                    value={bookingData.email}
-                    onChange={(e) => updateBookingData("email", e.target.value)}
-                    placeholder="your.email@example.com"
-                    className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? "border-red-500 focus:border-red-500" : ""}`}
-                    required={isGuest}
-                  />
-                  {((isGuest && !bookingData.email.trim()) ||
-                    (bookingData.email.trim() &&
-                      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                        bookingData.email,
-                      ))) && (
-                    <p className="text-red-500 text-xs mt-1 flex items-center">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      {isGuest && !bookingData.email.trim()
-                        ? "Email is required for guest bookings"
-                        : "Please enter a valid email address"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label className="text-foreground font-semibold">
-                    Plate Number
-                  </Label>
-                  <Input
-                    value={bookingData.plateNo}
-                    onChange={(e) =>
-                      updateBookingData("plateNo", e.target.value.toUpperCase())
-                    }
-                    placeholder="ABC 1234"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Optional - helps us identify your vehicle
-                  </p>
-                </div>
-                <div className="md:col-span-2">
-                  <Label className="text-foreground font-semibold">
-                    Car Model & Year
-                  </Label>
-                  <Input
-                    value={bookingData.carModel}
-                    onChange={(e) =>
-                      updateBookingData("carModel", e.target.value)
-                    }
-                    placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic
-                    Type R 2023"
-                  </p>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Vehicle:</span>
+                <span className="font-medium">
+                  {bookingData.unitType} - {bookingData.unitSize}
+                </span>
               </div>
-            </>
-          )}
-
-          {/* Address - Only show for Home Service */}
-          {bookingData.serviceType === "home" && (
-            <div>
-              <Label className="text-foreground font-semibold">
-                Service Address *
-              </Label>
-
-              {/* Address Options */}
-              <div className="mt-2 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const defaultAddress =
-                      "123 Sample Street, Barangay Example, Manila City, Metro Manila";
-                    updateBookingData("address", defaultAddress);
-                  }}
-                  className="flex items-center justify-center text-xs"
-                >
-                  <MapPin className="h-3 w-3 mr-1" />
-                  Use Default
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                          // In a real app, you'd reverse geocode these coordinates
-                          const { latitude, longitude } = position.coords;
-                          const locationAddress = `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
-                          updateBookingData("address", locationAddress);
-                          toast({
-                            title: "Location Retrieved",
-                            description:
-                              "Your current location has been set as the address.",
-                          });
-                        },
-                        (error) => {
-                          toast({
-                            title: "Location Error",
-                            description:
-                              "Unable to get your current location. Please enter manually.",
-                            variant: "destructive",
-                          });
-                        },
-                      );
-                    } else {
-                      toast({
-                        title: "Not Supported",
-                        description:
-                          "Geolocation is not supported by this browser.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="flex items-center justify-center text-xs"
-                >
-                  <MapPin className="h-3 w-3 mr-1" />
-                  Current Location
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    updateBookingData("address", "");
-                  }}
-                  className="flex items-center justify-center text-xs"
-                >
-                  <User className="h-3 w-3 mr-1" />
-                  Custom Address
-                </Button>
-              </div>
-
-              <Textarea
-                value={bookingData.address}
-                onChange={(e) => updateBookingData("address", e.target.value)}
-                placeholder="Enter your complete address (street, barangay, city, province)"
-                className={`${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
-                rows={3}
-                required
-              />
-              {(!bookingData.address.trim() ||
-                bookingData.address.trim().length < 10) && (
-                <p className="text-red-500 text-xs mt-1 flex items-center">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  {!bookingData.address.trim()
-                    ? "Address is required for home service"
-                    : "Please provide a complete address"}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                💡 Use the buttons above for quick address entry, or type your
-                custom address
-              </p>
             </div>
-          )}
+          </div>
+
+          {/* Schedule Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Schedule
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Date:</span>
+                <span className="font-medium">{bookingData.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Time:</span>
+                <span className="font-medium">{bookingData.timeSlot}</span>
+              </div>
+              {bookingData.serviceType === "branch" && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Branch:</span>
+                  <span className="font-medium">{bookingData.branch}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Customer Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <User className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Contact Information
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Name:</span>
+                <span className="font-medium">{bookingData.fullName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Mobile:</span>
+                <span className="font-medium">{bookingData.mobile}</span>
+              </div>
+              {bookingData.email && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-medium">{bookingData.email}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Vehicle:</span>
+                <span className="font-medium">
+                  {bookingData.carModel} ({bookingData.plateNo})
+                </span>
+              </div>
+              {bookingData.serviceType === "home" && bookingData.address && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Address:</span>
+                  <span className="font-medium text-right ml-4">
+                    {bookingData.address}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-2 flex items-center">
+              <CreditCard className="h-4 w-4 mr-2 text-fac-orange-500" />
+              Payment
+            </h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Method:</span>
+                <span className="font-medium capitalize">
+                  {bookingData.paymentMethod}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-border">
+                <span className="font-bold text-foreground">Total Amount:</span>
+                <span className="font-black text-fac-orange-500 text-lg">
+                  ₱{bookingData.totalPrice.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -2937,7 +2986,7 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
             />
             <div className="text-sm">
               <p className="text-foreground font-semibold">
-                Terms and Conditions *
+                I accept the Terms and Conditions *
               </p>
               <div className="text-muted-foreground mt-1 space-y-2">
                 <p>{adminConfig.terms.termsAndConditions}</p>
@@ -3149,7 +3198,7 @@ const BookingSummary = ({
                   Total:
                 </span>
                 <span className="font-bold text-fac-orange-500 text-lg md:text-xl">
-                  ₱{(bookingData.totalPrice || 0).toLocaleString()}
+                  ���{(bookingData.totalPrice || 0).toLocaleString()}
                 </span>
               </div>
             </div>

@@ -5,14 +5,86 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Home, Calendar } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
+import BookingReceiptModal from "@/components/BookingReceiptModal";
 
 export default function BookingSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const bookingId = searchParams.get("bookingId");
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(15);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState<any>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Poll invoice status until paid/settled, then show receipt
+    const payloadStr = localStorage.getItem("fac_last_booking");
+    const invoiceId = localStorage.getItem("fac_last_invoice_id");
+
+    if (!payloadStr || !invoiceId) {
+      setChecking(false);
+      return;
+    }
+
+    const payload = JSON.parse(payloadStr);
+    let attempts = 0;
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `/api/neon/payment/xendit/invoice-status/${invoiceId}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const status = (
+            data.status ||
+            data.invoice?.status ||
+            ""
+          ).toUpperCase();
+          if (status === "PAID" || status === "SETTLED") {
+            setReceiptData({
+              id: payload.bookingId,
+              confirmationCode:
+                payload.bookingData?.confirmationCode || payload.bookingId,
+              service: payload.bookingData?.service || "Service",
+              category: payload.bookingData?.category,
+              date: payload.bookingData?.date,
+              timeSlot: payload.bookingData?.timeSlot,
+              branch: payload.bookingData?.branch,
+              serviceType: payload.bookingData?.serviceType,
+              unitType: payload.bookingData?.unitType,
+              unitSize: payload.bookingData?.unitSize,
+              plateNumber: payload.bookingData?.plateNo,
+              vehicleModel: payload.bookingData?.carModel,
+              totalPrice: payload.bookingData?.totalPrice || 0,
+              paymentMethod: "online",
+              customerName: payload.bookingData?.fullName || "Customer",
+              customerEmail: payload.bookingData?.email || "",
+              customerPhone: payload.bookingData?.mobile || "",
+            });
+            setShowReceipt(true);
+            setChecking(false);
+            return;
+          }
+          if (status === "EXPIRED" || status === "FAILED") {
+            setChecking(false);
+            navigate(`/booking-failed?bookingId=${payload.bookingId}`);
+            return;
+          }
+        }
+      } catch (_) {}
+      attempts += 1;
+      if (attempts < 40) {
+        setTimeout(poll, 3000);
+      } else {
+        setChecking(false);
+      }
+    };
+
+    poll();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (showReceipt) return; // do not redirect while receipt shown
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -23,13 +95,20 @@ export default function BookingSuccess() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [navigate, showReceipt]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 pb-20">
       <StickyHeader showBack={true} title="Payment Success" />
+
+      {receiptData && (
+        <BookingReceiptModal
+          isOpen={showReceipt}
+          onClose={() => setShowReceipt(false)}
+          bookingData={receiptData}
+        />
+      )}
 
       <div className="container mx-auto px-4 py-6 max-w-2xl">
         <Card className="border-green-200 shadow-2xl">
@@ -47,7 +126,9 @@ export default function BookingSuccess() {
           <CardContent className="space-y-6">
             <div className="text-center space-y-2">
               <p className="text-lg text-muted-foreground">
-                Your payment has been processed successfully.
+                {checking
+                  ? "Confirming payment with gateway..."
+                  : "Your payment has been processed successfully."}
               </p>
               {bookingId && (
                 <div className="bg-green-50 rounded-lg p-4 mt-4">
@@ -77,9 +158,11 @@ export default function BookingSuccess() {
               </ul>
             </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-              Redirecting to dashboard in {countdown} seconds...
-            </div>
+            {!showReceipt && (
+              <div className="text-center text-sm text-muted-foreground">
+                Redirecting to dashboard in {countdown} seconds...
+              </div>
+            )}
 
             <div className="flex gap-3">
               <Button

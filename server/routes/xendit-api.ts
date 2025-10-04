@@ -213,4 +213,38 @@ export const handleWebhook: RequestHandler = async (req, res) => {
   }
 };
 
+// Get invoice status by ID
+export const getInvoiceStatus: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params as { id: string };
+    if (!id)
+      return res.status(400).json({ success: false, error: "id is required" });
+
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes("YOUR_SECRET_KEY")) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Xendit API key not configured" });
+    }
+
+    const response = await fetch(`${XENDIT_API_URL}/invoices/${id}`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ":").toString("base64")}`,
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({ success: false, error: text });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, invoice: data, status: data.status });
+  } catch (error: any) {
+    console.error("Get invoice status error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: error.message || "Internal error" });
+  }
+};
+
 export default router;

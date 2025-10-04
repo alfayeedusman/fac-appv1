@@ -25,30 +25,33 @@ export class NetworkDiagnostics {
 
   private async testHealthEndpoint(): Promise<void> {
     try {
-      const response = await fetch('/api/health', {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000),
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+      const response = await fetch("/api/health", {
+        method: "GET",
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       if (response.ok) {
         const data = await response.json();
         this.results.push({
-          test: 'Health Endpoint',
+          test: "Health Endpoint",
           success: true,
           details: `Status: ${data.status}, Neon: ${data.services?.neon}`,
         });
       } else {
         this.results.push({
-          test: 'Health Endpoint',
+          test: "Health Endpoint",
           success: false,
           details: `HTTP ${response.status}: ${response.statusText}`,
         });
       }
     } catch (error) {
       this.results.push({
-        test: 'Health Endpoint',
+        test: "Health Endpoint",
         success: false,
-        details: 'Failed to connect',
+        details: "Failed to connect",
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -56,30 +59,33 @@ export class NetworkDiagnostics {
 
   private async testNeonConnection(): Promise<void> {
     try {
-      const response = await fetch('/api/neon/test', {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000),
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+      const response = await fetch("/api/neon/test", {
+        method: "GET",
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       if (response.ok) {
         const data = await response.json();
         this.results.push({
-          test: 'Neon Database Test',
+          test: "Neon Database Test",
           success: data.connected || data.success,
-          details: `Connected: ${data.connected}, Stats: ${data.stats ? 'Available' : 'N/A'}`,
+          details: `Connected: ${data.connected}, Stats: ${data.stats ? "Available" : "N/A"}`,
         });
       } else {
         this.results.push({
-          test: 'Neon Database Test',
+          test: "Neon Database Test",
           success: false,
           details: `HTTP ${response.status}: ${response.statusText}`,
         });
       }
     } catch (error) {
       this.results.push({
-        test: 'Neon Database Test',
+        test: "Neon Database Test",
         success: false,
-        details: 'Failed to connect',
+        details: "Failed to connect",
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -88,24 +94,27 @@ export class NetworkDiagnostics {
   private async testRegistrationEndpoint(): Promise<void> {
     try {
       // Test with invalid data to see if endpoint is reachable
-      const response = await fetch('/api/neon/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test: 'diagnostic' }),
-        signal: AbortSignal.timeout(5000),
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+      const response = await fetch("/api/neon/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ test: "diagnostic" }),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       // We expect 400 or 500 (invalid data), not network error
       this.results.push({
-        test: 'Registration Endpoint',
+        test: "Registration Endpoint",
         success: true,
         details: `Endpoint reachable (HTTP ${response.status})`,
       });
     } catch (error) {
       this.results.push({
-        test: 'Registration Endpoint',
+        test: "Registration Endpoint",
         success: false,
-        details: 'Failed to reach endpoint',
+        details: "Failed to reach endpoint",
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -113,49 +122,56 @@ export class NetworkDiagnostics {
 
   private async testCORS(): Promise<void> {
     try {
-      const response = await fetch('/api/health', {
-        method: 'GET',
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+      const response = await fetch("/api/health", {
+        method: "GET",
         headers: {
-          'Origin': window.location.origin,
+          Origin: window.location.origin,
         },
-        signal: AbortSignal.timeout(5000),
+        signal: ac.signal,
       });
+      clearTimeout(to);
 
       const corsHeaders = {
-        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+        "access-control-allow-origin": response.headers.get(
+          "access-control-allow-origin",
+        ),
+        "access-control-allow-credentials": response.headers.get(
+          "access-control-allow-credentials",
+        ),
       };
 
       this.results.push({
-        test: 'CORS Configuration',
+        test: "CORS Configuration",
         success: true,
         details: `Origin: ${window.location.origin}, CORS Headers: ${JSON.stringify(corsHeaders)}`,
       });
     } catch (error) {
       this.results.push({
-        test: 'CORS Configuration',
+        test: "CORS Configuration",
         success: false,
-        details: 'Failed to test CORS',
+        details: "Failed to test CORS",
         error: error instanceof Error ? error.message : String(error),
       });
     }
   }
 
   getFormattedResults(): string {
-    let output = '🔍 Network Diagnostics Report\n';
-    output += '='.repeat(50) + '\n\n';
+    let output = "🔍 Network Diagnostics Report\n";
+    output += "=".repeat(50) + "\n\n";
 
-    this.results.forEach(result => {
-      const icon = result.success ? '✅' : '❌';
+    this.results.forEach((result) => {
+      const icon = result.success ? "✅" : "❌";
       output += `${icon} ${result.test}\n`;
       output += `   ${result.details}\n`;
       if (result.error) {
         output += `   Error: ${result.error}\n`;
       }
-      output += '\n';
+      output += "\n";
     });
 
-    output += '='.repeat(50) + '\n';
+    output += "=".repeat(50) + "\n";
     output += `Browser: ${navigator.userAgent}\n`;
     output += `Location: ${window.location.href}\n`;
     output += `Online: ${navigator.onLine}\n`;
@@ -179,9 +195,9 @@ export async function testApiConnectivity(): Promise<{
   details?: string;
 }> {
   const results = await networkDiagnostics.runDiagnostics();
-  const healthTest = results.find(r => r.test === 'Health Endpoint');
-  const neonTest = results.find(r => r.test === 'Neon Database Test');
-  const regTest = results.find(r => r.test === 'Registration Endpoint');
+  const healthTest = results.find((r) => r.test === "Health Endpoint");
+  const neonTest = results.find((r) => r.test === "Neon Database Test");
+  const regTest = results.find((r) => r.test === "Registration Endpoint");
 
   return {
     apiReachable: healthTest?.success || false,
@@ -209,7 +225,7 @@ export async function logNetworkDiagnostics(): Promise<void> {
 }
 
 // Add to window for easy access from console
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   (window as any).runNetworkDiagnostics = async () => {
     await networkDiagnostics.runDiagnostics();
     networkDiagnostics.printResults();
