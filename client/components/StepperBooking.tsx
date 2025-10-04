@@ -711,7 +711,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
 
       // Create system notification through API (this happens automatically in the API)
-      console.log('🎯 New booking created:', createdBooking.id);
+      console.log('���� New booking created:', createdBooking.id);
 
       // Redeem voucher if applied
       if (bookingData.voucherCode && bookingData.voucherDiscount && bookingData.voucherDiscount > 0) {
@@ -799,7 +799,42 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       case 1:
         return <ScheduleStep bookingData={bookingData} updateBookingData={updateBookingData} />;
       case 2:
-        return <UnitStep bookingData={bookingData} updateBookingData={updateBookingData} />;
+        return <UnitStep
+          bookingData={bookingData}
+          updateBookingData={updateBookingData}
+          isGuest={isGuest}
+          savedVehicles={savedVehicles}
+          selectedVehicleId={selectedVehicleId}
+          setSelectedVehicleId={setSelectedVehicleId}
+          showNewVehicleForm={showNewVehicleForm}
+          setShowNewVehicleForm={setShowNewVehicleForm}
+          isLoadingVehicles={isLoadingVehicles}
+          onVehicleSelect={(vehicle: any) => {
+            setSelectedVehicleId(vehicle.id);
+            updateBookingData("unitType", vehicle.unitType);
+            updateBookingData("unitSize", vehicle.unitSize);
+            updateBookingData("plateNo", vehicle.plateNumber);
+            updateBookingData("carModel", vehicle.vehicleModel);
+          }}
+          onAddNewVehicle={async (vehicle: any) => {
+            const userId = localStorage.getItem("userId");
+            if (!userId) return;
+
+            const result = await neonDbClient.addUserVehicle(userId, vehicle);
+            if (result.success && result.vehicle) {
+              setSavedVehicles([...savedVehicles, result.vehicle]);
+              setSelectedVehicleId(result.vehicle.id);
+              updateBookingData("unitType", result.vehicle.unitType);
+              updateBookingData("unitSize", result.vehicle.unitSize);
+              updateBookingData("plateNo", result.vehicle.plateNumber);
+              updateBookingData("carModel", result.vehicle.vehicleModel);
+              setShowNewVehicleForm(false);
+              toast({ title: "Vehicle Added", description: "Your vehicle has been saved successfully." });
+            } else {
+              toast({ title: "Error", description: "Failed to save vehicle", variant: "destructive" });
+            }
+          }}
+        />;
       case 3:
         return <ServiceStep bookingData={bookingData} updateBookingData={updateBookingData} goBackToStep1={goBackToStep1} />;
       case 4:
