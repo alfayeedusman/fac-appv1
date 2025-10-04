@@ -1202,6 +1202,15 @@ export const getLowStockItems: RequestHandler = async (req, res) => {
 export const getUserVehicles: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "User ID is required",
+        vehicles: [],
+      });
+    }
+
     const result = await sql`
       SELECT * FROM user_vehicles
       WHERE user_id = ${userId}
@@ -1222,11 +1231,23 @@ export const getUserVehicles: RequestHandler = async (req, res) => {
       success: true,
       vehicles,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get user vehicles error:", error);
+
+    // Check if table doesn't exist
+    if (error?.message?.includes("does not exist") || error?.message?.includes("relation")) {
+      console.warn("⚠️ user_vehicles table doesn't exist, returning empty array");
+      return res.json({
+        success: true,
+        vehicles: [],
+        message: "No vehicles found (table not initialized)",
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: "Failed to fetch user vehicles",
+      vehicles: [],
     });
   }
 };
