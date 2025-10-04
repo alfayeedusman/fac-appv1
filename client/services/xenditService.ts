@@ -52,11 +52,9 @@ class XenditService {
 
   public createInvoice = async (params: XenditPaymentParams): Promise<any> => {
     try {
-      if (!this.initialized) {
-        throw new Error('Xendit not initialized');
-      }
+      console.log('💳 Creating Xendit invoice...', params);
 
-      // Create invoice via backend API (you'll need to implement this endpoint)
+      // Create invoice via backend API
       const response = await fetch('/api/neon/payment/xendit/create-invoice', {
         method: 'POST',
         headers: {
@@ -76,14 +74,19 @@ class XenditService {
         }),
       });
 
+      console.log('📡 Xendit API response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to create invoice');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+        console.error('❌ Xendit API error:', errorData);
+        throw new Error(errorData.error || 'Failed to create invoice');
       }
 
       const data = await response.json();
+      console.log('✅ Xendit invoice created:', data);
       return data;
     } catch (error) {
-      console.error('Xendit invoice creation error:', error);
+      console.error('❌ Xendit invoice creation error:', error);
       throw error;
     }
   };
