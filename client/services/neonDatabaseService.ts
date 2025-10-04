@@ -1225,6 +1225,19 @@ class NeonDatabaseClient {
       const response = await fetch(`${this.baseUrl}/users/${userId}/vehicles`, { signal: ac.signal });
 
       clearTimeout(to);
+
+      // Check if response is ok before parsing
+      if (!response.ok) {
+        console.warn(`Get user vehicles failed: HTTP ${response.status}`);
+        return { success: false, vehicles: [] };
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.warn("Get user vehicles: Response is not JSON");
+        return { success: false, vehicles: [] };
+      }
+
       const result = await response.json();
       return result;
     } catch (error: any) {
