@@ -724,40 +724,58 @@ class NeonDatabaseClient {
       "id" | "createdAt" | "updatedAt" | "confirmationCode"
     >,
   ): Promise<{ success: boolean; booking?: Booking; error?: string }> {
-    if (!this.isConnected) {
-      return {
-        success: false,
-        error: "Database not connected. Please connect to Neon database first.",
-      };
-    }
+    // Do not block on connection state; attempt request with fallback
+    this.ensureConnection().catch(() => {});
 
-    try {
+    const tryCreate = async (url: string) => {
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 10000);
-
-      const response = await fetch(`${this.baseUrl}/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingData),
-        signal: ac.signal,
-      });
-
-      clearTimeout(to);
-      const result = await response.json();
-      return result;
-    } catch (error: any) {
-      console.error("Database booking creation failed:", error);
-      if (error?.name === "AbortError") {
-        return {
-          success: false,
-          error: "Request timed out. Please try again.",
-        };
+      const to = setTimeout(() => ac.abort(), 15000);
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingData),
+          signal: ac.signal,
+        });
+        clearTimeout(to);
+        const ct = response.headers.get("content-type") || "";
+        const data = ct.includes("application/json")
+          ? await response.json()
+          : await response
+              .text()
+              .then((t) => {
+                try {
+                  return JSON.parse(t);
+                } catch {
+                  return { success: false, error: t || "Unknown error" };
+                }
+              })
+              .catch(() => ({ success: false, error: "Unknown error" }));
+        if (!response.ok || !data?.success) {
+          return {
+            success: false,
+            error:
+              data?.error || `HTTP ${response.status}: Failed to create booking`,
+          };
+        }
+        this.isConnected = true;
+        return data;
+      } catch (e: any) {
+        clearTimeout(to);
+        if (e?.name === "AbortError") {
+          return { success: false, error: "Request timed out. Please try again." };
+        }
+        return { success: false, error: e?.message || "Network error" };
       }
-      return {
-        success: false,
-        error: "Failed to create booking. Please check your connection.",
-      };
-    }
+    };
+
+    // Primary
+    const primary = await tryCreate(`${this.baseUrl}/bookings`);
+    if (primary.success) return primary;
+
+    // Fallback same-origin
+    const fallback = await tryCreate(`/api/neon/bookings`);
+    return fallback;
   }
 
   async getBookings(params?: {
