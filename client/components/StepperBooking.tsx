@@ -709,11 +709,13 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       };
 
       // Create booking using Neon database
+      console.log('📝 Creating booking with userId:', userId, 'isGuest:', isGuest);
       const bookingResult = await neonDbClient.createBooking(bookingPayload);
       if (!bookingResult.success || !bookingResult.booking) {
         throw new Error(bookingResult.error || 'Failed to create booking');
       }
       const createdBooking = bookingResult.booking;
+      console.log('✅ Booking created successfully:', createdBooking.id, 'for userId:', createdBooking.userId);
 
       // Send system notification to admin and manager about new booking
       const customerName = isGuest ? `${bookingData.fullName}` : 'Registered Customer';
