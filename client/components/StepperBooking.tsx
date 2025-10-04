@@ -105,15 +105,17 @@ interface StepperBookingProps {
 
 const STEPS = [
   { id: 1, title: "Schedule", icon: Calendar, description: "Pick date & time" },
-  { id: 2, title: "Unit", icon: Car, description: "Select vehicle type" },
+  { id: 2, title: "Vehicle", icon: Car, description: "Select vehicle type" },
   {
     id: 3,
-    title: "Service",
+    title: "Category",
     icon: Sparkles,
-    description: "Choose your service",
+    description: "Choose service category",
   },
-  { id: 4, title: "Payment", icon: CreditCard, description: "Payment method" },
-  { id: 5, title: "Review", icon: CheckCircle, description: "Confirm booking" },
+  { id: 4, title: "Package", icon: Star, description: "Select package" },
+  { id: 5, title: "Details", icon: User, description: "Your information" },
+  { id: 6, title: "Payment", icon: CreditCard, description: "Payment method" },
+  { id: 7, title: "Review", icon: CheckCircle, description: "Confirm booking" },
 ];
 
 // Load admin configuration with error handling
