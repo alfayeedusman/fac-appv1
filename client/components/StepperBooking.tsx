@@ -308,6 +308,15 @@ const SERVICE_CATEGORIES = {
     iconText: "🚗", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
+    vehicleTypes: ["car"],
+  },
+  motorwash: {
+    name: "Motorwash",
+    icon: Car,
+    iconText: "🏍️", // Safe for SelectItem
+    gradient: "from-cyan-500 to-blue-600",
+    description: "Professional motorcycle washing and care",
+    vehicleTypes: ["motorcycle"],
   },
   auto_detailing: {
     name: "Auto Detailing",
