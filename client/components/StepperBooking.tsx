@@ -1545,7 +1545,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
   // Filter out past time slots if date is today
-  const availableSlots = React.useMemo(() => {
+  const availableSlots = useMemo(() => {
     if (!bookingData?.date) return [];
 
     const selectedDate = new Date(bookingData.date);
