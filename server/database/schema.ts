@@ -147,6 +147,21 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// User Vehicles table (for multiple vehicles support)
+export const userVehicles = pgTable("user_vehicles", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id").notNull(), // Foreign key to users.id
+  unitType: varchar("unit_type", { length: 20 }).notNull(), // 'car' | 'motorcycle'
+  unitSize: varchar("unit_size", { length: 50 }).notNull(), // sedan, suv, pickup, regular, medium, big_bike
+  plateNumber: varchar("plate_number", { length: 20 }).notNull(),
+  vehicleModel: varchar("vehicle_model", { length: 255 }).notNull(), // e.g., "Toyota Hilux 2024"
+  isDefault: boolean("is_default").notNull().default(false), // One default vehicle per user
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Bookings table
 export const bookings = pgTable("bookings", {
   id: text("id")
