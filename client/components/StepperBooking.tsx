@@ -2012,35 +2012,22 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload, voucher
       </div>
 
       {bookingData.paymentMethod === "online" && adminConfig.paymentMethods.online.enabled && (
-        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200">
-          <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-3">Payment Instructions</h4>
-          <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-            {adminConfig.paymentMethods.online.instructions.bankTransfer && (
-              <>
-                <p><strong>Bank Transfer:</strong> {adminConfig.paymentMethods.online.instructions.bankTransfer.bankName} - {adminConfig.paymentMethods.online.instructions.bankTransfer.accountNumber}</p>
-                <p><strong>Account Name:</strong> {adminConfig.paymentMethods.online.instructions.bankTransfer.accountName}</p>
-              </>
-            )}
-            {adminConfig.paymentMethods.online.instructions.gcash && (
-              <>
-                <p><strong>GCash:</strong> {adminConfig.paymentMethods.online.instructions.gcash.number}</p>
-                <p><strong>Account Name:</strong> {adminConfig.paymentMethods.online.instructions.gcash.accountName}</p>
-              </>
-            )}
-            <p><strong>Amount:</strong> ₱{bookingData.totalPrice.toLocaleString()}</p>
-          </div>
-
-          <div className="mt-4">
-            <Label className="text-blue-800 dark:text-blue-200 font-semibold">Upload Receipt</Label>
-            <Input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleFileUpload}
-              className="mt-2"
-            />
-            {bookingData.receiptFile && (
-              <p className="text-xs text-green-600 mt-1">✓ {bookingData.receiptFile.name}</p>
-            )}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 border-2 border-fac-orange-200">
+          <div className="flex items-start space-x-3">
+            <div className="bg-fac-orange-500 rounded-full p-2">
+              <CreditCard className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-fac-orange-900 dark:text-fac-orange-100 mb-2">FACPay Payment Gateway</h4>
+              <div className="space-y-2 text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                <p>✓ You will be redirected to FACPay to complete your payment</p>
+                <p>✓ Accept multiple payment methods (Cards, GCash, PayMaya)</p>
+                <p>✓ Secure payment powered by Xendit</p>
+                <div className="mt-3 pt-3 border-t border-fac-orange-200">
+                  <p className="font-semibold">Total Amount: ₱{bookingData.totalPrice.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
