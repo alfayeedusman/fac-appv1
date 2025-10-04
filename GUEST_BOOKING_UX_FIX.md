@@ -1,7 +1,9 @@
 # Guest Booking UX Fix - Mobile Bottom Action Bar
 
 ## Problem
+
 The mobile sticky action bar on the guest booking page was floating above the bottom (positioned at `bottom-20`, 80px from bottom), causing:
+
 - Awkward floating appearance
 - Overlapping with content
 - Inconsistent with user expectations
@@ -11,6 +13,7 @@ This floating position was originally designed for pages with BottomNavigation c
 ## Solution Applied
 
 ### 1. **Action Bar Positioning** (`StepperBooking.tsx`)
+
 - **Before**: `fixed bottom-20` (floating 80px above bottom)
 - **After**: `fixed bottom-0` (anchored to very bottom) for guest booking
 - **Conditional**: Uses `isGuest` prop to apply correct positioning
@@ -18,15 +21,18 @@ This floating position was originally designed for pages with BottomNavigation c
   - Regular booking: `bottom-20` (above BottomNavigation)
 
 ### 2. **Full Width Design**
+
 - **Before**: `left-3 right-3` (margins on sides)
 - **After**: `left-0 right-0` (full width edge-to-edge)
 
 ### 3. **Border Styling**
+
 - **Before**: `rounded-2xl` (all corners rounded)
 - **After**: `rounded-t-2xl` (only top corners rounded)
 - **Added**: `border-t` (top border for separation)
 
 ### 4. **Content Padding Adjustment**
+
 - **Before**: `pb-56` (224px bottom padding on mobile)
 - **After**: `pb-40` (160px bottom padding) for guest booking
 - **Reason**: Less padding needed since bar is at bottom, not floating
@@ -36,6 +42,7 @@ This floating position was originally designed for pages with BottomNavigation c
 ### File: `client/components/StepperBooking.tsx`
 
 **Line 1391-1392** - Action Bar Container:
+
 ```tsx
 // Before:
 <div className="fixed bottom-20 left-3 right-3 z-50 md:hidden">
@@ -47,6 +54,7 @@ This floating position was originally designed for pages with BottomNavigation c
 ```
 
 **Line 1193** - Content Padding:
+
 ```tsx
 // Before:
 <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8">
@@ -66,6 +74,7 @@ This floating position was originally designed for pages with BottomNavigation c
 ## Testing
 
 Test on mobile/small screens:
+
 1. Navigate to guest booking page
 2. Verify action bar is at the very bottom (not floating)
 3. Scroll through booking steps - content should not be hidden

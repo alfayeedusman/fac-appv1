@@ -1190,7 +1190,9 @@ export default function StepperBooking({
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className={`p-3 sm:p-4 md:p-6 lg:p-8 ${isGuest ? 'pb-40' : 'pb-56'} md:pb-8`}>
+            <div
+              className={`p-3 sm:p-4 md:p-6 lg:p-8 ${isGuest ? "pb-40" : "pb-56"} md:pb-8`}
+            >
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
@@ -1388,7 +1390,9 @@ export default function StepperBooking({
       </div>
 
       {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
-      <div className={`fixed ${isGuest ? 'bottom-0' : 'bottom-20'} left-0 right-0 z-50 md:hidden`}>
+      <div
+        className={`fixed ${isGuest ? "bottom-0" : "bottom-20"} left-0 right-0 z-50 md:hidden`}
+      >
         <div className="glass border-2 border-t border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-t-2xl shadow-2xl p-4 space-y-4">
           {/* Progress Info */}
           <div className="flex items-center justify-between gap-3">
