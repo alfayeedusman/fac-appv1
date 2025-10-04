@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { neonDbService } from "../services/neonDatabaseService";
-import { initializeDatabase, testConnection } from "../database/connection";
+import { initializeDatabase, testConnection, sql } from "../database/connection";
 import { migrate } from "../database/migrate";
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
@@ -324,6 +324,124 @@ export const getBookings: RequestHandler = async (req, res) => {
       success: false,
       error: "Failed to fetch bookings",
     });
+  }
+};
+
+// Ensure voucher tables exist (idempotent)
+async function ensureVoucherTables() {
+  await sql`CREATE TABLE IF NOT EXISTS vouchers (
+    id TEXT PRIMARY KEY,
+    code VARCHAR(100) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    discount_type VARCHAR(20) NOT NULL,
+    discount_value DECIMAL(10,2) NOT NULL,
+    minimum_amount DECIMAL(10,2) DEFAULT 0.00,
+    audience VARCHAR(20) NOT NULL DEFAULT 'registered',
+    valid_from TIMESTAMP,
+    valid_until TIMESTAMP,
+    usage_limit INTEGER,
+    per_user_limit INTEGER DEFAULT 1,
+    total_used INTEGER DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+  );`;
+  await sql`CREATE TABLE IF NOT EXISTS voucher_redemptions (
+    id TEXT PRIMARY KEY,
+    voucher_code VARCHAR(100) NOT NULL,
+    user_email VARCHAR(255),
+    booking_id TEXT,
+    discount_amount DECIMAL(10,2) NOT NULL,
+    redeemed_at TIMESTAMP NOT NULL DEFAULT NOW()
+  );`;
+  await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
+  await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
+}
+
+export const validateVoucher: RequestHandler = async (req, res) => {
+  try {
+    const { code, bookingAmount, userEmail, bookingType } = req.body || {};
+    if (!code || typeof bookingAmount !== 'number') {
+      return res.status(400).json({ success: false, error: 'code and bookingAmount are required' });
+    }
+
+    await ensureVoucherTables();
+
+    // Fetch voucher by code (case-insensitive)
+    const result: any = await sql`SELECT * FROM vouchers WHERE LOWER(code) = LOWER(${code}) LIMIT 1`;
+    const voucher = Array.isArray(result) ? result[0] : result?.rows?.[0];
+    if (!voucher) return res.status(404).json({ success: false, error: 'Invalid voucher code' });
+
+    // Check status and validity window
+    const now = new Date();
+    if (voucher.is_active === false) return res.status(400).json({ success: false, error: 'Voucher is inactive' });
+    if (voucher.valid_from && new Date(voucher.valid_from) > now) return res.status(400).json({ success: false, error: 'Voucher not yet active' });
+    if (voucher.valid_until && new Date(voucher.valid_until) < now) return res.status(400).json({ success: false, error: 'Voucher expired' });
+
+    // Audience rules
+    const isRegistered = !!userEmail;
+    if (voucher.audience === 'registered' && !isRegistered) {
+      return res.status(403).json({ success: false, error: 'Voucher is only for registered users' });
+    }
+
+    // Usage limits
+    if (voucher.usage_limit && Number(voucher.total_used || 0) >= voucher.usage_limit) {
+      return res.status(400).json({ success: false, error: 'Voucher usage limit reached' });
+    }
+    if (isRegistered && voucher.per_user_limit) {
+      const usedByUser: any = await sql`SELECT COUNT(*)::int as cnt FROM voucher_redemptions WHERE voucher_code = ${voucher.code} AND user_email = ${userEmail}`;
+      const usedCount = Array.isArray(usedByUser) ? usedByUser[0]?.cnt : usedByUser?.rows?.[0]?.cnt;
+      if (Number(usedCount || 0) >= voucher.per_user_limit) {
+        return res.status(400).json({ success: false, error: 'You have already used this voucher' });
+      }
+    }
+
+    // Min amount
+    const minAmt = Number(voucher.minimum_amount || 0);
+    if (minAmt > 0 && bookingAmount < minAmt) {
+      return res.status(400).json({ success: false, error: `Minimum amount ₱${minAmt.toFixed(2)} not met` });
+    }
+
+    // Calculate discount
+    let discountAmount = 0;
+    if (voucher.discount_type === 'percentage') {
+      discountAmount = Math.round((bookingAmount * Number(voucher.discount_value)))/100; // percentage value already like 20 => amount = amount * 20 / 100
+      discountAmount = Number((bookingAmount * Number(voucher.discount_value) / 100).toFixed(2));
+    } else {
+      discountAmount = Number(voucher.discount_value);
+    }
+    if (discountAmount > bookingAmount) discountAmount = bookingAmount;
+    const finalAmount = Number((bookingAmount - discountAmount).toFixed(2));
+
+    return res.json({ success: true, data: { code: voucher.code, title: voucher.title, discountType: voucher.discount_type, discountValue: Number(voucher.discount_value), discountAmount, finalAmount, audience: voucher.audience } });
+  } catch (error: any) {
+    console.error('validateVoucher error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to validate voucher' });
+  }
+};
+
+export const redeemVoucher: RequestHandler = async (req, res) => {
+  try {
+    const { code, userEmail, bookingId, discountAmount } = req.body || {};
+    if (!code || !bookingId || typeof discountAmount !== 'number') {
+      return res.status(400).json({ success: false, error: 'code, bookingId and discountAmount are required' });
+    }
+
+    await ensureVoucherTables();
+
+    // Insert redemption
+    const id = `vrd_${Date.now()}`;
+    await sql`INSERT INTO voucher_redemptions (id, voucher_code, user_email, booking_id, discount_amount) VALUES (${id}, ${code}, ${userEmail || null}, ${bookingId}, ${discountAmount})`;
+    await sql`UPDATE vouchers SET total_used = COALESCE(total_used,0) + 1, updated_at = NOW() WHERE code = ${code}`;
+
+    // Also update booking columns if present
+    await sql`UPDATE bookings SET voucher_code = ${code}, voucher_discount = ${discountAmount} WHERE id = ${bookingId}`;
+
+    return res.json({ success: true, message: 'Voucher redeemed', id });
+  } catch (error: any) {
+    console.error('redeemVoucher error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to redeem voucher' });
   }
 };
 
