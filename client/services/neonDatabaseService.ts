@@ -206,7 +206,7 @@ class NeonDatabaseClient {
       if (res.ok) {
         const result = await res.json();
         this.isConnected = !!(result.connected || result.success);
-        console.log(`�� Test connection result: ${this.isConnected}`);
+        console.log(`🔗 Test connection result: ${this.isConnected}`);
         return this.isConnected;
       }
     } catch (e) {
@@ -629,6 +629,11 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     console.log("📝 Starting registration for:", userData.email);
 
+    // Attempt background connection check but don't block registration
+    this.ensureConnection().catch((err) =>
+      console.warn("Background connection check failed:", err)
+    );
+
     const tryRegister = async (
       url: string,
     ): Promise<{ success: boolean; user?: User; error?: string }> => {
@@ -675,6 +680,8 @@ class NeonDatabaseClient {
         }
 
         console.log("✅ Registration successful!");
+        // Update connection status on successful registration
+        this.isConnected = true;
         return data;
       } catch (error: any) {
         console.error("❌ Registration attempt failed:", error);
