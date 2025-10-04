@@ -1823,9 +1823,13 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
               })}
             </div>
             {availableSlots.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                No available slots for this date. Please select another date.
-              </p>
+              <div className="mt-3 p-4 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                  {bookingData.date === new Date().toISOString().split("T")[0]
+                    ? "⏰ All time slots for today have passed. Please select a future date or try again tomorrow."
+                    : "No available slots for this date. Please select another date."}
+                </p>
+              </div>
             )}
           </div>
         )}
