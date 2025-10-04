@@ -210,6 +210,20 @@ export default function BookingManagement() {
           </div>
         </div>
 
+        {/* Admin Fix Button */}
+        {(localStorage.getItem('userRole') === 'admin' || localStorage.getItem('userRole') === 'superadmin') && (
+          <div className="mb-4">
+            <Button
+              onClick={handleFixBookingUserIds}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              🔧 Fix Booking User IDs (Admin)
+            </Button>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up animate-delay-100">
           <Card className="glass border-border">
