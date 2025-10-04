@@ -127,12 +127,20 @@ export const chargeCard: RequestHandler = async (req, res) => {
 export const handleWebhook: RequestHandler = async (req, res) => {
   try {
     const event = req.body;
-    
+
     console.log('Xendit webhook received:', event);
 
-    // Verify webhook authenticity (implement Xendit signature verification)
-    // const callbackToken = req.headers['x-callback-token'];
-    
+    // Verify webhook authenticity using callback token
+    const callbackToken = req.headers['x-callback-token'];
+
+    if (!callbackToken || callbackToken !== XENDIT_WEBHOOK_TOKEN) {
+      console.error('Invalid webhook token');
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized webhook request',
+      });
+    }
+
     // Handle different event types
     if (event.status === 'PAID' || event.status === 'SETTLED') {
       // Update booking payment status
