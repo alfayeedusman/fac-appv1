@@ -59,7 +59,7 @@ export default function BookingManagement() {
         return;
       }
 
-      console.log('📥 Fetching bookings for user:', userEmail);
+      console.log('📥 Fetching bookings for user:', userEmail, 'userId:', userId);
       const result = await neonDbClient.getBookings({ userId });
 
       if (result.success && result.bookings) {
@@ -74,6 +74,28 @@ export default function BookingManagement() {
       setBookings([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFixBookingUserIds = async () => {
+    if (!confirm('This will fix bookings that have email addresses in the userId field. Continue?')) {
+      return;
+    }
+
+    try {
+      console.log('🔧 Running booking userId fix...');
+      const result = await neonDbClient.fixBookingUserIds();
+
+      if (result.success) {
+        alert(`Fixed ${result.fixed} out of ${result.total} bookings!${result.errors ? '\n\nErrors: ' + result.errors.join('\n') : ''}`);
+        // Reload bookings
+        loadBookings();
+      } else {
+        alert('Failed to fix bookings');
+      }
+    } catch (error) {
+      console.error('Error fixing bookings:', error);
+      alert('Error fixing bookings: ' + error);
     }
   };
 
