@@ -53,6 +53,9 @@ class XenditService {
   }
 
   public createInvoice = async (params: XenditPaymentParams): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000); // 15s timeout for payment
+
     try {
       console.log('💳 Creating Xendit invoice...', params);
 
@@ -74,8 +77,10 @@ class XenditService {
           success_redirect_url: params.successRedirectUrl || window.location.origin + '/booking-success',
           failure_redirect_url: params.failureRedirectUrl || window.location.origin + '/booking-failed',
         }),
+        signal: ac.signal,
       });
 
+      clearTimeout(timeout);
       console.log('📡 Xendit API response status:', response.status);
 
       if (!response.ok) {
@@ -87,7 +92,15 @@ class XenditService {
       const data = await response.json();
       console.log('✅ Xendit invoice created:', data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        const timeoutError = new Error('Payment request timed out. Please check your internet connection and try again.');
+        console.error('❌ Xendit request timeout');
+        throw timeoutError;
+      }
+
       console.error('❌ Xendit invoice creation error:', error);
       throw error;
     }
@@ -163,6 +176,9 @@ class XenditService {
     external_id: string;
     description: string;
   }): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000); // 15s timeout for payment
+
     try {
       // Charge card via backend API
       const response = await fetch('/api/neon/payment/xendit/charge', {
@@ -171,7 +187,10 @@ class XenditService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(params),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error('Failed to charge card');
@@ -179,7 +198,13 @@ class XenditService {
 
       const data = await response.json();
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        throw new Error('Payment request timed out. Please check your internet connection and try again.');
+      }
+
       console.error('Xendit charge error:', error);
       throw error;
     }
