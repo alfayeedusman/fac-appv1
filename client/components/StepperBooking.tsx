@@ -1917,217 +1917,293 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload, voucher
   </Card>
 );
 
-const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => (
-  <div className="space-y-6">
-    {/* Customer Details */}
-    <Card className="glass border-border shadow-xl">
-      <CardHeader>
-        <CardTitle className="flex items-center text-2xl">
-          <User className="h-6 w-6 mr-3 text-fac-orange-500" />
-          Customer Details
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label className="text-foreground font-semibold">Full Name *</Label>
-            <Input
-              value={bookingData.fullName}
-              onChange={(e) => updateBookingData("fullName", e.target.value)}
-              placeholder="Enter your full name"
-              className={`mt-1 ${!bookingData.fullName.trim() ? 'border-red-500 focus:border-red-500' : ''}`}
-              required
-            />
-            {!bookingData.fullName.trim() && (
-              <p className="text-red-500 text-xs mt-1 flex items-center">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                Full name is required
-              </p>
-            )}
-          </div>
-          <div>
-            <Label className="text-foreground font-semibold">Mobile Number *</Label>
-            <Input
-              value={bookingData.mobile}
-              onChange={(e) => {
-                // Auto-format mobile number
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.startsWith('0')) value = '63' + value.substring(1);
-                updateBookingData("mobile", value);
-              }}
-              placeholder="+63 912 345 6789"
-              className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
-              required
-            />
-            {(!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10) && (
-              <p className="text-red-500 text-xs mt-1 flex items-center">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {!bookingData.mobile.trim() ? 'Mobile number is required' : 'Please enter a valid mobile number'}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label className="text-foreground font-semibold">
-              Email {isGuest && <span className="text-red-500">*</span>}
-            </Label>
-            <Input
-              type="email"
-              value={bookingData.email}
-              onChange={(e) => updateBookingData("email", e.target.value)}
-              placeholder="your.email@example.com"
-              className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? 'border-red-500 focus:border-red-500' : ''}`}
-              required={isGuest}
-            />
-            {((isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
-              <p className="text-red-500 text-xs mt-1 flex items-center">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {isGuest && !bookingData.email.trim() ? 'Email is required for guest bookings' : 'Please enter a valid email address'}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label className="text-foreground font-semibold">Plate Number</Label>
-            <Input
-              value={bookingData.plateNo}
-              onChange={(e) => updateBookingData("plateNo", e.target.value.toUpperCase())}
-              placeholder="ABC 1234"
-              className="mt-1"
-            />
-            <p className="text-xs text-muted-foreground mt-1">Optional - helps us identify your vehicle</p>
-          </div>
-          <div className="md:col-span-2">
-            <Label className="text-foreground font-semibold">Car Model & Year</Label>
-            <Input
-              value={bookingData.carModel}
-              onChange={(e) => updateBookingData("carModel", e.target.value)}
-              placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
-              className="mt-1"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R 2023"
-            </p>
-          </div>
-        </div>
+const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
+  const [useNewDetails, setUseNewDetails] = useState(false);
 
-        {/* Address - Only show for Home Service */}
-        {bookingData.serviceType === 'home' && (
-          <div>
-            <Label className="text-foreground font-semibold">Service Address *</Label>
+  // For registered users, check if we have saved data
+  const hasSavedData = !isGuest && bookingData.fullName && bookingData.mobile;
 
-            {/* Address Options */}
-            <div className="mt-2 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const defaultAddress = "123 Sample Street, Barangay Example, Manila City, Metro Manila";
-                  updateBookingData("address", defaultAddress);
-                }}
-                className="flex items-center justify-center text-xs"
-              >
-                <MapPin className="h-3 w-3 mr-1" />
-                Use Default
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                      (position) => {
-                        // In a real app, you'd reverse geocode these coordinates
-                        const { latitude, longitude } = position.coords;
-                        const locationAddress = `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
-                        updateBookingData("address", locationAddress);
-                        toast({
-                          title: "Location Retrieved",
-                          description: "Your current location has been set as the address.",
-                        });
-                      },
-                      (error) => {
-                        toast({
-                          title: "Location Error",
-                          description: "Unable to get your current location. Please enter manually.",
-                          variant: "destructive",
-                        });
-                      }
-                    );
-                  } else {
-                    toast({
-                      title: "Not Supported",
-                      description: "Geolocation is not supported by this browser.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="flex items-center justify-center text-xs"
-              >
-                <MapPin className="h-3 w-3 mr-1" />
-                Current Location
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  updateBookingData("address", "");
-                }}
-                className="flex items-center justify-center text-xs"
-              >
-                <User className="h-3 w-3 mr-1" />
-                Custom Address
-              </Button>
+  return (
+    <div className="space-y-6">
+      {/* Customer Details */}
+      <Card className="glass border-border shadow-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center text-2xl">
+            <User className="h-6 w-6 mr-3 text-fac-orange-500" />
+            Customer Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* For registered users with saved data - show option */}
+          {hasSavedData && !useNewDetails && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <h4 className="font-bold text-green-900 dark:text-green-100">Using Your Saved Details</h4>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setUseNewDetails(true)}
+                    className="text-xs"
+                  >
+                    Edit Details
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-semibold text-foreground">{bookingData.fullName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{bookingData.mobile}</span>
+                  </div>
+                  {bookingData.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{bookingData.email}</span>
+                    </div>
+                  )}
+                  {bookingData.plateNo && (
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Plate: {bookingData.plateNo}</span>
+                    </div>
+                  )}
+                  {bookingData.carModel && (
+                    <div className="flex items-center gap-2">
+                      <Car className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{bookingData.carModel}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+          )}
 
-            <Textarea
-              value={bookingData.address}
-              onChange={(e) => updateBookingData("address", e.target.value)}
-              placeholder="Enter your complete address (street, barangay, city, province)"
-              className={`${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
-              rows={3}
-              required
-            />
-            {(!bookingData.address.trim() || bookingData.address.trim().length < 10) && (
-              <p className="text-red-500 text-xs mt-1 flex items-center">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {!bookingData.address.trim() ? 'Address is required for home service' : 'Please provide a complete address'}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">
-              💡 Use the buttons above for quick address entry, or type your custom address
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-    
-    {/* Terms and Conditions */}
-    <Card className="glass border-border shadow-xl">
-      <CardContent className="p-6">
-        <div className="flex items-start space-x-3">
-          <Checkbox
-            checked={bookingData.acceptTerms}
-            onCheckedChange={(checked) => updateBookingData("acceptTerms", checked)}
-          />
-          <div className="text-sm">
-            <p className="text-foreground font-semibold">Terms and Conditions *</p>
-            <div className="text-muted-foreground mt-1 space-y-2">
-              <p>{adminConfig.terms.termsAndConditions}</p>
-              <p><strong>Cancellation Policy:</strong> {adminConfig.terms.cancellationPolicy}</p>
-              {adminConfig.terms.noShowPolicy && (
-                <p><strong>No-Show Policy:</strong> {adminConfig.terms.noShowPolicy}</p>
+          {/* Show form for guests or when registered user wants to edit */}
+          {(isGuest || useNewDetails || !hasSavedData) && (
+            <>
+              {!isGuest && useNewDetails && (
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">Editing your details for this booking only</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUseNewDetails(false)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               )}
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-foreground font-semibold">Full Name *</Label>
+                  <Input
+                    value={bookingData.fullName}
+                    onChange={(e) => updateBookingData("fullName", e.target.value)}
+                    placeholder="Enter your full name"
+                    className={`mt-1 ${!bookingData.fullName.trim() ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  {!bookingData.fullName.trim() && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Full name is required
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-foreground font-semibold">Mobile Number *</Label>
+                  <Input
+                    value={bookingData.mobile}
+                    onChange={(e) => {
+                      // Auto-format mobile number
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.startsWith('0')) value = '63' + value.substring(1);
+                      updateBookingData("mobile", value);
+                    }}
+                    placeholder="+63 912 345 6789"
+                    className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  {(!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, '').length < 10) && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {!bookingData.mobile.trim() ? 'Mobile number is required' : 'Please enter a valid mobile number'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-foreground font-semibold">
+                    Email {isGuest && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Input
+                    type="email"
+                    value={bookingData.email}
+                    onChange={(e) => updateBookingData("email", e.target.value)}
+                    placeholder="your.email@example.com"
+                    className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required={isGuest}
+                  />
+                  {((isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email))) && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {isGuest && !bookingData.email.trim() ? 'Email is required for guest bookings' : 'Please enter a valid email address'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-foreground font-semibold">Plate Number</Label>
+                  <Input
+                    value={bookingData.plateNo}
+                    onChange={(e) => updateBookingData("plateNo", e.target.value.toUpperCase())}
+                    placeholder="ABC 1234"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Optional - helps us identify your vehicle</p>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-foreground font-semibold">Car Model & Year</Label>
+                  <Input
+                    value={bookingData.carModel}
+                    onChange={(e) => updateBookingData("carModel", e.target.value)}
+                    placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic Type R 2023"
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Address - Only show for Home Service */}
+          {bookingData.serviceType === 'home' && (
+            <div>
+              <Label className="text-foreground font-semibold">Service Address *</Label>
+
+              {/* Address Options */}
+              <div className="mt-2 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const defaultAddress = "123 Sample Street, Barangay Example, Manila City, Metro Manila";
+                    updateBookingData("address", defaultAddress);
+                  }}
+                  className="flex items-center justify-center text-xs"
+                >
+                  <MapPin className="h-3 w-3 mr-1" />
+                  Use Default
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          // In a real app, you'd reverse geocode these coordinates
+                          const { latitude, longitude } = position.coords;
+                          const locationAddress = `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                          updateBookingData("address", locationAddress);
+                          toast({
+                            title: "Location Retrieved",
+                            description: "Your current location has been set as the address.",
+                          });
+                        },
+                        (error) => {
+                          toast({
+                            title: "Location Error",
+                            description: "Unable to get your current location. Please enter manually.",
+                            variant: "destructive",
+                          });
+                        }
+                      );
+                    } else {
+                      toast({
+                        title: "Not Supported",
+                        description: "Geolocation is not supported by this browser.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex items-center justify-center text-xs"
+                >
+                  <MapPin className="h-3 w-3 mr-1" />
+                  Current Location
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    updateBookingData("address", "");
+                  }}
+                  className="flex items-center justify-center text-xs"
+                >
+                  <User className="h-3 w-3 mr-1" />
+                  Custom Address
+                </Button>
+              </div>
+
+              <Textarea
+                value={bookingData.address}
+                onChange={(e) => updateBookingData("address", e.target.value)}
+                placeholder="Enter your complete address (street, barangay, city, province)"
+                className={`${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? 'border-red-500 focus:border-red-500' : ''}`}
+                rows={3}
+                required
+              />
+              {(!bookingData.address.trim() || bookingData.address.trim().length < 10) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {!bookingData.address.trim() ? 'Address is required for home service' : 'Please provide a complete address'}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 Use the buttons above for quick address entry, or type your custom address
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Terms and Conditions */}
+      <Card className="glass border-border shadow-xl">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              checked={bookingData.acceptTerms}
+              onCheckedChange={(checked) => updateBookingData("acceptTerms", checked)}
+            />
+            <div className="text-sm">
+              <p className="text-foreground font-semibold">Terms and Conditions *</p>
+              <div className="text-muted-foreground mt-1 space-y-2">
+                <p>{adminConfig.terms.termsAndConditions}</p>
+                <p><strong>Cancellation Policy:</strong> {adminConfig.terms.cancellationPolicy}</p>
+                {adminConfig.terms.noShowPolicy && (
+                  <p><strong>No-Show Policy:</strong> {adminConfig.terms.noShowPolicy}</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 // Booking Summary Component
 const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: BookingData; progressPercentage: number }) => (
