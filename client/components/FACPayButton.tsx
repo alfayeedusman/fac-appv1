@@ -50,7 +50,7 @@ export default function FACPayButton({
         <>
           <CreditCard className="h-5 w-5 mr-2" />
           <span className="relative z-10">
-            Pay with FACPay
+            FACPay
             {amount > 0 && ` - ₱${amount.toLocaleString()}`}
           </span>
         </>
