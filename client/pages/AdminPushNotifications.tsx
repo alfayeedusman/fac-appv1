@@ -107,28 +107,48 @@ export default function AdminPushNotifications() {
   }, []);
 
   const loadStats = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/stats`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/stats`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load notification stats:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to load notification stats:', error);
+      }
     }
   };
 
   const loadNotificationHistory = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/history?limit=20`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/history?limit=20`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setNotifications(result.data);
       }
-    } catch (error) {
-      console.error('Failed to load notification history:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to load notification history:', error);
+      }
     }
   };
 
@@ -140,6 +160,9 @@ export default function AdminPushNotifications() {
 
     setIsLoading(true);
     setError(null);
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/send`, {
@@ -158,7 +181,10 @@ export default function AdminPushNotifications() {
           campaign: newNotification.campaign || undefined,
           adminUserId: userId,
         }),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -186,9 +212,13 @@ export default function AdminPushNotifications() {
       } else {
         setError(result.error || 'Failed to send notification');
       }
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      setError('Failed to send notification');
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        console.error('Error sending notification:', error);
+        setError('Failed to send notification');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -197,6 +227,9 @@ export default function AdminPushNotifications() {
   const sendTestNotification = async () => {
     setIsLoading(true);
     setError(null);
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 10000);
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/notifications/test`, {
@@ -209,7 +242,10 @@ export default function AdminPushNotifications() {
           title: '🧪 Test Notification',
           message: 'This is a test push notification from your admin panel!',
         }),
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -221,9 +257,13 @@ export default function AdminPushNotifications() {
       } else {
         setError(result.error || 'Failed to send test notification');
       }
-    } catch (error) {
-      console.error('Error sending test notification:', error);
-      setError('Failed to send test notification');
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        console.error('Error sending test notification:', error);
+        setError('Failed to send test notification');
+      }
     } finally {
       setIsLoading(false);
     }
