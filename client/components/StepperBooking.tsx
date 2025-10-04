@@ -1161,13 +1161,28 @@ export default function StepperBooking({
         );
       case 3:
         return (
-          <ServiceStep
+          <CategoryStep
+            bookingData={bookingData}
+            updateBookingData={updateBookingData}
+          />
+        );
+      case 4:
+        return (
+          <PackageStep
             bookingData={bookingData}
             updateBookingData={updateBookingData}
             goBackToStep1={goBackToStep1}
           />
         );
-      case 4:
+      case 5:
+        return (
+          <DetailsStep
+            bookingData={bookingData}
+            updateBookingData={updateBookingData}
+            isGuest={isGuest}
+          />
+        );
+      case 6:
         return (
           <PaymentStep
             bookingData={bookingData}
@@ -1180,7 +1195,7 @@ export default function StepperBooking({
             isValidatingVoucher={isValidatingVoucher}
           />
         );
-      case 5:
+      case 7:
         return (
           <ReviewStep
             bookingData={bookingData}
@@ -3254,7 +3269,7 @@ const BookingSummary = ({
                   Total:
                 </span>
                 <span className="font-bold text-fac-orange-500 text-lg md:text-xl">
-                  ₱{(bookingData.totalPrice || 0).toLocaleString()}
+                  ���{(bookingData.totalPrice || 0).toLocaleString()}
                 </span>
               </div>
             </div>
