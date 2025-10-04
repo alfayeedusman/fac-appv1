@@ -411,7 +411,16 @@ const AppComponent = () => {
   );
 };
 
-createRoot(document.getElementById("root")!).render(
+// Store root instance to prevent multiple createRoot calls during HMR
+let root = (window as any).__react_root__;
+
+if (!root) {
+  const container = document.getElementById("root")!;
+  root = createRoot(container);
+  (window as any).__react_root__ = root;
+}
+
+root.render(
   <ErrorBoundary>
     <AppComponent />
   </ErrorBoundary>,
