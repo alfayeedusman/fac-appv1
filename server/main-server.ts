@@ -122,6 +122,13 @@ export const createServer = () => {
   // Users endpoints (for customer management)
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
 
+  // User vehicles and address endpoints
+  app.get("/api/neon/users/:userId/vehicles", neonApiRoutes.getUserVehicles);
+  app.post("/api/neon/users/:userId/vehicles", neonApiRoutes.addUserVehicle);
+  app.put("/api/neon/users/:userId/vehicles/:vehicleId", neonApiRoutes.updateUserVehicle);
+  app.delete("/api/neon/users/:userId/vehicles/:vehicleId", neonApiRoutes.deleteUserVehicle);
+  app.put("/api/neon/users/:userId/address", neonApiRoutes.updateUserAddress);
+
   // ============= CREW MANAGEMENT API =============
   app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
   app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
