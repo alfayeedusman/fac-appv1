@@ -165,7 +165,10 @@ export async function runMigrations() {
       `;
       console.log("✅ default_address column check complete");
     } catch (error: any) {
-      console.warn("⚠️ Could not add default_address column (may already exist):", error.message);
+      console.warn(
+        "⚠️ Could not add default_address column (may already exist):",
+        error.message,
+      );
     }
 
     try {
@@ -175,7 +178,10 @@ export async function runMigrations() {
       `;
       console.log("✅ can_view_all_branches column check complete");
     } catch (error: any) {
-      console.warn("⚠️ Could not add can_view_all_branches column (may already exist):", error.message);
+      console.warn(
+        "⚠️ Could not add can_view_all_branches column (may already exist):",
+        error.message,
+      );
     }
 
     // Create user_vehicles table for multiple vehicle support
