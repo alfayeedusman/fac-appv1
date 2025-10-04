@@ -1389,6 +1389,68 @@ export const deleteUserVehicle: RequestHandler = async (req, res) => {
   }
 };
 
+// Fix bookings with email in userId field (migration utility)
+export const fixBookingUserIds: RequestHandler = async (req, res) => {
+  try {
+    console.log('🔧 Starting booking userId fix...');
+
+    // Get all bookings where userId contains @ (email pattern)
+    const bookingsToFix = await sql`
+      SELECT id, user_id FROM bookings
+      WHERE user_id IS NOT NULL
+      AND user_id LIKE '%@%'
+    `;
+
+    console.log(`Found ${bookingsToFix.length} bookings with email in userId field`);
+
+    let fixedCount = 0;
+    let errors = [];
+
+    for (const booking of bookingsToFix) {
+      try {
+        // Find the actual user by email
+        const users = await sql`
+          SELECT id FROM users WHERE email = ${booking.user_id} LIMIT 1
+        `;
+
+        if (users.length > 0) {
+          const actualUserId = users[0].id;
+
+          // Update the booking with correct userId
+          await sql`
+            UPDATE bookings
+            SET user_id = ${actualUserId}
+            WHERE id = ${booking.id}
+          `;
+
+          fixedCount++;
+          console.log(`✅ Fixed booking ${booking.id}: ${booking.user_id} -> ${actualUserId}`);
+        } else {
+          errors.push(`No user found for email: ${booking.user_id} (booking ${booking.id})`);
+          console.warn(`⚠️ No user found for email: ${booking.user_id}`);
+        }
+      } catch (err) {
+        errors.push(`Error fixing booking ${booking.id}: ${err}`);
+        console.error(`❌ Error fixing booking ${booking.id}:`, err);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed ${fixedCount} bookings`,
+      total: bookingsToFix.length,
+      fixed: fixedCount,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.error("Fix booking userIds error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fix booking userIds",
+    });
+  }
+};
+
 // Update user default address
 export const updateUserAddress: RequestHandler = async (req, res) => {
   try {
