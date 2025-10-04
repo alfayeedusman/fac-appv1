@@ -89,6 +89,8 @@ export interface Booking {
   completedAt?: string;
   customerRating?: number;
   customerFeedback?: string;
+  voucherCode?: string;
+  voucherDiscount?: number;
   createdAt: string;
   updatedAt: string;
 }
