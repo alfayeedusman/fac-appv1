@@ -25,6 +25,8 @@ import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import GuestBooking from "./pages/GuestBooking";
 import BookingManagement from "./pages/BookingManagement";
+import BookingSuccess from "./pages/BookingSuccess";
+import BookingFailed from "./pages/BookingFailed";
 import ManageSubscription from "./pages/ManageSubscription";
 import NotificationSettings from "./pages/NotificationSettings";
 import NotificationHistory from "./pages/NotificationHistory";
@@ -150,6 +152,8 @@ const AppComponent = () => {
                   }
                 />
                 <Route path="/guest-booking" element={<GuestBooking />} />
+                <Route path="/booking-success" element={<BookingSuccess />} />
+                <Route path="/booking-failed" element={<BookingFailed />} />
                 <Route
                   path="/my-bookings"
                   element={
