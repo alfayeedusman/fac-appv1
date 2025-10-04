@@ -56,6 +56,7 @@ import { getCarWashServices, calculateServicePrice } from "@/utils/carWashServic
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
+import BookingReceiptModal from "@/components/BookingReceiptModal";
 
 interface BookingData {
   // Service Selection
