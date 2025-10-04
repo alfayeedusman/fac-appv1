@@ -126,8 +126,8 @@ export default function Profile() {
     });
   };
 
-  const onProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const onProfileImageChange = async (e: any) => {
+    const file = e.target?.files?.[0] as File | undefined;
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       await swalHelpers.showError("Invalid File", "Please select an image file.");
