@@ -1584,7 +1584,77 @@ export default function StepperBooking({
 }
 
 // Step Components
-const ServiceStep = ({
+const CategoryStep = ({ bookingData, updateBookingData }: any) => {
+  const vehicleType = bookingData.unitType;
+
+  // Filter categories based on vehicle type
+  const availableCategories = Object.entries(SERVICE_CATEGORIES).filter(
+    ([key, category]: [string, any]) => {
+      if (!category.vehicleTypes) return true;
+      return category.vehicleTypes.includes(vehicleType);
+    }
+  );
+
+  return (
+    <Card className="glass border-border shadow-xl">
+      <CardHeader className="pb-4 md:pb-6">
+        <CardTitle className="flex items-center text-xl md:text-2xl">
+          <Sparkles className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+          Select Service Category
+        </CardTitle>
+        <p className="text-sm md:text-base text-muted-foreground mt-2">
+          Choose the type of service you need for your {vehicleType === "motorcycle" ? "motorcycle" : "car"}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          {availableCategories.map(([key, category]: [string, any]) => {
+            const Icon = category.icon;
+            const isSelected = bookingData.category === key;
+
+            return (
+              <div
+                key={key}
+                onClick={() => {
+                  updateBookingData("category", key);
+                  updateBookingData("service", ""); // Reset service when category changes
+                }}
+                className={`
+                  relative cursor-pointer transition-all duration-300 rounded-xl p-4 md:p-6
+                  border-2 hover:scale-[1.02] active:scale-[0.98]
+                  ${
+                    isSelected
+                      ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/30 shadow-lg"
+                      : "border-border hover:border-fac-orange-300 bg-card"
+                  }
+                `}
+              >
+                {isSelected && (
+                  <div className="absolute top-2 right-2">
+                    <div className="bg-fac-orange-500 rounded-full p-1">
+                      <CheckCircle className="h-4 w-4 text-white" />
+                    </div>
+                  </div>
+                )}
+                <div className={`bg-gradient-to-br ${category.gradient} rounded-lg p-3 mb-3 inline-block`}>
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-bold text-base md:text-lg mb-1">{category.name}</h3>
+                {category.description && (
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const PackageStep = ({
   bookingData,
   updateBookingData,
   goBackToStep1,
