@@ -1149,8 +1149,56 @@ export default function StepperBooking({
     }
   };
 
+  const handleCloseReceipt = () => {
+    setShowReceiptModal(false);
+
+    // Reset form after closing receipt
+    setBookingData({
+      category: "",
+      service: "",
+      serviceType: "branch",
+      unitType: "",
+      unitSize: "",
+      fullName: "",
+      mobile: "",
+      email: "",
+      plateNo: "",
+      carModel: "",
+      address: "",
+      date: "",
+      timeSlot: "",
+      branch: "",
+      paymentMethod: "",
+      receiptFile: null,
+      acceptTerms: false,
+      basePrice: 0,
+      totalPrice: 0,
+      voucherCode: undefined,
+      voucherDiscount: 0,
+      voucherData: undefined,
+    });
+    setVoucherInput("");
+    setCurrentStep(1);
+
+    // Navigate based on user type
+    if (isGuest) {
+      navigate("/login?message=booking_created");
+    } else {
+      navigate("/my-bookings");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent relative">
+      {/* Booking Receipt Modal */}
+      {completedBooking && (
+        <BookingReceiptModal
+          isOpen={showReceiptModal}
+          onClose={handleCloseReceipt}
+          bookingData={completedBooking}
+        />
+      )}
+
       {/* Mobile Bottom Sheet for Booking Summary */}
       <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
         <SheetContent side="bottom" className="rounded-t-2xl p-0 md:hidden">
