@@ -6,7 +6,6 @@ import { CheckCircle, Home, Calendar } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import BottomNavigation from "@/components/BottomNavigation";
 import BookingReceiptModal from "@/components/BookingReceiptModal";
-import { useEffect, useState } from "react";
 
 export default function BookingSuccess() {
   const [searchParams] = useSearchParams();
