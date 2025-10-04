@@ -116,6 +116,7 @@ export function createServer() {
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
 
   // Voucher endpoints
+  app.get("/api/neon/vouchers", neonApiRoutes.getVouchers);
   app.post("/api/neon/vouchers/validate", neonApiRoutes.validateVoucher);
   app.post("/api/neon/vouchers/redeem", neonApiRoutes.redeemVoucher);
 
