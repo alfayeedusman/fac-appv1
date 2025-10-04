@@ -698,7 +698,7 @@ export default function StepperBooking({
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
-    if (canProceed() && currentStep < 5) {
+    if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
   };
