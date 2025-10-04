@@ -1388,8 +1388,8 @@ export default function StepperBooking({
       </div>
 
       {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
-      <div className="fixed bottom-20 left-3 right-3 z-50 md:hidden">
-        <div className="glass border-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-2xl shadow-2xl p-4 space-y-4">
+      <div className={`fixed ${isGuest ? 'bottom-0' : 'bottom-20'} left-0 right-0 z-50 md:hidden`}>
+        <div className="glass border-2 border-t border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-t-2xl shadow-2xl p-4 space-y-4">
           {/* Progress Info */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
