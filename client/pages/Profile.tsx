@@ -149,10 +149,7 @@ export default function Profile() {
                   </h2>
                   <p className="text-muted-foreground">{profile.email}</p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <Badge className="bg-fac-orange-500 text-white font-bold">
-                      <Crown className="h-3 w-3 mr-1" />
-                      {profile.membershipType}
-                    </Badge>
+                    <MembershipBadge membershipType={profile.membershipType} />
                     <Badge className="bg-green-500 text-white font-bold">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       VERIFIED
