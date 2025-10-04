@@ -31,7 +31,7 @@ export async function runMigrations() {
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     // Create crew tracking tables first
-    console.log("📊 Creating crew tracking tables...");
+    console.log("�� Creating crew tracking tables...");
 
     // Create crew groups table
     await sql`
@@ -744,6 +744,46 @@ export async function runMigrations() {
         added_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
+
+    // ============= VOUCHER SYSTEM =============
+
+    // Create vouchers table
+    await sql`
+      CREATE TABLE IF NOT EXISTS vouchers (
+        id TEXT PRIMARY KEY,
+        code VARCHAR(100) NOT NULL UNIQUE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        discount_type VARCHAR(20) NOT NULL, -- 'percentage' | 'fixed_amount'
+        discount_value DECIMAL(10,2) NOT NULL,
+        minimum_amount DECIMAL(10,2) DEFAULT 0.00,
+        audience VARCHAR(20) NOT NULL DEFAULT 'registered', -- 'all' | 'registered'
+        valid_from TIMESTAMP,
+        valid_until TIMESTAMP,
+        usage_limit INTEGER,
+        per_user_limit INTEGER DEFAULT 1,
+        total_used INTEGER DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Create voucher_redemptions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS voucher_redemptions (
+        id TEXT PRIMARY KEY,
+        voucher_code VARCHAR(100) NOT NULL,
+        user_email VARCHAR(255), -- null allowed for guest if voucher audience = 'all'
+        booking_id TEXT,
+        discount_amount DECIMAL(10,2) NOT NULL,
+        redeemed_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // Add voucher fields to bookings if not exists
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
 
     // ============= PUSH NOTIFICATION SYSTEM =============
 
