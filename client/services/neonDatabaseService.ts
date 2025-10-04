@@ -1659,8 +1659,11 @@ class NeonDatabaseClient {
       clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Supplier creation failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
       return { success: false };
     }
   }
@@ -1674,18 +1677,27 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
       const response = await fetch(
         `${this.baseUrl}/inventory/suppliers/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updates),
+          signal: ac.signal,
         },
       );
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Supplier update failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
       return { success: false };
     }
   }
@@ -1696,16 +1708,25 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
       const response = await fetch(
         `${this.baseUrl}/inventory/suppliers/${id}`,
         {
           method: "DELETE",
+          signal: ac.signal,
         },
       );
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Supplier deletion failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
       return { success: false };
     }
   }
@@ -1720,11 +1741,19 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/inventory/analytics`);
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/inventory/analytics`, { signal: ac.signal });
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Inventory analytics fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Analytics fetch timed out");
+      }
       return { success: false };
     }
   }
@@ -1735,7 +1764,12 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/inventory/low-stock`);
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/inventory/low-stock`, { signal: ac.signal });
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error) {
