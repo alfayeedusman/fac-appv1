@@ -44,9 +44,11 @@ class XenditService {
       this.xendit = window.Xendit;
       this.xendit.setPublishableKey(XENDIT_PUBLIC_KEY);
       this.initialized = true;
-      console.log('✅ Xendit initialized');
+      console.log('✅ Xendit SDK initialized');
     } else {
-      console.error('❌ Xendit SDK not loaded');
+      console.warn('⚠️ Xendit SDK not loaded - card tokenization features will not be available');
+      // Still allow invoice creation via backend
+      this.initialized = false;
     }
   }
 
