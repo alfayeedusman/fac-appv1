@@ -84,27 +84,34 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
 
   const handleCancel = async () => {
     if (!canCancel()) {
-      alert("Cancellation is only allowed within 10 minutes of booking. Please contact admin for assistance.");
+      await swalHelpers.showWarning(
+        "Cannot Cancel",
+        "Cancellation is only allowed within 10 minutes of booking. Please contact admin for assistance.",
+      );
       return;
     }
 
-    if (window.confirm("Are you sure you want to cancel this booking?")) {
-      setIsUpdating(true);
-      try {
-        // Cancel via API
-        const result = await neonDbClient.updateBooking(booking.id, { status: 'cancelled' });
-        if (result.success) {
-          console.log('Booking cancelled successfully');
-        }
-      } catch (error) {
-        console.error('Failed to cancel booking:', error);
-      }
+    const confirmed = await swalHelpers.confirmAction(
+      "Cancel Booking",
+      "Are you sure you want to cancel this booking?",
+      "Yes, Cancel",
+    );
+    if (!confirmed) return;
 
-      // Also update localStorage for backward compatibility
-      cancelBooking(booking.id);
-      setIsUpdating(false);
-      onUpdate?.();
+    setIsUpdating(true);
+    try {
+      const result = await neonDbClient.updateBooking(booking.id, { status: 'cancelled' });
+      if (result.success) {
+        // no-op, handled by refresh below
+      }
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+      await swalHelpers.showError("Cancellation Failed", "Something went wrong while cancelling. Please try again.");
     }
+
+    cancelBooking(booking.id);
+    setIsUpdating(false);
+    onUpdate?.();
   };
 
   const formatDate = (dateString: string) => {
