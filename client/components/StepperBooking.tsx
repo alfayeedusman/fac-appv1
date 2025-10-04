@@ -1951,13 +1951,23 @@ const PaymentStep = ({ bookingData, updateBookingData, handleFileUpload, voucher
           <div
             className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
               bookingData.paymentMethod === "online"
-                ? 'border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50'
+                ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950'
                 : 'border-border hover:border-fac-orange-300'
             }`}
             onClick={() => updateBookingData("paymentMethod", "online")}
           >
-            <h3 className="font-bold text-foreground">{adminConfig.paymentMethods.online.name}</h3>
-            <p className="text-sm text-muted-foreground">{adminConfig.paymentMethods.online.description}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-foreground flex items-center">
+                  <CreditCard className="h-5 w-5 mr-2 text-fac-orange-500" />
+                  FACPay - Online Payment
+                </h3>
+                <p className="text-sm text-muted-foreground">Secure payment via Xendit (Cards, GCash, PayMaya)</p>
+              </div>
+              {bookingData.paymentMethod === "online" && (
+                <CheckCircle className="h-6 w-6 text-fac-orange-500" />
+              )}
+            </div>
           </div>
         )}
 
