@@ -684,16 +684,24 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
+
       const response = await fetch(`${this.baseUrl}/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
+        signal: ac.signal,
       });
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database booking creation failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out. Please try again." };
+      }
       return {
         success: false,
         error: "Failed to create booking. Please check your connection.",
@@ -725,11 +733,21 @@ class NeonDatabaseClient {
       if (params?.userEmail) queryParams.append("userEmail", params.userEmail);
       if (params?.userRole) queryParams.append("userRole", params.userRole);
 
-      const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`);
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database booking fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Bookings fetch timed out");
+      }
       return { success: false, bookings: [] };
     }
   }
@@ -743,16 +761,24 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
       const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
+        signal: ac.signal,
       });
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database booking update failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Booking update timed out");
+      }
       return { success: false };
     }
   }
@@ -768,13 +794,22 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
       const response = await fetch(
         `${this.baseUrl}/notifications?userId=${userId}&userRole=${userRole}`,
+        { signal: ac.signal }
       );
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database notification fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Notifications fetch timed out");
+      }
       return { success: false, notifications: [] };
     }
   }
@@ -788,19 +823,27 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+
       const response = await fetch(
         `${this.baseUrl}/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),
+          signal: ac.signal,
         },
       );
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database notification update failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Notification update timed out");
+      }
       return { success: false };
     }
   }
@@ -816,11 +859,19 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/settings`);
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/settings`, { signal: ac.signal });
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database settings fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Settings fetch timed out");
+      }
       return { success: false, settings: [] };
     }
   }
@@ -836,16 +887,24 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
       const response = await fetch(`${this.baseUrl}/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value, description, category }),
+        signal: ac.signal,
       });
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database setting update failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Setting update timed out");
+      }
       return { success: false };
     }
   }
@@ -858,11 +917,19 @@ class NeonDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/ads`);
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/ads`, { signal: ac.signal });
+
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database ads fetch failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Ads fetch timed out");
+      }
       return { success: false, ads: [] };
     }
   }
@@ -875,16 +942,24 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 10000);
+
       const response = await fetch(`${this.baseUrl}/ads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(adData),
+        signal: ac.signal,
       });
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database ad creation failed:", error);
+      if (error?.name === 'AbortError') {
+        return { success: false, error: "Request timed out" };
+      }
       return { success: false };
     }
   }
@@ -898,16 +973,24 @@ class NeonDatabaseClient {
     }
 
     try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 5000);
+
       const response = await fetch(`${this.baseUrl}/ads/${adId}/dismiss`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail }),
+        signal: ac.signal,
       });
 
+      clearTimeout(to);
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Database ad dismissal failed:", error);
+      if (error?.name === 'AbortError') {
+        console.warn("Ad dismissal timed out");
+      }
       return { success: false };
     }
   }
