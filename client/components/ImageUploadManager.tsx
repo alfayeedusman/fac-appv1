@@ -90,6 +90,9 @@ export default function ImageUploadManager({
   }, [showGallery, filterCategory]);
 
   const loadImages = async () => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -101,17 +104,28 @@ export default function ImageUploadManager({
         ...(searchTerm && { search: searchTerm })
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images?${params}`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
       const result = await response.json();
-      
+
       if (result.success) {
         setImages(result.data);
       } else {
         setError('Failed to load images');
       }
-    } catch (error) {
-      console.error('Error loading images:', error);
-      setError('Failed to load images');
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === 'AbortError') {
+        console.warn('⏱️ Image load request timed out');
+        setError('Request timed out. Please try again.');
+      } else {
+        console.error('Error loading images:', error);
+        setError('Failed to load images');
+      }
     } finally {
       setLoading(false);
     }
@@ -196,10 +210,16 @@ export default function ImageUploadManager({
       if (associatedId) formData.append('associatedId', associatedId);
       if (uploadedBy) formData.append('uploadedBy', uploadedBy);
 
+      const ac = new AbortController();
+      const timeout = setTimeout(() => ac.abort(), 30000); // 30s for upload
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/images/upload-multiple`, {
         method: 'POST',
         body: formData,
+        signal: ac.signal,
       });
+
+      clearTimeout(timeout);
 
       const result = await response.json();
 
@@ -226,9 +246,14 @@ export default function ImageUploadManager({
       } else {
         setError(result.error || 'Upload failed');
       }
-    } catch (error) {
-      console.error('Upload error:', error);
-      setError('Upload failed');
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        console.error('⏱️ Upload request timed out');
+        setError('Upload timed out. Please try again with smaller files or better internet connection.');
+      } else {
+        console.error('Upload error:', error);
+        setError('Upload failed');
+      }
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 2000);
@@ -244,16 +269,26 @@ export default function ImageUploadManager({
   };
 
   const handleImageClick = async (image: ImageData) => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 5000);
+
     // Increment view count
     try {
-      await fetch(`/api/images/${image.id}?incrementView=true`);
-      setImages(prev => prev.map(img => 
-        img.id === image.id 
+      await fetch(`/api/images/${image.id}?incrementView=true`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(timeout);
+      setImages(prev => prev.map(img =>
+        img.id === image.id
           ? { ...img, viewCount: (img.viewCount || 0) + 1 }
           : img
       ));
-    } catch (error) {
-      console.error('Failed to increment view count:', error);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to increment view count:', error);
+      }
     }
   };
 
