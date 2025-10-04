@@ -305,7 +305,7 @@ const SERVICE_CATEGORIES = {
   carwash: {
     name: "Car Wash",
     icon: Car,
-    iconText: "����", // Safe for SelectItem
+    iconText: "🚗", // Safe for SelectItem
     gradient: "from-blue-500 to-cyan-500",
     services: adminConfig?.pricing?.carwash || {},
     vehicleTypes: ["car"],
@@ -332,6 +332,7 @@ const SERVICE_CATEGORIES = {
     iconText: "🛡️", // Safe for SelectItem
     gradient: "from-orange-500 to-red-500",
     description: "Advanced protection coating",
+    vehicleTypes: ["car", "motorcycle"],
   },
 };
 
