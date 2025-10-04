@@ -366,6 +366,8 @@ export default function StepperBooking({
   const receiptObjectUrlRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [completedBooking, setCompletedBooking] = useState<any>(null);
 
   const [bookingData, setBookingData] = useState<BookingData>({
     category: "",
@@ -998,48 +1000,35 @@ export default function StepperBooking({
         }
       }
 
+      // Store completed booking data for receipt
+      setCompletedBooking({
+        id: createdBooking.id,
+        confirmationCode: createdBooking.confirmationCode,
+        service: SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name,
+        category: bookingData.category,
+        date: bookingData.date,
+        timeSlot: bookingData.timeSlot,
+        branch: bookingData.branch,
+        serviceType: bookingData.serviceType,
+        unitType: bookingData.unitType,
+        unitSize: bookingData.unitSize,
+        plateNumber: bookingData.plateNo,
+        vehicleModel: bookingData.carModel,
+        totalPrice: bookingData.totalPrice,
+        paymentMethod: bookingData.paymentMethod,
+        customerName: bookingData.fullName,
+        customerEmail: bookingData.email,
+        customerPhone: bookingData.mobile,
+      });
+
+      // Show receipt modal
+      setShowReceiptModal(true);
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
-        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\n${bookingData.paymentMethod === "online" ? "Redirecting to FACPay for payment..." : "You will receive confirmation shortly."}`,
-        { autoClose: 5000 },
+        `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}`,
+        { autoClose: 3000 },
       );
-
-      // Reset form
-      setBookingData({
-        category: "",
-        service: "",
-        serviceType: "branch",
-        unitType: "",
-        unitSize: "",
-        fullName: "",
-        mobile: "",
-        email: "",
-        plateNo: "",
-        carModel: "",
-        address: "",
-        date: "",
-        timeSlot: "",
-        branch: "",
-        paymentMethod: "",
-        receiptFile: null,
-        acceptTerms: false,
-        basePrice: 0,
-        totalPrice: 0,
-        voucherCode: undefined,
-        voucherDiscount: 0,
-        voucherData: undefined,
-      });
-      setVoucherInput("");
-      setCurrentStep(1);
-
-      // Navigate based on user type
-      setTimeout(() => {
-        if (isGuest) {
-          navigate("/login?message=booking_created");
-        } else {
-          navigate("/my-bookings");
-        }
-      }, 3000);
     } catch (error) {
       console.error("Booking submission error:", error);
       toast({
