@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-const XENDIT_PUBLIC_KEY = "xnd_public_production_nIE1jSkGVG0K1fDTroRMXjLHJ14sfjM6YyU_m_ochdnqJHLWv2JJ40BUiBhUD7jx";
+const XENDIT_PUBLIC_KEY = "xnd_public_development_0GsLabVLX_CfyXBlEErMSO7jjhbNI7ZcUhYKhS6zhwBugx8ZnYV6UGD9yCP1sg";
 
 export interface XenditPaymentParams {
   amount: number;
