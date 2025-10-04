@@ -35,13 +35,13 @@ export default function GuestBooking() {
         </div>
       </div>
 
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-30">
+      {/* Back Button - Sticky */}
+      <div className="fixed top-6 left-6 z-50">
         <Link to="/login">
           <Button
             variant="ghost"
             size="sm"
-            className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-colors"
+            className="glass rounded-xl p-3 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-colors shadow-lg"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
