@@ -2532,6 +2532,173 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   );
 };
 
+const DetailsStep = ({ bookingData, updateBookingData, isGuest }: any) => {
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <Card className="glass border-border shadow-xl">
+        <CardHeader className="pb-4 md:pb-6">
+          <CardTitle className="flex items-center text-xl md:text-2xl">
+            <User className="h-5 w-5 md:h-6 md:w-6 mr-3 text-fac-orange-500" />
+            Your Information
+          </CardTitle>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
+            Please provide your contact and vehicle details
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-foreground font-semibold">
+                Full Name *
+              </Label>
+              <Input
+                value={bookingData.fullName}
+                onChange={(e) =>
+                  updateBookingData("fullName", e.target.value)
+                }
+                placeholder="Enter your full name"
+                className={`mt-1 ${!bookingData.fullName.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.fullName.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Full name is required
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Mobile Number *
+              </Label>
+              <Input
+                value={bookingData.mobile}
+                onChange={(e) => {
+                  // Auto-format mobile number
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.startsWith("0"))
+                    value = "63" + value.substring(1);
+                  updateBookingData("mobile", value);
+                }}
+                placeholder="+63 912 345 6789"
+                className={`mt-1 ${!bookingData.mobile.trim() || bookingData.mobile.replace(/\D/g, "").length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {(!bookingData.mobile.trim() ||
+                bookingData.mobile.replace(/\D/g, "").length < 10) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {!bookingData.mobile.trim()
+                    ? "Mobile number is required"
+                    : "Please enter a valid mobile number"}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Email {isGuest && <span className="text-red-500">*</span>}
+              </Label>
+              <Input
+                type="email"
+                value={bookingData.email}
+                onChange={(e) => updateBookingData("email", e.target.value)}
+                placeholder="your.email@example.com"
+                className={`mt-1 ${(isGuest && !bookingData.email.trim()) || (bookingData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) ? "border-red-500 focus:border-red-500" : ""}`}
+                required={isGuest}
+              />
+              {((isGuest && !bookingData.email.trim()) ||
+                (bookingData.email.trim() &&
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                    bookingData.email,
+                  ))) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {isGuest && !bookingData.email.trim()
+                    ? "Email is required for guest bookings"
+                    : "Please enter a valid email address"}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-foreground font-semibold">
+                Plate Number *
+              </Label>
+              <Input
+                value={bookingData.plateNo}
+                onChange={(e) =>
+                  updateBookingData("plateNo", e.target.value.toUpperCase())
+                }
+                placeholder="ABC 1234"
+                className={`mt-1 ${!bookingData.plateNo.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.plateNo.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Plate number is required
+                </p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-foreground font-semibold">
+                Vehicle Model & Year *
+              </Label>
+              <Input
+                value={bookingData.carModel}
+                onChange={(e) =>
+                  updateBookingData("carModel", e.target.value)
+                }
+                placeholder="e.g., Hilux Conquest 2024, Honda Civic 2023, Toyota Vios 2022"
+                className={`mt-1 ${!bookingData.carModel.trim() ? "border-red-500 focus:border-red-500" : ""}`}
+                required
+              />
+              {!bookingData.carModel.trim() && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Vehicle model is required
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 Example: "Toyota Hilux Conquest 2024" or "Honda Civic
+                Type R 2023"
+              </p>
+            </div>
+          </div>
+
+          {/* Address - Only show for Home Service */}
+          {bookingData.serviceType === "home" && (
+            <div>
+              <Label className="text-foreground font-semibold">
+                Service Address *
+              </Label>
+              <Textarea
+                value={bookingData.address}
+                onChange={(e) => updateBookingData("address", e.target.value)}
+                placeholder="Enter your complete address (street, barangay, city, province)"
+                className={`mt-2 ${!bookingData.address.trim() || bookingData.address.trim().length < 10 ? "border-red-500 focus:border-red-500" : ""}`}
+                rows={3}
+                required
+              />
+              {(!bookingData.address.trim() ||
+                bookingData.address.trim().length < 10) && (
+                <p className="text-red-500 text-xs mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {!bookingData.address.trim()
+                    ? "Address is required for home service"
+                    : "Please provide a complete address"}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 Provide complete address for accurate service delivery
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const PaymentStep = ({
   bookingData,
   updateBookingData,
