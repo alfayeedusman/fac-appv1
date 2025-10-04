@@ -36,6 +36,7 @@ import {
   AlertTriangle,
   Menu,
   X,
+  Tag,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { notificationManager } from "@/components/NotificationModal";
@@ -79,6 +80,11 @@ interface BookingData {
   // Computed
   basePrice: number;
   totalPrice: number;
+
+  // Voucher
+  voucherCode?: string;
+  voucherDiscount?: number;
+  voucherData?: { title: string; discountType: string; discountValue: number; };
 }
 
 interface StepperBookingProps {
@@ -337,7 +343,13 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     acceptTerms: false,
     basePrice: 0,
     totalPrice: 0,
+    voucherCode: undefined,
+    voucherDiscount: 0,
+    voucherData: undefined,
   });
+
+  const [voucherInput, setVoucherInput] = useState("");
+  const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
 
   // Cleanup object URLs when component unmounts
   useEffect(() => {
@@ -368,8 +380,13 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       totalPrice = price * (adminConfig.homeService.priceMultiplier || 1.2);
     }
 
+    // Apply voucher discount
+    if (bookingData.voucherDiscount && bookingData.voucherDiscount > 0) {
+      totalPrice = Math.max(0, totalPrice - bookingData.voucherDiscount);
+    }
+
     return { basePrice, totalPrice };
-  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType]);
+  }, [bookingData.category, bookingData.service, bookingData.unitType, bookingData.unitSize, bookingData.serviceType, bookingData.voucherDiscount]);
 
   // Update prices when calculated values change (with debouncing)
   useEffect(() => {
@@ -582,6 +599,22 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
       // Create system notification through API (this happens automatically in the API)
       console.log('🎯 New booking created:', createdBooking.id);
 
+      // Redeem voucher if applied
+      if (bookingData.voucherCode && bookingData.voucherDiscount && bookingData.voucherDiscount > 0) {
+        try {
+          const userEmail = isGuest ? bookingData.email : localStorage.getItem('userEmail') || undefined;
+          await neonDbClient.redeemVoucher({
+            code: bookingData.voucherCode,
+            userEmail,
+            bookingId: createdBooking.id,
+            discountAmount: bookingData.voucherDiscount,
+          });
+          console.log('✅ Voucher redeemed:', bookingData.voucherCode);
+        } catch (voucherErr) {
+          console.warn('⚠️ Voucher redemption failed (non-critical):', voucherErr);
+        }
+      }
+
       notificationManager.success(
         "Booking Confirmed! 🎉",
         `Your booking has been successfully submitted!\n\nBooking ID: ${createdBooking.id}\nConfirmation Code: ${createdBooking.confirmationCode}\nService: ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES].name}\nTotal: ₱${bookingData.totalPrice.toLocaleString()}\n\nYou will receive confirmation shortly.`,
@@ -609,7 +642,11 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         acceptTerms: false,
         basePrice: 0,
         totalPrice: 0,
+        voucherCode: undefined,
+        voucherDiscount: 0,
+        voucherData: undefined,
       });
+      setVoucherInput("");
       setCurrentStep(1);
 
       // Navigate based on user type
