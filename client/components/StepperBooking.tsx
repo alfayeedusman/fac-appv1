@@ -2025,7 +2025,18 @@ const BookingSummary = ({ bookingData, progressPercentage }: { bookingData: Book
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Home Service Fee:</span>
                 <span className="font-medium text-orange-600">
-                  +₱{((bookingData.totalPrice || 0) - (bookingData.basePrice || 0)).toLocaleString()}
+                  +₱{((bookingData.totalPrice || 0) - (bookingData.basePrice || 0) + (bookingData.voucherDiscount || 0)).toLocaleString()}
+                </span>
+              </div>
+            )}
+            {bookingData.voucherCode && bookingData.voucherDiscount && bookingData.voucherDiscount > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center">
+                  <Tag className="h-3 w-3 mr-1 text-purple-600" />
+                  Voucher ({bookingData.voucherCode}):
+                </span>
+                <span className="font-medium text-green-600">
+                  -₱{(bookingData.voucherDiscount || 0).toLocaleString()}
                 </span>
               </div>
             )}
