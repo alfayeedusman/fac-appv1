@@ -122,6 +122,9 @@ export const createServer = () => {
   // Users endpoints (for customer management)
   app.get("/api/neon/users", neonApiRoutes.getAllUsers);
 
+  // Admin utilities
+  app.post("/api/neon/admin/fix-booking-userids", neonApiRoutes.fixBookingUserIds);
+
   // User vehicles and address endpoints
   app.get("/api/neon/users/:userId/vehicles", neonApiRoutes.getUserVehicles);
   app.post("/api/neon/users/:userId/vehicles", neonApiRoutes.addUserVehicle);
