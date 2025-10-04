@@ -1045,8 +1045,10 @@ export default function StepperBooking({
         customerPhone: bookingData.mobile,
       });
 
-      // Show receipt modal
-      setShowReceiptModal(true);
+      // Show receipt modal only for non-online payments; for online we show it on success page after gateway confirmation
+      if (bookingData.paymentMethod !== "online") {
+        setShowReceiptModal(true);
+      }
 
       notificationManager.success(
         "Booking Confirmed! 🎉",
