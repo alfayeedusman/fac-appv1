@@ -643,6 +643,45 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
     toast({ title: "Voucher Removed", description: "Voucher discount has been removed" });
   };
 
+  const handleXenditPayment = async (bookingId: string, amount: number) => {
+    try {
+      const customerName = isGuest ? bookingData.fullName : localStorage.getItem("userFullName") || "Customer";
+      const customerEmail = isGuest ? bookingData.email : localStorage.getItem("userEmail") || "";
+
+      const invoiceData = await xenditService.createInvoice({
+        amount: amount,
+        externalId: `BOOKING_${bookingId}`,
+        customerName: customerName,
+        customerEmail: customerEmail,
+        description: `Payment for booking ${bookingId} - ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || 'Service'}`,
+        successRedirectUrl: `${window.location.origin}/booking-success?bookingId=${bookingId}`,
+        failureRedirectUrl: `${window.location.origin}/booking-failed?bookingId=${bookingId}`,
+      });
+
+      if (invoiceData && invoiceData.invoice_url) {
+        // Open Xendit payment in popup
+        xenditService.openInvoice(invoiceData.invoice_url);
+
+        toast({
+          title: "Payment Gateway Opened",
+          description: "Complete your payment in the popup window",
+        });
+
+        return true;
+      } else {
+        throw new Error("Failed to create payment invoice");
+      }
+    } catch (error) {
+      console.error("Xendit payment error:", error);
+      toast({
+        title: "Payment Error",
+        description: "Failed to initialize payment. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const submitBooking = async () => {
     setIsLoading(true);
 
