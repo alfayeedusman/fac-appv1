@@ -23,42 +23,79 @@ export const createInvoice: RequestHandler = async (req, res) => {
       failure_redirect_url,
     } = req.body;
 
+    // Validate required fields
+    if (!external_id || !amount || !payer_email || !description) {
+      console.error('❌ Missing required fields');
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: external_id, amount, payer_email, description',
+      });
+    }
+
+    // Check if API key is configured
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
+      console.error('❌ Xendit API key not configured');
+      return res.status(500).json({
+        success: false,
+        error: 'Xendit API key not configured. Please set XENDIT_SECRET_KEY environment variable.',
+      });
+    }
+
+    const payload = {
+      external_id,
+      amount,
+      payer_email,
+      description,
+      customer,
+      success_redirect_url,
+      failure_redirect_url,
+      currency: 'PHP',
+      invoice_duration: 86400, // 24 hours
+      items: [
+        {
+          name: description,
+          quantity: 1,
+          price: amount,
+        },
+      ],
+    };
+
+    console.log('📤 Sending request to Xendit API...');
+    console.log('API URL:', `${XENDIT_API_URL}/invoices`);
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+
     const response = await fetch(`${XENDIT_API_URL}/invoices`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
       },
-      body: JSON.stringify({
-        external_id,
-        amount,
-        payer_email,
-        description,
-        customer,
-        success_redirect_url,
-        failure_redirect_url,
-        currency: 'PHP',
-        invoice_duration: 86400, // 24 hours
-        items: [
-          {
-            name: description,
-            quantity: 1,
-            price: amount,
-          },
-        ],
-      }),
+      body: JSON.stringify(payload),
     });
 
+    console.log('📥 Xendit API response status:', response.status);
+
     if (!response.ok) {
-      const error = await response.json();
-      console.error('Xendit invoice creation error:', error);
+      const errorText = await response.text();
+      console.error('❌ Xendit API error response:', errorText);
+
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { message: errorText };
+      }
+
       return res.status(response.status).json({
         success: false,
-        error: error.message || 'Failed to create invoice',
+        error: errorData.message || errorData.error_code || 'Failed to create invoice',
+        details: errorData,
       });
     }
 
     const data = await response.json();
+    console.log('✅ Xendit invoice created successfully:', data.id);
+
     res.json({
       success: true,
       invoice_id: data.id,
@@ -66,10 +103,11 @@ export const createInvoice: RequestHandler = async (req, res) => {
       expiry_date: data.expiry_date,
     });
   } catch (error: any) {
-    console.error('Create invoice error:', error);
+    console.error('❌ Create invoice error:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error',
+      details: error.stack,
     });
   }
 };
