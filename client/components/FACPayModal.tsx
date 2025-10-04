@@ -55,13 +55,16 @@ export default function FACPayModal({
       });
 
       if (invoiceData && invoiceData.invoice_url) {
-        xenditService.openInvoice(invoiceData.invoice_url);
-
         notificationManager.success(
-          "Payment Gateway Opened! 💳",
-          `Complete your payment in the popup window to ${paymentType === 'renewal' ? 'renew' : 'upgrade to'} ${selectedPlan}.`,
-          { autoClose: 5000 }
+          "Redirecting to FACPay! 💳",
+          `You will be redirected to FACPay to complete your ${paymentType === 'renewal' ? 'renewal' : 'upgrade'} to ${selectedPlan}.`,
+          { autoClose: 2000 }
         );
+
+        // Small delay to show the notification before redirect
+        setTimeout(() => {
+          xenditService.openInvoice(invoiceData.invoice_url);
+        }, 1500);
 
         // Store pending payment info
         localStorage.setItem('pending_payment', JSON.stringify({
