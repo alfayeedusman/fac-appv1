@@ -46,6 +46,7 @@ import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
 import { getCarWashServices } from "@/utils/carWashServices";
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
+import FACPayButton from "@/components/FACPayButton";
 
 interface BookingData {
   // Service Selection
@@ -1077,23 +1078,33 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
                 {/* Next/Submit Button - Right side */}
                 {currentStep === 5 ? (
-                  <Button
-                    onClick={submitBooking}
-                    disabled={!canProceed() || isLoading}
-                    className="min-w-[180px] h-12 text-base font-bold bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-lg active:scale-95"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="spinner mr-2" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Confirm Booking
-                      </>
-                    )}
-                  </Button>
+                  bookingData.paymentMethod === 'online' ? (
+                    <FACPayButton
+                      amount={bookingData.totalPrice}
+                      onPaymentClick={submitBooking}
+                      isLoading={isLoading}
+                      disabled={!canProceed() || isLoading}
+                      className="min-w-[180px] h-12 text-base rounded-lg"
+                    />
+                  ) : (
+                    <Button
+                      onClick={submitBooking}
+                      disabled={!canProceed() || isLoading}
+                      className="min-w-[180px] h-12 text-base font-bold bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-lg active:scale-95"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="spinner mr-2" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Confirm Booking
+                        </>
+                      )}
+                    </Button>
+                  )
                 ) : (
                   <Button
                     onClick={nextStep}
@@ -1155,13 +1166,23 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
 
             {/* Next/Confirm Button */}
             {currentStep === 5 ? (
-              <Button
-                onClick={submitBooking}
-                disabled={!canProceed() || isLoading}
-                className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
-              >
-                {isLoading ? 'Processing...' : 'Confirm Booking'}
-              </Button>
+              bookingData.paymentMethod === 'online' ? (
+                <FACPayButton
+                  amount={0}
+                  onPaymentClick={submitBooking}
+                  isLoading={isLoading}
+                  disabled={!canProceed() || isLoading}
+                  className="flex-[1.5] h-12 rounded-xl text-base"
+                />
+              ) : (
+                <Button
+                  onClick={submitBooking}
+                  disabled={!canProceed() || isLoading}
+                  className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
+                >
+                  {isLoading ? 'Processing...' : 'Confirm Booking'}
+                </Button>
+              )
             ) : (
               <Button
                 onClick={nextStep}
