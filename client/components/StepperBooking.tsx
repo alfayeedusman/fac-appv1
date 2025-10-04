@@ -711,7 +711,7 @@ export default function StepperBooking({ isGuest = false }: StepperBookingProps)
         `Type: ${isGuest ? 'Guest' : 'Registered User'}`;
 
       // Create system notification through API (this happens automatically in the API)
-      console.log('���� New booking created:', createdBooking.id);
+      console.log('🎯 New booking created:', createdBooking.id);
 
       // Redeem voucher if applied
       if (bookingData.voucherCode && bookingData.voucherDiscount && bookingData.voucherDiscount > 0) {
@@ -1335,71 +1335,195 @@ const ServiceStep = ({ bookingData, updateBookingData, goBackToStep1 }: any) => 
   );
 };
 
-const UnitStep = ({ bookingData, updateBookingData }: any) => (
-  <Card className="glass border-border shadow-xl">
-    <CardHeader>
-      <CardTitle className="flex items-center text-2xl">
-        <Car className="h-6 w-6 mr-3 text-fac-orange-500" />
-        Select Your Vehicle
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      {Object.entries(UNIT_TYPES).map(([typeKey, type]) => (
-        <div key={typeKey} className="space-y-4">
-          <div
-            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
-              bookingData.unitType === typeKey
-                ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl'
-                : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
-            }`}
-            onClick={() => {
-              updateBookingData("unitType", typeKey);
-              updateBookingData("unitSize", ""); // Reset size when type changes
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="font-black text-foreground text-xl">{type.name}</h3>
-              {bookingData.unitType === typeKey && (
-                <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
-                  ✓ Selected
-                </Badge>
-              )}
-            </div>
-          </div>
-          
-          {bookingData.unitType === typeKey && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-0 sm:ml-4">
-              {Object.entries(type.sizes).map(([sizeKey, sizeName]) => {
-                const getPrice = () => {
-                  if (bookingData.category === "auto_detailing") {
-                    return adminConfig.pricing.autoDetailing[typeKey as keyof typeof adminConfig.pricing.autoDetailing]?.[sizeKey as keyof typeof adminConfig.pricing.autoDetailing.car] || 0;
-                  } else if (bookingData.category === "graphene_coating") {
-                    return adminConfig.pricing.grapheneCoating[typeKey as keyof typeof adminConfig.pricing.grapheneCoating]?.[sizeKey as keyof typeof adminConfig.pricing.grapheneCoating.car] || 0;
-                  }
-                  return 0;
-                };
+const UnitStep = ({
+  bookingData,
+  updateBookingData,
+  isGuest,
+  savedVehicles,
+  selectedVehicleId,
+  setSelectedVehicleId,
+  showNewVehicleForm,
+  setShowNewVehicleForm,
+  isLoadingVehicles,
+  onVehicleSelect,
+  onAddNewVehicle
+}: any) => {
+  // For new vehicle form
+  const [newVehicle, setNewVehicle] = useState({
+    unitType: "",
+    unitSize: "",
+    plateNumber: "",
+    vehicleModel: "",
+    isDefault: savedVehicles.length === 0, // First vehicle is default
+  });
 
-                return (
-                  <div
-                    key={sizeKey}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center active:scale-95 min-h-[80px] flex flex-col justify-center ${
-                      bookingData.unitSize === sizeKey
-                        ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white shadow-xl'
-                        : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950/50'
-                    }`}
-                    onClick={() => updateBookingData("unitSize", sizeKey)}
-                  >
-                    <p className="font-bold text-base mb-1">{sizeName}</p>
-                  </div>
-                );
-              })}
+  return (
+    <Card className="glass border-border shadow-xl">
+      <CardHeader>
+        <CardTitle className="flex items-center text-2xl">
+          <Car className="h-6 w-6 mr-3 text-fac-orange-500" />
+          Select Your Vehicle
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Registered users - show saved vehicles */}
+        {!isGuest && savedVehicles.length > 0 && !showNewVehicleForm && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-lg font-semibold">Your Saved Vehicles</Label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowNewVehicleForm(true)}
+                className="text-fac-orange-500 hover:text-fac-orange-600"
+              >
+                + Add New Vehicle
+              </Button>
             </div>
-          )}
-        </div>
-      ))}
-    </CardContent>
-  </Card>
-);
+
+            {isLoadingVehicles ? (
+              <p className="text-muted-foreground text-center py-4">Loading vehicles...</p>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {savedVehicles.map((vehicle: any) => (
+                  <div
+                    key={vehicle.id}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      selectedVehicleId === vehicle.id
+                        ? 'border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50 shadow-lg'
+                        : 'border-border hover:border-fac-orange-300'
+                    }`}
+                    onClick={() => onVehicleSelect(vehicle)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant={vehicle.isDefault ? "default" : "outline"} className="text-xs">
+                            {vehicle.isDefault ? "Default" : UNIT_TYPES[vehicle.unitType]?.name}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {UNIT_TYPES[vehicle.unitType]?.sizes[vehicle.unitSize]}
+                          </Badge>
+                        </div>
+                        <p className="font-bold text-foreground">{vehicle.plateNumber}</p>
+                        <p className="text-sm text-muted-foreground">{vehicle.vehicleModel}</p>
+                      </div>
+                      {selectedVehicleId === vehicle.id && (
+                        <CheckCircle className="h-5 w-5 text-fac-orange-500" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Show new vehicle form for registered users or all fields for guests */}
+        {(isGuest || savedVehicles.length === 0 || showNewVehicleForm) && (
+          <div className="space-y-6">
+            {!isGuest && savedVehicles.length > 0 && showNewVehicleForm && (
+              <div className="flex items-center justify-between">
+                <Label className="text-lg font-semibold">Add New Vehicle</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNewVehicleForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+
+            {Object.entries(UNIT_TYPES).map(([typeKey, type]) => (
+              <div key={typeKey} className="space-y-4">
+                <div
+                  className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 active:scale-[0.98] ${
+                    (showNewVehicleForm ? newVehicle.unitType : bookingData.unitType) === typeKey
+                      ? 'border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-xl'
+                      : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50/30 dark:hover:bg-fac-orange-950/30'
+                  }`}
+                  onClick={() => {
+                    if (showNewVehicleForm) {
+                      setNewVehicle({ ...newVehicle, unitType: typeKey, unitSize: "" });
+                    } else {
+                      updateBookingData("unitType", typeKey);
+                      updateBookingData("unitSize", "");
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-black text-foreground text-xl">{type.name}</h3>
+                    {(showNewVehicleForm ? newVehicle.unitType : bookingData.unitType) === typeKey && (
+                      <Badge className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                        ✓ Selected
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {(showNewVehicleForm ? newVehicle.unitType : bookingData.unitType) === typeKey && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-0 sm:ml-4">
+                    {Object.entries(type.sizes).map(([sizeKey, sizeName]) => (
+                      <div
+                        key={sizeKey}
+                        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center active:scale-95 min-h-[80px] flex flex-col justify-center ${
+                          (showNewVehicleForm ? newVehicle.unitSize : bookingData.unitSize) === sizeKey
+                            ? 'border-fac-orange-500 bg-gradient-to-br from-fac-orange-500 to-fac-orange-600 text-white shadow-xl'
+                            : 'border-border/50 bg-white/90 dark:bg-gray-800/90 hover:border-fac-orange-300 hover:shadow-lg hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950/50'
+                        }`}
+                        onClick={() => {
+                          if (showNewVehicleForm) {
+                            setNewVehicle({ ...newVehicle, unitSize: sizeKey });
+                          } else {
+                            updateBookingData("unitSize", sizeKey);
+                          }
+                        }}
+                      >
+                        <p className="font-bold text-base mb-1">{sizeName}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Additional vehicle details for new vehicle */}
+            {!isGuest && showNewVehicleForm && newVehicle.unitType && newVehicle.unitSize && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label>Plate Number</Label>
+                  <Input
+                    value={newVehicle.plateNumber}
+                    onChange={(e) => setNewVehicle({ ...newVehicle, plateNumber: e.target.value.toUpperCase() })}
+                    placeholder="ABC 1234"
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label>Vehicle Model & Year</Label>
+                  <Input
+                    value={newVehicle.vehicleModel}
+                    onChange={(e) => setNewVehicle({ ...newVehicle, vehicleModel: e.target.value })}
+                    placeholder="e.g., Toyota Hilux 2024"
+                    className="mt-2"
+                  />
+                </div>
+                <Button
+                  onClick={() => onAddNewVehicle(newVehicle)}
+                  disabled={!newVehicle.plateNumber || !newVehicle.vehicleModel}
+                  className="w-full bg-fac-orange-500 hover:bg-fac-orange-600"
+                >
+                  Save Vehicle
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   const availableSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
