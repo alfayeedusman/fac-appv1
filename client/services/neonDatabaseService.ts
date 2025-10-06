@@ -236,6 +236,10 @@ class NeonDatabaseClient {
         return res;
       } catch (e) {
         clearTimeout(to);
+        // Handle abort errors gracefully (timeout is expected behavior)
+        if (e instanceof Error && e.name === 'AbortError') {
+          throw new Error(`Request timeout after ${timeoutMs}ms`);
+        }
         throw e;
       }
     };
