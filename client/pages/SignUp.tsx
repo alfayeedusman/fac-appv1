@@ -188,10 +188,11 @@ export default function SignUp() {
     });
 
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
-      console.error('❌ Validation failed:', errors);
+      console.error('❌ Validation failed:', JSON.stringify(errors, null, 2));
+      const errorMessages = Object.values(errors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete All Fields',
-        description: 'Fill in all required fields correctly before submitting.',
+        description: errorMessages || 'Fill in all required fields correctly before submitting.',
         variant: 'destructive',
       });
       return;
