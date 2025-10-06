@@ -178,19 +178,20 @@ export default function SignUp() {
     e.preventDefault();
     console.log('🚀 Registration form submitted');
 
-    const isStep1Valid = validateStep(1);
-    const isStep2Valid = validateStep(2);
-    const isStep3Valid = validateStep(3);
+    const step1Result = validateStep(1);
+    const step2Result = validateStep(2);
+    const step3Result = validateStep(3);
 
     console.log('✅ Validation results:', {
-      step1: isStep1Valid,
-      step2: isStep2Valid,
-      step3: isStep3Valid
+      step1: step1Result.isValid,
+      step2: step2Result.isValid,
+      step3: step3Result.isValid
     });
 
-    if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
-      console.error('❌ Validation failed:', JSON.stringify(errors, null, 2));
-      const errorMessages = Object.values(errors).filter(Boolean).join(', ');
+    if (!step1Result.isValid || !step2Result.isValid || !step3Result.isValid) {
+      const allErrors = { ...step1Result.errors, ...step2Result.errors, ...step3Result.errors };
+      console.error('❌ Validation failed:', JSON.stringify(allErrors, null, 2));
+      const errorMessages = Object.values(allErrors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete All Fields',
         description: errorMessages || 'Fill in all required fields correctly before submitting.',
