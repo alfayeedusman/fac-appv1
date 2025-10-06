@@ -93,7 +93,7 @@ export default function SignUp() {
     return phoneRegex.test(phone.replace(/\s/g, ""));
   };
 
-  const validateStep = (step: number) => {
+  const validateStep = (step: number): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
     if (step === 1) {
@@ -170,7 +170,8 @@ export default function SignUp() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    return { isValid, errors: newErrors };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
