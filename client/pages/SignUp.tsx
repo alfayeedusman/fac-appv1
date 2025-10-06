@@ -313,10 +313,11 @@ export default function SignUp() {
     console.log(`✅ Step ${currentStep} validation:`, isValid);
 
     if (!isValid) {
-      console.error(`❌ Step ${currentStep} validation failed:`, errors);
+      console.error(`❌ Step ${currentStep} validation failed:`, JSON.stringify(errors, null, 2));
+      const errorMessages = Object.values(errors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete This Step',
-        description: 'Fill in all required fields before continuing.',
+        description: errorMessages || 'Fill in all required fields before continuing.',
         variant: 'destructive',
       });
       return;
