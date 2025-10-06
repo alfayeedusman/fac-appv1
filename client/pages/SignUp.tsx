@@ -312,12 +312,12 @@ export default function SignUp() {
 
   const nextStep = () => {
     console.log(`🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`);
-    const isValid = validateStep(currentStep);
-    console.log(`✅ Step ${currentStep} validation:`, isValid);
+    const validationResult = validateStep(currentStep);
+    console.log(`✅ Step ${currentStep} validation:`, validationResult.isValid);
 
-    if (!isValid) {
-      console.error(`❌ Step ${currentStep} validation failed:`, JSON.stringify(errors, null, 2));
-      const errorMessages = Object.values(errors).filter(Boolean).join(', ');
+    if (!validationResult.isValid) {
+      console.error(`❌ Step ${currentStep} validation failed:`, JSON.stringify(validationResult.errors, null, 2));
+      const errorMessages = Object.values(validationResult.errors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete This Step',
         description: errorMessages || 'Fill in all required fields before continuing.',
