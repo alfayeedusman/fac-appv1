@@ -596,11 +596,18 @@ router.post('/messages/send', async (req, res) => {
           // Trigger user-specific channel if recipient_id provided
           if (recipient_id) {
             const userChannel = `user-${recipient_type}-${recipient_id}`;
-            await triggerPusherEvent(userChannel, 'new-message', payload);
+            const privateUserChannel = `private-user-${recipient_type}-${recipient_id}`;
+            await Promise.all([
+              triggerPusherEvent(userChannel, 'new-message', payload),
+              triggerPusherEvent(privateUserChannel, 'new-message', payload),
+            ]);
           }
 
           // Also broadcast to a public realtime channel for admin dashboards
-          await triggerPusherEvent('public-realtime', 'new-message', payload);
+          await Promise.all([
+            triggerPusherEvent('public-realtime', 'new-message', payload),
+            triggerPusherEvent('private-public-realtime', 'new-message', payload),
+          ]);
         } catch (err) {
           console.warn('⚠️ Failed to trigger Pusher event:', err);
         }
