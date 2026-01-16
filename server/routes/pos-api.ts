@@ -480,16 +480,43 @@ router.get("/reports/daily/:date", async (req, res) => {
   try {
     const db = getDatabase();
     if (!db) {
-      return res.status(500).json({ error: "Database not initialized" });
+      console.error("❌ Database not initialized for daily report");
+      return res.status(500).json({
+        error: "Database not initialized",
+        date: req.params.date,
+        totalSales: 0,
+        totalCash: 0,
+        totalCard: 0,
+        totalGcash: 0,
+        totalBank: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+        expenseCount: 0,
+      });
     }
 
     const { date } = req.params;
-    const startDate = new Date(date);
+    console.log(`📊 Generating daily report for: ${date}`);
+
+    // Parse the date properly (format: YYYY-MM-DD)
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      console.error(`❌ Invalid date format: ${date}`);
+      return res.status(400).json({
+        error: "Invalid date format. Use YYYY-MM-DD",
+        date,
+      });
+    }
+
+    const startDate = new Date(dateObj);
     startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(date);
+    const endDate = new Date(dateObj);
     endDate.setHours(23, 59, 59, 999);
 
-    // Get transactions
+    console.log(`⏰ Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
+    // Get transactions for the day
     const transactions = await db
       .select()
       .from(posTransactions)
@@ -501,31 +528,25 @@ router.get("/reports/daily/:date", async (req, res) => {
         )
       );
 
-    // Get expenses
-    const sessions = await db
+    console.log(`✅ Found ${transactions.length} transactions`);
+
+    // Get expenses from pos_expenses table (not filtered by session date, but by transaction date)
+    const expenses = await db
       .select()
-      .from(posSessions)
+      .from(posExpenses)
       .where(
         and(
-          gte(posSessions.sessionDate, startDate),
-          lte(posSessions.sessionDate, endDate)
+          gte(posExpenses.createdAt, startDate),
+          lte(posExpenses.createdAt, endDate)
         )
       );
 
-    const sessionIds = sessions.map((s) => s.id);
-    let totalExpenses = 0;
-    if (sessionIds.length > 0) {
-      const expenses = await db
-        .select()
-        .from(posExpenses)
-        .where(
-          inArray(posExpenses.posSessionId, sessionIds)
-        );
-      totalExpenses = expenses.reduce(
-        (sum, exp) => sum + parseFloat(exp.amount.toString()),
-        0
-      );
-    }
+    const totalExpenses = expenses.reduce(
+      (sum, exp) => sum + parseFloat(exp.amount.toString()),
+      0
+    );
+
+    console.log(`💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`);
 
     // Calculate totals
     const totalSales = transactions.reduce(
@@ -549,21 +570,39 @@ router.get("/reports/daily/:date", async (req, res) => {
       .filter((t) => t.paymentMethod === "bank")
       .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
 
-    res.json({
+    const result = {
       date,
-      totalSales,
-      totalCash,
-      totalCard,
-      totalGcash,
-      totalBank,
-      totalExpenses,
-      netIncome: totalSales - totalExpenses,
+      totalSales: parseFloat(totalSales.toFixed(2)),
+      totalCash: parseFloat(totalCash.toFixed(2)),
+      totalCard: parseFloat(totalCard.toFixed(2)),
+      totalGcash: parseFloat(totalGcash.toFixed(2)),
+      totalBank: parseFloat(totalBank.toFixed(2)),
+      totalExpenses: parseFloat(totalExpenses.toFixed(2)),
+      netIncome: parseFloat((totalSales - totalExpenses).toFixed(2)),
       transactionCount: transactions.length,
-      expenseCount: sessionIds.length ? totalExpenses > 0 ? 1 : 0 : 0,
+      expenseCount: expenses.length,
+    };
+
+    console.log(`📈 Daily Report Summary:`, result);
+    res.json(result);
+  } catch (error: any) {
+    console.error("❌ Error generating daily report:", error);
+    console.error("Error details:", error.message || error);
+    // Return empty report instead of error to prevent app crash
+    res.status(500).json({
+      error: "Failed to generate daily report",
+      details: error?.message || "Unknown error",
+      date: req.params.date,
+      totalSales: 0,
+      totalCash: 0,
+      totalCard: 0,
+      totalGcash: 0,
+      totalBank: 0,
+      totalExpenses: 0,
+      netIncome: 0,
+      transactionCount: 0,
+      expenseCount: 0,
     });
-  } catch (error) {
-    console.error("Error generating daily report:", error);
-    res.status(500).json({ error: "Failed to generate daily report" });
   }
 });
 
