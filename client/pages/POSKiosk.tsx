@@ -694,7 +694,7 @@ export default function POSKiosk() {
                 Cancel
               </button>
               <button
-                onClick={() => navigate("/pos")}
+                onClick={() => navigate("/admin-dashboard")}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Exit
