@@ -465,6 +465,9 @@ class NeonDatabaseService {
     totalExpenses: number;
     netIncome: number;
     activeSubscriptions: number;
+    totalSubscriptionRevenue: number;
+    newSubscriptions: number;
+    subscriptionUpgrades: number;
     monthlyGrowth: number;
   }> {
     if (!this.db) throw new Error("Database not connected");
