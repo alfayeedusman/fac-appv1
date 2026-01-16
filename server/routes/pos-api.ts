@@ -6,7 +6,7 @@ import {
   posExpenses,
   posSessions,
 } from "../database/schema";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 const router = express.Router();
