@@ -193,7 +193,16 @@ export default function POSClosingModal({
           {isCalculating ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading sales data...</p>
+              <p className="text-gray-600 mb-4">Loading sales data...</p>
+              <Button
+                onClick={loadSalesData}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </Button>
             </div>
           ) : (
             <>
