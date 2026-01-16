@@ -147,7 +147,7 @@ class XenditPaymentService {
       );
 
       if (!popup) {
-        console.error("❌ Popup blocked by browser");
+        logError("❌ Popup blocked by browser");
         return null;
       }
 
