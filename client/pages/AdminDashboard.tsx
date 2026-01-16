@@ -138,6 +138,7 @@ interface DashboardStats {
   totalCustomers: number;
   totalRevenue: number;
   totalWashes: number;
+  totalOnlineBookings: number;
   totalExpenses: number;
   netIncome: number;
   activeSubscriptions: number;
