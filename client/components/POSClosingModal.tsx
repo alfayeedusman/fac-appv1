@@ -495,7 +495,7 @@ export default function POSClosingModal({
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-semibold text-gray-700">
-                            Overall Balance Status
+                            Overall Status
                           </span>
                           {isFullyBalanced ? (
                             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -510,13 +510,13 @@ export default function POSClosingModal({
                               : "text-yellow-900"
                           }`}
                         >
-                          {isFullyBalanced ? "✓ All Balanced" : "⚠️ Variance Detected"}
+                          {isFullyBalanced ? "✓ Everything Matches!" : "⚠️ The Money Doesn't Match"}
                         </p>
                         <p className="text-xs text-gray-600 mb-1">
                           Expected: ₱{totalExpectedAmount.toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-600">
-                          Actual: ₱{totalActualAmount.toFixed(2)}
+                          Counted: ₱{totalActualAmount.toFixed(2)}
                         </p>
                         <p
                           className={`text-sm font-bold mt-2 ${
@@ -525,7 +525,7 @@ export default function POSClosingModal({
                               : "text-red-600"
                           }`}
                         >
-                          Total Variance: {totalVariance >= 0 ? "+" : ""}₱{totalVariance.toFixed(2)}
+                          Total Difference: {totalVariance >= 0 ? "+" : ""}₱{totalVariance.toFixed(2)}
                         </p>
                       </CardContent>
                     </Card>
