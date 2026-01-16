@@ -450,7 +450,7 @@ class NeonDatabaseClient {
         text = await response.text();
       } else {
         // If already consumed (by an interceptor), we cannot read again safely
-        console.warn("⚠️ Response body already consumed; skipping read");
+        warn("⚠️ Response body already consumed; skipping read");
       }
     } catch (readErr: any) {
       console.error(
