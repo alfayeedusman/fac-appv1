@@ -902,10 +902,13 @@ export default function AdminSettings() {
                 className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex flex-col justify-center items-center text-center"
                 style={{ width: `${receiptSettings.paperWidth}mm` }}
               >
-                <div className="text-sm space-y-2">
+                <div className="text-sm space-y-2 font-mono">
                   {receiptSettings.includeLogo && (
-                      <div className="text-2xl font-bold text-orange-500 mb-2">
-                        🚗 FAC
+                      <div style={{ fontSize: "9pt", fontFamily: "monospace", fontWeight: "bold", marginBottom: "2mm" }}>
+                        ╔════════════════════╗<br/>
+                        ║  FAYEED AUTO CARE  ║<br/>
+                        ║  Professional Wash ║<br/>
+                        ╚════════════════════╝
                       </div>
                     )}
                     <p className="font-bold">{receiptSettings.companyName}</p>
