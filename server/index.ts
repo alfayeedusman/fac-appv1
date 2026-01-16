@@ -147,6 +147,7 @@ export function createServer() {
     "/api/neon/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
   );
+  app.get('/api/neon/payment/xendit/methods', xenditApiRoutes.listPaymentMethods);
   app.post(
     "/api/neon/payment/xendit/create-subscription-invoice",
     xenditApiRoutes.createSubscriptionInvoice,
