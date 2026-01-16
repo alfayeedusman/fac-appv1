@@ -452,7 +452,7 @@ export default function POSKiosk() {
         branchId,
       });
 
-      // Auto-print receipt
+      // Handle receipt printing based on settings
       try {
         const receiptData = {
           transactionNumber,
@@ -474,10 +474,21 @@ export default function POSKiosk() {
           cashierName: cashierName,
         };
 
-        // Print receipt automatically
-        await receiptPrintService.printReceipt(receiptData);
+        // Get printing settings from service
+        const printSettings = receiptPrintService.getSettings();
+
+        // Print receipt based on mode
+        if (printSettings.printingMode === "auto") {
+          // Auto-print directly without dialog
+          await receiptPrintService.printReceipt(receiptData, printSettings);
+          console.log("✓ Receipt auto-printed successfully");
+        } else {
+          // Manual print mode - notify user to print
+          console.log("Receipt ready - user can print manually if desired");
+          // Optionally store receipt for manual printing later
+        }
       } catch (printError) {
-        console.warn("Receipt printing failed, but continuing:", printError);
+        console.warn("Receipt printing issue (transaction still successful):", printError);
         // Don't stop the transaction if printing fails
       }
 
