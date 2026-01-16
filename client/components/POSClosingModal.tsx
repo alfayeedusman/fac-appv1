@@ -106,13 +106,13 @@ export default function POSClosingModal({
       if (result.success) {
         if (!result.isBalanced) {
           notificationManager.error(
-            "⚠️ Balance Variance Detected",
-            `Cash variance: ₱${result.cashVariance.toFixed(2)} | Digital variance: ₱${result.digitalVariance.toFixed(2)}\n\nSession closed with variance recorded.`
+            "⚠️ The Money Doesn't Match",
+            `Cash difference: ₱${result.cashVariance.toFixed(2)} | Digital difference: ₱${result.digitalVariance.toFixed(2)}\n\nSession closed. Please review the amounts.`
           );
         } else {
           notificationManager.success(
-            "✓ Success",
-            "POS closed successfully and balanced perfectly!"
+            "✓ Great!",
+            "Everything matched perfectly and the POS is closed!"
           );
         }
         onSessionClosed();
