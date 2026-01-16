@@ -63,6 +63,10 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
+import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
+
+// Setup global error catching to get clearer errors in console
+setupGlobalErrorCatching();
 
 const queryClient = new QueryClient();
 
