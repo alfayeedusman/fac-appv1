@@ -48,9 +48,9 @@ class XenditService {
       this.xendit = window.Xendit;
       this.xendit.setPublishableKey(XENDIT_PUBLIC_KEY);
       this.initialized = true;
-      console.log("✅ Xendit SDK initialized");
+      log("✅ Xendit SDK initialized");
     } else {
-      console.warn(
+      warn(
         "⚠️ Xendit SDK not loaded - card tokenization features will not be available",
       );
       // Still allow invoice creation via backend
@@ -63,7 +63,7 @@ class XenditService {
     const timeout = setTimeout(() => ac.abort(), 15000); // 15s timeout for payment
 
     try {
-      console.log("💳 Creating Xendit invoice...", params);
+      log("💳 Creating Xendit invoice...", params);
 
       // Create invoice via backend API
       const response = await fetch("/api/neon/payment/xendit/create-invoice", {
@@ -92,18 +92,18 @@ class XenditService {
       });
 
       clearTimeout(timeout);
-      console.log("📡 Xendit API response status:", response.status);
+      log("📡 Xendit API response status:", response.status);
 
       if (!response.ok) {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Failed to parse error response" }));
-        console.error("❌ Xendit API error:", errorData);
+        logError("❌ Xendit API error:", errorData);
         throw new Error(errorData.error || "Failed to create invoice");
       }
 
       const data = await response.json();
-      console.log("✅ Xendit invoice created:", data);
+      log("✅ Xendit invoice created:", data);
       return data;
     } catch (error: any) {
       clearTimeout(timeout);
@@ -112,11 +112,11 @@ class XenditService {
         const timeoutError = new Error(
           "Payment request timed out. Please check your internet connection and try again.",
         );
-        console.error("❌ Xendit request timeout");
+        logError("❌ Xendit request timeout");
         throw timeoutError;
       }
 
-      console.error("❌ Xendit invoice creation error:", error);
+      logError("❌ Xendit invoice creation error:", error);
       throw error;
     }
   };
@@ -147,7 +147,7 @@ class XenditService {
         },
         (err: any, token: XenditTokenResponse) => {
           if (err) {
-            console.error("Xendit tokenization error:", err);
+            logError("Xendit tokenization error:", err);
             reject(err);
           } else {
             resolve(token);
