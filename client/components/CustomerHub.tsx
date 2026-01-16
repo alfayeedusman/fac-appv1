@@ -43,6 +43,7 @@ import {
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
+import { notificationSoundService } from "@/services/notificationSoundService";
 
 interface CustomerData {
   id: string;
