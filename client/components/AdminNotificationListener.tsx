@@ -1,5 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useVisibilityPolling } from '@/hooks/use-visibility-polling';
+import { log, warn } from '@/utils/logger';
 
 // Global notification listener for admin users
 import realtimeService from '@/services/realtimeService';
