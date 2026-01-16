@@ -183,7 +183,7 @@ const roleDefinitions = {
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState<
-    "receipt" | "taxes" | "features" | "users"
+    "receipt" | "taxes" | "features" | "users" | "printers"
   >("receipt");
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSettings>({
     companyName: "Fayeed Auto Care",
