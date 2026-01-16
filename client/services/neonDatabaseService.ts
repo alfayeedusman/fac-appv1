@@ -1187,7 +1187,7 @@ class NeonDatabaseClient {
       }
 
       const result = await response.json();
-      console.log("✅ getCustomers result:", result);
+      info("✅ getCustomers result:", result);
       return result;
     } catch (error) {
       console.error("❌ Database customers fetch failed:", error);
