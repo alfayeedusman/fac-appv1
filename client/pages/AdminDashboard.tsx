@@ -1290,6 +1290,59 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("sales")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Expenses
+                        </p>
+                        <div className="text-3xl font-bold text-red-600">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalExpenses)
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-red-500 p-3 rounded-lg">
+                        <Wrench className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("sales")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Net Income (Profit)
+                        </p>
+                        <div className={`text-3xl font-bold ${stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.netIncome)
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Gross - Expenses
+                        </p>
+                      </div>
+                      <div className={`${stats.netIncome >= 0 ? 'bg-green-500' : 'bg-red-500'} p-3 rounded-lg`}>
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Location Summary */}
