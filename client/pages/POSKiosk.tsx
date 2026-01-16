@@ -432,6 +432,13 @@ export default function POSKiosk() {
                 <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Today's Sales: ₱{(total * 1.12).toFixed(2)}</span>
               </div>
               <Button
+                onClick={() => setShowCarWashModal(true)}
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 px-6"
+              >
+                <Droplet className="h-4 w-4 mr-2" />
+                Car Wash
+              </Button>
+              <Button
                 variant="outline"
                 onClick={() => setShowExitModal(true)}
                 className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6"
