@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { X, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
+import { X, CheckCircle, AlertCircle, TrendingUp, RefreshCw } from "lucide-react";
 import { closePOSSession, getDailySalesReport } from "@/utils/posApiService";
 import { notificationManager } from "@/components/NotificationModal";
 
