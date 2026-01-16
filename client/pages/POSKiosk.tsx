@@ -1152,17 +1152,17 @@ export default function POSKiosk() {
                       return;
                     }
 
-                    const today = new Date().toISOString().split("T")[0];
-                    const timeNow = new Date().toLocaleTimeString();
-
-                    saveExpense({
-                      date: today,
-                      time: timeNow,
+                    saveExpenseAPI({
+                      posSessionId: currentSessionId || "temp",
                       category: expenseForm.category,
                       description: expenseForm.description,
                       amount: parseFloat(expenseForm.amount),
                       paymentMethod: expenseForm.paymentMethod,
                       notes: expenseForm.notes,
+                      recordedByInfo: {
+                        id: cashierId,
+                        name: cashierName,
+                      },
                     });
 
                     notificationManager.success(
