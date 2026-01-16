@@ -2192,10 +2192,12 @@ export default function AdminDashboard() {
           {activeTab === "branches" && <BranchManagement userRole={userRole} />}
 
           {activeTab === "analytics" && (
-            <AnalyticsCharts
-              timeFilter={timeFilter}
-              onTimeFilterChange={setTimeFilter}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+              <AnalyticsCharts
+                timeFilter={timeFilter}
+                onTimeFilterChange={setTimeFilter}
+              />
+            </Suspense>
           )}
 
           {activeTab === "sales" && <SalesDashboard />}
