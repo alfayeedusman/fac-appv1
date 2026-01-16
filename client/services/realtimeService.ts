@@ -146,12 +146,14 @@ class RealtimeService {
     const pusherKey = import.meta.env.VITE_PUSHER_KEY;
     const pusherCluster = import.meta.env.VITE_PUSHER_CLUSTER;
 
+    import { log, info, warn } from '@/utils/logger';
+
     if (pusherKey && pusherCluster) {
       this.initPusher(pusherKey as string, pusherCluster as string)
-        .then(() => console.log('✅ Pusher client initialized'))
-        .catch((err) => console.warn('⚠️ Pusher client init failed:', err));
+        .then(() => info('✅ Pusher client initialized'))
+        .catch((err) => warn('⚠️ Pusher client init failed:', err));
     } else {
-      console.log('ℹ️ Pusher not configured on client (VITE_PUSHER_KEY missing)');
+      log('ℹ️ Pusher not configured on client (VITE_PUSHER_KEY missing)');
     }
   }
 
