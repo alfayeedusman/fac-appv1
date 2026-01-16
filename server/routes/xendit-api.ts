@@ -1227,6 +1227,12 @@ export const createInvoice: RequestHandler = async (req, res) => {
       ],
     };
 
+    // If client provided a preferred payment method, attach it to metadata for tracking
+    if (req.body.preferred_payment_method) {
+      payload.metadata = payload.metadata || {};
+      payload.metadata.preferred_payment_method = req.body.preferred_payment_method;
+    }
+
     console.log("📤 Sending request to Xendit API...");
     console.log("API URL:", `${XENDIT_API_URL}/invoices`);
     console.log("Payload:", JSON.stringify(payload, null, 2));
