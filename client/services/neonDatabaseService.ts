@@ -640,18 +640,18 @@ class NeonDatabaseClient {
   async register(
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    console.log("📝 Starting registration for:", userData.email);
+    log("📝 Starting registration for:", userData.email);
 
     // Attempt background connection check but don't block registration
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err),
+      warn("Background connection check failed:", err),
     );
 
     const tryRegister = async (
       url: string,
     ): Promise<{ success: boolean; user?: User; error?: string }> => {
       try {
-        console.log("🔄 Attempting registration at:", url);
+        log("🔄 Attempting registration at:", url);
         const ac = new AbortController();
         const to = setTimeout(() => ac.abort(), 15000);
 
@@ -663,7 +663,7 @@ class NeonDatabaseClient {
         });
 
         clearTimeout(to);
-        console.log("📡 Registration response status:", response.status);
+        log("📡 Registration response status:", response.status);
 
         const ct = response.headers.get("content-type") || "";
         let data: any = null;
@@ -678,7 +678,7 @@ class NeonDatabaseClient {
           }
         }
 
-        console.log("📦 Registration response data:", data);
+        log("📦 Registration response data:", data);
 
         if (!response.ok || !data?.success) {
           const status = response.status;
@@ -692,12 +692,12 @@ class NeonDatabaseClient {
           return { success: false, error: msg };
         }
 
-        console.log("✅ Registration successful!");
+        log("✅ Registration successful!");
         // Update connection status on successful registration
         this.isConnected = true;
         return data;
       } catch (error: any) {
-        console.error("❌ Registration attempt failed:", error);
+        logError("❌ Registration attempt failed:", error);
         if (error?.name === "AbortError") {
           return {
             success: false,
@@ -713,13 +713,13 @@ class NeonDatabaseClient {
       const primaryUrl = `${this.baseUrl}/auth/register`;
       return await tryRegister(primaryUrl);
     } catch (primaryError) {
-      console.warn("⚠️ Primary registration URL failed, trying fallback...");
+      warn("⚠️ Primary registration URL failed, trying fallback...");
       // Try fallback URL
       try {
         const fallbackUrl = `/api/neon/auth/register`;
         return await tryRegister(fallbackUrl);
       } catch (fallbackError) {
-        console.error("❌ Both registration attempts failed");
+        logError("❌ Both registration attempts failed");
         return {
           success: false,
           error:
