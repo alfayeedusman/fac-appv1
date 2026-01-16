@@ -405,6 +405,7 @@ export default function BookingHub() {
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="booking">Booking</SelectItem>
                     <SelectItem value="walkin">Walk-in</SelectItem>
+                    <SelectItem value="guest">Guest</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
