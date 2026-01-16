@@ -218,7 +218,7 @@ class NeonDatabaseClient {
 
     // Final: mark offline, allow UI to use fallbacks
     this.isConnected = false;
-    console.info("📴 Running in offline/demo mode (database unreachable)");
+    info("📴 Running in offline/demo mode (database unreachable)");
     return false;
   }
 
