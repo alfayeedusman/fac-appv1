@@ -520,6 +520,17 @@ export default function AdminSettings() {
           Receipt Designer
         </button>
         <button
+          onClick={() => setActiveTab("printers")}
+          className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+            activeTab === "printers"
+              ? "border-b-2 border-orange-500 text-orange-500"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Wifi className="inline h-4 w-4 mr-2" />
+          Printer Setup
+        </button>
+        <button
           onClick={() => setActiveTab("taxes")}
           className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
             activeTab === "taxes"
