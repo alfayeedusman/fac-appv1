@@ -177,11 +177,8 @@ export default function AdminNotificationListener() {
     }
   };
 
-  // Check for new notifications every 2 seconds (fallback)
-  useEffect(() => {
-    const interval = setInterval(checkForNewNotifications, 2000);
-    return () => clearInterval(interval);
-  }, [checkForNewNotifications]);
+  // Use visibility-aware polling as a safer fallback (checks every 10s when visible)
+  useVisibilityPolling(checkForNewNotifications, 10000);
 
   // Subscribe to realtimeService events
   useEffect(() => {
