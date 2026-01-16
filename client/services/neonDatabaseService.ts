@@ -164,7 +164,7 @@ class NeonDatabaseClient {
     // Try POST /init, then GET /test as fallback; degrade gracefully to offline
     try {
       const initUrl = `${this.baseUrl}/init`;
-      console.log(`🔄 Initializing database connection to: ${initUrl}`);
+      log(`🔄 Initializing database connection to: ${initUrl}`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
