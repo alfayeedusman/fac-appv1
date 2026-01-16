@@ -499,23 +499,13 @@ export default function AdminDashboard() {
         } catch (e) {}
       });
 
-      // Set up polling for new notifications and stats every 10 seconds
-      const notificationInterval = setInterval(loadSystemNotifications, 10000);
-      const adminNotifInterval = setInterval(() => {
-        import('@/utils/adminNotifications').then(({ getAdminNotifications }) => {
-          setAdminNotifications(getAdminNotifications().slice(0, 50));
-        }).catch(() => {});
-      }, 5000);
-      const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
-      const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
+      // Disable polling to prevent lag - use realtime subscriptions instead
+      // Stats will be updated via realtime service subscriptions above
+      // Users can manually refresh by clicking buttons
 
       return () => {
         // unsubscribe realtime subscriptions
         subs.forEach((u) => u && u());
-        clearInterval(notificationInterval);
-        clearInterval(adminNotifInterval);
-        clearInterval(statsInterval);
-        clearInterval(realtimeInterval);
       };
     } else {
       navigate("/login");
