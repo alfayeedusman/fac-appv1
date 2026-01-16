@@ -277,8 +277,12 @@ export const createBooking: RequestHandler = async (req, res) => {
           booking,
         };
 
-        if (userChannel) await emitPusher([userChannel, adminChannel], 'booking.created', payload);
-        else await emitPusher(adminChannel, 'booking.created', payload);
+        if (userChannel) {
+          const privateUserChannel = `private-${userChannel}`;
+          await emitPusher([userChannel, privateUserChannel, adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+        } else {
+          await emitPusher([adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+        }
       } catch (err) {
         console.warn('Failed to emit pusher booking.created:', err);
       }
