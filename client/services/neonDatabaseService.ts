@@ -1629,7 +1629,7 @@ class NeonDatabaseClient {
 
   // === STATS ===
 
-  async getStats(): Promise<{ success: boolean; stats?: any }> {
+  async getStats(period: string = "monthly"): Promise<{ success: boolean; stats?: any }> {
     try {
       const connected = await this.ensureConnection();
       if (!connected) {
@@ -1637,8 +1637,8 @@ class NeonDatabaseClient {
         return { success: false, stats: null };
       }
 
-      console.log("📈 Fetching stats...");
-      const result = await this.fetchJsonWithFallback("/stats");
+      console.log("📈 Fetching stats for period:", period);
+      const result = await this.fetchJsonWithFallback(`/stats?period=${period}`);
       console.log("✅ Stats received:", result);
 
       return result?.success !== undefined
