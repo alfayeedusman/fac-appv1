@@ -69,10 +69,12 @@ class ReceiptPrintService {
       footerMessage: "Thank you for choosing Fayeed Auto Care!",
       paperWidth: 80,
       includeLogo: true,
-      includeQR: true,
+      includeQR: false,
       includeSignature: false,
       headerMessage: "Professional Car Washing Services",
       showTermsConditions: false,
+      printingMode: "auto",
+      printerType: "thermal",
     };
   }
 
