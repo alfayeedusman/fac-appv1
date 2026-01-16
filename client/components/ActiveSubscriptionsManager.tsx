@@ -270,6 +270,22 @@ const ActiveSubscriptionsManager = () => {
       </div>
 
       {/* Subscriptions List */}
+      {!isEndpointAvailable && (
+        <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-yellow-900 dark:text-yellow-100">
+                Subscription data unavailable
+              </p>
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                Unable to load subscription information. Please check your connection and try again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ScrollArea className="h-[600px] w-full border rounded-lg">
         <div className="p-4 space-y-3">
           {loading ? (
@@ -285,7 +301,7 @@ const ActiveSubscriptionsManager = () => {
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                <p className="text-muted-foreground">No active subscriptions</p>
+                <p className="text-muted-foreground">{isEndpointAvailable ? "No active subscriptions" : "Unable to load subscriptions"}</p>
               </div>
             </div>
           ) : (
