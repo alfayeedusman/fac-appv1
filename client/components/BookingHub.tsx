@@ -99,7 +99,7 @@ export default function BookingHub() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusType>("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | "booking" | "walkin">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "booking" | "walkin" | "guest">("all");
   const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<BookingData["status"]>("pending");
