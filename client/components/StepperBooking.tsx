@@ -1711,6 +1711,15 @@ export default function StepperBooking({
               <span>Back</span>
             </Button>
 
+            {/* Inline step errors (mobile) */}
+            {stepErrors.length > 0 && (
+              <div className="w-full mb-2 p-2 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+                {stepErrors.slice(0,2).map((err, i) => (
+                  <div key={i}>{err}</div>
+                ))}
+              </div>
+            )}
+
             {/* Next/Confirm Button */}
             {currentStep === 7 ? (
               bookingData.paymentMethod === "online" ? (
@@ -1732,7 +1741,7 @@ export default function StepperBooking({
               )
             ) : (
               <Button
-                onClick={nextStep}
+                onClick={() => { console.log('Next clicked (mobile)', currentStep); setStepErrors([]); nextStep(); }}
                 disabled={!canProceed()}
                 className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
               >
