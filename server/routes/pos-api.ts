@@ -310,6 +310,24 @@ router.post("/transactions", async (req, res) => {
       transactionId,
       message: "Transaction saved successfully",
     });
+
+    // Emit Pusher event for POS transaction
+    (async () => {
+      try {
+        const payload = {
+          transactionId,
+          transactionNumber,
+          totalAmount,
+          paymentMethod,
+          branchId,
+          cashierInfo,
+        };
+        // Broadcast to public and branch channel
+        await triggerPusherEvent(['public-realtime', `branch-${branchId}`], 'pos.transaction.created', payload);
+      } catch (err) {
+        console.warn('Failed to emit pos.transaction.created:', err);
+      }
+    })();
   } catch (error) {
     console.error("Error saving transaction:", error);
     res.status(500).json({ error: "Failed to save transaction" });
