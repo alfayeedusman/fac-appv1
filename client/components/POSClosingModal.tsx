@@ -133,29 +133,35 @@ export default function POSClosingModal({
 
   if (!isOpen) return null;
 
-  // Calculate all balances
-  const totalCashSales = salesData?.totalCash || 0;
-  const totalDigitalSales =
+  // Helper function to round to 2 decimal places and prevent floating-point errors
+  const roundToTwo = (num: number): number => {
+    return Math.round(num * 100) / 100;
+  };
+
+  // Calculate all balances with proper rounding
+  const totalCashSales = roundToTwo(salesData?.totalCash || 0);
+  const totalDigitalSales = roundToTwo(
     (salesData?.totalCard || 0) +
     (salesData?.totalGcash || 0) +
-    (salesData?.totalBank || 0);
-  const totalExpenses = salesData?.totalExpenses || 0;
+    (salesData?.totalBank || 0)
+  );
+  const totalExpenses = roundToTwo(salesData?.totalExpenses || 0);
 
   // Expected cash calculation: Opening Balance + Cash Sales - Expenses
-  const expectedCash = openingBalance + totalCashSales - totalExpenses;
+  const expectedCash = roundToTwo(openingBalance + totalCashSales - totalExpenses);
 
   // Expected digital is just the digital sales (no expenses subtracted)
-  const expectedDigital = totalDigitalSales;
+  const expectedDigital = roundToTwo(totalDigitalSales);
 
   // Actual vs Expected
-  const actualCashAmount = parseFloat(actualCash || "0");
-  const actualDigitalAmount = parseFloat(actualDigital || "0");
-  const cashVariance = actualCashAmount - expectedCash;
-  const digitalVariance = actualDigitalAmount - expectedDigital;
+  const actualCashAmount = roundToTwo(parseFloat(actualCash || "0"));
+  const actualDigitalAmount = roundToTwo(parseFloat(actualDigital || "0"));
+  const cashVariance = roundToTwo(actualCashAmount - expectedCash);
+  const digitalVariance = roundToTwo(actualDigitalAmount - expectedDigital);
 
-  // Balance status
-  const isCashBalanced = Math.abs(cashVariance) < 0.01;
-  const isDigitalBalanced = Math.abs(digitalVariance) < 0.01;
+  // Balance status - allow for up to 1 centavo difference due to rounding
+  const isCashBalanced = Math.abs(cashVariance) <= 0.01;
+  const isDigitalBalanced = Math.abs(digitalVariance) <= 0.01;
   const isFullyBalanced = isCashBalanced && isDigitalBalanced;
 
   // Final totals
