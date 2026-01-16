@@ -36,6 +36,14 @@ import {
 } from "@/utils/posData";
 import { notificationManager } from "@/components/NotificationModal";
 import { SimplePaymentModal } from "@/components/SimplePaymentModal";
+import {
+  getCarWashServices,
+  vehicleTypes,
+  motorcycleSubtypes,
+  calculateServicePrice,
+  CarWashService,
+} from "@/utils/carWashServices";
+import { Droplet } from "lucide-react";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
@@ -67,6 +75,12 @@ export default function POSKiosk() {
     amountPaid: "",
     referenceNumber: "",
   });
+  const [showCarWashModal, setShowCarWashModal] = useState(false);
+  const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
+  const [selectedWashService, setSelectedWashService] = useState<CarWashService | null>(null);
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string>("");
+  const [selectedMotorcycleSubtype, setSelectedMotorcycleSubtype] = useState<string>("");
+  const [calculatedWashPrice, setCalculatedWashPrice] = useState<number>(0);
 
   const categories = getPOSCategories();
   const cashierName = localStorage.getItem("userEmail") || "Cashier";
@@ -79,6 +93,8 @@ export default function POSKiosk() {
         await new Promise(resolve => setTimeout(resolve, 1000));
         const productsData = await getProducts();
         setProducts(productsData || []);
+        const washServices = getCarWashServices().filter((s) => s.isActive);
+        setCarWashServices(washServices);
       } catch (error) {
         console.error("Error loading products:", error);
         setProducts([]);
@@ -111,6 +127,90 @@ export default function POSKiosk() {
       setFilteredProducts([]);
     }
   }, [products, selectedCategory, searchQuery]);
+
+  const handleSelectWashService = (service: CarWashService) => {
+    setSelectedWashService(service);
+    setSelectedVehicleType("");
+    setSelectedMotorcycleSubtype("");
+    setCalculatedWashPrice(0);
+  };
+
+  const handleVehicleTypeSelect = (vehicleTypeId: string) => {
+    setSelectedVehicleType(vehicleTypeId);
+    const isMotorcycle = vehicleTypeId === "motorcycle";
+    if (!isMotorcycle) {
+      setSelectedMotorcycleSubtype("");
+    }
+    if (selectedWashService) {
+      const price = calculateServicePrice(
+        selectedWashService.basePrice,
+        vehicleTypeId,
+        isMotorcycle ? selectedMotorcycleSubtype : undefined
+      );
+      setCalculatedWashPrice(price);
+    }
+  };
+
+  const handleMotorcycleSubtypeSelect = (subtypeId: string) => {
+    setSelectedMotorcycleSubtype(subtypeId);
+    if (selectedWashService && selectedVehicleType) {
+      const price = calculateServicePrice(
+        selectedWashService.basePrice,
+        selectedVehicleType,
+        subtypeId
+      );
+      setCalculatedWashPrice(price);
+    }
+  };
+
+  const handleAddWashServiceToCart = () => {
+    if (!selectedWashService || !selectedVehicleType) {
+      notificationManager.error(
+        "Incomplete Selection",
+        "Please select a wash service and vehicle type"
+      );
+      return;
+    }
+
+    const vehicleType = vehicleTypes.find((vt) => vt.id === selectedVehicleType);
+    const vehicleName = vehicleType?.name || "Vehicle";
+    const subtypeName =
+      selectedVehicleType === "motorcycle"
+        ? ` - ${motorcycleSubtypes.find((st) => st.id === selectedMotorcycleSubtype)?.name}`
+        : "";
+
+    const cartItem = {
+      id: `wash_${selectedWashService.id}_${selectedVehicleType}_${selectedMotorcycleSubtype || "standard"}`,
+      name: `${selectedWashService.name} (${vehicleName}${subtypeName})`,
+      price: calculatedWashPrice,
+      quantity: 1,
+      sku: `WASH-${selectedWashService.id}-${selectedVehicleType}`,
+    };
+
+    const existingItem = cartItems.find((item) => item.id === cartItem.id);
+    if (existingItem) {
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === cartItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setCartItems([...cartItems, cartItem]);
+    }
+
+    notificationManager.success(
+      "Added to Cart",
+      `${selectedWashService.name} for ${vehicleName} added to cart`
+    );
+
+    setShowCarWashModal(false);
+    setSelectedWashService(null);
+    setSelectedVehicleType("");
+    setSelectedMotorcycleSubtype("");
+    setCalculatedWashPrice(0);
+  };
 
   const addToCart = async (product: Product) => {
     try {
