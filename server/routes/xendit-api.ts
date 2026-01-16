@@ -1277,6 +1277,7 @@ export const createInvoice: RequestHandler = async (req, res) => {
       invoice_id: data.id,
       invoice_url: data.invoice_url,
       expiry_date: data.expiry_date,
+      available_payment_methods: data.available_payment_methods || null,
     });
   } catch (error: any) {
     console.error("❌ Create invoice error:", error);
