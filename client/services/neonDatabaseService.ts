@@ -621,7 +621,7 @@ class NeonDatabaseClient {
           }
           return result;
         } catch (e3: any) {
-          console.error("❌ Fallback login also failed:", e3?.message || e3);
+          logError("❌ Fallback login also failed:", e3?.message || e3);
           return {
             success: false,
             error:
