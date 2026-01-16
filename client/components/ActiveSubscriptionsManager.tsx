@@ -78,6 +78,7 @@ const ActiveSubscriptionsManager = () => {
     useState<SubscriptionWithCustomer | null>(null);
   const [isRenewalDialogOpen, setIsRenewalDialogOpen] = useState(false);
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
 
   useEffect(() => {
