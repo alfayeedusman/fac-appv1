@@ -69,7 +69,7 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import AnalyticsCharts from "@/components/AnalyticsCharts";
+const AnalyticsCharts = React.lazy(() => import('@/components/AnalyticsCharts'));
 import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDistanceToNow } from "date-fns";
