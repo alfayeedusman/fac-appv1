@@ -1153,5 +1153,38 @@ export const notificationDeliveries = pgTable("notification_deliveries", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ============= WEBHOOK IDEMPOTENCY =============
+
+// Webhook Event Log for deduplication (prevent duplicate processing)
+export const webhookEventLogs = pgTable("webhook_event_logs", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  // Webhook identification
+  provider: varchar("provider", { length: 50 }).notNull(), // 'xendit' | 'stripe' | etc
+  eventId: varchar("event_id", { length: 255}).notNull(), // External event ID from provider
+  externalId: varchar("external_id", { length: 255}), // e.g., "BOOKING_123" or "SUBSCRIPTION_456"
+  eventType: varchar("event_type", { length: 100}), // e.g., "PAID", "SETTLED", "FAILED"
+  eventStatus: varchar("event_status", { length: 50 }).notNull(), // 'success' | 'failure' | 'pending'
+
+  // Webhook payload (store original for audit)
+  payload: json("payload"), // Full webhook payload
+
+  // Processing information
+  processedAt: timestamp("processed_at").notNull().defaultNow(),
+  processingTimeMs: integer("processing_time_ms"), // How long processing took
+
+  // Result information
+  result: json("result"), // What was updated (booking ID, subscription ID, etc)
+  errorMessage: text("error_message"), // If failed
+
+  // Metadata
+  ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6
+  userAgent: text("user_agent"),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Export CMS schema types and tables
 export * from "./cmsSchema.js";
