@@ -29,10 +29,15 @@ import {
 } from "lucide-react";
 
 // Set Mapbox access token
+import { log } from '@/utils/logger';
+
 const MAPBOX_TOKEN =
   import.meta.env.VITE_MAPBOX_TOKEN ||
   "pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg";
 mapboxgl.accessToken = MAPBOX_TOKEN;
+
+// Do not log the full token in production
+log('Mapbox token present:', !!MAPBOX_TOKEN);
 
 // Philippines coordinates (Manila center)
 const MANILA_COORDINATES = {
@@ -325,7 +330,7 @@ export default function RealTimeMap({
           "bottom-right",
         );
 
-        console.log("✅ Mapbox initialized successfully");
+// Mapbox initialized successfully (debug suppressed)
       } catch (err: any) {
         console.error("❌ Failed to initialize Mapbox:", err);
         if (isMounted) {
@@ -357,13 +362,13 @@ export default function RealTimeMap({
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log("📊 Loading map data...");
+// Loading map data (debug suppressed)
         // Simulate API call delay
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         setCrewData(generateMockCrewData());
         setCustomerData(generateMockCustomerData());
-        console.log("✅ Map data loaded successfully");
+// Map data loaded successfully (debug suppressed)
       } catch (dataError) {
         console.error("❌ Error loading map data:", dataError);
         // Don't override map errors, only set data loading error if no existing error
@@ -627,7 +632,7 @@ export default function RealTimeMap({
 
     // Force re-initialization
     setTimeout(() => {
-      console.log("🔄 Retrying map initialization...");
+      // Retrying map initialization (debug suppressed)
     }, 100);
   };
 
