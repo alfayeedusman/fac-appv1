@@ -1179,7 +1179,7 @@ export const updateInventoryItem: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher('public-realtime', 'inventory.updated', { item });
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.updated', { item });
       } catch (err) {
         console.warn('Failed to emit inventory.updated:', err);
       }
