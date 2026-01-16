@@ -142,6 +142,9 @@ interface DashboardStats {
   totalExpenses: number;
   netIncome: number;
   activeSubscriptions: number;
+  totalSubscriptionRevenue: number;
+  newSubscriptions: number;
+  subscriptionUpgrades: number;
   monthlyGrowth: number;
   topPackage: string;
 }
