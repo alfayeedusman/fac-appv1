@@ -868,6 +868,45 @@ class NeonDatabaseClient {
     }
   }
 
+  // === SUBSCRIPTIONS ===
+
+  async getSubscriptions(params?: {
+    status?: string;
+    userId?: string;
+  }): Promise<{
+    success: boolean;
+    subscriptions?: any[];
+    error?: string;
+  }> {
+    if (!this.isConnected) {
+      return { success: false, subscriptions: [] };
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.status) queryParams.append("status", params.status);
+      if (params?.userId) queryParams.append("userId", params.userId);
+
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(
+        `${this.baseUrl}/subscriptions?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Database subscription fetch failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("Subscriptions fetch timed out");
+      }
+      return { success: false, subscriptions: [] };
+    }
+  }
+
   // === NOTIFICATIONS ===
 
   async getNotifications(
