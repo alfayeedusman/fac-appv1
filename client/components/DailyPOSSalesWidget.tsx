@@ -35,9 +35,7 @@ export default function DailyPOSSalesWidget() {
 
   useEffect(() => {
     loadData();
-    // Refresh every 5 seconds
-    const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
+    // Load data once on mount, don't poll continuously to avoid lag
   }, []);
 
   if (!salesReport) return null;
