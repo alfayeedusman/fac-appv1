@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Swal from 'sweetalert2';
+import { log, warn } from '@/utils/logger';
 
 export default function PaymentMethodsSelection({ bookingData, updateBookingData }: any) {
   const [methods, setMethods] = useState<any[]>([]);
