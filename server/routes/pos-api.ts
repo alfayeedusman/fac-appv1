@@ -135,26 +135,26 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         )
       );
 
-    // Calculate totals
+    // Calculate totals with proper rounding to prevent floating-point errors
     let totalCashSales = 0;
     let totalCardSales = 0;
     let totalGcashSales = 0;
     let totalBankSales = 0;
 
     transactions.forEach((trans) => {
-      const amount = parseFloat(trans.totalAmount.toString());
+      const amount = roundToTwo(parseFloat(trans.totalAmount.toString()));
       switch (trans.paymentMethod) {
         case "cash":
-          totalCashSales += amount;
+          totalCashSales = roundToTwo(totalCashSales + amount);
           break;
         case "card":
-          totalCardSales += amount;
+          totalCardSales = roundToTwo(totalCardSales + amount);
           break;
         case "gcash":
-          totalGcashSales += amount;
+          totalGcashSales = roundToTwo(totalGcashSales + amount);
           break;
         case "bank":
-          totalBankSales += amount;
+          totalBankSales = roundToTwo(totalBankSales + amount);
           break;
       }
     });
@@ -165,20 +165,24 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       .from(posExpenses)
       .where(eq(posExpenses.posSessionId, sessionId));
 
-    const totalExpenses = expenses.reduce(
-      (sum, exp) => sum + parseFloat(exp.amount.toString()),
-      0
+    const totalExpenses = roundToTwo(
+      expenses.reduce(
+        (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
+        0
+      )
     );
 
-    // Calculate expected balances
-    const openingBalance = parseFloat(session.openingBalance.toString());
-    const expectedCash = openingBalance + totalCashSales - totalExpenses;
-    const expectedDigital = totalCardSales + totalGcashSales + totalBankSales;
+    // Calculate expected balances with proper rounding
+    const openingBalance = roundToTwo(parseFloat(session.openingBalance.toString()));
+    const expectedCash = roundToTwo(openingBalance + totalCashSales - totalExpenses);
+    const expectedDigital = roundToTwo(totalCardSales + totalGcashSales + totalBankSales);
 
-    // Calculate variance
-    const cashVariance = parseFloat(actualCash) - expectedCash;
-    const digitalVariance = parseFloat(actualDigital) - expectedDigital;
-    const isBalanced = Math.abs(cashVariance) < 0.01 && Math.abs(digitalVariance) < 0.01;
+    // Calculate variance with proper rounding
+    const actualCashAmount = roundToTwo(parseFloat(actualCash));
+    const actualDigitalAmount = roundToTwo(parseFloat(actualDigital));
+    const cashVariance = roundToTwo(actualCashAmount - expectedCash);
+    const digitalVariance = roundToTwo(actualDigitalAmount - expectedDigital);
+    const isBalanced = Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
     // Update session
     await db
