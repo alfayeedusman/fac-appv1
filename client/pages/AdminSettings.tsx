@@ -186,11 +186,15 @@ export default function AdminSettings() {
     companyName: "Fayeed Auto Care",
     companyAddress: "Zamboanga City, Philippines",
     companyPhone: "+63 123 456 7890",
+    companyEmail: "info@fayeedautocare.com",
     footerMessage: "Thank you for choosing Fayeed Auto Care!",
     paperWidth: 80,
     includeLogo: true,
     includeQR: true,
     includeSignature: false,
+    headerMessage: "Professional Car Washing Services",
+    showTermsConditions: false,
+    termsText: "",
   });
 
   const [features, setFeatures] = useState<FeatureSettings>({
