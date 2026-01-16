@@ -194,7 +194,7 @@ class XenditPaymentService {
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error("❌ Failed to check subscription status:", error);
+      logError("❌ Failed to check subscription status:", error);
       return { success: false, error: error.message };
     }
   }
