@@ -1260,6 +1260,14 @@ export const createStockMovement: RequestHandler = async (req, res) => {
       movement,
       message: "Stock movement recorded successfully",
     });
+
+    (async () => {
+      try {
+        await emitPusher('public-realtime', 'stock.movement', { movement });
+      } catch (err) {
+        console.warn('Failed to emit stock.movement:', err);
+      }
+    })();
   } catch (error) {
     console.error("Create stock movement error:", error);
     res.status(500).json({
