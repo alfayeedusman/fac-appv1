@@ -418,6 +418,9 @@ export default function StepperBooking({
   const [voucherInput, setVoucherInput] = useState("");
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
 
+  // Inline step errors to show near navigation
+  const [stepErrors, setStepErrors] = useState<string[]>([]);
+
   // User vehicles and data for registered users
   const [savedVehicles, setSavedVehicles] = useState<any[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
