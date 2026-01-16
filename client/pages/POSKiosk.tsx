@@ -429,8 +429,9 @@ export default function POSKiosk() {
       );
 
       // Save transaction to database
+      const transactionNumber = `TXN-${Date.now()}`;
       await saveTransactionAPI({
-        transactionNumber: `TXN-${Date.now()}`,
+        transactionNumber,
         customerInfo: {
           id: customerInfo.uniqueId,
           name: customerInfo.name,
@@ -451,9 +452,38 @@ export default function POSKiosk() {
         branchId,
       });
 
+      // Auto-print receipt
+      try {
+        const receiptData = {
+          transactionNumber,
+          date: new Date(),
+          items: cartItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            subtotal: item.price * item.quantity,
+          })),
+          subtotal: total,
+          taxAmount: 0,
+          discountAmount: 0,
+          totalAmount: total,
+          paymentMethod: paymentInfo.method,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+          changeAmount: change,
+          customerName: customerInfo.name,
+          cashierName: cashierName,
+        };
+
+        // Print receipt automatically
+        await receiptPrintService.printReceipt(receiptData);
+      } catch (printError) {
+        console.warn("Receipt printing failed, but continuing:", printError);
+        // Don't stop the transaction if printing fails
+      }
+
       notificationManager.success(
         "Success",
-        "Payment processed successfully!"
+        "Payment processed successfully! Receipt printing..."
       );
 
       // Reload today's sales
