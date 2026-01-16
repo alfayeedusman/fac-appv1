@@ -1308,8 +1308,8 @@ export default function StepperBooking({
         </SheetContent>
       </Sheet>
 
-      {/* Container with max width */}
-      <div className="max-w-7xl mx-auto">
+      {/* Container with max width and swipe support */}
+      <div className="max-w-7xl mx-auto" ref={swipeRef}>
         <div className="flex flex-col lg:flex-row">
           {/* Sidebar (desktop only) */}
           <div
