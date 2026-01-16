@@ -209,35 +209,80 @@ class NeonDatabaseService {
   }): Promise<any[]> {
     if (!this.db) throw new Error("Database not connected");
 
-    let query = this.db
-      .select()
-      .from(schema.packageSubscriptions);
+    try {
+      const subscriptions = await this.db.query.packageSubscriptions.findMany({
+        with: {
+          // These need to be defined in the Drizzle schema relations
+          // For now, we'll do a simple select and handle client-side fetching
+        },
+        where: (subs, { eq, and }) => {
+          const conditions = [];
+          if (params?.status) {
+            conditions.push(eq(subs.status, params.status));
+          }
+          if (params?.userId) {
+            conditions.push(eq(subs.userId, params.userId));
+          }
+          return conditions.length > 0 ? and(...conditions) : undefined;
+        },
+        orderBy: (subs, { desc }) => desc(subs.startDate),
+      }).catch(() => {
+        // Fallback to raw query if relations not set up
+        return null;
+      });
 
-    if (params?.status) {
-      query = query.where(eq(schema.packageSubscriptions.status, params.status));
+      if (subscriptions === null) {
+        // Fallback: do a simple select without relations
+        let query = this.db
+          .select()
+          .from(schema.packageSubscriptions);
+
+        if (params?.status) {
+          query = query.where(eq(schema.packageSubscriptions.status, params.status));
+        }
+
+        if (params?.userId) {
+          query = query.where(eq(schema.packageSubscriptions.userId, params.userId));
+        }
+
+        const subs = await query.orderBy(desc(schema.packageSubscriptions.startDate));
+
+        return subs.map((sub: any) => ({
+          id: sub.id,
+          userId: sub.userId,
+          packageId: sub.packageId,
+          status: sub.status,
+          startDate: sub.startDate,
+          endDate: sub.endDate,
+          renewalDate: sub.renewalDate,
+          finalPrice: sub.finalPrice,
+          autoRenew: sub.autoRenew,
+          cycleCount: sub.usageCount || 1,
+          xenditPlanId: sub.xenditPlanId,
+          paymentMethod: sub.paymentMethod || "card",
+        }));
+      }
+
+      // Map results to expected format
+      return subscriptions.map((sub: any) => ({
+        id: sub.id,
+        userId: sub.userId,
+        packageId: sub.packageId,
+        status: sub.status,
+        startDate: sub.startDate,
+        endDate: sub.endDate,
+        renewalDate: sub.renewalDate,
+        finalPrice: sub.finalPrice,
+        autoRenew: sub.autoRenew,
+        cycleCount: sub.usageCount || 1,
+        xenditPlanId: sub.xenditPlanId,
+        paymentMethod: sub.paymentMethod || "card",
+      }));
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      // Return empty array on error instead of throwing
+      return [];
     }
-
-    if (params?.userId) {
-      query = query.where(eq(schema.packageSubscriptions.userId, params.userId));
-    }
-
-    const subscriptions = await query.orderBy(desc(schema.packageSubscriptions.startDate));
-
-    // Map to include customer and package details
-    return subscriptions.map((sub: any) => ({
-      id: sub.id,
-      userId: sub.userId,
-      packageId: sub.packageId,
-      status: sub.status,
-      startDate: sub.startDate,
-      endDate: sub.endDate,
-      renewalDate: sub.renewalDate,
-      finalPrice: sub.finalPrice,
-      autoRenew: sub.autoRenew,
-      cycleCount: sub.usageCount || 1,
-      xenditPlanId: sub.xenditPlanId,
-      paymentMethod: sub.paymentMethod || "card",
-    }));
   }
 
   // === NOTIFICATIONS ===
