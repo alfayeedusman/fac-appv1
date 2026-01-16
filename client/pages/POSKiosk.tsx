@@ -1013,6 +1013,155 @@ export default function POSKiosk() {
         </div>
       )}
 
+      {/* Expense Modal */}
+      {showExpenseModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md my-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-xl">
+                  <AlertCircle className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Add Expense</h2>
+                  <p className="text-sm text-gray-600 mt-1">Record a business expense</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowExpenseModal(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <Separator className="mb-6" />
+
+            <div className="space-y-4">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select
+                  value={expenseForm.category}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="supplies">Supplies</option>
+                  <option value="utilities">Utilities</option>
+                  <option value="rent">Rent</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="fuel">Fuel</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <Input
+                  placeholder="e.g., Car wash detergent, Oil change..."
+                  value={expenseForm.description}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amount (₱)</label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={expenseForm.amount}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select
+                  value={expenseForm.paymentMethod}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, paymentMethod: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="card">Credit Card</option>
+                  <option value="gcash">GCash</option>
+                  <option value="bank">Bank Transfer</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                <Input
+                  placeholder="Additional notes..."
+                  value={expenseForm.notes}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-3 pt-4 border-t">
+                <button
+                  onClick={() => setShowExpenseModal(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!expenseForm.description.trim() || !expenseForm.amount) {
+                      notificationManager.error(
+                        "Missing Info",
+                        "Please fill in all required fields"
+                      );
+                      return;
+                    }
+
+                    const today = new Date().toISOString().split("T")[0];
+                    const timeNow = new Date().toLocaleTimeString();
+
+                    saveExpense({
+                      date: today,
+                      time: timeNow,
+                      category: expenseForm.category,
+                      description: expenseForm.description,
+                      amount: parseFloat(expenseForm.amount),
+                      paymentMethod: expenseForm.paymentMethod,
+                      notes: expenseForm.notes,
+                    });
+
+                    notificationManager.success(
+                      "Success",
+                      `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
+                    );
+
+                    // Reset form
+                    setExpenseForm({
+                      category: "supplies",
+                      description: "",
+                      amount: "",
+                      paymentMethod: "cash",
+                      notes: "",
+                    });
+                    setShowExpenseModal(false);
+                    loadTodaysSalesAndExpenses();
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 font-medium transition-all duration-200"
+                >
+                  <AlertCircle className="h-4 w-4 mr-2 inline" />
+                  Save Expense
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Exit Confirmation Modal */}
       {showExitModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
