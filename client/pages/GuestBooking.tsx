@@ -20,6 +20,16 @@ import { useState } from "react";
 
 export default function GuestBooking() {
   const [showInfoCard, setShowInfoCard] = useState(true);
+  const [fastBookingSelected, setFastBookingSelected] = useState(false);
+
+  const handleFastBookingSelect = (service: any) => {
+    setFastBookingSelected(true);
+    // Scroll to booking form
+    setTimeout(() => {
+      const bookingElement = document.getElementById("booking-form");
+      bookingElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
@@ -51,20 +61,27 @@ export default function GuestBooking() {
         </Link>
       </div>
 
-      {/* Header Section */}
-      <div className="pt-20 px-6 relative z-10">
-        <div className="text-center mb-8">
-          <Badge className="mb-4 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-            Quick Booking
-          </Badge>
-          <h1 className="text-3xl font-black text-foreground mb-2">
-            Book{" "}
-            <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-              Instantly
+      {/* Header Section - Mobile Optimized */}
+      <div className="pt-16 px-4 sm:px-6 relative z-10">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+              <Smartphone className="h-3 w-3 mr-1" />
+              Quick Booking
+            </Badge>
+            <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200 animate-pulse">
+              <Zap className="h-3 w-3 mr-1" />
+              Fast
+            </Badge>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black text-foreground mb-3 leading-tight">
+            Book Your<br />
+            <span className="bg-gradient-to-r from-fac-orange-500 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+              Service Now
             </span>
           </h1>
-          <p className="text-muted-foreground max-w-sm mx-auto">
-            Get your car serviced without creating an account - quick and simple
+          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+            No account needed. No signup. Just book instantly and get confirmed.
           </p>
         </div>
 
