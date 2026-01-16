@@ -1175,6 +1175,88 @@ const getDb = () => getDatabase();
 // Cache for available payment methods to speed up responses
 const PAYMENT_METHODS_CACHE_TTL = Number(process.env.XENDIT_METHODS_CACHE_TTL_SECONDS || 300); // default 5 minutes
 let paymentMethodsCache: { methods: any[]; expiresAt: number } | null = null;
+let paymentMethodsRefreshInProgress = false;
+
+// Background refresher: periodically refresh the cached payment methods to ensure
+// the first user sees a warmed cache and requests are fast.
+async function refreshPaymentMethodsCache() {
+  if (paymentMethodsRefreshInProgress) return;
+  paymentMethodsRefreshInProgress = true;
+
+  try {
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
+      // Nothing to refresh from Xendit; set fallback and return
+      const fallback = [
+        { id: 'card', label: 'Credit / Debit Card' },
+        { id: 'gcash', label: 'GCash (e-wallet)' },
+        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+        { id: 'bank_transfer', label: 'Bank Transfer' },
+        { id: 'offline', label: 'Pay at Counter (Cash)' },
+      ];
+      paymentMethodsCache = { methods: fallback, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
+      return;
+    }
+
+    const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
+    const resp = await fetch(url, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      console.warn('Background refresh: Xendit returned non-ok status', resp.status, text);
+      return;
+    }
+
+    const data = await resp.json().catch(() => null);
+    if (!data) {
+      console.warn('Background refresh: invalid JSON from Xendit');
+      return;
+    }
+
+    const list = Array.isArray(data) ? data : data.available_payment_methods || data.payment_methods || [];
+    const methods = (list || []).map((m: any) => {
+      const id = (m.code || m.id || m.payment_method || m.type || m.name || '').toString().toLowerCase();
+      const label = m.name || m.display_name || m.label || m.payment_method || m.id || id;
+      return { id, label };
+    });
+
+    const finalMethods = methods && methods.length > 0 ? methods : [
+      { id: 'card', label: 'Credit / Debit Card' },
+      { id: 'gcash', label: 'GCash (e-wallet)' },
+      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+      { id: 'bank_transfer', label: 'Bank Transfer' },
+      { id: 'offline', label: 'Pay at Counter (Cash)' },
+    ];
+
+    paymentMethodsCache = { methods: finalMethods, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
+    console.log('✅ Payment methods cache refreshed (background) -', finalMethods.map(m => m.id).join(', '));
+  } catch (err) {
+    console.warn('⚠️ Background refresh error:', err);
+  } finally {
+    paymentMethodsRefreshInProgress = false;
+  }
+}
+
+// Start background refresh interval (if TTL > 0)
+try {
+  if (PAYMENT_METHODS_CACHE_TTL > 0) {
+    // Trigger an initial refresh without blocking startup
+    setTimeout(() => {
+      refreshPaymentMethodsCache().catch((e) => console.warn('Initial payment methods refresh failed:', e));
+    }, 0);
+
+    // Schedule periodic refresh
+    setInterval(() => {
+      refreshPaymentMethodsCache().catch((e) => console.warn('Periodic payment methods refresh failed:', e));
+    }, Math.max(1000, PAYMENT_METHODS_CACHE_TTL * 1000));
+  }
+} catch (e) {
+  console.warn('Failed to start payment methods background refresher:', e);
+}
 
 // List payment methods supported by Xendit (frontend helper - dynamic with caching)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
