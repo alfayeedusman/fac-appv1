@@ -1441,6 +1441,18 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             `📝 Subscription ${subscriptionId} renewed:`,
             updated,
           );
+
+          // Emit Pusher event for subscription update
+          (async () => {
+            try {
+              await emitPusher([`user-customer-${updated.user_id || updated.userId}`, 'public-realtime'], 'subscription.renewed', {
+                subscriptionId,
+                subscription: updated,
+              });
+            } catch (err) {
+              console.warn('Failed to emit subscription pusher event:', err);
+            }
+          })();
         }
       } else if (event.status === "EXPIRED" || event.status === "FAILED") {
         console.log(`❌ Subscription payment failed for ${subscriptionId}`);
@@ -1457,6 +1469,17 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           .returning();
 
         console.log(`📝 Subscription ${subscriptionId} paused:`, updated);
+
+        (async () => {
+          try {
+            await emitPusher([`user-customer-${updated.user_id || updated.userId}`, 'public-realtime'], 'subscription.failed', {
+              subscriptionId,
+              subscription: updated,
+            });
+          } catch (err) {
+            console.warn('Failed to emit subscription pusher event:', err);
+          }
+        })();
       }
     }
 
