@@ -232,34 +232,63 @@ class RealtimeService {
       const Pusher = (window as any).Pusher;
       Pusher.logToConsole = false;
 
+      // Configure auth endpoint for private channel subscriptions
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+
       this.pusher = new Pusher(key, {
         cluster,
         forceTLS: true,
+        authEndpoint: '/api/realtime/pusher/auth',
+        auth: {
+          headers: {
+            'x-user-id': userId || '',
+            'x-user-role': userRole || '',
+          },
+        },
       });
 
-      // Subscribe to public realtime channel
+      // Subscribe to public realtime channel (non-private)
       const publicChannel = this.pusher.subscribe('public-realtime');
-      publicChannel.bind('new-message', (data: any) => {
-        this.emit('new-message', data);
-      });
-      publicChannel.bind('booking.updated', (data: any) => {
-        this.emit('booking.updated', data);
-      });
-      publicChannel.bind('subscription.renewed', (data: any) => {
-        this.emit('subscription.renewed', data);
-      });
+      publicChannel.bind('new-message', (data: any) => this.emit('new-message', data));
+      publicChannel.bind('booking.created', (data: any) => this.emit('booking.created', data));
+      publicChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      publicChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
+      publicChannel.bind('subscription.failed', (data: any) => this.emit('subscription.failed', data));
+      publicChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      publicChannel.bind('inventory.created', (data: any) => this.emit('inventory.created', data));
+      publicChannel.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
+      publicChannel.bind('inventory.deleted', (data: any) => this.emit('inventory.deleted', data));
+      publicChannel.bind('stock.movement', (data: any) => this.emit('stock.movement', data));
 
       this.pusherChannels.push(publicChannel);
 
-      // Subscribe to user specific channel if logged in
-      const userId = localStorage.getItem('userId');
+      // Subscribe to private public channel (for admins) if auth succeeds
+      const privatePublic = this.pusher.subscribe('private-public-realtime');
+      privatePublic.bind('booking.created', (data: any) => this.emit('booking.created', data));
+      privatePublic.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      privatePublic.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      privatePublic.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
+      this.pusherChannels.push(privatePublic);
+
+      // Subscribe to user specific channel if logged in (private)
       if (userId) {
-        const userChannelName = `user-customer-${userId}`;
-        const userChannel = this.pusher.subscribe(userChannelName);
+        const privateUserChannel = `private-user-customer-${userId}`;
+        const userChannel = this.pusher.subscribe(privateUserChannel);
         userChannel.bind('new-message', (data: any) => this.emit('new-message', data));
+        userChannel.bind('booking.created', (data: any) => this.emit('booking.created', data));
         userChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
         userChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
         this.pusherChannels.push(userChannel);
+      }
+
+      // Subscribe to branch channel if available in localStorage
+      const branchId = localStorage.getItem('userBranch') || localStorage.getItem('branchLocation');
+      if (branchId) {
+        const privateBranch = `private-branch-${branchId}`;
+        const branchChannel = this.pusher.subscribe(privateBranch);
+        branchChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+        this.pusherChannels.push(branchChannel);
       }
 
       console.log('🔌 Pusher channels subscribed');
