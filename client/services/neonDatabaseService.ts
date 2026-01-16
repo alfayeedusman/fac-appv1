@@ -605,7 +605,7 @@ class NeonDatabaseClient {
       ) {
         // Try fallback URL directly on network error
         try {
-          console.log("🔄 Network error, trying fallback login...");
+          log("🔄 Network error, trying fallback login...");
           const ac4 = new AbortController();
           const to4 = setTimeout(() => ac4.abort(), 10000);
           const resp3 = await fetch(`/api/neon/auth/login`, {
