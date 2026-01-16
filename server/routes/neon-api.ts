@@ -390,6 +390,69 @@ export const getBookings: RequestHandler = async (req, res) => {
   }
 };
 
+// Logout endpoint: invalidates the current session token
+export const logoutUser: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(400).json({ success: false, error: 'Authorization Bearer token required' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    const session = await neonDbService.getSessionByToken(token);
+    if (!session) {
+      return res.status(400).json({ success: false, error: 'Session not found' });
+    }
+
+    await neonDbService.deactivateSession(token);
+
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ success: false, error: 'Failed to logout' });
+  }
+};
+
+// Revoke session(s) - admin only. Body may contain { sessionToken, sessionId, userId }
+export const revokeSession: RequestHandler = async (req, res) => {
+  try {
+    // Validate caller's session
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    }
+    const callerToken = authHeader.split(' ')[1];
+    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
+      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    }
+
+    const { sessionToken, sessionId, userId } = req.body as { sessionToken?: string; sessionId?: string; userId?: string };
+
+    if (sessionToken) {
+      await neonDbService.deactivateSession(sessionToken);
+      return res.json({ success: true, message: 'Session token revoked' });
+    }
+
+    if (sessionId) {
+      await neonDbService.deactivateSessionById(sessionId);
+      return res.json({ success: true, message: 'Session id revoked' });
+    }
+
+    if (userId) {
+      await neonDbService.deactivateSessionsByUserId(userId);
+      return res.json({ success: true, message: 'All sessions for user revoked' });
+    }
+
+    return res.status(400).json({ success: false, error: 'sessionToken or sessionId or userId required' });
+  } catch (error) {
+    console.error('Revoke session error:', error);
+    res.status(500).json({ success: false, error: 'Failed to revoke session' });
+  }
+};
+
 // Ensure voucher tables exist (idempotent)
 async function ensureVoucherTables() {
   await sql`CREATE TABLE IF NOT EXISTS vouchers (
