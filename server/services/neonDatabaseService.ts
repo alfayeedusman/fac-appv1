@@ -207,15 +207,15 @@ class NeonDatabaseService {
     status?: string;
     userId?: string;
   }): Promise<any[]> {
-    if (!this.db) throw new Error("Database not connected");
+    if (!this.db) {
+      console.warn("⚠️ Database not connected");
+      return [];
+    }
 
     try {
-      // Build the query dynamically
-      let query: any = this.db
-        .select()
-        .from(schema.packageSubscriptions);
+      console.log("📋 Fetching subscriptions with params:", params);
 
-      // Apply filters
+      // Build the where conditions
       const conditions: any[] = [];
       if (params?.status) {
         conditions.push(eq(schema.packageSubscriptions.status, params.status));
@@ -224,36 +224,48 @@ class NeonDatabaseService {
         conditions.push(eq(schema.packageSubscriptions.userId, params.userId));
       }
 
+      // Build query with optional where clause
+      let query = this.db.select().from(schema.packageSubscriptions);
+
       if (conditions.length > 0) {
         query = query.where(and(...conditions));
       }
 
       // Execute query with ordering
       const subscriptions = await query.orderBy(
-        desc(schema.packageSubscriptions.startDate)
+        desc(schema.packageSubscriptions.startDate),
       );
 
-      console.log("📋 Found subscriptions:", subscriptions?.length || 0);
+      console.log(`✅ Found ${subscriptions?.length || 0} subscriptions`);
 
-      // Map results to expected format
+      // Map results to expected format, handling both snake_case and camelCase
       if (!subscriptions || subscriptions.length === 0) {
         return [];
       }
 
-      return subscriptions.map((sub: any) => ({
-        id: sub.id,
-        userId: sub.user_id || sub.userId,
-        packageId: sub.package_id || sub.packageId,
-        status: sub.status,
-        startDate: sub.start_date || sub.startDate,
-        endDate: sub.end_date || sub.endDate,
-        renewalDate: sub.renewal_date || sub.renewalDate,
-        finalPrice: parseFloat(sub.final_price || sub.finalPrice || 0),
-        autoRenew: sub.auto_renew !== false,
-        cycleCount: sub.usage_count || sub.usageCount || 1,
-        xenditPlanId: sub.xendit_plan_id || sub.xenditPlanId,
-        paymentMethod: sub.payment_method || sub.paymentMethod || "card",
-      }));
+      return subscriptions
+        .map((sub: any) => {
+          try {
+            return {
+              id: sub.id,
+              userId: sub.user_id || sub.userId,
+              packageId: sub.package_id || sub.packageId,
+              status: sub.status,
+              startDate: sub.start_date || sub.startDate,
+              endDate: sub.end_date || sub.endDate,
+              renewalDate: sub.renewal_date || sub.renewalDate,
+              finalPrice: parseFloat(sub.final_price || sub.finalPrice || "0"),
+              autoRenew: sub.auto_renew !== false,
+              cycleCount: sub.usage_count || sub.usageCount || 1,
+              xenditPlanId: sub.xendit_plan_id || sub.xenditPlanId,
+              paymentMethod: sub.payment_method || sub.paymentMethod || "card",
+            };
+          } catch (mapError) {
+            console.warn("⚠️ Error mapping subscription:", sub, mapError);
+            return null;
+          }
+        })
+        .filter((sub) => sub !== null);
     } catch (error) {
       console.error("❌ Error fetching subscriptions:", error);
       // Return empty array on error instead of throwing
