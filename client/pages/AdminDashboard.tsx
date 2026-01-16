@@ -853,6 +853,8 @@ export default function AdminDashboard() {
                   {activeTab === "user-management" && "Manage staff and users"}
                   {activeTab === "images" &&
                     "Manage media assets and galleries"}
+                  {activeTab === "settings" &&
+                    "Configure receipts, taxes, features, and user management"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
