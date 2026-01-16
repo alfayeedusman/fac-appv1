@@ -494,7 +494,7 @@ class NeonDatabaseClient {
         localStorage.setItem("userRole", json.user.role);
         localStorage.setItem("userId", json.user.id);
       } catch (e) {
-        console.warn(
+        warn(
           "⚠️ Storage unavailable, proceeding without persisting session:",
           (e as any)?.message || e,
         );
