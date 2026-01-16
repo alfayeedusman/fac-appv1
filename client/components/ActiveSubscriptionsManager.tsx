@@ -274,15 +274,22 @@ const ActiveSubscriptionsManager = () => {
                     {/* Customer Info */}
                     <div className="col-span-2">
                       <div className="space-y-2">
-                        <div className="font-semibold text-foreground">
+                        <div className="font-bold text-foreground text-base">
                           {subscription.customerName}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Mail className="h-3 w-3" />
                           {subscription.customerEmail}
                         </div>
-                        <div className="text-sm font-medium text-blue-600">
+                        <div className="text-sm font-medium text-cyan-600 flex items-center gap-1">
+                          <span>📦</span>
                           {subscription.packageName}
                         </div>
+                        <SubscriptionStatusBadge
+                          subscriptionType={subscription.paymentMethod as any}
+                          showIcon={false}
+                          size="sm"
+                        />
                       </div>
                     </div>
 
