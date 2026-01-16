@@ -311,6 +311,14 @@ const AppComponent = () => {
                   }
                 />
                 <Route
+                  path="/admin-sessions"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminSessions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/admin-receipt-designer"
                   element={
                     <ProtectedRoute requiredRole="admin">
