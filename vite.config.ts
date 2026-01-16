@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
       gzipSize: true,
       brotliSize: true,
       filename: 'dist/stats.html',
+      apply: 'build' // Only apply during build, not dev
     })
   ],
   resolve: {
