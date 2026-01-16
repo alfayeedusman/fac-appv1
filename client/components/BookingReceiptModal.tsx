@@ -132,13 +132,13 @@ export default function BookingReceiptModal({
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                 alt="Fayeed Auto Care Logo"
-                className="h-20 mx-auto mb-4 object-contain"
+                className="h-24 mx-auto mb-6 object-contain"
               />
               <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">
                 BOOKING RECEIPT
               </h2>
-              <p className="text-sm text-gray-600 font-medium">
-                Thank you for choosing Fayeed Auto Care
+              <p className="text-sm text-gray-600 font-medium whitespace-normal">
+                Thank&nbsp;you&nbsp;for&nbsp;choosing&nbsp;Fayeed&nbsp;Auto&nbsp;Care
               </p>
             </div>
 
