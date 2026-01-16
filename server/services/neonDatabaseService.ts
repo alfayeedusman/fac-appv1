@@ -636,6 +636,9 @@ class NeonDatabaseService {
       totalExpenses: Math.round(totalExpenses * 100) / 100,
       netIncome: Math.round(netIncome * 100) / 100,
       activeSubscriptions: subscriptionCount.count,
+      totalSubscriptionRevenue: Math.round(totalSubscriptionRevenue * 100) / 100,
+      newSubscriptions: newSubscriptionCount.count,
+      subscriptionUpgrades: upgradeCount.count,
       monthlyGrowth: Math.round(monthlyGrowth * 100) / 100, // Round to 2 decimal places
     };
   }
