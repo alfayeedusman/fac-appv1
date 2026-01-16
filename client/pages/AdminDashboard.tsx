@@ -1263,8 +1263,18 @@ export default function AdminDashboard() {
           {/* Content based on active tab */}
           {activeTab === "overview" && (
             <div className="space-y-8">
-              {/* Time Period Filter */}
-              <div className="flex justify-end">
+              {/* Time Period & Booking Type Filter */}
+              <div className="flex justify-end gap-3 flex-wrap">
+                <Select value={bookingTypeFilter} onValueChange={(value: any) => setBookingTypeFilter(value)}>
+                  <SelectTrigger className="w-40 border-orange-500">
+                    <SelectValue placeholder="Booking type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Bookings</SelectItem>
+                    <SelectItem value="booking">Bookings Only</SelectItem>
+                    <SelectItem value="walkin">Walk-in Only</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={timeFilter} onValueChange={setTimeFilter}>
                   <SelectTrigger className="w-40 border-orange-500">
                     <SelectValue placeholder="Select period" />
