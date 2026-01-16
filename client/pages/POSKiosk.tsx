@@ -45,13 +45,14 @@ import {
 } from "@/utils/carWashServices";
 import { Droplet, TrendingUp, AlertCircle } from "lucide-react";
 import {
-  saveTransaction,
-  getTodayTransactions,
-  getTodayExpenses,
-  getDailySalesReport,
-  saveExpense,
-  deleteExpense,
-} from "@/utils/posTransactionTracker";
+  saveTransaction as saveTransactionAPI,
+  saveExpense as saveExpenseAPI,
+  deleteExpense as deleteExpenseAPI,
+  getDailySalesReport as getDailyReportAPI,
+  getCurrentPOSSession,
+} from "@/utils/posApiService";
+import POSOpeningModal from "@/components/POSOpeningModal";
+import POSClosingModal from "@/components/POSClosingModal";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
