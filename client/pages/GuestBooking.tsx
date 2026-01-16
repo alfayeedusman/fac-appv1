@@ -64,7 +64,7 @@ export default function GuestBooking() {
           </p>
         </div>
 
-        {/* Enhanced Info Card (dismissible; reappears on refresh) */}
+        {/* Info Card (dismissible) */}
         {showInfoCard && (
           <div className="max-w-2xl mx-auto mb-6 sm:mb-8 relative">
             <button
@@ -83,52 +83,43 @@ export default function GuestBooking() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-foreground text-base mb-1">
-                      Customize Your Booking
+                    <h3 className="font-bold text-foreground text-base mb-2">
+                      Quick & Secure Booking
                     </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                      Choose any service, time, and location that works for you. Full control over your booking.
-                    </p>
 
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div className="p-2 bg-muted/50 rounded-lg">
-                        <div className="text-xs font-bold text-foreground">
-                          7 Steps
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Detailed
-                        </div>
+                    {/* Features */}
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-foreground">
+                          Instant confirmation via email
+                        </span>
                       </div>
-                      <div className="p-2 bg-muted/50 rounded-lg">
-                        <div className="text-xs font-bold text-foreground">
-                          5 Min
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Complete
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-foreground">
+                          ~5 minute booking process
+                        </span>
                       </div>
-                      <div className="p-2 bg-muted/50 rounded-lg">
-                        <div className="text-xs font-bold text-foreground">
-                          100%
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Secure
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-foreground">
+                          Premium service guaranteed
+                        </span>
                       </div>
                     </div>
 
                     {/* Account CTA */}
                     <p className="text-xs text-muted-foreground mb-3 flex items-start gap-2">
-                      <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                      <span>Create an account to save bookings, earn rewards, and skip future details!</span>
+                      <Info className="h-3.5 w-3.5 text-fac-orange-500 flex-shrink-0 mt-0.5" />
+                      <span>Create an account to save bookings, earn loyalty points, and get exclusive offers!</span>
                     </p>
 
                     <Link to="/signup" className="block">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full text-xs sm:text-sm h-8 sm:h-9 border-blue-200 text-blue-600 dark:border-blue-800 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
+                        className="w-full text-xs sm:text-sm h-8 sm:h-9 border-fac-orange-200 text-fac-orange-600 dark:border-fac-orange-800 dark:text-fac-orange-400 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950/30 transition-all"
                       >
                         Create Free Account
                       </Button>
