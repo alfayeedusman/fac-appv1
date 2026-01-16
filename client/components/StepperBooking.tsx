@@ -90,6 +90,7 @@ interface BookingData {
 
   // Payment
   paymentMethod: string; // "branch", "online", or "onsite"
+  paymentMethodDetail?: string; // e.g., 'gcash', 'paymaya', 'card'
   receiptFile: File | null;
 
   // Terms
