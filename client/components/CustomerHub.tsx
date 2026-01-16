@@ -4,11 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Users,
   Search,
   Phone,
   Mail,
-  MapPin,
   Calendar,
   DollarSign,
   RefreshCw,
@@ -19,10 +34,15 @@ import {
   ChevronUp,
   Filter,
   X,
+  Zap,
+  Crown,
+  Gift,
+  TrendingUpIcon,
+  AlertCircle,
 } from "lucide-react";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow, format, differenceInDays } from "date-fns";
 
 interface CustomerData {
   id: string;
@@ -38,18 +58,48 @@ interface CustomerData {
   lastBooking?: string;
   status: "active" | "inactive";
   loyaltyScore: number;
+  lifecycle?: "new" | "active" | "subscribed" | "vip" | "at-risk" | "upgraded";
 }
+
+type LifecycleType = "all" | "new" | "active" | "subscribed" | "vip" | "at-risk" | "upgraded";
+
+const LIFECYCLE_LABELS: Record<string, string> = {
+  new: "New Customer",
+  active: "Active",
+  subscribed: "Subscribed",
+  vip: "VIP Member",
+  "at-risk": "At Risk",
+  upgraded: "Recently Upgraded",
+};
+
+const LIFECYCLE_COLORS: Record<string, string> = {
+  new: "bg-blue-100 text-blue-800 border-blue-300",
+  active: "bg-green-100 text-green-800 border-green-300",
+  subscribed: "bg-purple-100 text-purple-800 border-purple-300",
+  vip: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  "at-risk": "bg-red-100 text-red-800 border-red-300",
+  upgraded: "bg-orange-100 text-orange-800 border-orange-300",
+};
 
 export default function CustomerHub() {
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<CustomerData[]>([]);
+  const [displayedCustomers, setDisplayedCustomers] = useState<CustomerData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSubscription, setFilterSubscription] = useState<string>("all");
+  const [filterLifecycle, setFilterLifecycle] = useState<LifecycleType>("all");
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "spent" | "bookings" | "loyalty">("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>("premium");
+
+  const PAGINATION_OPTIONS = [5, 10, 25, 50, 100];
 
   useEffect(() => {
     loadCustomers();
@@ -57,20 +107,26 @@ export default function CustomerHub() {
 
   useEffect(() => {
     filterAndSortCustomers();
-  }, [customers, searchTerm, filterStatus, filterSubscription, sortBy]);
+  }, [customers, searchTerm, filterStatus, filterSubscription, filterLifecycle, sortBy]);
+
+  useEffect(() => {
+    // Apply pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = itemsPerPage === -1 ? undefined : startIndex + itemsPerPage;
+    setDisplayedCustomers(filteredCustomers.slice(startIndex, endIndex));
+  }, [filteredCustomers, itemsPerPage, currentPage]);
 
   const loadCustomers = async () => {
     try {
       setIsLoading(true);
-      
+
       const result = await neonDbClient.getCustomers();
-      
+
       if (result.success && result.users) {
         const enrichedCustomers = await Promise.all(
           result.users.map(async (user: any) => {
             const bookingStats = await getCustomerBookingStats(user.id);
-            
-            return {
+            const customerData: CustomerData = {
               id: user.id,
               fullName: user.fullName || "Unknown",
               email: user.email,
@@ -84,10 +140,12 @@ export default function CustomerHub() {
               lastBooking: bookingStats.lastBooking,
               status: user.status || "active",
               loyaltyScore: calculateLoyaltyScore(user, bookingStats),
+              lifecycle: calculateLifecycle(user, bookingStats),
             };
+            return customerData;
           })
         );
-        
+
         setCustomers(enrichedCustomers);
         console.log("✅ Customers loaded:", enrichedCustomers);
       } else {
@@ -113,25 +171,25 @@ export default function CustomerHub() {
   const getCustomerBookingStats = async (customerId: string) => {
     try {
       const result = await neonDbClient.getAllBookings?.() || [];
-      
+
       const customerBookings = Array.isArray(result)
         ? result.filter((b: any) => b.userId === customerId || b.customerId === customerId)
         : [];
-      
+
       const totalBookings = customerBookings.length;
       const totalSpent = customerBookings.reduce(
         (sum: number, b: any) => sum + (parseFloat(b.totalPrice) || 0),
         0
       );
-      
+
       const sortedBookings = customerBookings.sort(
         (a: any, b: any) =>
           new Date(b.bookingDate || b.createdAt).getTime() -
           new Date(a.bookingDate || a.createdAt).getTime()
       );
-      
+
       const lastBooking = sortedBookings[0];
-      
+
       return {
         totalBookings,
         totalSpent,
@@ -145,19 +203,23 @@ export default function CustomerHub() {
 
   const calculateLoyaltyScore = (user: any, stats: any) => {
     let score = 0;
-    
+
     const bookingScore = Math.min(stats.totalBookings * 4, 40);
     score += bookingScore;
-    
+
     const spendingScore = Math.min(stats.totalSpent / 100, 30);
     score += spendingScore;
-    
+
     const subscriptionBonus =
-      user.subscriptionStatus === "premium" ? 20 :
-      user.subscriptionStatus === "basic" ? 10 :
-      user.subscriptionStatus === "vip" ? 20 : 0;
+      user.subscriptionStatus === "premium"
+        ? 20
+        : user.subscriptionStatus === "basic"
+          ? 10
+          : user.subscriptionStatus === "vip"
+            ? 20
+            : 0;
     score += subscriptionBonus;
-    
+
     if (user.createdAt) {
       const accountAge = Math.floor(
         (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
@@ -165,13 +227,50 @@ export default function CustomerHub() {
       const ageScore = Math.min(accountAge / 30, 10);
       score += ageScore;
     }
-    
+
     return Math.round(score);
+  };
+
+  const calculateLifecycle = (user: any, stats: any): LifecycleType => {
+    if (!user.createdAt) return "active";
+
+    const daysSinceCreated = differenceInDays(new Date(), new Date(user.createdAt));
+
+    // New customer (within 30 days)
+    if (daysSinceCreated <= 30) return "new";
+
+    // VIP
+    if (user.subscriptionStatus === "vip" || user.subscriptionStatus === "premium") {
+      return "vip";
+    }
+
+    // Subscribed (has active subscription)
+    if (user.subscriptionStatus && user.subscriptionStatus !== "free") {
+      return "subscribed";
+    }
+
+    // Recently Upgraded (has bookings recently)
+    if (stats.lastBooking) {
+      const daysSinceLastBooking = differenceInDays(new Date(), new Date(stats.lastBooking));
+      if (daysSinceLastBooking <= 7 && stats.totalBookings >= 3) {
+        return "upgraded";
+      }
+    }
+
+    // At Risk (inactive for 60+ days)
+    if (stats.lastBooking) {
+      const daysSinceLastBooking = differenceInDays(new Date(), new Date(stats.lastBooking));
+      if (daysSinceLastBooking > 60) {
+        return "at-risk";
+      }
+    }
+
+    return "active";
   };
 
   const filterAndSortCustomers = () => {
     let filtered = [...customers];
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -182,13 +281,17 @@ export default function CustomerHub() {
           c.carPlateNumber.toLowerCase().includes(term)
       );
     }
-    
+
     if (filterStatus !== "all") {
       filtered = filtered.filter((c) => c.status === filterStatus);
     }
-    
+
     if (filterSubscription !== "all") {
       filtered = filtered.filter((c) => c.subscriptionStatus === filterSubscription);
+    }
+
+    if (filterLifecycle !== "all") {
+      filtered = filtered.filter((c) => c.lifecycle === filterLifecycle);
     }
 
     // Sort
@@ -205,8 +308,9 @@ export default function CustomerHub() {
           return a.fullName.localeCompare(b.fullName);
       }
     });
-    
+
     setFilteredCustomers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const getSubscriptionBadgeColor = (status: string) => {
@@ -240,15 +344,73 @@ export default function CustomerHub() {
     return Math.min((score / 100) * 100, 100);
   };
 
+  const handleSubscriptionUpgrade = () => {
+    if (!selectedCustomer) return;
+
+    // Play notification sound
+    playNotificationSound("upgrade");
+
+    toast({
+      title: "✨ Upgrade Successful!",
+      description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan!`,
+    });
+
+    // Update customer in list
+    const updatedCustomers = customers.map((c) =>
+      c.id === selectedCustomer.id
+        ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
+        : c
+    );
+    setCustomers(updatedCustomers);
+    setIsSubscriptionModalOpen(false);
+    setSelectedCustomer(null);
+  };
+
+  const playNotificationSound = (type: "new" | "booking" | "upgrade" | "subscribe") => {
+    // Create different notification sounds based on type
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    switch (type) {
+      case "new":
+      case "booking":
+        // Higher pitch beep for new customer/booking
+        oscillator.frequency.value = 800;
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+        break;
+      case "upgrade":
+      case "subscribe":
+        // Ascending pitch for upgrade/subscribe
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(900, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+        break;
+    }
+  };
+
   const stats = {
     totalCustomers: customers.length,
     activeCustomers: customers.filter((c) => c.status === "active").length,
+    newCustomers: customers.filter((c) => c.lifecycle === "new").length,
+    vipCustomers: customers.filter((c) => c.lifecycle === "vip").length,
     totalRevenue: customers.reduce((sum, c) => sum + c.totalSpent, 0),
     avgSpent:
       customers.length > 0
         ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / customers.length
         : 0,
   };
+
+  const totalPages = Math.ceil(filteredCustomers.length / (itemsPerPage === -1 ? filteredCustomers.length : itemsPerPage));
 
   return (
     <div className="space-y-6">
@@ -257,7 +419,7 @@ export default function CustomerHub() {
         <div>
           <h2 className="text-3xl font-bold text-foreground">Customer Hub</h2>
           <p className="text-muted-foreground mt-1">
-            Manage and track customer data with real-time statistics
+            Manage customers, track subscriptions, and monitor lifecycle
           </p>
         </div>
         <Button
@@ -271,68 +433,50 @@ export default function CustomerHub() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-700 font-medium">Total Customers</p>
-                <p className="text-3xl font-bold text-blue-900 mt-1">
-                  {stats.totalCustomers}
-                </p>
-              </div>
-              <div className="bg-blue-200 p-3 rounded-lg">
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
+          <CardContent className="p-4">
+            <p className="text-xs text-blue-700 font-medium">Total</p>
+            <p className="text-2xl font-bold text-blue-900 mt-1">{stats.totalCustomers}</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-green-700 font-medium">Active Customers</p>
-                <p className="text-3xl font-bold text-green-900 mt-1">
-                  {stats.activeCustomers}
-                </p>
-              </div>
-              <div className="bg-green-200 p-3 rounded-lg">
-                <TrendingUp className="h-8 w-8 text-green-600" />
-              </div>
-            </div>
+          <CardContent className="p-4">
+            <p className="text-xs text-green-700 font-medium">Active</p>
+            <p className="text-2xl font-bold text-green-900 mt-1">{stats.activeCustomers}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-100 border-blue-200 shadow-md hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <p className="text-xs text-blue-700 font-medium">New</p>
+            <p className="text-2xl font-bold text-blue-900 mt-1">{stats.newCustomers}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-md hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <p className="text-xs text-yellow-700 font-medium">VIP</p>
+            <p className="text-2xl font-bold text-yellow-900 mt-1">{stats.vipCustomers}</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-purple-700 font-medium">Total Revenue</p>
-                <p className="text-2xl font-bold text-purple-900 mt-1">
-                  ₱{stats.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-              <div className="bg-purple-200 p-3 rounded-lg">
-                <DollarSign className="h-8 w-8 text-purple-600" />
-              </div>
-            </div>
+          <CardContent className="p-4">
+            <p className="text-xs text-purple-700 font-medium">Revenue</p>
+            <p className="text-lg font-bold text-purple-900 mt-1">
+              ₱{(stats.totalRevenue / 1000).toFixed(0)}k
+            </p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-orange-700 font-medium">Average Spent</p>
-                <p className="text-2xl font-bold text-orange-900 mt-1">
-                  ₱{stats.avgSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-              <div className="bg-orange-200 p-3 rounded-lg">
-                <Star className="h-8 w-8 text-orange-600" />
-              </div>
-            </div>
+          <CardContent className="p-4">
+            <p className="text-xs text-orange-700 font-medium">Avg Spent</p>
+            <p className="text-lg font-bold text-orange-900 mt-1">
+              ₱{stats.avgSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -352,72 +496,104 @@ export default function CustomerHub() {
               />
             </div>
 
-            {/* Filters & Controls */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Subscription</label>
-                <select
-                  value={filterSubscription}
-                  onChange={(e) => setFilterSubscription(e.target.value)}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="all">All Plans</option>
-                  <option value="free">Free</option>
-                  <option value="basic">Basic</option>
-                  <option value="premium">Premium</option>
-                  <option value="vip">VIP</option>
-                </select>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Status
+                </label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Subscription
+                </label>
+                <Select value={filterSubscription} onValueChange={setFilterSubscription}>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Plans</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="vip">VIP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Lifecycle
+                </label>
+                <Select value={filterLifecycle} onValueChange={(value: any) => setFilterLifecycle(value)}>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stages</SelectItem>
+                    <SelectItem value="new">New Customers</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="subscribed">Subscribed</SelectItem>
+                    <SelectItem value="vip">VIP</SelectItem>
+                    <SelectItem value="upgraded">Recently Upgraded</SelectItem>
+                    <SelectItem value="at-risk">At Risk</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Sort By
+                </label>
+                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name (A-Z)</SelectItem>
+                    <SelectItem value="spent">Total Spent</SelectItem>
+                    <SelectItem value="bookings">Bookings</SelectItem>
+                    <SelectItem value="loyalty">Loyalty</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Show
+                </label>
+                <Select
+                  value={itemsPerPage.toString()}
+                  onValueChange={(value) =>
+                    setItemsPerPage(value === "all" ? -1 : parseInt(value))
+                  }
                 >
-                  <option value="name">Name (A-Z)</option>
-                  <option value="spent">Total Spent (High to Low)</option>
-                  <option value="bookings">Bookings (Most)</option>
-                  <option value="loyalty">Loyalty Score (High)</option>
-                </select>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGINATION_OPTIONS.map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num} items
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="all">All items</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-end">
-                <div className="w-full flex gap-2">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="flex-1"
-                  >
-                    Grid
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="flex-1"
-                  >
-                    List
-                  </Button>
-                </div>
-              </div>
-
-              {(searchTerm || filterStatus !== "all" || filterSubscription !== "all") && (
+              {(searchTerm || filterStatus !== "all" || filterSubscription !== "all" || filterLifecycle !== "all") && (
                 <div className="flex items-end">
                   <Button
                     variant="outline"
@@ -426,11 +602,12 @@ export default function CustomerHub() {
                       setSearchTerm("");
                       setFilterStatus("all");
                       setFilterSubscription("all");
+                      setFilterLifecycle("all");
                     }}
-                    className="w-full"
+                    className="w-full h-10"
                   >
-                    <X className="h-4 w-4 mr-1" />
-                    Clear Filters
+                    <X className="h-3 w-3 mr-1" />
+                    Clear
                   </Button>
                 </div>
               )}
@@ -438,8 +615,20 @@ export default function CustomerHub() {
 
             {/* Results count */}
             <div className="text-sm text-muted-foreground pt-2 border-t">
-              Showing <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of{" "}
-              <span className="font-semibold text-foreground">{customers.length}</span> customers
+              Showing{" "}
+              <span className="font-semibold text-foreground">
+                {displayedCustomers.length}
+              </span>{" "}
+              of <span className="font-semibold text-foreground">{filteredCustomers.length}</span>{" "}
+              (Total: <span className="font-semibold">{customers.length}</span>)
+              {totalPages > 1 && (
+                <span className="ml-2">
+                  • Page{" "}
+                  <span className="font-semibold">
+                    {currentPage} of {totalPages}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </CardContent>
@@ -453,212 +642,108 @@ export default function CustomerHub() {
               <RefreshCw className="h-8 w-8 animate-spin text-orange-500 mr-3" />
               <p className="text-muted-foreground text-lg">Loading customer data...</p>
             </div>
-          ) : filteredCustomers.length === 0 ? (
+          ) : displayedCustomers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Users className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
               <p className="text-muted-foreground text-lg">No customers found</p>
               <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredCustomers.map((customer) => {
-                const loyalty = getLoyaltyTier(customer.loyaltyScore);
-                const loyaltyProgress = getLoyaltyProgress(customer.loyaltyScore);
-
-                return (
-                  <Card
-                    key={customer.id}
-                    className="hover:shadow-lg transition-all cursor-pointer border-border overflow-hidden"
-                    onClick={() =>
-                      setExpandedCustomer(
-                        expandedCustomer === customer.id ? null : customer.id
-                      )
-                    }
-                  >
-                    <CardContent className="p-6">
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg text-foreground">
-                            {customer.fullName}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">{customer.email}</p>
-                        </div>
-                        <Badge className={`capitalize border ${getStatusBadgeColor(customer.status)}`}>
-                          {customer.status}
-                        </Badge>
-                      </div>
-
-                      {/* Quick Stats */}
-                      <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b">
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-orange-600">
-                            {customer.totalBookings}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Bookings</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-green-600">
-                            ₱{customer.totalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Spent</p>
-                        </div>
-                        <div className="text-center">
-                          <p className={`text-2xl font-bold ${loyalty.color}`}>
-                            {customer.loyaltyScore}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Loyalty Pts</p>
-                        </div>
-                      </div>
-
-                      {/* Loyalty Tier */}
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className={`text-sm font-semibold ${loyalty.color}`}>
-                            {loyalty.tier} Member
-                          </p>
-                          <Star className={`h-4 w-4 ${loyalty.color}`} />
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${
-                              loyalty.tier === "Platinum"
-                                ? "bg-yellow-500"
-                                : loyalty.tier === "Gold"
-                                ? "bg-yellow-400"
-                                : loyalty.tier === "Silver"
-                                ? "bg-gray-400"
-                                : loyalty.tier === "Bronze"
-                                ? "bg-orange-400"
-                                : "bg-blue-400"
-                            }`}
-                            style={{ width: `${loyaltyProgress}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Subscription Badge */}
-                      <div className="mb-4">
-                        <Badge className={`capitalize border w-full justify-center ${getSubscriptionBadgeColor(customer.subscriptionStatus)}`}>
-                          {customer.subscriptionStatus}
-                        </Badge>
-                      </div>
-
-                      {/* Expandable Details */}
-                      <div
-                        className={`overflow-hidden transition-all ${
-                          expandedCustomer === customer.id ? "max-h-96" : "max-h-0"
-                        }`}
-                      >
-                        <div className="pt-4 border-t space-y-3 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span>{customer.contactNumber}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Car className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p>{customer.carUnit}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {customer.carPlateNumber}
-                              </p>
-                            </div>
-                          </div>
-                          {customer.lastBooking && (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="text-xs">
-                                  {format(new Date(customer.lastBooking), "MMM dd, yyyy")}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  ({formatDistanceToNow(new Date(customer.lastBooking), { addSuffix: true })})
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Expand indicator */}
-                      <div className="flex justify-center mt-3 pt-3 border-t">
-                        {expandedCustomer === customer.id ? (
-                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Customers List View */}
-      {viewMode === "list" && (
-        <Card className="border-border shadow-lg">
-          <CardHeader>
-            <CardTitle>Customer Directory</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <RefreshCw className="h-8 w-8 animate-spin text-orange-500 mr-3" />
-                <p className="text-muted-foreground text-lg">Loading customer data...</p>
-              </div>
-            ) : filteredCustomers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Users className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-                <p className="text-muted-foreground text-lg">No customers found</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredCustomers.map((customer) => {
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {displayedCustomers.map((customer) => {
                   const loyalty = getLoyaltyTier(customer.loyaltyScore);
+                  const loyaltyProgress = getLoyaltyProgress(customer.loyaltyScore);
 
                   return (
-                    <div
+                    <Card
                       key={customer.id}
-                      className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                      className="hover:shadow-lg transition-all cursor-pointer border-border overflow-hidden"
+                      onClick={() =>
+                        setExpandedCustomer(
+                          expandedCustomer === customer.id ? null : customer.id
+                        )
+                      }
                     >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        {/* Left: Name & Contact */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div>
-                              <h4 className="font-semibold text-foreground">
-                                {customer.fullName}
-                              </h4>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Mail className="h-3 w-3" />
-                                  {customer.email}
+                      <CardContent className="p-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-foreground">
+                              {customer.fullName}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">{customer.email}</p>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Badge className={`capitalize border text-xs ${getStatusBadgeColor(customer.status)}`}>
+                              {customer.status}
+                            </Badge>
+                            {customer.lifecycle && (
+                              <Badge className={`capitalize border text-xs ${LIFECYCLE_COLORS[customer.lifecycle]}`}>
+                                <span className="flex items-center gap-1">
+                                  {customer.lifecycle === "new" && <Zap className="h-3 w-3" />}
+                                  {customer.lifecycle === "vip" && <Crown className="h-3 w-3" />}
+                                  {customer.lifecycle === "upgraded" && <TrendingUpIcon className="h-3 w-3" />}
+                                  {customer.lifecycle === "at-risk" && <AlertCircle className="h-3 w-3" />}
+                                  {LIFECYCLE_LABELS[customer.lifecycle]}
                                 </span>
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Phone className="h-3 w-3" />
-                                  {customer.contactNumber}
-                                </span>
-                              </div>
-                            </div>
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
-                        {/* Middle: Vehicle & Subscription */}
-                        <div className="flex flex-col gap-2 md:text-center">
-                          <div className="flex items-center gap-2">
-                            <Car className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <div className="text-sm">
-                              <p className="font-medium">{customer.carUnit}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {customer.carPlateNumber}
-                              </p>
-                            </div>
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-orange-600">
+                              {customer.totalBookings}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Bookings</p>
                           </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-green-600">
+                              ₱{customer.totalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Spent</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={`text-2xl font-bold ${loyalty.color}`}>
+                              {customer.loyaltyScore}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Pts</p>
+                          </div>
+                        </div>
+
+                        {/* Loyalty Tier */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className={`text-sm font-semibold ${loyalty.color}`}>
+                              {loyalty.tier} Member
+                            </p>
+                            <Star className={`h-4 w-4 ${loyalty.color}`} />
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                loyalty.tier === "Platinum"
+                                  ? "bg-yellow-500"
+                                  : loyalty.tier === "Gold"
+                                    ? "bg-yellow-400"
+                                    : loyalty.tier === "Silver"
+                                      ? "bg-gray-400"
+                                      : loyalty.tier === "Bronze"
+                                        ? "bg-orange-400"
+                                        : "bg-blue-400"
+                              }`}
+                              style={{ width: `${loyaltyProgress}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Subscription Badge */}
+                        <div className="mb-4">
                           <Badge
-                            className={`capitalize border w-fit ${getSubscriptionBadgeColor(
+                            className={`capitalize border w-full justify-center ${getSubscriptionBadgeColor(
                               customer.subscriptionStatus
                             )}`}
                           >
@@ -666,49 +751,209 @@ export default function CustomerHub() {
                           </Badge>
                         </div>
 
-                        {/* Right: Stats */}
-                        <div className="grid grid-cols-3 gap-4 md:gap-6">
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-orange-600">
-                              {customer.totalBookings}
-                            </p>
-                            <p className="text-xs text-muted-foreground">Bookings</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-green-600">
-                              ₱{customer.totalSpent.toLocaleString(undefined, {
-                                maximumFractionDigits: 0,
-                              })}
-                            </p>
-                            <p className="text-xs text-muted-foreground">Spent</p>
-                          </div>
-                          <div className="text-center">
-                            <p className={`text-lg font-bold ${loyalty.color}`}>
-                              {loyalty.tier}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {customer.loyaltyScore} pts
-                            </p>
+                        {/* Action Button */}
+                        {customer.subscriptionStatus === "free" && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCustomer(customer);
+                              setIsSubscriptionModalOpen(true);
+                            }}
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-sm"
+                          >
+                            <Gift className="h-3 w-3 mr-1" />
+                            Upgrade to Plan
+                          </Button>
+                        )}
+
+                        {/* Expandable Details */}
+                        <div
+                          className={`overflow-hidden transition-all ${
+                            expandedCustomer === customer.id ? "max-h-96" : "max-h-0"
+                          }`}
+                        >
+                          <div className="pt-4 border-t space-y-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span>{customer.contactNumber}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Car className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p>{customer.carUnit}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {customer.carPlateNumber}
+                                </p>
+                              </div>
+                            </div>
+                            {customer.lastBooking && (
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                  <p className="text-xs">
+                                    {format(new Date(customer.lastBooking), "MMM dd, yyyy")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    ({formatDistanceToNow(new Date(customer.lastBooking), {
+                                      addSuffix: true,
+                                    })})
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* Status Badge */}
-                        <Badge
-                          className={`capitalize border ${getStatusBadgeColor(
-                            customer.status
-                          )}`}
-                        >
-                          {customer.status}
-                        </Badge>
-                      </div>
-                    </div>
+                        {/* Expand indicator */}
+                        <div className="flex justify-center mt-3 pt-3 border-t">
+                          {expandedCustomer === customer.id ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      onClick={() => setCurrentPage(page)}
+                      className="w-10"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
+
+      {/* Subscription/Upgrade Modal */}
+      <Dialog open={isSubscriptionModalOpen} onOpenChange={setIsSubscriptionModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              ✨ Upgrade {selectedCustomer?.fullName}
+            </DialogTitle>
+            <DialogDescription>
+              Choose a subscription plan to unlock premium features
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedCustomer && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-foreground">
+                  Current Plan: <span className="capitalize font-bold">{selectedCustomer.subscriptionStatus}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedCustomer.totalBookings} bookings • ₱{selectedCustomer.totalSpent.toLocaleString()}
+                  spent
+                </p>
+              </div>
+
+              {/* Plan Options */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    id: "basic",
+                    name: "Basic",
+                    price: "₱500/month",
+                    features: ["5 free washes/month", "Priority booking", "Email support"],
+                    icon: <TrendingUp className="h-6 w-6" />,
+                  },
+                  {
+                    id: "premium",
+                    name: "Premium",
+                    price: "₱1,500/month",
+                    features: ["Unlimited washes", "VIP lounge access", "Phone support", "Free detailing"],
+                    icon: <Crown className="h-6 w-6" />,
+                    popular: true,
+                  },
+                  {
+                    id: "vip",
+                    name: "VIP",
+                    price: "₱3,000/month",
+                    features: [
+                      "Everything in Premium",
+                      "24/7 concierge",
+                      "Free premium detailing",
+                      "Priority scheduling",
+                    ],
+                    icon: <Star className="h-6 w-6 text-yellow-500" />,
+                  },
+                ].map((plan) => (
+                  <div
+                    key={plan.id}
+                    onClick={() => setSelectedPlan(plan.id)}
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      selectedPlan === plan.id
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    } ${plan.popular ? "ring-2 ring-orange-200" : ""}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-foreground">{plan.name}</h4>
+                      {plan.popular && (
+                        <Badge className="bg-orange-500 text-white">Popular</Badge>
+                      )}
+                    </div>
+                    <p className="text-lg font-bold text-orange-600 mb-3">{plan.price}</p>
+                    <ul className="space-y-2 text-sm">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-muted-foreground">
+                          <span className="text-green-600 mt-1">✓</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSubscriptionModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubscriptionUpgrade}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              Upgrade to {selectedPlan}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
