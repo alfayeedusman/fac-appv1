@@ -86,7 +86,6 @@ import AdminGamification from "./AdminGamification";
 import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
-import POS from "./POS";
 import AdminUserManagement from "./AdminUserManagement";
 import AdminCrewManagement from "./AdminCrewManagement";
 import { createAd, getAds } from "@/utils/adsUtils";
