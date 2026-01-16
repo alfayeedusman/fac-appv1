@@ -1,6 +1,7 @@
 // Client-side service to interact with Neon database via API
 import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
+import { log, info, warn, error as logError } from '@/utils/logger';
 
 // Types based on our database schema
 export interface UserVehicle {
