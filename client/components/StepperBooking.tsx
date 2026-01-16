@@ -59,6 +59,7 @@ import {
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
+import PaymentMethodsSelection from '@/components/PaymentMethodsSelection';
 import BookingReceiptModal from "@/components/BookingReceiptModal";
 import BookingProgressBar from "@/components/BookingProgressBar";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
