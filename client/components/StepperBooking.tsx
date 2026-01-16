@@ -903,6 +903,28 @@ export default function StepperBooking({
   };
 
   const submitBooking = async () => {
+    // Prevent submission if payment method isn't selected — fix for guests receiving receipt immediately
+    if (!bookingData.paymentMethod) {
+      // Move user back to Payment step (6)
+      setCurrentStep(6);
+      toast({
+        title: 'Select payment method',
+        description: 'Please choose a payment method before confirming your booking.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (bookingData.paymentMethod === 'online' && !bookingData.paymentMethodDetail) {
+      setCurrentStep(6);
+      toast({
+        title: 'Select payment channel',
+        description: 'Please select a payment channel (e.g., GCash, Card) before proceeding.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
