@@ -84,6 +84,7 @@ class XenditService {
           failure_redirect_url:
             params.failureRedirectUrl ||
             window.location.origin + "/booking-failed",
+          preferred_payment_method: params.preferredPaymentMethod || undefined,
         }),
         signal: ac.signal,
       });
