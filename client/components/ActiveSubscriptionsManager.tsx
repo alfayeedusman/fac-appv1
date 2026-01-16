@@ -91,7 +91,14 @@ const ActiveSubscriptionsManager = () => {
       console.log("📋 Loading active subscriptions...");
 
       // Fetch subscriptions from database
-      const result = await neonDbClient.getSubscriptions?.();
+      if (!neonDbClient.getSubscriptions) {
+        console.error("❌ getSubscriptions method not available");
+        setSubscriptions([]);
+        setLoading(false);
+        return;
+      }
+
+      const result = await neonDbClient.getSubscriptions({ status: "active" });
       console.log("📋 Subscriptions result:", result);
 
       if (result?.success && result.subscriptions && Array.isArray(result.subscriptions)) {
