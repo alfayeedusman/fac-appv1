@@ -51,6 +51,7 @@ import {
   getDailySalesReport as getDailyReportAPI,
   getCurrentPOSSession,
 } from "@/utils/posApiService";
+import { receiptPrintService } from "@/services/receiptPrintService";
 import POSOpeningModal from "@/components/POSOpeningModal";
 import POSClosingModal from "@/components/POSClosingModal";
 
