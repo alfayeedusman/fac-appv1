@@ -206,7 +206,7 @@ class NeonDatabaseClient {
       if (res.ok) {
         const result = await res.json();
         this.isConnected = !!(result.connected || result.success);
-        console.log(`🔗 Test connection result: ${this.isConnected}`);
+        info(`🔗 Test connection result: ${this.isConnected}`);
         return this.isConnected;
       }
     } catch (e) {
