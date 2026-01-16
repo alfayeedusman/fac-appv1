@@ -1251,7 +1251,7 @@ export const createStockMovement: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher('public-realtime', 'stock.movement', { movement });
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'stock.movement', { movement });
       } catch (err) {
         console.warn('Failed to emit stock.movement:', err);
       }
