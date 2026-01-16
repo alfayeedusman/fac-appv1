@@ -1153,7 +1153,7 @@ export const createInventoryItem: RequestHandler = async (req, res) => {
     // Emit pusher event
     (async () => {
       try {
-        await emitPusher('public-realtime', 'inventory.created', { item });
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.created', { item });
       } catch (err) {
         console.warn('Failed to emit inventory.created:', err);
       }
