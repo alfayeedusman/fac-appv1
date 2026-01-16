@@ -311,7 +311,7 @@ class NeonDatabaseClient {
       this.isConnected = false;
       return { connected: false, error: "Network error" };
     } catch (error: any) {
-      console.error("❌ Connection test failed:", error.message || error);
+      logError("❌ Connection test failed:", error.message || error);
       this.isConnected = false;
       if (error.name === "AbortError") {
         return { connected: false, error: "Connection timeout" };
@@ -345,9 +345,9 @@ class NeonDatabaseClient {
       // Test basic connectivity
       log("🧪 Testing connection...");
       debug.testResults = await this.testConnection();
-      console.log("✅ Test connection result:", debug.testResults);
+      log("✅ Test connection result:", debug.testResults);
     } catch (error) {
-      console.error("❌ Test connection failed:", error);
+      logError("❌ Test connection failed:", error);
       debug.testResults = {
         error: error instanceof Error ? error.message : "Unknown test error",
       };
@@ -355,17 +355,17 @@ class NeonDatabaseClient {
 
     try {
       // Try initialization
-      console.log("🚀 Testing initialization...");
+      log("🚀 Testing initialization...");
       debug.initResults = await this.initialize();
-      console.log("✅ Init result:", debug.initResults);
+      log("✅ Init result:", debug.initResults);
     } catch (error) {
-      console.error("❌ Initialization failed:", error);
+      logError("❌ Initialization failed:", error);
       debug.initResults = {
         error: error instanceof Error ? error.message : "Unknown init error",
       };
     }
 
-    console.log("🔍 Debug completed:", debug);
+    log("🔍 Debug completed:", debug);
     return debug;
   }
 
@@ -390,7 +390,7 @@ class NeonDatabaseClient {
   // Auto-initialize without user interaction
   private async autoInitialize(): Promise<boolean> {
     try {
-      console.log("🔄 Auto-initializing Neon database...");
+      log("🔄 Auto-initializing Neon database...");
 
       // First try test connection
       const testResult = await this.testConnection();
@@ -402,7 +402,7 @@ class NeonDatabaseClient {
       const initResult = await this.initialize();
       return initResult;
     } catch (error) {
-      console.error("❌ Auto-initialization failed:", error);
+      logError("❌ Auto-initialization failed:", error);
       return false;
     }
   }
