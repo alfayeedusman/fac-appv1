@@ -1,6 +1,8 @@
 // Xendit Payment Service
 // Documentation: https://developers.xendit.co/api-reference/
 
+import { log, info, warn, error as logError } from '@/utils/logger';
+
 declare global {
   interface Window {
     Xendit: any;
