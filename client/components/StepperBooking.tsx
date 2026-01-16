@@ -1410,11 +1410,13 @@ export default function StepperBooking({
     <div className="min-h-screen bg-transparent relative">
       {/* Booking Receipt Modal */}
       {completedBooking && (
-        <BookingReceiptModal
-          isOpen={showReceiptModal}
-          onClose={handleCloseReceipt}
-          bookingData={completedBooking}
-        />
+        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-white/80 z-50">Loading receipt...</div>}>
+          <BookingReceiptModal
+            isOpen={showReceiptModal}
+            onClose={handleCloseReceipt}
+            bookingData={completedBooking}
+          />
+        </Suspense>
       )}
 
       {/* Mobile Bottom Sheet for Booking Summary */}
