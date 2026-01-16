@@ -215,6 +215,60 @@ class RealtimeService {
   /**
    * Start real-time polling
    */
+  async initPusher(key: string, cluster: string) {
+    try {
+      // Dynamically load Pusher script
+      if (!(window as any).Pusher) {
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://js.pusher.com/7.2/pusher.min.js';
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = (e) => reject(e);
+          document.head.appendChild(s);
+        });
+      }
+
+      const Pusher = (window as any).Pusher;
+      Pusher.logToConsole = false;
+
+      this.pusher = new Pusher(key, {
+        cluster,
+        forceTLS: true,
+      });
+
+      // Subscribe to public realtime channel
+      const publicChannel = this.pusher.subscribe('public-realtime');
+      publicChannel.bind('new-message', (data: any) => {
+        this.emit('new-message', data);
+      });
+      publicChannel.bind('booking.updated', (data: any) => {
+        this.emit('booking.updated', data);
+      });
+      publicChannel.bind('subscription.renewed', (data: any) => {
+        this.emit('subscription.renewed', data);
+      });
+
+      this.pusherChannels.push(publicChannel);
+
+      // Subscribe to user specific channel if logged in
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        const userChannelName = `user-customer-${userId}`;
+        const userChannel = this.pusher.subscribe(userChannelName);
+        userChannel.bind('new-message', (data: any) => this.emit('new-message', data));
+        userChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+        userChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
+        this.pusherChannels.push(userChannel);
+      }
+
+      console.log('🔌 Pusher channels subscribed');
+    } catch (error) {
+      console.warn('⚠️ Failed to initialize Pusher client:', error);
+      // Do not throw - fallback to polling
+    }
+  }
+
   startRealTimeUpdates(intervalMs: number = 5000): void {
     if (this.refreshInterval) {
       this.stopRealTimeUpdates();
