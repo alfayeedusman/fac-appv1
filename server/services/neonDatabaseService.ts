@@ -210,76 +210,52 @@ class NeonDatabaseService {
     if (!this.db) throw new Error("Database not connected");
 
     try {
-      const subscriptions = await this.db.query.packageSubscriptions.findMany({
-        with: {
-          // These need to be defined in the Drizzle schema relations
-          // For now, we'll do a simple select and handle client-side fetching
-        },
-        where: (subs, { eq, and }) => {
-          const conditions = [];
-          if (params?.status) {
-            conditions.push(eq(subs.status, params.status));
-          }
-          if (params?.userId) {
-            conditions.push(eq(subs.userId, params.userId));
-          }
-          return conditions.length > 0 ? and(...conditions) : undefined;
-        },
-        orderBy: (subs, { desc }) => desc(subs.startDate),
-      }).catch(() => {
-        // Fallback to raw query if relations not set up
-        return null;
-      });
+      // Build the query dynamically
+      let query: any = this.db
+        .select()
+        .from(schema.packageSubscriptions);
 
-      if (subscriptions === null) {
-        // Fallback: do a simple select without relations
-        let query = this.db
-          .select()
-          .from(schema.packageSubscriptions);
-
-        if (params?.status) {
-          query = query.where(eq(schema.packageSubscriptions.status, params.status));
-        }
-
-        if (params?.userId) {
-          query = query.where(eq(schema.packageSubscriptions.userId, params.userId));
-        }
-
-        const subs = await query.orderBy(desc(schema.packageSubscriptions.startDate));
-
-        return subs.map((sub: any) => ({
-          id: sub.id,
-          userId: sub.userId,
-          packageId: sub.packageId,
-          status: sub.status,
-          startDate: sub.startDate,
-          endDate: sub.endDate,
-          renewalDate: sub.renewalDate,
-          finalPrice: sub.finalPrice,
-          autoRenew: sub.autoRenew,
-          cycleCount: sub.usageCount || 1,
-          xenditPlanId: sub.xenditPlanId,
-          paymentMethod: sub.paymentMethod || "card",
-        }));
+      // Apply filters
+      const conditions: any[] = [];
+      if (params?.status) {
+        conditions.push(eq(schema.packageSubscriptions.status, params.status));
+      }
+      if (params?.userId) {
+        conditions.push(eq(schema.packageSubscriptions.userId, params.userId));
       }
 
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      // Execute query with ordering
+      const subscriptions = await query.orderBy(
+        desc(schema.packageSubscriptions.startDate)
+      );
+
+      console.log("📋 Found subscriptions:", subscriptions?.length || 0);
+
       // Map results to expected format
+      if (!subscriptions || subscriptions.length === 0) {
+        return [];
+      }
+
       return subscriptions.map((sub: any) => ({
         id: sub.id,
-        userId: sub.userId,
-        packageId: sub.packageId,
+        userId: sub.user_id || sub.userId,
+        packageId: sub.package_id || sub.packageId,
         status: sub.status,
-        startDate: sub.startDate,
-        endDate: sub.endDate,
-        renewalDate: sub.renewalDate,
-        finalPrice: sub.finalPrice,
-        autoRenew: sub.autoRenew,
-        cycleCount: sub.usageCount || 1,
-        xenditPlanId: sub.xenditPlanId,
-        paymentMethod: sub.paymentMethod || "card",
+        startDate: sub.start_date || sub.startDate,
+        endDate: sub.end_date || sub.endDate,
+        renewalDate: sub.renewal_date || sub.renewalDate,
+        finalPrice: parseFloat(sub.final_price || sub.finalPrice || 0),
+        autoRenew: sub.auto_renew !== false,
+        cycleCount: sub.usage_count || sub.usageCount || 1,
+        xenditPlanId: sub.xendit_plan_id || sub.xenditPlanId,
+        paymentMethod: sub.payment_method || sub.paymentMethod || "card",
       }));
     } catch (error) {
-      console.error("Error fetching subscriptions:", error);
+      console.error("❌ Error fetching subscriptions:", error);
       // Return empty array on error instead of throwing
       return [];
     }
