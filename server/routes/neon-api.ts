@@ -718,7 +718,8 @@ export const dismissAd: RequestHandler = async (req, res) => {
 // Database stats endpoint
 export const getDatabaseStats: RequestHandler = async (req, res) => {
   try {
-    const stats = await neonDbService.getStats();
+    const period = (req.query.period as string) || "monthly";
+    const stats = await neonDbService.getStats(period);
     res.json({
       success: true,
       stats,
