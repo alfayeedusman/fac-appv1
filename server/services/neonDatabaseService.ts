@@ -454,7 +454,7 @@ class NeonDatabaseService {
 
   // === UTILITY METHODS ===
 
-  async getStats(): Promise<{
+  async getStats(period: string = "monthly"): Promise<{
     totalUsers: number;
     totalBookings: number;
     activeAds: number;
@@ -467,6 +467,28 @@ class NeonDatabaseService {
     monthlyGrowth: number;
   }> {
     if (!this.db) throw new Error("Database not connected");
+
+    // Calculate date range based on period
+    const now = new Date();
+    let startDate = new Date();
+
+    switch(period) {
+      case "daily":
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case "weekly":
+        startDate.setDate(now.getDate() - now.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case "yearly":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      case "monthly":
+      default:
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+    }
 
     const [userCount] = await this.db
       .select({ count: count() })
