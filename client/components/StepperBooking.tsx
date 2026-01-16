@@ -61,6 +61,7 @@ import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
 import BookingReceiptModal from "@/components/BookingReceiptModal";
 import BookingProgressBar from "@/components/BookingProgressBar";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 
 interface BookingData {
   // Service Selection
