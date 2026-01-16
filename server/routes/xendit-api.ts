@@ -1172,10 +1172,22 @@ const XENDIT_API_URL = "https://api.xendit.co/v2";
 // Helper function to get database
 const getDb = () => getDatabase();
 
-// List payment methods supported by Xendit (frontend helper - dynamic)
+// Cache for available payment methods to speed up responses
+const PAYMENT_METHODS_CACHE_TTL = Number(process.env.XENDIT_METHODS_CACHE_TTL_SECONDS || 300); // default 5 minutes
+let paymentMethodsCache: { methods: any[]; expiresAt: number } | null = null;
+
+// List payment methods supported by Xendit (frontend helper - dynamic with caching)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
   try {
-    // If Xendit key is not configured, return a reasonable fallback
+    const forceRefresh = req.query.refresh === 'true';
+
+    // Return cached if valid and not forced
+    const now = Date.now();
+    if (!forceRefresh && paymentMethodsCache && paymentMethodsCache.expiresAt > now) {
+      return res.json({ success: true, methods: paymentMethodsCache.methods, source: 'cache' });
+    }
+
+    // If Xendit key is not configured, return a reasonable fallback (and cache it briefly)
     if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
       const fallback = [
         { id: 'card', label: 'Credit / Debit Card' },
@@ -1184,6 +1196,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
         { id: 'bank_transfer', label: 'Bank Transfer' },
         { id: 'offline', label: 'Pay at Counter (Cash)' },
       ];
+      paymentMethodsCache = { methods: fallback, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
       return res.json({ success: true, methods: fallback, source: 'fallback' });
     }
 
@@ -1193,6 +1206,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
         Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
         'Content-Type': 'application/json',
       },
+      // small timeout via AbortController could be added, but keep simple here
     });
 
     if (!response.ok) {
@@ -1206,6 +1220,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
         { id: 'bank_transfer', label: 'Bank Transfer' },
         { id: 'offline', label: 'Pay at Counter (Cash)' },
       ];
+      paymentMethodsCache = { methods: fallback, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
       return res.json({ success: true, methods: fallback, source: 'fallback' });
     }
 
@@ -1225,18 +1240,17 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
     });
 
     // If mapping produced no results, fallback to defaults
-    if (!methods || methods.length === 0) {
-      const fallback = [
-        { id: 'card', label: 'Credit / Debit Card' },
-        { id: 'gcash', label: 'GCash (e-wallet)' },
-        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-        { id: 'bank_transfer', label: 'Bank Transfer' },
-        { id: 'offline', label: 'Pay at Counter (Cash)' },
-      ];
-      return res.json({ success: true, methods: fallback, source: 'fallback' });
-    }
+    const finalMethods = methods && methods.length > 0 ? methods : [
+      { id: 'card', label: 'Credit / Debit Card' },
+      { id: 'gcash', label: 'GCash (e-wallet)' },
+      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+      { id: 'bank_transfer', label: 'Bank Transfer' },
+      { id: 'offline', label: 'Pay at Counter (Cash)' },
+    ];
 
-    res.json({ success: true, methods, source: 'xendit' });
+    paymentMethodsCache = { methods: finalMethods, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
+
+    res.json({ success: true, methods: finalMethods, source: 'xendit' });
   } catch (error: any) {
     console.error('List payment methods error:', error);
     const fallback = [
@@ -1246,6 +1260,8 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
       { id: 'bank_transfer', label: 'Bank Transfer' },
       { id: 'offline', label: 'Pay at Counter (Cash)' },
     ];
+    // Cache fallback briefly to avoid repeated failing calls
+    paymentMethodsCache = { methods: fallback, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
     res.json({ success: true, methods: fallback, source: 'fallback' });
   }
 };
