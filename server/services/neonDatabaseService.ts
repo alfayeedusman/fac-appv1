@@ -505,7 +505,7 @@ class NeonDatabaseService {
       .select({ count: count() })
       .from(schema.bookings)
       .where(and(
-        schema.bookings.userId.isNotNull(),
+        ne(schema.bookings.userId, null),
         gte(schema.bookings.createdAt, startDate)
       ));
 
