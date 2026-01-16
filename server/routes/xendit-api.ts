@@ -1,4 +1,7 @@
 import express, { RequestHandler } from "express";
+import { getDatabase } from "../database/connection.js";
+import * as schema from "../database/schema.js";
+import { eq } from "drizzle-orm";
 
 const router = express.Router();
 
@@ -7,6 +10,9 @@ const XENDIT_SECRET_KEY =
   process.env.XENDIT_SECRET_KEY || "xnd_production_YOUR_SECRET_KEY_HERE";
 const XENDIT_WEBHOOK_TOKEN = process.env.XENDIT_WEBHOOK_TOKEN || "";
 const XENDIT_API_URL = "https://api.xendit.co/v2";
+
+// Helper function to get database
+const getDb = () => getDatabase();
 
 // Create Invoice
 export const createInvoice: RequestHandler = async (req, res) => {
