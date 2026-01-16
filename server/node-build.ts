@@ -34,15 +34,37 @@ app.use(express.static(spaCachePath));
 
 // Handle React Router - serve index.html for all non-API routes
 app.get("*", (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
+  // API routes should never reach here (they should be handled above)
+  // If they do, return 404
+  if (req.path.startsWith("/api/")) {
     return res.status(404).json({ error: "API endpoint not found" });
   }
 
   const indexPath = path.join(spaCachePath, "index.html");
   if (!fs.existsSync(indexPath)) {
     console.warn(`⚠️ index.html not found at ${indexPath}`);
-    return res.status(404).json({ error: "Frontend not available" });
+    // Still return HTML for SPA routing, but with a message
+    return res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Fusion Starter</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body>
+        <div id="root">
+          <h1>Server is running but frontend assets are not available</h1>
+          <p>API endpoints are available at: /api/*</p>
+        </div>
+        <script>
+          // Try to fetch from alternative paths
+          console.log('SPA not found at: ${indexPath}');
+          console.log('Current working directory: ${process.cwd()}');
+        </script>
+      </body>
+      </html>
+    `);
   }
   res.sendFile(indexPath);
 });
