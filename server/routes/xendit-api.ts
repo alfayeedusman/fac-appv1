@@ -322,4 +322,159 @@ export const getInvoiceStatus: RequestHandler = async (req, res) => {
   }
 };
 
+// Check booking payment status
+export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    if (!bookingId) {
+      return res.status(400).json({ success: false, error: "bookingId required" });
+    }
+
+    const db = getDb();
+    const [booking] = await db
+      .select()
+      .from(schema.bookings)
+      .where(eq(schema.bookings.id, bookingId));
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    res.json({
+      success: true,
+      bookingId: booking.id,
+      paymentStatus: booking.paymentStatus,
+      totalPrice: booking.totalPrice,
+      status: booking.status,
+    });
+  } catch (error: any) {
+    console.error("Check booking payment error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Check subscription payment status
+export const checkSubscriptionPaymentStatus: RequestHandler = async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    if (!subscriptionId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "subscriptionId required" });
+    }
+
+    const db = getDb();
+    const [subscription] = await db
+      .select()
+      .from(schema.packageSubscriptions)
+      .where(eq(schema.packageSubscriptions.id, subscriptionId));
+
+    if (!subscription) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Subscription not found" });
+    }
+
+    res.json({
+      success: true,
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      autoRenew: subscription.auto_renew,
+      renewalDate: subscription.renewal_date,
+      cycleCount: subscription.usage_count || 1,
+    });
+  } catch (error: any) {
+    console.error("Check subscription payment error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Create subscription recurring invoice for renewal
+export const createSubscriptionInvoice: RequestHandler = async (req, res) => {
+  try {
+    const {
+      subscriptionId,
+      amount,
+      customerEmail,
+      customerName,
+      description,
+      success_redirect_url,
+      failure_redirect_url,
+    } = req.body;
+
+    if (!subscriptionId || !amount || !customerEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "subscriptionId, amount, and customerEmail are required",
+      });
+    }
+
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes("YOUR_SECRET_KEY")) {
+      return res.status(500).json({
+        success: false,
+        error: "Xendit API key not configured",
+      });
+    }
+
+    const payload = {
+      external_id: `SUBSCRIPTION_${subscriptionId}`,
+      amount,
+      payer_email: customerEmail,
+      description: description || `Subscription Renewal - ${customerName || "Customer"}`,
+      customer: {
+        given_names: customerName || "Customer",
+        email: customerEmail,
+      },
+      success_redirect_url,
+      failure_redirect_url,
+      currency: "PHP",
+      invoice_duration: 86400 * 7, // 7 days for subscription payments
+      items: [
+        {
+          name: description || "Subscription Renewal",
+          quantity: 1,
+          price: amount,
+        },
+      ],
+    };
+
+    console.log("📤 Creating subscription invoice...");
+    const response = await fetch(`${XENDIT_API_URL}/invoices`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ":").toString("base64")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Xendit API error:", errorText);
+      return res.status(response.status).json({
+        success: false,
+        error: "Failed to create subscription invoice",
+      });
+    }
+
+    const data = await response.json();
+    console.log("✅ Subscription invoice created:", data.id);
+
+    res.json({
+      success: true,
+      invoice_id: data.id,
+      invoice_url: data.invoice_url,
+      expiry_date: data.expiry_date,
+    });
+  } catch (error: any) {
+    console.error("❌ Create subscription invoice error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
+  }
+};
+
 export default router;
