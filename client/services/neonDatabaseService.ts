@@ -558,7 +558,7 @@ class NeonDatabaseClient {
         processed.error?.toLowerCase().includes("cors") ||
         processed.error?.toLowerCase().includes("network")
       ) {
-        console.log("🔄 Retrying login via same-origin fallback...");
+        log("🔄 Retrying login via same-origin fallback...");
         const ac2 = new AbortController();
         const to2 = setTimeout(() => ac2.abort(), 10000);
         try {
