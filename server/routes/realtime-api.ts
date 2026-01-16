@@ -680,22 +680,54 @@ router.post('/pusher/auth', async (req, res) => {
       return res.status(500).json({ success: false, error: 'Pusher not configured' });
     }
 
-    // Basic access control for private channels
-    // private-user-customer-<id> => require x-user-id header matching id
-    // private-admin-... => require x-user-role header includes admin
-    const userIdHeader = req.headers['x-user-id'] as string | undefined;
-    const userRoleHeader = req.headers['x-user-role'] as string | undefined;
+    // Server-side authentication: prefer Authorization Bearer <token> header
+    // The token is validated against user_sessions table via neonDbService
+    let authenticatedUserId: string | null = null;
+    let authenticatedUserRole: string | null = null;
 
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const session = await neonDbService.getSessionByToken(token);
+        if (!session || !session.isActive) {
+          return res.status(403).json({ success: false, error: 'Invalid or inactive session token' });
+        }
+        const expiresAt = new Date(session.expiresAt);
+        if (expiresAt < new Date()) {
+          return res.status(403).json({ success: false, error: 'Session token expired' });
+        }
+
+        const user = await neonDbService.getUserById(session.userId);
+        if (!user) {
+          return res.status(403).json({ success: false, error: 'User not found for session' });
+        }
+
+        authenticatedUserId = user.id;
+        authenticatedUserRole = user.role;
+      } catch (sessionErr) {
+        console.warn('⚠️ Session validation error on pusher auth:', sessionErr);
+        return res.status(500).json({ success: false, error: 'Session validation failed' });
+      }
+    } else {
+      // Fallback to header-based checks (deprecated) for backward compatibility
+      const userIdHeader = req.headers['x-user-id'] as string | undefined;
+      const userRoleHeader = req.headers['x-user-role'] as string | undefined;
+      if (userIdHeader) authenticatedUserId = userIdHeader;
+      if (userRoleHeader) authenticatedUserRole = userRoleHeader as string;
+    }
+
+    // Basic access control for private channels
     if (channel_name.startsWith('private-user-customer-')) {
       const parts = channel_name.split('private-user-customer-');
       const channelUserId = parts[1];
-      if (!userIdHeader || userIdHeader !== channelUserId) {
+      if (!authenticatedUserId || authenticatedUserId !== channelUserId) {
         return res.status(403).json({ success: false, error: 'Unauthorized for this channel' });
       }
     }
 
     if (channel_name.startsWith('private-admin')) {
-      if (!userRoleHeader || !['admin', 'superadmin', 'manager'].includes(userRoleHeader)) {
+      if (!authenticatedUserRole || !['admin', 'superadmin', 'manager'].includes(authenticatedUserRole)) {
         return res.status(403).json({ success: false, error: 'Unauthorized for admin channel' });
       }
     }
