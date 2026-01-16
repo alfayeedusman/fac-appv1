@@ -360,6 +360,58 @@ const ActiveSubscriptionsManager = () => {
                     {/* Actions */}
                     <div className="col-span-1">
                       <div className="space-y-2">
+                        <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => setSelectedSubscription(subscription)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Details
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Subscription Details</DialogTitle>
+                              <DialogDescription>
+                                View complete subscription information
+                              </DialogDescription>
+                            </DialogHeader>
+                            {selectedSubscription && (
+                              <div className="space-y-4">
+                                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-4 rounded-lg border">
+                                  <div className="space-y-2">
+                                    <div className="text-sm font-medium text-muted-foreground">
+                                      Customer
+                                    </div>
+                                    <div className="font-bold text-lg">
+                                      {selectedSubscription.customerName}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Mail className="h-4 w-4" />
+                                      {selectedSubscription.customerEmail}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <SubscriptionDetailsCard
+                                  customerId={selectedSubscription.customerId}
+                                  customerName={selectedSubscription.customerName}
+                                  subscriptionStatus={selectedSubscription.paymentMethod as any}
+                                  renewalDate={selectedSubscription.renewalDate}
+                                  cycleCount={selectedSubscription.cycleCount}
+                                  autoRenew={selectedSubscription.autoRenew}
+                                  paymentMethod={selectedSubscription.paymentMethod}
+                                  amount={selectedSubscription.finalPrice}
+                                  compact={false}
+                                />
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
+
                         <Dialog open={isSetupDialogOpen} onOpenChange={setIsSetupDialogOpen}>
                           <DialogTrigger asChild>
                             <Button
