@@ -1192,31 +1192,31 @@ export default function POSKiosk() {
         </div>
       )}
 
-      {/* Exit Confirmation Modal */}
-      {showExitModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">Exit POS Kiosk</h2>
-              <p className="text-gray-600">Are you sure you want to exit the kiosk?</p>
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowExitModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => navigate("/admin-dashboard")}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Exit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* POS Opening Modal */}
+      <POSOpeningModal
+        isOpen={showOpeningModal}
+        onClose={() => setShowOpeningModal(false)}
+        onSessionOpened={(sessionId) => {
+          setCurrentSessionId(sessionId);
+          setSessionLoaded(true);
+          setShowOpeningModal(false);
+        }}
+        cashierInfo={{ id: cashierId, name: cashierName }}
+        branchId={branchId}
+      />
+
+      {/* POS Closing Modal */}
+      <POSClosingModal
+        isOpen={showClosingModal}
+        onClose={() => setShowClosingModal(false)}
+        onSessionClosed={() => {
+          setCurrentSessionId(null);
+          setSessionLoaded(false);
+          navigate("/admin-dashboard");
+        }}
+        sessionId={currentSessionId || ""}
+        openingBalance={openingBalance}
+      />
     </div>
   );
 }
