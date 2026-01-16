@@ -134,6 +134,30 @@ class NeonDatabaseService {
     return true;
   }
 
+  // Deactivate session by its database id
+  async deactivateSessionById(sessionId: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.id, sessionId));
+
+    return true;
+  }
+
+  // Deactivate all sessions for a given user id
+  async deactivateSessionsByUserId(userId: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.userId, userId));
+
+    return true;
+  }
+
   async verifyPassword(email: string, password: string): Promise<boolean> {
     const user = await this.getUserByEmail(email);
     if (!user) return false;
