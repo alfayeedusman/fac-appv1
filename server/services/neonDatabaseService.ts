@@ -81,6 +81,59 @@ class NeonDatabaseService {
     return user;
   }
 
+  // === SESSION MANAGEMENT ===
+  // Create a server-side session record for the user. Sessions are used
+  // to authenticate private channel requests (Pusher auth) and API calls.
+  async createUserSession(
+    userId: string,
+    sessionToken: string,
+    expiresAt: Date,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (!this.db) throw new Error('Database not connected');
+
+    const [session] = await this.db
+      .insert(schema.userSessions)
+      .values({
+        id: createId(),
+        userId,
+        sessionToken,
+        expiresAt,
+        ipAddress: ipAddress || null,
+        userAgent: userAgent || null,
+        isActive: true,
+      })
+      .returning();
+
+    return session;
+  }
+
+  // Retrieve a session by its token. Returns null if not found.
+  async getSessionByToken(sessionToken: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    const [session] = await this.db
+      .select()
+      .from(schema.userSessions)
+      .where(eq(schema.userSessions.sessionToken, sessionToken))
+      .limit(1);
+
+    return session || null;
+  }
+
+  // Deactivate (invalidate) a session token
+  async deactivateSession(sessionToken: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.sessionToken, sessionToken));
+
+    return true;
+  }
+
   async verifyPassword(email: string, password: string): Promise<boolean> {
     const user = await this.getUserByEmail(email);
     if (!user) return false;
