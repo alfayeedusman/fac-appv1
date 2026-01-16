@@ -190,7 +190,7 @@ class NeonDatabaseClient {
         );
       }
     } catch (error) {
-      console.warn(
+      warn(
         "⚠️ Init request error, will try /test fallback:",
         error instanceof Error ? error.message : error,
       );
