@@ -538,15 +538,17 @@ export default function AdminFACMap() {
                     isFullscreen ? "h-[calc(100vh-200px)]" : "h-[700px]"
                   }
                 >
-                  <RealTimeMap
-                    onCrewSelect={(crew) => console.log("Selected crew:", crew)}
-                    onCustomerSelect={(customer) =>
-                      console.log("Selected customer:", customer)
-                    }
-                    height={isFullscreen ? "calc(100vh - 200px)" : "700px"}
-                    showCustomers={true}
-                    showCrew={true}
-                  />
+                  <Suspense fallback={<div className="h-full w-full flex items-center justify-center">Loading map...</div>}>
+                    <RealTimeMap
+                      onCrewSelect={(crew) => console.log("Selected crew:", crew)}
+                      onCustomerSelect={(customer) =>
+                        console.log("Selected customer:", customer)
+                      }
+                      height={isFullscreen ? "calc(100vh - 200px)" : "700px"}
+                      showCustomers={true}
+                      showCrew={true}
+                    />
+                  </Suspense>
                 </div>
               </CardContent>
             </Card>
