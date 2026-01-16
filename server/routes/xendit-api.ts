@@ -1172,6 +1172,25 @@ const XENDIT_API_URL = "https://api.xendit.co/v2";
 // Helper function to get database
 const getDb = () => getDatabase();
 
+// List common payment methods supported by Xendit (frontend helper)
+export const listPaymentMethods: RequestHandler = async (req, res) => {
+  try {
+    // In a future iteration we can call Xendit API to detect enabled methods.
+    const methods = [
+      { id: 'card', label: 'Credit / Debit Card' },
+      { id: 'gcash', label: 'GCash (e-wallet)' },
+      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+      { id: 'bank_transfer', label: 'Bank Transfer' },
+      { id: 'offline', label: 'Pay at Counter (Cash)' },
+    ];
+
+    res.json({ success: true, methods });
+  } catch (error: any) {
+    console.error('List payment methods error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Internal error' });
+  }
+};
+
 // Create Invoice
 export const createInvoice: RequestHandler = async (req, res) => {
   console.log("💳 Xendit create invoice request received");
