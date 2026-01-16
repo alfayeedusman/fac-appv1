@@ -145,10 +145,15 @@ export default function POSKiosk() {
   }, []);
 
   // Load today's sales and expenses
-  const loadTodaysSalesAndExpenses = () => {
-    const report = getDailySalesReport();
-    setTodaysSales(report.totalSales);
-    setTodayExpenses(report.totalExpenses);
+  const loadTodaysSalesAndExpenses = async () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const report = await getDailyReportAPI(today);
+      setTodaysSales(report.totalSales);
+      setTodayExpenses(report.totalExpenses);
+    } catch (error) {
+      console.error("Error loading sales data:", error);
+    }
   };
 
   useEffect(() => {
