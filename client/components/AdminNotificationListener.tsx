@@ -76,10 +76,28 @@ export default function AdminNotificationListener() {
       }
 
       if (eventType === 'booking.updated') {
-        const title = 'Booking Updated';
-        const message = `Booking ${data.bookingId} status: ${data.paymentStatus || 'updated'}`;
-        toast({ title, description: message, duration: 6000 });
-        addAdminNotification({ type: 'status_update', title, message, priority: 'normal', data });
+        // Check if payment status changed
+        const isPaymentUpdate = data.paymentStatus === 'completed' || data.paymentStatus === 'failed';
+        const title = isPaymentUpdate ? '💳 Payment Received' : 'Booking Updated';
+        const amount = data.booking?.totalPrice ? `₱${data.booking.totalPrice}` : '';
+        const message = isPaymentUpdate
+          ? `Booking ${data.bookingId} - Payment ${data.paymentStatus === 'completed' ? 'completed' : 'failed'} ${amount}`
+          : `Booking ${data.bookingId} - ${data.paymentStatus || 'status updated'}`;
+
+        toast({
+          title,
+          description: message,
+          duration: isPaymentUpdate ? 8000 : 6000,
+          variant: data.paymentStatus === 'failed' ? 'destructive' : 'default'
+        });
+
+        const priority = isPaymentUpdate ? 'high' : 'normal';
+        addAdminNotification({ type: 'status_update', title, message, priority, data });
+
+        // Play sound for payment notifications
+        if (isPaymentUpdate && data.paymentStatus === 'completed') {
+          playNotificationSound('payment_received');
+        }
       }
 
       if (eventType === 'pos.transaction.created') {
