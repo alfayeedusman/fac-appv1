@@ -382,11 +382,14 @@ class ReceiptPrintService {
   }
 
   /**
-   * Print receipt to thermal printer
+   * Print receipt to thermal or standard printer
+   * Auto mode: prints directly without dialog
+   * Manual mode: shows print dialog for user confirmation
    */
   async printReceipt(data: ReceiptData, settings?: ReceiptSettings) {
     try {
-      const html = this.generateReceiptHTML(data, settings);
+      const cfg = settings || this.settings || this.getDefaultSettings();
+      const html = this.generateReceiptHTML(data, cfg);
 
       // Create a new window for printing
       const printWindow = window.open("", "", "height=600,width=800");
@@ -399,11 +402,21 @@ class ReceiptPrintService {
 
       // Wait for content to load before printing
       printWindow.onload = () => {
-        printWindow.print();
-        // Close window after printing (optional)
-        setTimeout(() => {
-          printWindow.close();
-        }, 1000);
+        // Auto print mode - print directly without dialog
+        if (cfg.printingMode === "auto") {
+          // For thermal printers, use direct print
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 500);
+        } else {
+          // Manual mode - show print dialog
+          printWindow.print();
+          // Keep window open so user can see preview if needed
+          setTimeout(() => {
+            printWindow.close();
+          }, 3000);
+        }
       };
     } catch (error) {
       console.error("Error printing receipt:", error);
