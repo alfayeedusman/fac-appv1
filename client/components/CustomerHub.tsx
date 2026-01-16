@@ -714,13 +714,11 @@ export default function CustomerHub() {
 
                         {/* Subscription Badge */}
                         <div className="mb-4">
-                          <Badge
-                            className={`capitalize border w-full justify-center ${getSubscriptionBadgeColor(
-                              customer.subscriptionStatus
-                            )}`}
-                          >
-                            {customer.subscriptionStatus}
-                          </Badge>
+                          <SubscriptionStatusBadge
+                            subscriptionType={customer.subscriptionStatus as any}
+                            showIcon={true}
+                            size="md"
+                          />
                         </div>
 
                         {/* Action Button */}
