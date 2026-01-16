@@ -890,22 +890,26 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      console.log("📋 Fetching subscriptions from:", `${this.baseUrl}/subscriptions?${queryParams.toString()}`);
+      const url = `${this.baseUrl}/subscriptions?${queryParams.toString()}`;
+      console.log("📋 Fetching subscriptions from:", url);
 
-      const response = await fetch(
-        `${this.baseUrl}/subscriptions?${queryParams.toString()}`,
-        { signal: ac.signal },
-      );
+      const response = await fetch(url, { signal: ac.signal });
 
       clearTimeout(to);
 
+      // Check response status first
       if (!response.ok) {
         console.error("❌ Subscription fetch failed with status:", response.status);
         const contentType = response.headers.get("content-type");
         if (contentType?.includes("application/json")) {
-          const errorData = await response.json();
-          console.error("Error response:", errorData);
-          return { success: false, subscriptions: [], error: errorData.error };
+          try {
+            const errorData = await response.json();
+            console.error("Error response:", errorData);
+            return { success: false, subscriptions: [], error: errorData.error };
+          } catch (parseErr) {
+            console.error("Failed to parse error response:", parseErr);
+            return { success: false, subscriptions: [], error: `HTTP ${response.status}` };
+          }
         } else {
           const text = await response.text();
           console.error("Non-JSON error response:", text.substring(0, 200));
@@ -913,9 +917,23 @@ class NeonDatabaseClient {
         }
       }
 
-      const result = await response.json();
-      console.log("✅ Subscriptions fetched successfully:", result?.subscriptions?.length || 0);
-      return result;
+      // Parse successful response
+      try {
+        const contentType = response.headers.get("content-type");
+        if (!contentType?.includes("application/json")) {
+          console.error("❌ Response content-type is not JSON:", contentType);
+          const text = await response.text();
+          console.error("Response body:", text.substring(0, 200));
+          return { success: false, subscriptions: [], error: "Invalid content type" };
+        }
+
+        const result = await response.json();
+        console.log("✅ Subscriptions fetched successfully:", result?.subscriptions?.length || 0);
+        return result;
+      } catch (parseErr) {
+        console.error("❌ Failed to parse subscription response:", parseErr);
+        return { success: false, subscriptions: [], error: "Failed to parse response" };
+      }
     } catch (error: any) {
       console.error("❌ Database subscription fetch failed:", error);
       if (error?.name === "AbortError") {
