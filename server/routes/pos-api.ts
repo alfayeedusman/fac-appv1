@@ -515,9 +515,7 @@ router.get("/reports/daily/:date", async (req, res) => {
         .select()
         .from(posExpenses)
         .where(
-          and(
-            ...sessionIds.map((id) => eq(posExpenses.posSessionId, id))
-          )
+          inArray(posExpenses.posSessionId, sessionIds)
         );
       totalExpenses = expenses.reduce(
         (sum, exp) => sum + parseFloat(exp.amount.toString()),
