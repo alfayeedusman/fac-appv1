@@ -136,8 +136,23 @@ class RealtimeService {
   private consecutiveErrors: number = 0;
   private maxConsecutiveErrors: number = 3;
 
+  private pusher: any = null;
+  private pusherChannels: any[] = [];
+
   constructor() {
     this.baseUrl = '/api/realtime';
+
+    // Try to initialize Pusher client if VITE_PUSHER_KEY is configured
+    const pusherKey = import.meta.env.VITE_PUSHER_KEY;
+    const pusherCluster = import.meta.env.VITE_PUSHER_CLUSTER;
+
+    if (pusherKey && pusherCluster) {
+      this.initPusher(pusherKey as string, pusherCluster as string)
+        .then(() => console.log('✅ Pusher client initialized'))
+        .catch((err) => console.warn('⚠️ Pusher client init failed:', err));
+    } else {
+      console.log('ℹ️ Pusher not configured on client (VITE_PUSHER_KEY missing)');
+    }
   }
 
   /**
