@@ -742,6 +742,73 @@ export default function AdminSettings() {
                 />
               </div>
 
+              <div className="space-y-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <Label className="text-base font-semibold">
+                  🖨️ Printing Mode & Settings
+                </Label>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="printing-mode">Printing Mode</Label>
+                    <Select
+                      value={receiptSettings.printingMode}
+                      onValueChange={(value) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          printingMode: value as "auto" | "manual",
+                        })
+                      }
+                    >
+                      <SelectTrigger id="printing-mode">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">
+                          🤖 Auto Print (No Prompt)
+                        </SelectItem>
+                        <SelectItem value="manual">
+                          👆 Manual Print (Ask User)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {receiptSettings.printingMode === "auto"
+                        ? "✓ Receipts will print automatically to the default printer without showing a dialog"
+                        : "✓ Users will be asked to confirm before printing each receipt"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="printer-type">Printer Type</Label>
+                    <Select
+                      value={receiptSettings.printerType}
+                      onValueChange={(value) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          printerType: value as "thermal" | "standard",
+                        })
+                      }
+                    >
+                      <SelectTrigger id="printer-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="thermal">
+                          🖨️ Thermal Printer (80mm)
+                        </SelectItem>
+                        <SelectItem value="standard">
+                          📄 Standard Printer (A4)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {receiptSettings.printerType === "thermal"
+                        ? "✓ Optimized for thermal receipt printers"
+                        : "✓ Optimized for standard letter-size printers"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <Label className="text-base font-semibold">
                   Receipt Features
