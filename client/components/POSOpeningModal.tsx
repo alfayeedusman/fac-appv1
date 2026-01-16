@@ -24,10 +24,27 @@ export default function POSOpeningModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleOpenSession = async () => {
-    if (!openingBalance || isNaN(parseFloat(openingBalance))) {
+    if (!openingBalance || openingBalance.trim() === "") {
+      notificationManager.error(
+        "Required Field",
+        "Opening balance is required to start a POS session"
+      );
+      return;
+    }
+
+    const balance = parseFloat(openingBalance);
+    if (isNaN(balance)) {
       notificationManager.error(
         "Invalid Input",
-        "Please enter a valid opening balance"
+        "Please enter a valid number for opening balance"
+      );
+      return;
+    }
+
+    if (balance < 0) {
+      notificationManager.error(
+        "Invalid Amount",
+        "Opening balance cannot be negative"
       );
       return;
     }
