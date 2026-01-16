@@ -166,57 +166,10 @@ export default function NotificationService({ userRole, userId, onNotificationRe
     }
   }, [userId, userRole]);
 
-  // Poll for new notifications
+  // Load notifications only on mount, don't poll
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 5000); // Check every 5 seconds
-    return () => clearInterval(interval);
   }, [loadNotifications]);
-
-  // Check for new notifications and play sounds
-  useEffect(() => {
-    const checkForNewNotifications = () => {
-      try {
-        const allNotifications = JSON.parse(localStorage.getItem('system_notifications') || '[]');
-        const newNotifications = allNotifications.filter((notif: SystemNotification) => {
-          const isTargetUser = notif.targetUsers?.includes(userId);
-          const isTargetRole = notif.targetRoles.includes(userRole);
-          const isUnread = !notif.readBy.some((r: any) => r.userId === userId);
-          const isRecent = new Date(notif.createdAt).getTime() > Date.now() - 10000; // Last 10 seconds
-          
-          return (isTargetUser || isTargetRole) && isUnread && isRecent;
-        });
-
-        newNotifications.forEach((notification: SystemNotification) => {
-          // Show toast notification
-          const setting = settings.find(s => s.type === notification.type);
-          if (setting?.enabled) {
-            toast({
-              title: notification.title,
-              description: notification.message,
-              variant: notification.priority === 'urgent' ? 'destructive' : 'default',
-              duration: notification.priority === 'urgent' ? 10000 : 5000,
-            });
-
-            // Play sound if enabled
-            if (setting.soundEnabled && notification.playSound) {
-              playNotificationSound(setting);
-            }
-
-            // Callback for parent component
-            if (onNotificationReceived) {
-              onNotificationReceived(notification);
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error checking for new notifications:', error);
-      }
-    };
-
-    const interval = setInterval(checkForNewNotifications, 2000); // Check every 2 seconds
-    return () => clearInterval(interval);
-  }, [settings, userId, userRole, onNotificationReceived]);
 
   const playNotificationSound = (setting: NotificationSettings) => {
     try {
