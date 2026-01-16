@@ -3,6 +3,8 @@
  * Handles all communication with the real-time API endpoints
  */
 
+import { log, info, warn, error as logError } from '@/utils/logger';
+
 interface CrewLocation {
   crew_id: number;
   name: string;
