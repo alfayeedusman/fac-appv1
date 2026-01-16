@@ -26,7 +26,7 @@ import {
   Settings,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
-import RealTimeMap from "@/components/RealTimeMap";
+const RealTimeMap = React.lazy(() => import('@/components/RealTimeMap'));
 import ThemeToggle from "@/components/ThemeToggle";
 import AdminNotificationDropdown from "@/components/AdminNotificationDropdown";
 
