@@ -268,12 +268,12 @@ export default function AdminDashboard() {
   const [editingFeatures, setEditingFeatures] = useState("");
 
   // Function to load real statistics from database
-  const loadRealStats = async () => {
+  const loadRealStats = async (period: string = timeFilter) => {
     try {
       setStatsLoading(true);
-      console.log('📊 Loading real stats...');
+      console.log('📊 Loading real stats for period:', period);
 
-      const result = await neonDbClient.getStats();
+      const result = await neonDbClient.getStats(period);
       console.log('📈 Stats result:', result);
 
       if (result.success && result.stats) {
