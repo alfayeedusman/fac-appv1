@@ -457,6 +457,7 @@ class NeonDatabaseService {
   async getStats(period: string = "monthly"): Promise<{
     totalUsers: number;
     totalBookings: number;
+    totalOnlineBookings: number;
     activeAds: number;
     pendingBookings: number;
     totalRevenue: number;
