@@ -1380,6 +1380,31 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("bookings")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Online Bookings
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalOnlineBookings.toLocaleString()
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-cyan-500 p-3 rounded-lg">
+                        <Smartphone className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("packages")}
                 >
                   <CardContent className="p-6">
