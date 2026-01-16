@@ -565,6 +565,11 @@ export default function AdminSettings() {
         </button>
       </div>
 
+      {/* Printer Setup Tab */}
+      {activeTab === "printers" && (
+        <PrinterConfiguration />
+      )}
+
       {/* Receipt Designer Tab */}
       {activeTab === "receipt" && (
         <div className="grid lg:grid-cols-2 gap-6">
