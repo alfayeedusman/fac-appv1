@@ -1517,17 +1517,22 @@ export const handleWebhook: RequestHandler = async (req, res) => {
   try {
     const event = req.body;
 
-    console.log("🔔 Xendit webhook received:", event);
+    // If webhook token is configured, require clients to present it.
+    try {
+      const headerToken = (req.headers['x-callback-token'] || req.headers['x-callback-token'.toLowerCase()]) as string | undefined;
+      if (XENDIT_WEBHOOK_TOKEN) {
+        if (!headerToken || headerToken !== XENDIT_WEBHOOK_TOKEN) {
+          console.warn('Unauthorized Xendit webhook - invalid token');
+          return res.status(401).json({ success: false, error: 'Unauthorized webhook request' });
+        }
+      }
+    } catch (verifyErr) {
+      console.warn('Webhook verification failed:', verifyErr);
+      return res.status(401).json({ success: false, error: 'Webhook verification failed' });
+    }
 
-    // Skip token verification in development (can be enabled in production)
-    // const callbackToken = req.headers["x-callback-token"];
-    // if (!callbackToken || callbackToken !== XENDIT_WEBHOOK_TOKEN) {
-    //   console.error("Invalid webhook token");
-    //   return res.status(401).json({
-    //     success: false,
-    //     error: "Unauthorized webhook request",
-    //   });
-    // }
+    // Log event type only (avoid dumping entire payload)
+    console.log('🔔 Xendit webhook received (type):', event?.type || event?.event || 'unknown');
 
     const db = getDb();
     const externalId = event.external_id;
