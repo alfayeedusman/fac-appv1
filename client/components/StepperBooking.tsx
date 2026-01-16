@@ -714,6 +714,37 @@ export default function StepperBooking({
     }
   };
 
+  const focusFirstInvalidField = () => {
+    // Try to focus the first visible invalid input or control marked by the red border
+    setTimeout(() => {
+      try {
+        const invalidEl = document.querySelector('.border-red-500');
+        if (!invalidEl) return;
+        // Prefer an input/textarea/select/button inside the invalid element
+        const focusable = (invalidEl as HTMLElement).querySelector(
+          'input, textarea, select, button, [role="button"]',
+        ) as HTMLElement | null;
+        let toFocus: HTMLElement | null = focusable;
+        if (!toFocus) {
+          const el = invalidEl as HTMLElement;
+          if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName)) {
+            toFocus = el;
+          } else {
+            // Make non-focusable element focusable briefly so keyboard users land there
+            el.setAttribute('tabindex', '-1');
+            toFocus = el;
+          }
+        }
+        if (toFocus) {
+          toFocus.focus();
+          toFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        // swallow errors - this is a best-effort accessibility enhancement
+      }
+    }, 50);
+  };
+
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
@@ -764,6 +795,8 @@ export default function StepperBooking({
         description: errors.slice(0, 3).join('; '),
         variant: 'destructive',
       });
+      // Focus the first invalid field for keyboard users
+      focusFirstInvalidField();
       // Move user to payment step if error relates to payment so they can fix quickly
       if (errors.some(e => e.toLowerCase().includes('payment'))) {
         setCurrentStep(6);
@@ -969,6 +1002,7 @@ export default function StepperBooking({
         description: 'Please choose a payment method before confirming your booking.',
         variant: 'destructive',
       });
+      focusFirstInvalidField();
       return;
     }
 
@@ -979,7 +1013,29 @@ export default function StepperBooking({
         description: 'Please select a payment channel (e.g., GCash, Card) before proceeding.',
         variant: 'destructive',
       });
+      focusFirstInvalidField();
       return;
+    }
+
+    // If offline payment method selected (branch / onsite), confirm with user before creating booking
+    if (bookingData.paymentMethod !== 'online') {
+      const offlineLabel = bookingData.paymentMethod === 'branch'
+        ? adminConfig.paymentMethods.branch.name
+        : adminConfig.paymentMethods.onsite?.name || 'Offline Payment';
+
+      const confirmation = await Swal.fire({
+        title: `Confirm ${offlineLabel}`,
+        html: `You selected <strong>${offlineLabel}</strong>.<br/>You will pay <strong>₱${bookingData.totalPrice?.toLocaleString() || '0.00'}</strong> at the location. Do you want to continue and create the booking?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Confirm Booking',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f97316',
+      });
+
+      if (!confirmation.isConfirmed) {
+        return; // user cancelled
+      }
     }
 
     setIsLoading(true);
@@ -1063,23 +1119,11 @@ export default function StepperBooking({
       };
 
       // Create booking using Neon database
-      console.log(
-        "📝 Creating booking with userId:",
-        userId,
-        "isGuest:",
-        isGuest,
-      );
       const bookingResult = await neonDbClient.createBooking(bookingPayload);
       if (!bookingResult.success || !bookingResult.booking) {
         throw new Error(bookingResult.error || "Failed to create booking");
       }
       const createdBooking = bookingResult.booking;
-      console.log(
-        "✅ Booking created successfully:",
-        createdBooking.id,
-        "for userId:",
-        createdBooking.userId,
-      );
 
       // Send system notification to admin and manager about new booking
       const customerName = isGuest
@@ -1093,7 +1137,6 @@ export default function StepperBooking({
         `Type: ${isGuest ? "Guest" : "Registered User"}`;
 
       // Create system notification through API (this happens automatically in the API)
-      console.log("🎯 New booking created:", createdBooking.id);
 
       // Redeem voucher if applied
       if (
@@ -1111,7 +1154,7 @@ export default function StepperBooking({
             bookingId: createdBooking.id,
             discountAmount: bookingData.voucherDiscount,
           });
-          console.log("✅ Voucher redeemed:", bookingData.voucherCode);
+          // Voucher redeemed (silent)
         } catch (voucherErr) {
           console.warn(
             "⚠️ Voucher redemption failed (non-critical):",
@@ -1448,11 +1491,11 @@ export default function StepperBooking({
                     </span>
                   </h1>
                   <Badge
-                    variant="outline"
-                    className="text-sm md:text-sm w-fit px-3 py-1 rounded-full"
-                  >
-                    Step {currentStep} of 5
-                  </Badge>
+                  variant="outline"
+                  className="text-sm md:text-sm w-fit px-3 py-1 rounded-full"
+                >
+                  Step {currentStep} of {STEPS.length}
+                </Badge>
                 </div>
 
                 {/* Desktop Stepper */}
@@ -2302,9 +2345,9 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const load = async () => {
       setLoadingBranches(true);
       try {
-        console.log("📍 Loading branches from database...");
+        // Loading branches from database (silent)
         const res = await neonDbClient.getBranches();
-        console.log("📍 Branches response:", res);
+        // Branches response (silent)
 
         if (
           res.success &&
@@ -2317,11 +2360,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             name: b.name,
             address: b.address,
           }));
-          console.log(
-            "✅ Loaded",
-            mappedBranches.length,
-            "branches from database",
-          );
+          // Loaded branches from database
           setBranches(mappedBranches);
         } else {
           console.warn("⚠️ No branches in database, using fallback config");
@@ -2330,11 +2369,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             .filter((b: any) => b.enabled)
             .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
           setBranches(fallbackBranches);
-          console.log(
-            "📍 Using",
-            fallbackBranches.length,
-            "fallback branches from config",
-          );
+          // Using fallback branches from config
         }
       } catch (e) {
         // Silently handle error and use fallback - this is expected behavior
@@ -2344,11 +2379,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
           .filter((b: any) => b.enabled)
           .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
         setBranches(fallbackBranches);
-        console.log(
-          "📍 Loaded",
-          fallbackBranches.length,
-          "branches from config",
-        );
+        // Loaded fallback branches from config
       } finally {
         setLoadingBranches(false);
       }
