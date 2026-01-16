@@ -1605,3 +1605,95 @@ export const updateUserAddress: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// === SUBSCRIPTIONS ===
+
+export const getSubscriptions: RequestHandler = async (req, res) => {
+  try {
+    const { status = "active", userId } = req.query;
+
+    console.log("📋 Fetching subscriptions...", { status, userId });
+
+    const result = await neonDbService.getSubscriptions({
+      status: status as string,
+      userId: userId as string,
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Get subscriptions error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch subscriptions",
+      subscriptions: [],
+    });
+  }
+};
+
+export const createXenditSubscriptionPlan: RequestHandler = async (req, res) => {
+  try {
+    const {
+      subscriptionId,
+      customerId,
+      amount,
+      paymentMethod,
+      interval = "MONTHLY",
+      intervalCount = 1,
+    } = req.body;
+
+    console.log("🔧 Creating Xendit subscription plan...", {
+      subscriptionId,
+      amount,
+      paymentMethod,
+    });
+
+    // TODO: Integrate with Xendit subscription API
+    // This will create a recurring billing plan in Xendit
+
+    res.json({
+      success: true,
+      message: "Xendit plan setup initiated",
+      xenditPlanId: `plan_${Date.now()}`, // Placeholder
+    });
+  } catch (error) {
+    console.error("Create Xendit plan error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create Xendit subscription plan",
+    });
+  }
+};
+
+export const processSubscriptionRenewal: RequestHandler = async (req, res) => {
+  try {
+    const {
+      subscriptionId,
+      customerId,
+      amount,
+      totalWithFees,
+      platformFee,
+      paymentMethod,
+    } = req.body;
+
+    console.log("💳 Processing subscription renewal...", {
+      subscriptionId,
+      amount,
+      platformFee,
+      paymentMethod,
+    });
+
+    // TODO: Create Xendit invoice for renewal with fees passed to customer
+
+    res.json({
+      success: true,
+      message: "Renewal processed",
+      invoiceId: `inv_${Date.now()}`, // Placeholder
+    });
+  } catch (error) {
+    console.error("Process renewal error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to process subscription renewal",
+    });
+  }
+};
