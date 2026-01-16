@@ -94,13 +94,20 @@ const ActiveSubscriptionsManager = () => {
       // Fetch subscriptions from database
       if (!neonDbClient.getSubscriptions) {
         console.error("❌ getSubscriptions method not available");
+        setIsEndpointAvailable(false);
         setSubscriptions([]);
-        setLoading(false);
         return;
       }
 
       const result = await neonDbClient.getSubscriptions({ status: "active" });
       console.log("📋 Subscriptions result:", result);
+
+      if (result?.success === false) {
+        console.warn("⚠️ Subscription fetch returned success: false", result.error);
+        setIsEndpointAvailable(false);
+        setSubscriptions([]);
+        return;
+      }
 
       if (result?.success && result.subscriptions && Array.isArray(result.subscriptions)) {
         // Map subscriptions to include customer and cycle info
@@ -133,18 +140,24 @@ const ActiveSubscriptionsManager = () => {
 
         console.log("✅ Mapped subscriptions:", mappedSubs.length);
         setSubscriptions(mappedSubs);
+        setIsEndpointAvailable(true);
       } else {
         console.warn("⚠️ Invalid subscriptions response:", result);
+        setIsEndpointAvailable(false);
         setSubscriptions([]);
       }
-    } catch (error) {
-      console.error("❌ Error loading subscriptions:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load subscriptions",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      console.error("❌ Error loading subscriptions:", error?.message || error);
+      setIsEndpointAvailable(false);
       setSubscriptions([]);
+
+      if (error?.message?.includes("JSON")) {
+        toast({
+          title: "Connection Issue",
+          description: "Failed to load subscription data. The endpoint may not be available.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
