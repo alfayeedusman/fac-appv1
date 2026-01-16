@@ -155,14 +155,14 @@ class XenditPaymentService {
       const pollInterval = setInterval(() => {
         if (popup.closed) {
           clearInterval(pollInterval);
-          console.log("📴 Payment popup closed");
+          log("📴 Payment popup closed");
           if (onFail) onFail();
         }
       }, 1000);
 
       return popup;
     } catch (error) {
-      console.error("❌ Failed to open payment popup:", error);
+      logError("❌ Failed to open payment popup:", error);
       return null;
     }
   }
