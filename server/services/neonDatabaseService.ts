@@ -158,6 +158,34 @@ class NeonDatabaseService {
     return true;
   }
 
+  // Get sessions with optional filters
+  async getSessions(params?: { userId?: string; activeOnly?: boolean }): Promise<any[]> {
+    if (!this.db) throw new Error('Database not connected');
+
+    let query = this.db.select().from(schema.userSessions);
+
+    if (params?.userId) {
+      query = query.where(eq(schema.userSessions.userId, params.userId));
+    }
+
+    if (params?.activeOnly) {
+      query = query.where(eq(schema.userSessions.isActive, true));
+    }
+
+    const sessions = await query.orderBy(schema.userSessions.createdAt, 'desc');
+
+    return sessions.map((s: any) => ({
+      id: s.id,
+      userId: s.userId,
+      sessionToken: s.sessionToken,
+      expiresAt: s.expiresAt,
+      ipAddress: s.ipAddress,
+      userAgent: s.userAgent,
+      isActive: s.isActive,
+      createdAt: s.createdAt,
+    }));
+  }
+
   async verifyPassword(email: string, password: string): Promise<boolean> {
     const user = await this.getUserByEmail(email);
     if (!user) return false;
