@@ -576,8 +576,8 @@ export default function POSClosingModal({
                   {isLoading
                     ? "Closing..."
                     : isFullyBalanced
-                    ? "✓ Close & Balance POS"
-                    : "⚠️ Close POS (With Variance)"}
+                    ? "✓ Close & Finish"
+                    : "Close (Money Doesn't Match)"}
                 </button>
               </div>
             </>
