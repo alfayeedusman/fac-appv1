@@ -149,6 +149,11 @@ class NeonDatabaseClient {
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
 
+  // Cache with TTL to prevent excessive API calls
+  private statsCache: { data: any; timestamp: number } | null = null;
+  private realtimeStatsCache: { data: any; timestamp: number } | null = null;
+  private cacheTTL = 5000; // 5 seconds cache
+
   constructor() {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
