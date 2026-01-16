@@ -51,6 +51,15 @@ export default function POSClosingModal({
   };
 
   const handleCloseSession = async () => {
+    // Validate session ID first
+    if (!sessionId || sessionId.trim() === "") {
+      notificationManager.error(
+        "Error",
+        "No active POS session found. Please open a session first."
+      );
+      return;
+    }
+
     if (!actualCash || isNaN(parseFloat(actualCash))) {
       notificationManager.error(
         "Invalid Input",
