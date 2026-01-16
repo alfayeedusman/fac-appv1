@@ -421,17 +421,52 @@ export default function AdminSettings() {
 
   // Receipt Settings Functions
   const handleSaveReceiptSettings = () => {
-    toast({
-      title: "Success",
-      description: "Receipt settings saved successfully",
-    });
+    try {
+      // Save to receipt print service
+      receiptPrintService.updateSettings(receiptSettings);
+      // Also save to localStorage for persistence
+      localStorage.setItem("receiptSettings", JSON.stringify(receiptSettings));
+      toast({
+        title: "Success",
+        description: "Receipt settings saved successfully",
+      });
+    } catch (error) {
+      console.error("Error saving receipt settings:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save receipt settings",
+      });
+    }
   };
 
   const handlePreviewReceipt = () => {
-    toast({
-      title: "Info",
-      description: "Receipt preview will open in a new window",
-    });
+    try {
+      const testData = {
+        transactionNumber: "TXN-2024-001234",
+        date: new Date(),
+        items: [
+          { name: "Basic Wash", quantity: 1, price: 150, subtotal: 150 },
+          { name: "Wax Polish", quantity: 1, price: 200, subtotal: 200 },
+        ],
+        subtotal: 350,
+        taxAmount: 42,
+        discountAmount: 0,
+        totalAmount: 392,
+        paymentMethod: "cash",
+        amountPaid: 400,
+        changeAmount: 8,
+        customerName: "John Doe",
+        cashierName: "Maria Santos",
+      };
+
+      receiptPrintService.previewReceipt(testData, receiptSettings);
+    } catch (error) {
+      console.error("Error previewing receipt:", error);
+      toast({
+        title: "Error",
+        description: "Failed to preview receipt. Check popup blocker settings.",
+      });
+    }
   };
 
   // Feature Toggle Functions
