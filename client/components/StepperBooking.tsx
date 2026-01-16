@@ -1689,7 +1689,7 @@ export default function StepperBooking({
                   )
                 ) : (
                   <Button
-                    onClick={() => { console.log('Next clicked (desktop)', currentStep); setStepErrors([]); nextStep(); }}
+                    onClick={() => { setStepErrors([]); nextStep(); }}
                     disabled={!canProceed()}
                     className={`min-w-[140px] h-12 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 rounded-lg active:scale-95 ${
                       !canProceed()
@@ -1784,7 +1784,7 @@ export default function StepperBooking({
               )
             ) : (
               <Button
-                onClick={() => { console.log('Next clicked (mobile)', currentStep); setStepErrors([]); nextStep(); }}
+                onClick={() => { setStepErrors([]); nextStep(); }}
                 disabled={!canProceed()}
                 className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
               >
