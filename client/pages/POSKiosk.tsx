@@ -547,11 +547,11 @@ export default function POSKiosk() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowExitModal(true)}
+                onClick={() => setShowClosingModal(true)}
                 className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6"
               >
                 <X className="h-4 w-4 mr-2" />
-                Exit Kiosk
+                Close & Exit
               </Button>
             </div>
           </div>
