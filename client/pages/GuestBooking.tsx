@@ -10,9 +10,12 @@ import {
   Clock,
   CheckCircle,
   X,
+  Zap,
+  Smartphone,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StepperBooking from "@/components/StepperBooking";
+import FastBookingCard from "@/components/FastBookingCard";
 import { useState } from "react";
 
 export default function GuestBooking() {
