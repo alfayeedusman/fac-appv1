@@ -41,6 +41,7 @@ export interface ReceiptData {
 
 class ReceiptPrintService {
   private settings: ReceiptSettings | null = null;
+  private printWindow: Window | null = null;
 
   constructor() {
     this.loadSettings();
