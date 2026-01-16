@@ -92,6 +92,7 @@ import AdminSettings from "./AdminSettings";
 import CustomerHub from "@/components/CustomerHub";
 import SalesTransactions from "@/components/SalesTransactions";
 import BookingHub from "@/components/BookingHub";
+import { AdminNotificationBanner } from "@/components/AdminNotificationBanner";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
