@@ -181,7 +181,7 @@ class NeonDatabaseClient {
         const result = await response.json();
         this.isConnected = !!result.success;
         if (this.isConnected) {
-          console.log("✅ Database initialized successfully");
+          info("✅ Database initialized successfully");
           return true;
         }
       } else {
