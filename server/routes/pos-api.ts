@@ -323,8 +323,11 @@ router.post("/transactions", async (req, res) => {
           branchId,
           cashierInfo,
         };
-        // Broadcast to public and branch channel
-        await triggerPusherEvent(['public-realtime', `branch-${branchId}`], 'pos.transaction.created', payload);
+        // Broadcast to public and branch channels (also private versions)
+        await Promise.all([
+          triggerPusherEvent(['public-realtime', `branch-${branchId}`], 'pos.transaction.created', payload),
+          triggerPusherEvent([`private-public-realtime`, `private-branch-${branchId}`], 'pos.transaction.created', payload),
+        ]);
       } catch (err) {
         console.warn('Failed to emit pos.transaction.created:', err);
       }
