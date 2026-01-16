@@ -28,10 +28,15 @@ import {
   RefreshCw,
   Zap,
   Bell,
+  Mail,
+  Phone,
+  Eye,
 } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
+import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
+import SubscriptionDetailsCard from "@/components/SubscriptionDetailsCard";
 
 interface SubscriptionWithCustomer {
   id: string;
