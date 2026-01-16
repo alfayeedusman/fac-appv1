@@ -174,7 +174,7 @@ class XenditService {
         },
         (err: any, authentication: any) => {
           if (err) {
-            console.error("Xendit 3DS authentication error:", err);
+            logError("Xendit 3DS authentication error:", err);
             reject(err);
           } else {
             resolve(authentication);
