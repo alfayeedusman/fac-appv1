@@ -11,6 +11,13 @@ import { createId } from "@paralleldrive/cuid2";
 
 const router = express.Router();
 
+// ============= HELPER FUNCTIONS =============
+
+// Round to 2 decimal places to prevent floating-point errors in financial calculations
+const roundToTwo = (num: number): number => {
+  return Math.round(num * 100) / 100;
+};
+
 // ============= POS SESSION ROUTES =============
 
 // Open POS Session
