@@ -201,6 +201,13 @@ const sidebarItems = [
     description: "Neon Database Management",
     gradient: "from-slate-500 to-gray-600",
   },
+  {
+    id: "settings",
+    label: "System Settings",
+    icon: Settings,
+    description: "Receipt & Tax Configuration",
+    gradient: "from-purple-500 to-pink-500",
+  },
 ];
 
 export default function AdminSidebar({
