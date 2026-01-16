@@ -405,6 +405,7 @@ export default function StepperBooking({
     timeSlot: "",
     branch: "",
     paymentMethod: "",
+    paymentMethodDetail: undefined,
     receiptFile: null,
     acceptTerms: false,
     basePrice: 0,
@@ -1245,15 +1246,16 @@ export default function StepperBooking({
       date: "",
       timeSlot: "",
       branch: "",
-      paymentMethod: "",
-      receiptFile: null,
-      acceptTerms: false,
-      basePrice: 0,
-      totalPrice: 0,
-      voucherCode: undefined,
-      voucherDiscount: 0,
-      voucherData: undefined,
-    });
+    paymentMethod: "",
+    paymentMethodDetail: undefined,
+    receiptFile: null,
+    acceptTerms: false,
+    basePrice: 0,
+    totalPrice: 0,
+    voucherCode: undefined,
+    voucherDiscount: 0,
+    voucherData: undefined,
+  });
     setVoucherInput("");
     setCurrentStep(1);
 
