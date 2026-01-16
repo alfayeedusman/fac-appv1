@@ -140,7 +140,10 @@ export async function closePOSSession(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to close POS session");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+      throw new Error(`Failed to close POS session: ${errorData.error || response.statusText}`);
+    }
     return await response.json();
   } catch (error) {
     console.error("Error closing POS session:", error);
