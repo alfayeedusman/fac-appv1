@@ -2249,10 +2249,12 @@ export default function AdminDashboard() {
               </div>
 
               {/* Sales Analytics Chart */}
-              <AnalyticsCharts
-                timeFilter={timeFilter}
-                onTimeFilterChange={setTimeFilter}
-              />
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+                <AnalyticsCharts
+                  timeFilter={timeFilter}
+                  onTimeFilterChange={setTimeFilter}
+                />
+              </Suspense>
             </div>
           )}
 
