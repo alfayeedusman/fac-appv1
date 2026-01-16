@@ -401,10 +401,32 @@ export default function POSKiosk() {
         }
       );
 
+      // Save transaction to tracker for sales reporting
+      const today = new Date().toISOString().split("T")[0];
+      const timeNow = new Date().toLocaleTimeString();
+      saveTransaction({
+        date: today,
+        time: timeNow,
+        amount: total,
+        customerInfo: {
+          id: customerInfo.uniqueId,
+          name: customerInfo.name,
+        },
+        paymentMethod: paymentInfo.method,
+        items: cartItems.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+      });
+
       notificationManager.success(
         "Success",
         "Payment processed successfully!"
       );
+
+      // Reload today's sales
+      loadTodaysSalesAndExpenses();
 
       // Reset form
       clearCart();
