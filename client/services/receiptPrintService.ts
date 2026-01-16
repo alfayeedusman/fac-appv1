@@ -393,35 +393,81 @@ class ReceiptPrintService {
       const html = this.generateReceiptHTML(data, cfg);
 
       // Create a new window for printing
-      const printWindow = window.open("", "", "height=600,width=800");
-      if (!printWindow) {
+      this.printWindow = window.open("", "", "height=600,width=800");
+      if (!this.printWindow) {
         throw new Error("Could not open print window. Check popup blocker settings.");
       }
 
-      printWindow.document.write(html);
-      printWindow.document.close();
+      this.printWindow.document.write(html);
+      this.printWindow.document.close();
 
       // Wait for content to load before printing
-      printWindow.onload = () => {
+      this.printWindow.onload = () => {
         // Auto print mode - print directly without dialog
         if (cfg.printingMode === "auto") {
           // For thermal printers, use direct print
-          printWindow.print();
+          this.printWindow?.print();
           setTimeout(() => {
-            printWindow.close();
+            this.printWindow?.close();
           }, 500);
         } else {
           // Manual mode - show print dialog
-          printWindow.print();
+          this.printWindow?.print();
           // Keep window open so user can see preview if needed
           setTimeout(() => {
-            printWindow.close();
+            this.printWindow?.close();
           }, 3000);
         }
       };
     } catch (error) {
       console.error("Error printing receipt:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Print receipt with specific printer selection
+   */
+  async printToSpecificPrinter(
+    data: ReceiptData,
+    printerName: string,
+    settings?: ReceiptSettings
+  ) {
+    try {
+      const cfg = settings || this.settings || this.getDefaultSettings();
+      const html = this.generateReceiptHTML(data, cfg);
+
+      const printWindow = window.open("", "", "height=600,width=800");
+      if (!printWindow) {
+        throw new Error("Could not open print window");
+      }
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+
+      // Store printer preference
+      localStorage.setItem("preferredPrinter", printerName);
+
+      printWindow.onload = () => {
+        printWindow.print();
+        setTimeout(() => {
+          printWindow.close();
+        }, 2000);
+      };
+    } catch (error) {
+      console.error("Error printing to specific printer:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get preferred printer from storage
+   */
+  getPreferredPrinter(): string | null {
+    try {
+      return localStorage.getItem("preferredPrinter");
+    } catch {
+      return null;
     }
   }
 
