@@ -47,6 +47,7 @@ import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
+import AdminSessions from "./pages/AdminSessions";
 import AdminHomeService from "./pages/AdminHomeService";
 import AdminBookingSettings from "./pages/AdminBookingSettings";
 import AdminCrewManagement from "./pages/AdminCrewManagement";
