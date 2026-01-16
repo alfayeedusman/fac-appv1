@@ -115,31 +115,71 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     }
   };
 
+  const syncServerNotifications = async () => {
+    try {
+      // Fetch persistent server notifications
+      const notificationsResult = await neonDbClient.getNotifications();
+      if (notificationsResult.success && notificationsResult.notifications) {
+        // Sync server notifications to localStorage for offline access
+        const currentSystemNotifications = localStorage.getItem('system_notifications');
+        let existingNotifs = [];
+
+        if (currentSystemNotifications) {
+          try {
+            existingNotifs = JSON.parse(currentSystemNotifications);
+          } catch (e) {
+            // Parse error, skip
+          }
+        }
+
+        // Merge server notifications with existing (deduplicate by ID)
+        const notifMap = new Map();
+
+        // Add existing notifications
+        existingNotifs.forEach((n: any) => notifMap.set(n.id, n));
+
+        // Add/update with server notifications (server takes precedence)
+        notificationsResult.notifications.forEach((n: any) => notifMap.set(n.id, n));
+
+        const merged = Array.from(notifMap.values());
+        localStorage.setItem('system_notifications', JSON.stringify(merged));
+
+        console.log(`✅ Synced ${notificationsResult.notifications.length} server notifications to local storage`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to sync server notifications:', error);
+      // Silent fail - app should continue even if notification sync fails
+    }
+  };
+
   const migrateUserData = async (userId: string) => {
     try {
       // Check if there's localStorage data to migrate
       const userBookings = localStorage.getItem("userBookings");
       const guestBookings = localStorage.getItem("guestBookings");
-      
+
       if (userBookings || guestBookings) {
         console.log('Migrating localStorage data to database...');
-        
+
         // Migration to Neon database - we'll skip localStorage migration
         // as Neon database is the primary storage now
         console.log('Neon database is primary storage - skipping localStorage migration');
         const result = { migrated: 0, errors: [] };
-        
+
         if (result.migrated > 0) {
           toast({
             title: "Data Migrated",
             description: `Successfully migrated ${result.migrated} bookings to your account.`,
           });
         }
-        
+
         if (result.errors.length > 0) {
           console.warn('Migration errors:', result.errors);
         }
       }
+
+      // After migration, sync server notifications
+      await syncServerNotifications();
     } catch (error) {
       console.error('Migration failed:', error);
     }
