@@ -648,10 +648,10 @@ const ManualRenewalForm = ({
   subscription: SubscriptionWithCustomer;
   onSuccess: () => void;
 }) => {
-  const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(
     subscription.paymentMethod || "card",
   );
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const calculateFees = (amount: number, method: string) => {
     const feePercentage = XENDIT_FEES[method as keyof PaymentFees] || 2.9;
@@ -663,47 +663,6 @@ const ManualRenewalForm = ({
   };
 
   const fees = calculateFees(subscription.finalPrice, paymentMethod);
-
-  const handleRenewal = async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch(
-        "/api/neon/subscription/xendit/process-renewal",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            subscriptionId: subscription.id,
-            customerId: subscription.customerId,
-            amount: subscription.finalPrice,
-            totalWithFees: fees.total,
-            platformFee: fees.platformFee,
-            paymentMethod,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to process renewal");
-      }
-
-      toast({
-        title: "Success",
-        description: "Renewal processed successfully",
-      });
-      onSuccess();
-    } catch (error) {
-      console.error("Error processing renewal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process renewal",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -746,13 +705,32 @@ const ManualRenewalForm = ({
       </div>
 
       <Button
-        onClick={handleRenewal}
-        disabled={loading}
+        onClick={() => setShowPaymentModal(true)}
         className="w-full bg-green-600 hover:bg-green-700"
       >
-        {loading && <RefreshCw className="h-4 w-4 mr-2 animate-spin" />}
-        Process Renewal
+        <CreditCard className="h-4 w-4 mr-2" />
+        Process Renewal via Xendit
       </Button>
+
+      {/* Xendit Payment Modal */}
+      <XenditPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onPaymentSuccess={() => {
+          toast({
+            title: "Success! 🎉",
+            description: "Subscription renewed successfully",
+          });
+          onSuccess();
+        }}
+        type="subscription"
+        id={subscription.id}
+        amount={fees.total}
+        customerEmail={subscription.customerEmail}
+        customerName={subscription.customerName}
+        description={`Renewal - ${subscription.packageName} (Cycle ${subscription.cycleCount + 1})`}
+        paymentMethod={paymentMethod as any}
+      />
     </div>
   );
 };
