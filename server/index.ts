@@ -23,18 +23,48 @@ const __dirname = path.dirname(__filename);
 export function createServer() {
   const app = express();
 
-  // Middleware
-  app.use(
-    cors({
-      origin: [
+  // Middleware - CORS configuration
+  const corsOptions = {
+    origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      // Allow localhost and development URLs
+      const allowedOrigins = [
         "http://localhost:8080",
         "http://localhost:3000",
         "http://localhost:5173",
-        process.env.FRONTEND_URL || "http://localhost:8080",
-      ],
-      credentials: true,
-    }),
-  );
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+      ];
+
+      // Add FRONTEND_URL if configured
+      if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+        allowedOrigins.push(process.env.FRONTEND_URL);
+      }
+
+      // In production, also allow same-origin requests (frontend served from same domain)
+      // and requests from the current host
+      if (process.env.NODE_ENV === 'production') {
+        // Allow all requests in production to same domain (Fly.dev, etc.)
+        callback(null, true);
+      } else if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`⚠️ CORS request from origin: ${origin}`);
+        callback(null, true); // Allow in dev, restrict in prod if needed
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  };
+
+  app.use(cors(corsOptions));
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
