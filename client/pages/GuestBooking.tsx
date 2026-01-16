@@ -85,75 +85,93 @@ export default function GuestBooking() {
           </p>
         </div>
 
+        {/* Fast Booking Card - Premium Option */}
+        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
+          <FastBookingCard
+            services={[]}
+            onSelectService={handleFastBookingSelect}
+          />
+        </div>
+
+        {/* Or Divider */}
+        <div className="max-w-2xl mx-auto mb-6 flex items-center gap-3">
+          <div className="flex-1 h-px bg-border/50"></div>
+          <span className="text-xs text-muted-foreground font-semibold uppercase">
+            Or customize
+          </span>
+          <div className="flex-1 h-px bg-border/50"></div>
+        </div>
+
         {/* Enhanced Info Card (dismissible; reappears on refresh) */}
         {showInfoCard && (
-          <div className="max-w-md mx-auto mb-8 relative">
+          <div className="max-w-2xl mx-auto mb-6 sm:mb-8 relative">
             <button
               aria-label="Close"
               onClick={() => setShowInfoCard(false)}
-              className="absolute -top-3 -right-3 z-10 h-9 w-9 rounded-full bg-white/90 dark:bg-gray-900/90 border border-border shadow-md flex items-center justify-center hover:bg-muted/70 active:scale-95 transition"
+              className="absolute -top-3 -right-3 z-10 h-8 w-8 rounded-full bg-white/90 dark:bg-gray-900/90 border border-border shadow-md flex items-center justify-center hover:bg-muted/70 active:scale-95 transition"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
-            <Card className="glass border-border/50 shadow-xl">
-              <CardContent className="p-6">
-                <div className="text-center mb-6">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 flex items-center justify-center mx-auto mb-4">
-                    <UserPlus className="h-7 w-7 text-white" />
-                  </div>
-                  <h3 className="font-bold text-foreground text-lg mb-2">
-                    Guest Booking
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Book your service in just a few steps. No account required!
-                  </p>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="text-sm text-foreground">
-                      Instant confirmation via email
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm text-foreground">
-                      Quick 3-step process
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                    <span className="text-sm text-foreground">
-                      Premium service guaranteed
-                    </span>
-                  </div>
-                </div>
-
-                {/* Account Benefits */}
-                <div className="p-4 bg-gradient-to-r from-fac-orange-50/80 to-purple-50/80 dark:from-fac-orange-950/30 dark:to-purple-950/30 rounded-xl border border-fac-orange-200/50 dark:border-fac-orange-800/50">
-                  <div className="flex items-start space-x-3">
-                    <Info className="h-4 w-4 text-fac-orange-500 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm">
-                      <p className="font-semibold text-foreground mb-1">
-                        💡 Want more benefits?
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        Create an account to track bookings, earn loyalty
-                        points, get exclusive offers, and enjoy faster checkout!
-                      </p>
+            <Card className="glass border-border/50 shadow-md overflow-hidden">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500">
+                      <Sparkles className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  <Link to="/signup" className="block mt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs border-fac-orange-200 text-fac-orange-600 hover:bg-fac-orange-50 dark:hover:bg-fac-orange-950 transition-all"
-                    >
-                      Create Account Instead
-                    </Button>
-                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-foreground text-base mb-1">
+                      Customize Your Booking
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+                      Choose any service, time, and location that works for you. Full control over your booking.
+                    </p>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="p-2 bg-muted/50 rounded-lg">
+                        <div className="text-xs font-bold text-foreground">
+                          7 Steps
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Detailed
+                        </div>
+                      </div>
+                      <div className="p-2 bg-muted/50 rounded-lg">
+                        <div className="text-xs font-bold text-foreground">
+                          5 Min
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Complete
+                        </div>
+                      </div>
+                      <div className="p-2 bg-muted/50 rounded-lg">
+                        <div className="text-xs font-bold text-foreground">
+                          100%
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Secure
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Account CTA */}
+                    <p className="text-xs text-muted-foreground mb-3 flex items-start gap-2">
+                      <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <span>Create an account to save bookings, earn rewards, and skip future details!</span>
+                    </p>
+
+                    <Link to="/signup" className="block">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs sm:text-sm h-8 sm:h-9 border-blue-200 text-blue-600 dark:border-blue-800 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
+                      >
+                        Create Free Account
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -161,8 +179,8 @@ export default function GuestBooking() {
         )}
       </div>
 
-      {/* Booking Form */}
-      <div className="relative z-10">
+      {/* Booking Form - Mobile Optimized */}
+      <div className="relative z-10 mt-4 sm:mt-6" id="booking-form">
         <StepperBooking isGuest={true} />
       </div>
     </div>
