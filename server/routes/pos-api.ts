@@ -8,6 +8,7 @@ import {
 } from "../database/schema";
 import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { triggerPusherEvent } from "../services/pusherService.js";
 
 const router = express.Router();
 
