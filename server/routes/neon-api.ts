@@ -453,6 +453,42 @@ export const revokeSession: RequestHandler = async (req, res) => {
   }
 };
 
+// Admin: list sessions (optional ?userId and ?activeOnly)
+export const getSessions: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    }
+    const callerToken = authHeader.split(' ')[1];
+    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
+      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    }
+
+    const { userId, activeOnly } = req.query as { userId?: string; activeOnly?: string };
+    const sessions = await neonDbService.getSessions({ userId, activeOnly: activeOnly === 'true' });
+
+    // Attach basic user info
+    const sessionsWithUser = await Promise.all(sessions.map(async (s: any) => {
+      const user = await neonDbService.getUserById(s.userId);
+      return {
+        ...s,
+        userEmail: user?.email || null,
+        userFullName: user?.fullName || null,
+        userRole: user?.role || null,
+      };
+    }));
+
+    res.json({ success: true, sessions: sessionsWithUser });
+  } catch (error) {
+    console.error('Get sessions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sessions' });
+  }
+};
+
 // Ensure voucher tables exist (idempotent)
 async function ensureVoucherTables() {
   await sql`CREATE TABLE IF NOT EXISTS vouchers (
