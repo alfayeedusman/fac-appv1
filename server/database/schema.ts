@@ -900,6 +900,80 @@ export const posTransactionItems = pgTable("pos_transaction_items", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// POS Expenses
+export const posExpenses = pgTable("pos_expenses", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  // Session reference
+  posSessionId: text("pos_session_id").notNull(),
+
+  // Expense details
+  category: varchar("category", { length: 100 }).notNull(), // 'supplies' | 'utilities' | 'rent' | 'maintenance' | 'fuel' | 'other'
+  description: varchar("description", { length: 255 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+
+  // Payment information
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // 'cash' | 'card' | 'gcash' | 'bank'
+  notes: text("notes"),
+
+  // Staff information
+  recordedBy: text("recorded_by").notNull(), // Cashier/User ID
+  recordedByName: varchar("recorded_by_name", { length: 255 }).notNull(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// POS Sessions (Opening and Closing)
+export const posSessions = pgTable("pos_sessions", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  // Session details
+  status: varchar("status", { length: 20 }).notNull().default("open"), // 'open' | 'closed'
+  sessionDate: timestamp("session_date").notNull(),
+
+  // Staff information
+  cashierId: text("cashier_id").notNull(),
+  cashierName: varchar("cashier_name", { length: 255 }).notNull(),
+  branchId: text("branch_id").notNull(),
+
+  // Opening balance
+  openingBalance: decimal("opening_balance", { precision: 10, scale: 2 }).notNull(),
+  openedAt: timestamp("opened_at").notNull().defaultNow(),
+
+  // Closing balance and reconciliation
+  closingBalance: decimal("closing_balance", { precision: 10, scale: 2 }),
+  closedAt: timestamp("closed_at"),
+
+  // Calculated totals
+  totalCashSales: decimal("total_cash_sales", { precision: 10, scale: 2 }).default("0"),
+  totalCardSales: decimal("total_card_sales", { precision: 10, scale: 2 }).default("0"),
+  totalGcashSales: decimal("total_gcash_sales", { precision: 10, scale: 2 }).default("0"),
+  totalBankSales: decimal("total_bank_sales", { precision: 10, scale: 2 }).default("0"),
+  totalExpenses: decimal("total_expenses", { precision: 10, scale: 2 }).default("0"),
+
+  // Reconciliation data
+  expectedCash: decimal("expected_cash", { precision: 10, scale: 2 }), // Opening balance + cash sales - expenses
+  actualCash: decimal("actual_cash", { precision: 10, scale: 2 }), // Actual cash counted
+  cashVariance: decimal("cash_variance", { precision: 10, scale: 2 }), // Difference between expected and actual
+
+  // Digital payment reconciliation
+  expectedDigital: decimal("expected_digital", { precision: 10, scale: 2 }), // Card + GCash + Bank
+  actualDigital: decimal("actual_digital", { precision: 10, scale: 2 }), // Actual digital verified
+  digitalVariance: decimal("digital_variance", { precision: 10, scale: 2 }),
+
+  // Remittance data
+  remittanceNotes: text("remittance_notes"),
+  isBalanced: boolean("is_balanced").default(false),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ============= IMAGE MANAGEMENT SYSTEM =============
 
 // Image Storage and Management
