@@ -1516,6 +1516,10 @@ export const chargeCard: RequestHandler = async (req, res) => {
 
 // Webhook handler for Xendit callbacks
 export const handleWebhook: RequestHandler = async (req, res) => {
+  const startTime = Date.now();
+  let dbResult: any = {};
+  let isNewEvent = false;
+
   try {
     const event = req.body;
 
@@ -1538,6 +1542,23 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 
     const db = getDb();
     const externalId = event.external_id;
+    const eventId = event.id || event.reference_id || `xendit-${Date.now()}`; // Use webhook event ID or fallback
+
+    // ========== IDEMPOTENCY CHECK ==========
+    // Check if we've already processed this webhook
+    const existingLog = await db
+      .select()
+      .from(schema.webhookEventLogs)
+      .where(eq(schema.webhookEventLogs.eventId, eventId))
+      .limit(1);
+
+    if (existingLog && existingLog.length > 0) {
+      // Already processed - return success without re-processing
+      console.log(`⚠️ Webhook already processed (idempotency): ${eventId}`);
+      return res.json({ success: true, duplicateEvent: true });
+    }
+
+    isNewEvent = true;
 
     // Handle booking payments
     if (externalId?.startsWith("BOOKING_")) {
