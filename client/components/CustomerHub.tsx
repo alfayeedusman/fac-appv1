@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
+import { log, warn, error as logError } from '@/utils/logger';
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
 import { notificationSoundService } from "@/services/notificationSoundService";
 import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
