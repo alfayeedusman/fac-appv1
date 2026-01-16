@@ -758,14 +758,21 @@ export default function StepperBooking({
     }
 
     if (errors.length > 0) {
+      setStepErrors(errors);
       toast({
         title: 'Complete required fields',
         description: errors.slice(0, 3).join('; '),
         variant: 'destructive',
       });
+      // Move user to payment step if error relates to payment so they can fix quickly
+      if (errors.some(e => e.toLowerCase().includes('payment'))) {
+        setCurrentStep(6);
+      }
     } else {
-      // If no explicit errors found, still advance as a last resort to unblock flow (keeps UX snappy)
-      setCurrentStep((s) => Math.min(7, s + 1));
+      // Clear any previous step errors and do not auto-advance silently
+      setStepErrors([]);
+      // If canProceed is false we politely do nothing (validation prevents moving)
+      // but if canProceed is true we would have advanced earlier
     }
   };
 
