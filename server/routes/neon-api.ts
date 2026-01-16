@@ -266,6 +266,24 @@ export const createBooking: RequestHandler = async (req, res) => {
       booking,
       message: "Booking created successfully",
     });
+
+    // Emit Pusher events for new booking (admin & user channels)
+    (async () => {
+      try {
+        const adminChannel = 'public-realtime';
+        const userChannel = booking.userId ? `user-customer-${booking.userId}` : null;
+        const payload = {
+          bookingId: booking.id,
+          booking,
+        };
+
+        if (userChannel) await emitPusher([userChannel, adminChannel], 'booking.created', payload);
+        else await emitPusher(adminChannel, 'booking.created', payload);
+      } catch (err) {
+        console.warn('Failed to emit pusher booking.created:', err);
+      }
+    })();
+
   } catch (error) {
     console.error("Create booking error:", error);
     res.status(500).json({
