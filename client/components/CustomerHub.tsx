@@ -739,7 +739,7 @@ export default function CustomerHub() {
                         {/* Expandable Details */}
                         <div
                           className={`overflow-hidden transition-all ${
-                            expandedCustomer === customer.id ? "max-h-96" : "max-h-0"
+                            expandedCustomer === customer.id ? "max-h-full" : "max-h-0"
                           }`}
                         >
                           <div className="pt-4 border-t space-y-3 text-sm">
@@ -769,6 +769,25 @@ export default function CustomerHub() {
                                     })})
                                   </p>
                                 </div>
+                              </div>
+                            )}
+
+                            {/* Subscription Details */}
+                            {customer.subscriptionStatus !== "free" && (
+                              <div className="pt-3 border-t">
+                                <p className="text-xs font-semibold mb-2 text-muted-foreground">
+                                  📅 Subscription Info
+                                </p>
+                                <SubscriptionDetailsCard
+                                  customerId={customer.id}
+                                  customerName={customer.fullName}
+                                  subscriptionStatus={customer.subscriptionStatus as any}
+                                  compact={true}
+                                  onManageClick={() => {
+                                    setSelectedCustomer(customer);
+                                    setIsSubscriptionModalOpen(true);
+                                  }}
+                                />
                               </div>
                             )}
                           </div>
