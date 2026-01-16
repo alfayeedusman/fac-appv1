@@ -453,7 +453,7 @@ class NeonDatabaseClient {
         warn("⚠️ Response body already consumed; skipping read");
       }
     } catch (readErr: any) {
-      console.error(
+      logError(
         "❌ Failed to read response body:",
         readErr?.message || readErr,
       );
