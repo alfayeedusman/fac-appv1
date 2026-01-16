@@ -235,16 +235,23 @@ class RealtimeService {
       // Configure auth endpoint for private channel subscriptions
       const userId = localStorage.getItem('userId');
       const userRole = localStorage.getItem('userRole');
+      const sessionToken = localStorage.getItem('sessionToken');
+
+      const authHeaders: Record<string, string> = {};
+      if (sessionToken) {
+        authHeaders['Authorization'] = `Bearer ${sessionToken}`;
+      } else {
+        // Fallback for older clients that used header-based auth
+        authHeaders['x-user-id'] = userId || '';
+        authHeaders['x-user-role'] = userRole || '';
+      }
 
       this.pusher = new Pusher(key, {
         cluster,
         forceTLS: true,
         authEndpoint: '/api/realtime/pusher/auth',
         auth: {
-          headers: {
-            'x-user-id': userId || '',
-            'x-user-role': userRole || '',
-          },
+          headers: authHeaders,
         },
       });
 
