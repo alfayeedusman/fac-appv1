@@ -1614,12 +1614,17 @@ export const getSubscriptions: RequestHandler = async (req, res) => {
 
     console.log("📋 Fetching subscriptions...", { status, userId });
 
-    const result = await neonDbService.getSubscriptions({
+    const subscriptions = await neonDbService.getSubscriptions({
       status: status as string,
       userId: userId as string,
     });
 
-    res.json(result);
+    console.log("✅ Subscriptions fetched:", subscriptions?.length || 0);
+
+    res.json({
+      success: true,
+      subscriptions: subscriptions || [],
+    });
   } catch (error) {
     console.error("Get subscriptions error:", error);
     res.status(500).json({
