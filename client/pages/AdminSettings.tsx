@@ -62,8 +62,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { neonDbClient, type User } from "@/services/neonDatabaseService";
+import { neonDbClient } from "@/services/neonDatabaseService";
 import Swal from "sweetalert2";
+
+interface User {
+  id: string;
+  email: string;
+  fullName?: string;
+  phoneNumber?: string;
+  role?: string;
+  status?: string;
+  approvalStatus?: string;
+}
 
 interface Tax {
   id: string;
