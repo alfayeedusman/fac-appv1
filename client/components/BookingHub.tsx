@@ -115,24 +115,45 @@ export default function BookingHub() {
       const result = await neonDbClient.getAllBookings?.() || [];
 
       if (Array.isArray(result)) {
-        const formattedBookings = result.map((booking: any) => ({
-          id: booking.id || booking.bookingId || `booking-${Date.now()}`,
-          customerName: booking.customerName || booking.fullName || "Unknown",
-          customerEmail: booking.customerEmail || booking.email || "",
-          customerPhone: booking.customerPhone || booking.phone || "",
-          vehicleModel: booking.vehicleModel || booking.carUnit || "-",
-          plateNumber: booking.plateNumber || booking.carPlateNumber || "-",
-          bookingDate: booking.bookingDate || booking.createdAt || new Date().toISOString(),
-          serviceType: booking.serviceType || booking.service || "Car Wash",
-          totalPrice: parseFloat(booking.totalPrice || booking.price || 0),
-          paymentMethod: booking.paymentMethod || "cash",
-          status: booking.status || "pending",
-          type: booking.type || "booking",
-          notes: booking.notes || "",
-        }));
+        const formattedBookings = result.map((booking: any) => {
+          // Handle guest bookings with guestInfo
+          const isGuest = booking.type === 'guest';
+          const guestInfo = isGuest && booking.guestInfo ? booking.guestInfo : null;
+
+          const customerName = guestInfo
+            ? `${guestInfo.firstName || ''} ${guestInfo.lastName || ''}`.trim()
+            : booking.customerName || booking.fullName || "Unknown";
+
+          const customerEmail = guestInfo
+            ? guestInfo.email
+            : booking.customerEmail || booking.email || "";
+
+          const customerPhone = guestInfo
+            ? guestInfo.phone
+            : booking.customerPhone || booking.phone || "";
+
+          return {
+            id: booking.id || booking.bookingId || `booking-${Date.now()}`,
+            customerName,
+            customerEmail,
+            customerPhone,
+            vehicleModel: booking.vehicleModel || booking.carUnit || "-",
+            plateNumber: booking.plateNumber || booking.carPlateNumber || "-",
+            bookingDate: booking.bookingDate || booking.createdAt || new Date().toISOString(),
+            serviceType: booking.serviceType || booking.service || "Car Wash",
+            totalPrice: parseFloat(booking.totalPrice || booking.price || 0),
+            paymentMethod: booking.paymentMethod || "cash",
+            status: booking.status || "pending",
+            paymentStatus: booking.paymentStatus || "pending", // Add payment status for display
+            type: booking.type || "booking",
+            confirmationCode: booking.confirmationCode || "",
+            notes: booking.notes || "",
+            rawBooking: booking, // Keep raw booking data for details
+          };
+        });
 
         setBookings(formattedBookings);
-        console.log("✅ Bookings loaded:", formattedBookings);
+        console.log("✅ Bookings loaded:", formattedBookings.length);
       } else {
         console.warn("No bookings found");
         setBookings([]);
