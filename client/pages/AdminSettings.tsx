@@ -605,6 +605,37 @@ export default function AdminSettings() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="company-email">Company Email (Optional)</Label>
+                <Input
+                  id="company-email"
+                  type="email"
+                  value={receiptSettings.companyEmail || ""}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      companyEmail: e.target.value,
+                    })
+                  }
+                  placeholder="info@example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="header-message">Header Message</Label>
+                <Input
+                  id="header-message"
+                  value={receiptSettings.headerMessage || ""}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      headerMessage: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Professional Car Washing Services"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="footer-message">Footer Message</Label>
                 <Textarea
                   id="footer-message"
@@ -618,6 +649,78 @@ export default function AdminSettings() {
                   placeholder="Enter footer message"
                   rows={2}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="terms-text">Terms & Conditions (Optional)</Label>
+                <Textarea
+                  id="terms-text"
+                  value={receiptSettings.termsText || ""}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      termsText: e.target.value,
+                    })
+                  }
+                  placeholder="Enter terms and conditions (will appear at bottom of receipt)"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="logo-upload">Company Logo (Optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const dataUrl = event.target?.result as string;
+                          setReceiptSettings({
+                            ...receiptSettings,
+                            logoUrl: dataUrl,
+                          });
+                          toast({
+                            title: "Success",
+                            description: "Logo uploaded successfully",
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                </div>
+                {receiptSettings.logoUrl && (
+                  <div className="mt-2 p-2 bg-gray-100 rounded-lg">
+                    <img
+                      src={receiptSettings.logoUrl}
+                      alt="Logo Preview"
+                      style={{ maxWidth: "100px", maxHeight: "100px" }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2 text-red-500"
+                      onClick={() => {
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          logoUrl: undefined,
+                        });
+                        toast({
+                          title: "Success",
+                          description: "Logo removed",
+                        });
+                      }}
+                    >
+                      Remove Logo
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
