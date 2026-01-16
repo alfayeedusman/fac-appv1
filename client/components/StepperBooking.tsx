@@ -60,7 +60,8 @@ import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
 import PaymentMethodsSelection from '@/components/PaymentMethodsSelection';
-import BookingReceiptModal from "@/components/BookingReceiptModal";
+const BookingReceiptModal = React.lazy(() => import('@/components/BookingReceiptModal'));
+import React, { Suspense } from 'react';
 import BookingProgressBar from "@/components/BookingProgressBar";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 
