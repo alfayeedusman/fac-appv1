@@ -37,6 +37,7 @@ import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
 import SubscriptionDetailsCard from "@/components/SubscriptionDetailsCard";
+import XenditPaymentModal from "@/components/XenditPaymentModal";
 
 interface SubscriptionWithCustomer {
   id: string;
