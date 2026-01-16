@@ -115,6 +115,18 @@ export default function POSKiosk() {
     const loadData = async () => {
       try {
         setIsLoading(true);
+
+        // Check for existing POS session
+        const session = await getCurrentPOSSession(cashierId);
+        if (session && session.status === "open") {
+          setCurrentSessionId(session.id);
+          setOpeningBalance(parseFloat(session.openingBalance?.toString() || "0"));
+          setSessionLoaded(true);
+        } else {
+          // No active session, show opening modal
+          setShowOpeningModal(true);
+        }
+
         // Simulate loading delay for better UX
         await new Promise(resolve => setTimeout(resolve, 1000));
         const productsData = await getProducts();
@@ -124,6 +136,7 @@ export default function POSKiosk() {
       } catch (error) {
         console.error("Error loading products:", error);
         setProducts([]);
+        setShowOpeningModal(true);
       } finally {
         setIsLoading(false);
       }
