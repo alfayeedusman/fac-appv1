@@ -1150,22 +1150,24 @@ export const createStaffUser: RequestHandler = async (req, res) => {
 
 // ============= NEW FEATURES API ENDPOINTS =============
 
+// Simple in-memory cache for branches to reduce DB load
+const BRANCHES_CACHE_TTL = Number(process.env.BRANCHES_CACHE_TTL_SECONDS || 60); // default 1 minute
+let branchesCache: { branches: any[]; expiresAt: number } | null = null;
+
 // Branches endpoints
 export const getBranches: RequestHandler = async (req, res) => {
   try {
-    console.log("🏪 Getting branches from database...");
+    const now = Date.now();
+    if (branchesCache && branchesCache.expiresAt > now) {
+      return res.json({ success: true, branches: branchesCache.branches, source: 'cache' });
+    }
+
     const branches = await neonDbService.getBranches();
-    console.log("✅ Branches retrieved:", branches.length, "branches found");
-    res.json({
-      success: true,
-      branches: branches || [],
-    });
+    branchesCache = { branches: branches || [], expiresAt: Date.now() + BRANCHES_CACHE_TTL * 1000 };
+    res.json({ success: true, branches: branches || [], source: 'db' });
   } catch (error) {
-    console.error("❌ Get branches error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch branches",
-    });
+    console.error('❌ Get branches error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch branches' });
   }
 };
 
