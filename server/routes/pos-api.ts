@@ -1,6 +1,6 @@
 import express from "express";
 import express from "express";
-import { db } from "../database/connection";
+import { getDatabase } from "../database/connection";
 import {
   posTransactions,
   posTransactionItems,
