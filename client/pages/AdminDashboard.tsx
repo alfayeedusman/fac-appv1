@@ -1189,6 +1189,21 @@ export default function AdminDashboard() {
           {/* Content based on active tab */}
           {activeTab === "overview" && (
             <div className="space-y-8">
+              {/* Time Period Filter */}
+              <div className="flex justify-end">
+                <Select value={timeFilter} onValueChange={setTimeFilter}>
+                  <SelectTrigger className="w-40 border-orange-500">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Today</SelectItem>
+                    <SelectItem value="weekly">This Week</SelectItem>
+                    <SelectItem value="monthly">This Month</SelectItem>
+                    <SelectItem value="yearly">This Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card
