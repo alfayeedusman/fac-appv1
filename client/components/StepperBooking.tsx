@@ -716,6 +716,53 @@ export default function StepperBooking({
   const nextStep = () => {
     if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // If validation failed, compute friendly feedback and show toast to explain why
+    const errors: string[] = [];
+    switch (currentStep) {
+      case 1:
+        if (!bookingData.serviceType) errors.push('Select service type (Branch or Home)');
+        if (!bookingData.date || !bookingData.timeSlot) errors.push('Choose a date and time slot');
+        if (bookingData.serviceType === 'branch' && !bookingData.branch) errors.push('Select a branch');
+        break;
+      case 2:
+        if (!bookingData.unitType || !bookingData.unitSize) errors.push('Select your vehicle type and size');
+        break;
+      case 3:
+        if (!bookingData.category) errors.push('Pick a service category');
+        break;
+      case 4:
+        if ((bookingData.category === 'carwash' || bookingData.category === 'motorwash') && !bookingData.service)
+          errors.push('Choose a package for your service');
+        break;
+      case 5:
+        if (!bookingData.fullName) errors.push('Enter your name');
+        if (!bookingData.mobile) errors.push('Provide your mobile number');
+        if (!bookingData.plateNo) errors.push('Enter your vehicle plate number');
+        if (!bookingData.carModel) errors.push('Provide your vehicle model');
+        if (isGuest && !bookingData.email) errors.push('Email is required for guest bookings');
+        if (bookingData.serviceType === 'home' && !bookingData.address) errors.push('Provide your address for home service');
+        break;
+      case 6:
+        if (!bookingData.paymentMethod) errors.push('Select a payment method');
+        if (bookingData.paymentMethod === 'online' && !bookingData.paymentMethodDetail)
+          errors.push('Choose a payment channel (e.g., GCash, Card)');
+        break;
+      default:
+        errors.push('Please complete the required fields for this step');
+    }
+
+    if (errors.length > 0) {
+      toast({
+        title: 'Complete required fields',
+        description: errors.slice(0, 3).join('; '),
+        variant: 'destructive',
+      });
+    } else {
+      // If no explicit errors found, still advance as a last resort to unblock flow (keeps UX snappy)
+      setCurrentStep((s) => Math.min(7, s + 1));
     }
   };
 
