@@ -1129,12 +1129,12 @@ export default function AdminDashboard() {
                 </DropdownMenu>
 
                 <Button
-                  onClick={() => navigate("/pos-kiosk")}
+                  onClick={() => navigate("/pos")}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
                   size="sm"
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">POS Kiosk</span>
+                  <span className="hidden sm:inline">POS System</span>
                 </Button>
                 <Button
                   onClick={() => navigate("/admin-receipt-designer")}
