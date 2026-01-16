@@ -1172,11 +1172,44 @@ export const updateInventoryItem: RequestHandler = async (req, res) => {
       item,
       message: "Inventory item updated successfully",
     });
+
+    (async () => {
+      try {
+        await emitPusher('public-realtime', 'inventory.updated', { item });
+      } catch (err) {
+        console.warn('Failed to emit inventory.updated:', err);
+      }
+    })();
   } catch (error) {
     console.error("Update inventory item error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to update inventory item",
+    });
+  }
+};
+
+export const deleteInventoryItem: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await neonDbService.deleteInventoryItem(id);
+    res.json({
+      success: true,
+      message: "Inventory item deleted successfully",
+    });
+
+    (async () => {
+      try {
+        await emitPusher('public-realtime', 'inventory.deleted', { id });
+      } catch (err) {
+        console.warn('Failed to emit inventory.deleted:', err);
+      }
+    })();
+  } catch (error) {
+    console.error("Delete inventory item error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete inventory item",
     });
   }
 };
