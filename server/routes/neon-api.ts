@@ -1214,22 +1214,6 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
   }
 };
 
-export const deleteInventoryItem: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await neonDbService.deleteInventoryItem(id);
-    res.json({
-      success: true,
-      message: "Inventory item deleted successfully",
-    });
-  } catch (error) {
-    console.error("Delete inventory item error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete inventory item",
-    });
-  }
-};
 
 // Stock movements endpoints
 export const getStockMovements: RequestHandler = async (req, res) => {
