@@ -123,6 +123,20 @@ export default function POSKiosk() {
     loadData();
   }, []);
 
+  // Load today's sales and expenses
+  const loadTodaysSalesAndExpenses = () => {
+    const report = getDailySalesReport();
+    setTodaysSales(report.totalSales);
+    setTodayExpenses(report.totalExpenses);
+  };
+
+  useEffect(() => {
+    loadTodaysSalesAndExpenses();
+    // Refresh sales every 5 seconds
+    const interval = setInterval(loadTodaysSalesAndExpenses, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     try {
       let filtered = products || [];
