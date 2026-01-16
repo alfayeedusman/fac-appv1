@@ -130,21 +130,51 @@ export async function closePOSSession(
   remittanceNotes: string
 ): Promise<{ success: boolean; isBalanced: boolean; cashVariance: number; digitalVariance: number }> {
   try {
+    if (!sessionId) {
+      throw new Error("Session ID is required");
+    }
+
+    console.log("Closing POS session:", {
+      sessionId,
+      actualCash,
+      actualDigital,
+      remittanceNotes,
+    });
+
     const response = await fetch(`${API_BASE}/sessions/close/${sessionId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        actualCash,
-        actualDigital,
-        remittanceNotes,
+        actualCash: Number(actualCash),
+        actualDigital: Number(actualDigital),
+        remittanceNotes: remittanceNotes || "",
       }),
     });
 
+    console.log("Response status:", response.status);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-      throw new Error(`Failed to close POS session: ${errorData.error || response.statusText}`);
+      const errorText = await response.text();
+      console.error("Error response:", errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(`Failed to close POS session: ${errorData.error || response.statusText}`);
+      } catch (parseError) {
+        throw new Error(`Failed to close POS session: HTTP ${response.status} - ${errorText}`);
+      }
     }
-    return await response.json();
+
+    const responseText = await response.text();
+    console.log("Response text:", responseText);
+
+    if (!responseText) {
+      throw new Error("Empty response from server");
+    }
+
+    const data = JSON.parse(responseText);
+    console.log("Parsed response:", data);
+
+    return data;
   } catch (error) {
     console.error("Error closing POS session:", error);
     throw error;
