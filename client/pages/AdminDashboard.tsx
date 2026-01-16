@@ -2096,6 +2096,18 @@ export default function AdminDashboard() {
               <AdminSettings />
             </div>
           )}
+
+          {activeTab === "customers" && (
+            <div className="space-y-6">
+              <CustomerHub />
+            </div>
+          )}
+
+          {activeTab === "sales" && (
+            <div className="space-y-6">
+              <SalesTransactions />
+            </div>
+          )}
         </div>
       </div>
 
