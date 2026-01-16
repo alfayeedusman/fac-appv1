@@ -74,6 +74,7 @@ export function createServer() {
   // ============= CRITICAL PRODUCTION ROUTES =============
   app.use("/api/realtime", realtimeApiRoutes);
   app.use("/api/cms", cmsApiRoutes);
+  app.use("/api/pos", posApiRoutes);
 
   // Neon Database API Routes
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
