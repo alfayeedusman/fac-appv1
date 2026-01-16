@@ -2280,6 +2280,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "active-subscriptions" && (
+            <div className="space-y-6">
+              <ActiveSubscriptionsManager />
+            </div>
+          )}
+
           {activeTab === "booking" && (
             <div>
               <AdminBookingSettings />
