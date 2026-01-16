@@ -52,7 +52,7 @@ class XenditPaymentService {
    */
   async createBookingInvoice(request: BookingPaymentRequest): Promise<XenditInvoiceResponse> {
     try {
-      console.log("💳 Creating booking payment invoice...", request);
+      log("💳 Creating booking payment invoice...", request);
 
       const currentUrl = window.location.origin;
       const payload: XenditInvoiceRequest = {
@@ -75,16 +75,16 @@ class XenditPaymentService {
       });
 
       const result = await response.json();
-      console.log("📋 Invoice response:", result);
+      log("📋 Invoice response:", result);
 
       if (!response.ok || !result.success) {
-        console.error("❌ Failed to create booking invoice:", result.error);
+        logError("❌ Failed to create booking invoice:", result.error);
         return { success: false, error: result.error || "Failed to create invoice" };
       }
 
       return result;
     } catch (error: any) {
-      console.error("❌ Booking payment error:", error);
+      logError("❌ Booking payment error:", error);
       return { success: false, error: error.message || "Network error" };
     }
   }
@@ -94,7 +94,7 @@ class XenditPaymentService {
    */
   async createSubscriptionInvoice(request: SubscriptionPaymentRequest): Promise<XenditInvoiceResponse> {
     try {
-      console.log("💳 Creating subscription renewal invoice...", request);
+      log("💳 Creating subscription renewal invoice...", request);
 
       const currentUrl = window.location.origin;
       const payload = {
@@ -114,16 +114,16 @@ class XenditPaymentService {
       });
 
       const result = await response.json();
-      console.log("📋 Subscription invoice response:", result);
+      log("📋 Subscription invoice response:", result);
 
       if (!response.ok || !result.success) {
-        console.error("❌ Failed to create subscription invoice:", result.error);
+        logError("❌ Failed to create subscription invoice:", result.error);
         return { success: false, error: result.error || "Failed to create invoice" };
       }
 
       return result;
     } catch (error: any) {
-      console.error("❌ Subscription payment error:", error);
+      logError("❌ Subscription payment error:", error);
       return { success: false, error: error.message || "Network error" };
     }
   }
