@@ -821,17 +821,27 @@ export default function AdminSettings() {
               >
                 <div className="text-sm space-y-2">
                   {receiptSettings.includeLogo && (
-                    <div className="text-2xl font-bold text-orange-500 mb-2">
-                      🚗 FAC
-                    </div>
-                  )}
-                  <p className="font-bold">{receiptSettings.companyName}</p>
-                  <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                    {receiptSettings.companyAddress}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {receiptSettings.companyPhone}
-                  </p>
+                      <div className="text-2xl font-bold text-orange-500 mb-2">
+                        🚗 FAC
+                      </div>
+                    )}
+                    <p className="font-bold">{receiptSettings.companyName}</p>
+                    {receiptSettings.headerMessage && (
+                      <p className="text-xs text-orange-600 italic">
+                        {receiptSettings.headerMessage}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-600 whitespace-pre-wrap">
+                      {receiptSettings.companyAddress}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {receiptSettings.companyPhone}
+                    </p>
+                    {receiptSettings.companyEmail && (
+                      <p className="text-xs text-gray-600">
+                        {receiptSettings.companyEmail}
+                      </p>
+                    )}
                   <div className="border-t border-dashed my-2" />
                   <p className="text-xs font-bold">RECEIPT</p>
                   <div className="border-t border-dashed my-2" />
