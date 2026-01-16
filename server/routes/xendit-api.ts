@@ -1172,22 +1172,81 @@ const XENDIT_API_URL = "https://api.xendit.co/v2";
 // Helper function to get database
 const getDb = () => getDatabase();
 
-// List common payment methods supported by Xendit (frontend helper)
+// List payment methods supported by Xendit (frontend helper - dynamic)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
   try {
-    // In a future iteration we can call Xendit API to detect enabled methods.
-    const methods = [
+    // If Xendit key is not configured, return a reasonable fallback
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
+      const fallback = [
+        { id: 'card', label: 'Credit / Debit Card' },
+        { id: 'gcash', label: 'GCash (e-wallet)' },
+        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+        { id: 'bank_transfer', label: 'Bank Transfer' },
+        { id: 'offline', label: 'Pay at Counter (Cash)' },
+      ];
+      return res.json({ success: true, methods: fallback, source: 'fallback' });
+    }
+
+    const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      console.warn('Xendit available_payment_methods returned non-ok status', response.status, text);
+      // Fallback
+      const fallback = [
+        { id: 'card', label: 'Credit / Debit Card' },
+        { id: 'gcash', label: 'GCash (e-wallet)' },
+        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+        { id: 'bank_transfer', label: 'Bank Transfer' },
+        { id: 'offline', label: 'Pay at Counter (Cash)' },
+      ];
+      return res.json({ success: true, methods: fallback, source: 'fallback' });
+    }
+
+    const data = await response.json().catch(() => null);
+    if (!data) {
+      throw new Error('Invalid response from Xendit');
+    }
+
+    // The response may be an array or an object containing a list
+    const list = Array.isArray(data) ? data : data.available_payment_methods || data.payment_methods || [];
+
+    // Map Xendit entries to {id,label}
+    const methods = (list || []).map((m: any) => {
+      const id = (m.code || m.id || m.payment_method || m.type || m.name || '').toString().toLowerCase();
+      const label = m.name || m.display_name || m.label || m.payment_method || m.id || id;
+      return { id, label };
+    });
+
+    // If mapping produced no results, fallback to defaults
+    if (!methods || methods.length === 0) {
+      const fallback = [
+        { id: 'card', label: 'Credit / Debit Card' },
+        { id: 'gcash', label: 'GCash (e-wallet)' },
+        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
+        { id: 'bank_transfer', label: 'Bank Transfer' },
+        { id: 'offline', label: 'Pay at Counter (Cash)' },
+      ];
+      return res.json({ success: true, methods: fallback, source: 'fallback' });
+    }
+
+    res.json({ success: true, methods, source: 'xendit' });
+  } catch (error: any) {
+    console.error('List payment methods error:', error);
+    const fallback = [
       { id: 'card', label: 'Credit / Debit Card' },
       { id: 'gcash', label: 'GCash (e-wallet)' },
       { id: 'paymaya', label: 'PayMaya (e-wallet)' },
       { id: 'bank_transfer', label: 'Bank Transfer' },
       { id: 'offline', label: 'Pay at Counter (Cash)' },
     ];
-
-    res.json({ success: true, methods });
-  } catch (error: any) {
-    console.error('List payment methods error:', error);
-    res.status(500).json({ success: false, error: error.message || 'Internal error' });
+    res.json({ success: true, methods: fallback, source: 'fallback' });
   }
 };
 
