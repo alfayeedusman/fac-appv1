@@ -787,6 +787,20 @@ export default function AdminSettings() {
                     />
                     <span>Include Signature Line</span>
                   </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={receiptSettings.showTermsConditions}
+                      onChange={(e) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          showTermsConditions: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Include Terms & Conditions</span>
+                  </label>
                 </div>
               </div>
 
