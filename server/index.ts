@@ -92,6 +92,17 @@ export function createServer() {
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
 
+  // Subscription endpoints
+  app.get("/api/neon/subscriptions", neonApiRoutes.getSubscriptions);
+  app.post(
+    "/api/neon/subscriptions/create-plan",
+    neonApiRoutes.createXenditSubscriptionPlan,
+  );
+  app.post(
+    "/api/neon/subscriptions/process-renewal",
+    neonApiRoutes.processSubscriptionRenewal,
+  );
+
   // Notification endpoints
   app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
   app.put(
