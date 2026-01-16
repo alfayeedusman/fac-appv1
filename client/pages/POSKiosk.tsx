@@ -159,9 +159,7 @@ export default function POSKiosk() {
 
   useEffect(() => {
     loadTodaysSalesAndExpenses();
-    // Refresh sales every 5 seconds
-    const interval = setInterval(loadTodaysSalesAndExpenses, 5000);
-    return () => clearInterval(interval);
+    // Load once on mount - avoid continuous polling to prevent lag
   }, []);
 
   useEffect(() => {
