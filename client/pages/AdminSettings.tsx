@@ -190,11 +190,13 @@ export default function AdminSettings() {
     footerMessage: "Thank you for choosing Fayeed Auto Care!",
     paperWidth: 80,
     includeLogo: true,
-    includeQR: true,
+    includeQR: false,
     includeSignature: false,
     headerMessage: "Professional Car Washing Services",
     showTermsConditions: false,
     termsText: "",
+    printingMode: "auto",
+    printerType: "thermal",
   });
 
   const [features, setFeatures] = useState<FeatureSettings>({
