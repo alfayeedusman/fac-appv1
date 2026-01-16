@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,8 +40,30 @@ import {
   Settings as SettingsIcon,
   Eye,
   EyeOff,
+  Zap,
+  Users,
+  Shield,
+  UserCheck,
+  UserX,
+  Search,
+  Crown,
+  UserPlus,
+  User as UserIcon,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { neonDbClient, type User } from "@/services/neonDatabaseService";
+import Swal from "sweetalert2";
 
 interface Tax {
   id: string;
@@ -57,14 +79,97 @@ interface ReceiptSettings {
   companyAddress: string;
   companyPhone: string;
   footerMessage: string;
-  paperWidth: number; // in mm
+  paperWidth: number;
   includeLogo: boolean;
   includeQR: boolean;
   includeSignature: boolean;
 }
 
+interface FeatureSettings {
+  posEnabled: boolean;
+  vatEnabled: boolean;
+}
+
+// Role definitions with permissions
+const roleDefinitions = {
+  superadmin: {
+    name: "Super Administrator",
+    description: "Full system access",
+    color: "bg-red-500",
+    permissions: [
+      "dashboard",
+      "customers",
+      "user-management",
+      "ads",
+      "packages",
+      "branches",
+      "analytics",
+      "sales",
+      "inventory",
+      "notifications",
+      "cms",
+      "push-notifications",
+      "gamification",
+      "subscription-approval",
+      "booking",
+      "pos",
+      "crew-management",
+      "images",
+      "database",
+      "settings",
+    ],
+  },
+  admin: {
+    name: "Administrator",
+    description: "Most system features",
+    color: "bg-orange-500",
+    permissions: [
+      "dashboard",
+      "customers",
+      "ads",
+      "packages",
+      "branches",
+      "analytics",
+      "sales",
+      "inventory",
+      "notifications",
+      "cms",
+      "push-notifications",
+      "gamification",
+      "subscription-approval",
+      "booking",
+      "pos",
+      "crew-management",
+      "settings",
+    ],
+  },
+  manager: {
+    name: "Manager",
+    description: "Limited system access",
+    color: "bg-blue-500",
+    permissions: [
+      "dashboard",
+      "customers",
+      "ads",
+      "packages",
+      "analytics",
+      "sales",
+      "inventory",
+      "bookings",
+    ],
+  },
+  staff: {
+    name: "Staff",
+    description: "View and manage bookings",
+    color: "bg-green-500",
+    permissions: ["dashboard", "bookings", "pos"],
+  },
+};
+
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState<"receipt" | "taxes">("receipt");
+  const [activeTab, setActiveTab] = useState<
+    "receipt" | "taxes" | "features" | "users"
+  >("receipt");
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSettings>({
     companyName: "Fayeed Auto Care",
     companyAddress: "Zamboanga City, Philippines",
@@ -74,6 +179,11 @@ export default function AdminSettings() {
     includeLogo: true,
     includeQR: true,
     includeSignature: false,
+  });
+
+  const [features, setFeatures] = useState<FeatureSettings>({
+    posEnabled: true,
+    vatEnabled: true,
   });
 
   const [taxes, setTaxes] = useState<Tax[]>([
@@ -87,6 +197,18 @@ export default function AdminSettings() {
     },
   ]);
 
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserDialog, setShowUserDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userForm, setUserForm] = useState({
+    email: "",
+    fullName: "",
+    phoneNumber: "",
+    role: "staff",
+  });
+
   const [showTaxDialog, setShowTaxDialog] = useState(false);
   const [editingTax, setEditingTax] = useState<Tax | null>(null);
   const [taxForm, setTaxForm] = useState<Omit<Tax, "id" | "createdAt">>({
@@ -98,6 +220,100 @@ export default function AdminSettings() {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteType, setDeleteType] = useState<"tax" | "user">("tax");
+
+  // Load users on mount
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const allUsers = await neonDbClient.getAllUsers();
+      setUsers(allUsers || []);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast({ title: "Error", description: "Failed to load users" });
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // User Management Functions
+  const handleAddUser = () => {
+    setEditingUser(null);
+    setUserForm({
+      email: "",
+      fullName: "",
+      phoneNumber: "",
+      role: "staff",
+    });
+    setShowUserDialog(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setUserForm({
+      email: user.email,
+      fullName: user.fullName || "",
+      phoneNumber: user.phoneNumber || "",
+      role: user.role || "staff",
+    });
+    setShowUserDialog(true);
+  };
+
+  const handleSaveUser = async () => {
+    if (!userForm.email.trim()) {
+      toast({ title: "Error", description: "Email is required" });
+      return;
+    }
+
+    try {
+      if (editingUser) {
+        const updatedUser = {
+          ...editingUser,
+          email: userForm.email,
+          fullName: userForm.fullName,
+          phoneNumber: userForm.phoneNumber,
+          role: userForm.role,
+        };
+        await neonDbClient.updateUser(editingUser.id, updatedUser);
+        toast({ title: "Success", description: "User updated successfully" });
+      } else {
+        const newUser = {
+          email: userForm.email,
+          fullName: userForm.fullName,
+          phoneNumber: userForm.phoneNumber,
+          role: userForm.role,
+          status: "active" as const,
+          approvalStatus: "approved" as const,
+        };
+        await neonDbClient.createUser(newUser);
+        toast({ title: "Success", description: "User created successfully" });
+      }
+      setShowUserDialog(false);
+      loadUsers();
+    } catch (error) {
+      console.error("Error saving user:", error);
+      toast({ title: "Error", description: "Failed to save user" });
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (deleteId && deleteType === "user") {
+      try {
+        await neonDbClient.deleteUser(deleteId);
+        toast({ title: "Success", description: "User deleted successfully" });
+        loadUsers();
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        toast({ title: "Error", description: "Failed to delete user" });
+      }
+    }
+    setShowDeleteDialog(false);
+    setDeleteId(null);
+  };
 
   // Tax Management Functions
   const handleAddTax = () => {
@@ -128,16 +344,17 @@ export default function AdminSettings() {
       return;
     }
     if (taxForm.percentage < 0 || taxForm.percentage > 100) {
-      toast({ title: "Error", description: "Tax percentage must be between 0 and 100" });
+      toast({
+        title: "Error",
+        description: "Tax percentage must be between 0 and 100",
+      });
       return;
     }
 
     if (editingTax) {
       setTaxes(
         taxes.map((t) =>
-          t.id === editingTax.id
-            ? { ...t, ...taxForm }
-            : t
+          t.id === editingTax.id ? { ...t, ...taxForm } : t
         )
       );
       toast({ title: "Success", description: "Tax updated successfully" });
@@ -155,15 +372,13 @@ export default function AdminSettings() {
 
   const handleToggleTax = (id: string) => {
     setTaxes(
-      taxes.map((t) =>
-        t.id === id ? { ...t, isActive: !t.isActive } : t
-      )
+      taxes.map((t) => (t.id === id ? { ...t, isActive: !t.isActive } : t))
     );
     toast({ title: "Success", description: "Tax status updated" });
   };
 
   const handleDeleteTax = () => {
-    if (deleteId) {
+    if (deleteId && deleteType === "tax") {
       setTaxes(taxes.filter((t) => t.id !== deleteId));
       toast({ title: "Success", description: "Tax deleted successfully" });
     }
@@ -173,450 +388,828 @@ export default function AdminSettings() {
 
   // Receipt Settings Functions
   const handleSaveReceiptSettings = () => {
-    toast({ title: "Success", description: "Receipt settings saved successfully" });
+    toast({
+      title: "Success",
+      description: "Receipt settings saved successfully",
+    });
   };
 
   const handlePreviewReceipt = () => {
-    // This would open a preview modal showing the receipt design
-    toast({ title: "Info", description: "Receipt preview will open in a new window" });
+    toast({
+      title: "Info",
+      description: "Receipt preview will open in a new window",
+    });
   };
 
+  // Feature Toggle Functions
+  const handleTogglePOS = () => {
+    setFeatures({
+      ...features,
+      posEnabled: !features.posEnabled,
+    });
+    toast({
+      title: "Success",
+      description: `POS system ${!features.posEnabled ? "enabled" : "disabled"}`,
+    });
+  };
+
+  const handleToggleVAT = () => {
+    setFeatures({
+      ...features,
+      vatEnabled: !features.vatEnabled,
+    });
+    toast({
+      title: "Success",
+      description: `VAT ${!features.vatEnabled ? "enabled" : "disabled"}`,
+    });
+  };
+
+  const filteredUsers = users.filter(
+    (user) =>
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.fullName &&
+        user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-lg">
-            <SettingsIcon className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">System Settings</h1>
-            <p className="text-muted-foreground">
-              Manage receipt design and tax configurations
-            </p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex gap-2 border-b overflow-x-auto">
+        <button
+          onClick={() => setActiveTab("receipt")}
+          className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+            activeTab === "receipt"
+              ? "border-b-2 border-orange-500 text-orange-500"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Printer className="inline h-4 w-4 mr-2" />
+          Receipt Designer
+        </button>
+        <button
+          onClick={() => setActiveTab("taxes")}
+          className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+            activeTab === "taxes"
+              ? "border-b-2 border-orange-500 text-orange-500"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Percent className="inline h-4 w-4 mr-2" />
+          Tax Management
+        </button>
+        <button
+          onClick={() => setActiveTab("features")}
+          className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+            activeTab === "features"
+              ? "border-b-2 border-orange-500 text-orange-500"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Zap className="inline h-4 w-4 mr-2" />
+          Features
+        </button>
+        <button
+          onClick={() => setActiveTab("users")}
+          className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+            activeTab === "users"
+              ? "border-b-2 border-orange-500 text-orange-500"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Users className="inline h-4 w-4 mr-2" />
+          User Management
+        </button>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 border-b">
-          <button
-            onClick={() => setActiveTab("receipt")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === "receipt"
-                ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Printer className="inline h-4 w-4 mr-2" />
-            Receipt Designer
-          </button>
-          <button
-            onClick={() => setActiveTab("taxes")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === "taxes"
-                ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Percent className="inline h-4 w-4 mr-2" />
-            Tax Management
-          </button>
-        </div>
+      {/* Receipt Designer Tab */}
+      {activeTab === "receipt" && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Settings Panel */}
+          <Card className="glass border-border shadow-xl">
+            <CardHeader>
+              <CardTitle>Receipt Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="company-name">Company Name</Label>
+                <Input
+                  id="company-name"
+                  value={receiptSettings.companyName}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      companyName: e.target.value,
+                    })
+                  }
+                  placeholder="Enter company name"
+                />
+              </div>
 
-        {/* Receipt Designer Tab */}
-        {activeTab === "receipt" && (
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Settings Panel */}
-            <Card className="glass border-border shadow-xl">
-              <CardHeader>
-                <CardTitle>Receipt Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="company-address">Company Address</Label>
+                <Textarea
+                  id="company-address"
+                  value={receiptSettings.companyAddress}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      companyAddress: e.target.value,
+                    })
+                  }
+                  placeholder="Enter company address"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company-phone">Company Phone</Label>
+                <Input
+                  id="company-phone"
+                  value={receiptSettings.companyPhone}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      companyPhone: e.target.value,
+                    })
+                  }
+                  placeholder="Enter company phone"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="footer-message">Footer Message</Label>
+                <Textarea
+                  id="footer-message"
+                  value={receiptSettings.footerMessage}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      footerMessage: e.target.value,
+                    })
+                  }
+                  placeholder="Enter footer message"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paper-width">Paper Width (mm)</Label>
+                <Input
+                  id="paper-width"
+                  type="number"
+                  min="58"
+                  max="100"
+                  value={receiptSettings.paperWidth}
+                  onChange={(e) =>
+                    setReceiptSettings({
+                      ...receiptSettings,
+                      paperWidth: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">
+                  Receipt Features
+                </Label>
                 <div className="space-y-2">
-                  <Label htmlFor="company-name">Company Name</Label>
-                  <Input
-                    id="company-name"
-                    value={receiptSettings.companyName}
-                    onChange={(e) =>
-                      setReceiptSettings({
-                        ...receiptSettings,
-                        companyName: e.target.value,
-                      })
-                    }
-                    placeholder="Enter company name"
-                  />
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={receiptSettings.includeLogo}
+                      onChange={(e) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          includeLogo: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Include Logo</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={receiptSettings.includeQR}
+                      onChange={(e) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          includeQR: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Include QR Code</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={receiptSettings.includeSignature}
+                      onChange={(e) =>
+                        setReceiptSettings({
+                          ...receiptSettings,
+                          includeSignature: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Include Signature Line</span>
+                  </label>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="company-address">Company Address</Label>
-                  <Textarea
-                    id="company-address"
-                    value={receiptSettings.companyAddress}
-                    onChange={(e) =>
-                      setReceiptSettings({
-                        ...receiptSettings,
-                        companyAddress: e.target.value,
-                      })
-                    }
-                    placeholder="Enter company address"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company-phone">Company Phone</Label>
-                  <Input
-                    id="company-phone"
-                    value={receiptSettings.companyPhone}
-                    onChange={(e) =>
-                      setReceiptSettings({
-                        ...receiptSettings,
-                        companyPhone: e.target.value,
-                      })
-                    }
-                    placeholder="Enter company phone"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="footer-message">Footer Message</Label>
-                  <Textarea
-                    id="footer-message"
-                    value={receiptSettings.footerMessage}
-                    onChange={(e) =>
-                      setReceiptSettings({
-                        ...receiptSettings,
-                        footerMessage: e.target.value,
-                      })
-                    }
-                    placeholder="Enter footer message"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="paper-width">Paper Width (mm)</Label>
-                  <Input
-                    id="paper-width"
-                    type="number"
-                    min="58"
-                    max="100"
-                    value={receiptSettings.paperWidth}
-                    onChange={(e) =>
-                      setReceiptSettings({
-                        ...receiptSettings,
-                        paperWidth: parseInt(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Receipt Features</Label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={receiptSettings.includeLogo}
-                        onChange={(e) =>
-                          setReceiptSettings({
-                            ...receiptSettings,
-                            includeLogo: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4"
-                      />
-                      <span>Include Logo</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={receiptSettings.includeQR}
-                        onChange={(e) =>
-                          setReceiptSettings({
-                            ...receiptSettings,
-                            includeQR: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4"
-                      />
-                      <span>Include QR Code</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={receiptSettings.includeSignature}
-                        onChange={(e) =>
-                          setReceiptSettings({
-                            ...receiptSettings,
-                            includeSignature: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4"
-                      />
-                      <span>Include Signature Line</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-4 border-t">
-                  <Button
-                    onClick={handlePreviewReceipt}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
-                  <Button
-                    onClick={handleSaveReceiptSettings}
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
-                  >
-                    Save Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Preview Panel */}
-            <Card className="glass border-border shadow-xl">
-              <CardHeader>
-                <CardTitle>Receipt Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex flex-col justify-center items-center text-center"
-                  style={{ width: `${receiptSettings.paperWidth}mm` }}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={handlePreviewReceipt}
+                  variant="outline"
+                  className="flex-1"
                 >
-                  <div className="text-sm space-y-2">
-                    {receiptSettings.includeLogo && (
-                      <div className="text-2xl font-bold text-orange-500 mb-2">
-                        🚗 FAC
-                      </div>
-                    )}
-                    <p className="font-bold">{receiptSettings.companyName}</p>
-                    <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                      {receiptSettings.companyAddress}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {receiptSettings.companyPhone}
-                    </p>
-                    <div className="border-t border-dashed my-2" />
-                    <p className="text-xs font-bold">RECEIPT</p>
-                    <div className="border-t border-dashed my-2" />
-                    <p className="text-xs text-gray-600">Date: MM/DD/YYYY</p>
-                    <p className="text-xs text-gray-600">Ref: #12345</p>
-                    <div className="border-t border-dashed my-2" />
-                    <p className="text-xs">Item 1 ............ 100.00</p>
-                    <p className="text-xs">Item 2 ............ 150.00</p>
-                    <div className="border-t border-dashed my-2" />
-                    <p className="text-xs font-bold">Total ............ 250.00</p>
-                    {receiptSettings.includeQR && (
-                      <div className="my-2 text-center">
-                        <div className="text-2xl">█ █</div>
-                        <p className="text-xs mt-1">QR Code</p>
-                      </div>
-                    )}
-                    {receiptSettings.includeSignature && (
-                      <div className="my-2">
-                        <div className="border-t border-gray-600 w-24 mx-auto" />
-                        <p className="text-xs mt-1">Signature</p>
-                      </div>
-                    )}
-                    <div className="border-t border-dashed my-2" />
-                    <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                      {receiptSettings.footerMessage}
-                    </p>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+                <Button
+                  onClick={handleSaveReceiptSettings}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600"
+                >
+                  Save Settings
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preview Panel */}
+          <Card className="glass border-border shadow-xl">
+            <CardHeader>
+              <CardTitle>Receipt Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex flex-col justify-center items-center text-center"
+                style={{ width: `${receiptSettings.paperWidth}mm` }}
+              >
+                <div className="text-sm space-y-2">
+                  {receiptSettings.includeLogo && (
+                    <div className="text-2xl font-bold text-orange-500 mb-2">
+                      🚗 FAC
+                    </div>
+                  )}
+                  <p className="font-bold">{receiptSettings.companyName}</p>
+                  <p className="text-xs text-gray-600 whitespace-pre-wrap">
+                    {receiptSettings.companyAddress}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {receiptSettings.companyPhone}
+                  </p>
+                  <div className="border-t border-dashed my-2" />
+                  <p className="text-xs font-bold">RECEIPT</p>
+                  <div className="border-t border-dashed my-2" />
+                  <p className="text-xs text-gray-600">Date: MM/DD/YYYY</p>
+                  <p className="text-xs text-gray-600">Ref: #12345</p>
+                  <div className="border-t border-dashed my-2" />
+                  <p className="text-xs">Item 1 ............ 100.00</p>
+                  <p className="text-xs">Item 2 ............ 150.00</p>
+                  <div className="border-t border-dashed my-2" />
+                  <p className="text-xs font-bold">
+                    Total ............ 250.00
+                  </p>
+                  {receiptSettings.includeQR && (
+                    <div className="my-2 text-center">
+                      <div className="text-2xl">█ █</div>
+                      <p className="text-xs mt-1">QR Code</p>
+                    </div>
+                  )}
+                  {receiptSettings.includeSignature && (
+                    <div className="my-2">
+                      <div className="border-t border-gray-600 w-24 mx-auto" />
+                      <p className="text-xs mt-1">Signature</p>
+                    </div>
+                  )}
+                  <div className="border-t border-dashed my-2" />
+                  <p className="text-xs text-gray-600 whitespace-pre-wrap">
+                    {receiptSettings.footerMessage}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Tax Management Tab */}
+      {activeTab === "taxes" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Tax Configuration</h2>
+            <Dialog open={showTaxDialog} onOpenChange={setShowTaxDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  onClick={handleAddTax}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Tax
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingTax ? "Edit Tax" : "Add New Tax"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingTax ? "Update tax configuration" : "Create a new tax rate"}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tax-name">Tax Name</Label>
+                    <Input
+                      id="tax-name"
+                      value={taxForm.name}
+                      onChange={(e) =>
+                        setTaxForm({ ...taxForm, name: e.target.value })
+                      }
+                      placeholder="e.g., VAT, Income Tax"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tax-percentage">Percentage (%)</Label>
+                    <Input
+                      id="tax-percentage"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={taxForm.percentage}
+                      onChange={(e) =>
+                        setTaxForm({
+                          ...taxForm,
+                          percentage: parseFloat(e.target.value),
+                        })
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tax-description">Description</Label>
+                    <Textarea
+                      id="tax-description"
+                      value={taxForm.description}
+                      onChange={(e) =>
+                        setTaxForm({
+                          ...taxForm,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Tax description"
+                      rows={3}
+                    />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Tax Management Tab */}
-        {activeTab === "taxes" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Tax Configuration</h2>
-              <Dialog open={showTaxDialog} onOpenChange={setShowTaxDialog}>
-                <DialogTrigger asChild>
+                <DialogFooter>
                   <Button
-                    onClick={handleAddTax}
+                    variant="outline"
+                    onClick={() => setShowTaxDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveTax}
                     className="bg-orange-500 hover:bg-orange-600"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Tax
+                    Save Tax
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingTax ? "Edit Tax" : "Add New Tax"}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {editingTax
-                        ? "Update tax configuration"
-                        : "Create a new tax rate"}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="tax-name">Tax Name</Label>
-                      <Input
-                        id="tax-name"
-                        value={taxForm.name}
-                        onChange={(e) =>
-                          setTaxForm({ ...taxForm, name: e.target.value })
-                        }
-                        placeholder="e.g., VAT, Income Tax"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tax-percentage">
-                        Percentage (%)
-                      </Label>
-                      <Input
-                        id="tax-percentage"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        value={taxForm.percentage}
-                        onChange={(e) =>
-                          setTaxForm({
-                            ...taxForm,
-                            percentage: parseFloat(e.target.value),
-                          })
-                        }
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tax-description">Description</Label>
-                      <Textarea
-                        id="tax-description"
-                        value={taxForm.description}
-                        onChange={(e) =>
-                          setTaxForm({
-                            ...taxForm,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="Tax description"
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowTaxDialog(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveTax}
-                      className="bg-orange-500 hover:bg-orange-600"
-                    >
-                      Save Tax
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-            {/* Tax List */}
-            <div className="grid gap-4">
-              {taxes.length === 0 ? (
-                <Card className="glass border-border shadow-xl">
-                  <CardContent className="p-6 text-center text-muted-foreground">
-                    No taxes configured yet. Add your first tax to get started.
+          {/* Tax List */}
+          <div className="grid gap-4">
+            {taxes.length === 0 ? (
+              <Card className="glass border-border shadow-xl">
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  No taxes configured yet. Add your first tax to get started.
+                </CardContent>
+              </Card>
+            ) : (
+              taxes.map((tax) => (
+                <Card key={tax.id} className="glass border-border shadow-xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-bold text-foreground">
+                            {tax.name}
+                          </h3>
+                          <Badge
+                            variant={tax.isActive ? "default" : "secondary"}
+                          >
+                            {tax.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {tax.description}
+                        </p>
+                        <p className="text-2xl font-bold text-orange-500">
+                          {tax.percentage}%
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleToggleTax(tax.id)}
+                          title={tax.isActive ? "Disable" : "Enable"}
+                        >
+                          {tax.isActive ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditTax(tax)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => {
+                            setDeleteId(tax.id);
+                            setDeleteType("tax");
+                            setShowDeleteDialog(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              ) : (
-                taxes.map((tax) => (
-                  <Card key={tax.id} className="glass border-border shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-bold text-foreground">
-                              {tax.name}
-                            </h3>
-                            <Badge
-                              variant={tax.isActive ? "default" : "secondary"}
-                            >
-                              {tax.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {tax.description}
-                          </p>
-                          <p className="text-2xl font-bold text-orange-500">
-                            {tax.percentage}%
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleToggleTax(tax.id)
-                            }
-                            title={tax.isActive ? "Disable" : "Enable"}
-                          >
-                            {tax.isActive ? (
-                              <Eye className="h-4 w-4" />
-                            ) : (
-                              <EyeOff className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditTax(tax)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => {
-                              setDeleteId(tax.id);
-                              setShowDeleteDialog(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Features Tab */}
+      {activeTab === "features" && (
+        <div className="space-y-6">
+          <div className="grid gap-6">
+            {/* POS Feature Card */}
+            <Card className="glass border-border shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-3 rounded-lg">
+                      <Zap className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">
+                        Point of Sale (POS)
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enable/disable POS sales terminal
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${
+                      features.posEnabled
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-300 text-gray-700"
+                    }`}
+                  >
+                    {features.posEnabled ? (
+                      <>
+                        <Check className="h-5 w-5" />
+                        Enabled
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-5 w-5" />
+                        Disabled
+                      </>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  {features.posEnabled
+                    ? "The Point of Sale system is currently active. Staff can process sales through the POS terminal."
+                    : "The Point of Sale system is disabled. Sales cannot be processed through the terminal."}
+                </p>
+                <Button
+                  onClick={handleTogglePOS}
+                  className={`${
+                    features.posEnabled
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
+                  }`}
+                >
+                  {features.posEnabled ? "Disable POS" : "Enable POS"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* VAT Feature Card */}
+            <Card className="glass border-border shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-3 rounded-lg">
+                      <Percent className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">
+                        VAT/Tax System
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enable/disable tax calculations
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${
+                      features.vatEnabled
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-300 text-gray-700"
+                    }`}
+                  >
+                    {features.vatEnabled ? (
+                      <>
+                        <Check className="h-5 w-5" />
+                        Enabled
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-5 w-5" />
+                        Disabled
+                      </>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  {features.vatEnabled
+                    ? "VAT/Tax system is active. Taxes will be calculated and applied to all transactions."
+                    : "VAT/Tax system is disabled. No tax calculations will be applied."}
+                </p>
+                <Button
+                  onClick={handleToggleVAT}
+                  className={`${
+                    features.vatEnabled
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
+                  }`}
+                >
+                  {features.vatEnabled ? "Disable VAT/Tax" : "Enable VAT/Tax"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* User Management Tab */}
+      {activeTab === "users" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Staff & User Management</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Manage admin and staff accounts
+              </p>
+            </div>
+            <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  onClick={handleAddUser}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingUser ? "Edit User" : "Add New User"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingUser
+                      ? "Update user information"
+                      : "Create a new staff or admin account"}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="user-email">Email</Label>
+                    <Input
+                      id="user-email"
+                      type="email"
+                      value={userForm.email}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, email: e.target.value })
+                      }
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="user-name">Full Name</Label>
+                    <Input
+                      id="user-name"
+                      value={userForm.fullName}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, fullName: e.target.value })
+                      }
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="user-phone">Phone Number</Label>
+                    <Input
+                      id="user-phone"
+                      value={userForm.phoneNumber}
+                      onChange={(e) =>
+                        setUserForm({
+                          ...userForm,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                      placeholder="+63 123 456 7890"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="user-role">Role</Label>
+                    <Select
+                      value={userForm.role}
+                      onValueChange={(value) =>
+                        setUserForm({ ...userForm, role: value })
+                      }
+                    >
+                      <SelectTrigger id="user-role">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="superadmin">Super Admin</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="staff">Staff</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUserDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveUser}
+                    className="bg-orange-500 hover:bg-orange-600"
+                  >
+                    Save User
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Search Bar */}
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by email or name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Users Table */}
+          <Card className="glass border-border shadow-xl">
+            <CardContent className="p-0">
+              {usersLoading ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Loading users...
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  {searchQuery ? "No users found" : "No users yet"}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.email}
+                          </TableCell>
+                          <TableCell>{user.fullName || "-"}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                roleDefinitions[
+                                  user.role as keyof typeof roleDefinitions
+                                ]?.color || "bg-gray-500"
+                              }
+                            >
+                              {
+                                roleDefinitions[
+                                  user.role as keyof typeof roleDefinitions
+                                ]?.name || user.role
+                              }
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.status === "active" ? "default" : "secondary"
+                              }
+                            >
+                              {user.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => {
+                                  setDeleteId(user.id);
+                                  setDeleteType("user");
+                                  setShowDeleteDialog(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Tax</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deleteType === "tax" ? "Delete Tax" : "Delete User"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this tax? This action cannot be undone.
+              {deleteType === "tax"
+                ? "Are you sure you want to delete this tax? This action cannot be undone."
+                : "Are you sure you want to delete this user? This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogAction
-            onClick={handleDeleteTax}
-            className="bg-red-500 hover:bg-red-600"
-          >
-            Delete
-          </AlertDialogAction>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              onClick={
+                deleteType === "tax" ? handleDeleteTax : handleDeleteUser
+              }
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </Button>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>
