@@ -576,7 +576,7 @@ class NeonDatabaseClient {
           return result;
         } catch (retryErr: any) {
           clearTimeout(to2);
-          console.error(
+          logError(
             "❌ Retry login failed:",
             retryErr?.message || retryErr,
           );
