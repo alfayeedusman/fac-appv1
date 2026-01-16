@@ -300,6 +300,46 @@ export default function POSClosingModal({
               />
             </div>
 
+            {/* Transaction Details for Variance Debugging */}
+            {(cashVariance !== 0 || digitalVariance !== 0) && (
+              <Card className="border-0 shadow-md bg-red-50 border-l-4 border-red-500">
+                <CardContent className="p-6">
+                  <h4 className="font-semibold text-red-900 mb-3">⚠️ Variance Detected - Review Transactions</h4>
+                  <div className="space-y-2 text-sm">
+                    <p className="text-red-800">
+                      <strong>Cash Variance:</strong> ₱{Math.abs(cashVariance).toFixed(2)} {cashVariance > 0 ? "Surplus" : "Shortage"}
+                    </p>
+                    <p className="text-red-800">
+                      <strong>Digital Variance:</strong> ₱{Math.abs(digitalVariance).toFixed(2)} {digitalVariance > 0 ? "Surplus" : "Shortage"}
+                    </p>
+                    <p className="text-red-700 mt-3 text-xs bg-white p-2 rounded border border-red-200">
+                      💡 <strong>Tip:</strong> Review recent transactions to find missing or incorrect entries. Check if all cash sales were recorded in the system.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Transaction Count & Verification */}
+            <Card className="border-0 shadow-md bg-blue-50">
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-3">Transaction Summary</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Number of Transactions:</span>
+                    <span className="font-medium">{salesData?.transactionCount || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Number of Expenses:</span>
+                    <span className="font-medium">{salesData?.expenseCount || 0}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    All transactions from today are included in the expected amounts above.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Summary */}
             <Card className="border-0 shadow-md bg-gradient-to-r from-blue-50 to-purple-50">
               <CardContent className="p-6">
