@@ -88,6 +88,7 @@ import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
 import AdminUserManagement from "./AdminUserManagement";
 import AdminCrewManagement from "./AdminCrewManagement";
+import AdminSettings from "./AdminSettings";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
