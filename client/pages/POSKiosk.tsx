@@ -785,6 +785,157 @@ export default function POSKiosk() {
         onPayment={handlePayment}
       />
 
+      {/* Car Wash Service Modal */}
+      {showCarWashModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-3xl my-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-xl">
+                  <Droplet className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Car Wash Services</h2>
+                  <p className="text-sm text-gray-600 mt-1">Choose a service and vehicle type</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCarWashModal(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <Separator className="mb-6" />
+
+            {!selectedWashService ? (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                <p className="text-sm font-medium text-gray-600 mb-4">Select a wash service:</p>
+                {carWashServices.map((service) => (
+                  <div
+                    key={service.id}
+                    onClick={() => handleSelectWashService(service)}
+                    className="p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">{service.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <span className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{service.duration}</span>
+                          <span className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{service.category}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {service.features.slice(0, 3).map((feature, idx) => (
+                            <span key={idx} className="text-xs text-gray-600">• {feature}</span>
+                          ))}</div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="text-2xl font-bold text-orange-600">₱{service.basePrice}</p>
+                        <p className="text-xs text-gray-600 mt-1">Base price</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{selectedWashService.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{selectedWashService.description}</p>
+                    </div>
+                    <button
+                      onClick={() => handleSelectWashService(selectedWashService)}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-900 mb-3">Select Vehicle Type:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {vehicleTypes.map((vt) => {
+                      const isSelected = selectedVehicleType === vt.id;
+                      return (
+                        <button
+                          key={vt.id}
+                          onClick={() => handleVehicleTypeSelect(vt.id)}
+                          className={isSelected ? "p-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 transition-all duration-200 font-medium text-sm" : "p-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200 font-medium text-sm"}
+                        >
+                          {vt.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedVehicleType === "motorcycle" && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-3">Select Motorcycle Type:</p>
+                    <div className="space-y-2">
+                      {motorcycleSubtypes.map((st) => {
+                        const isSelected = selectedMotorcycleSubtype === st.id;
+                        return (
+                          <button
+                            key={st.id}
+                            onClick={() => handleMotorcycleSubtypeSelect(st.id)}
+                            className={isSelected ? "w-full p-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 transition-all duration-200 font-medium text-left text-sm" : "w-full p-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200 font-medium text-left text-sm"}
+                          >
+                            {st.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedVehicleType && (!selectedVehicleType.includes("motorcycle") || selectedMotorcycleSubtype) && (
+                  <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Final Price</p>
+                        <p className="text-sm font-medium text-gray-700 mt-1">
+                          {vehicleTypes.find((vt) => vt.id === selectedVehicleType)?.name}
+                          {selectedVehicleType === "motorcycle" && selectedMotorcycleSubtype ? ` - ${motorcycleSubtypes.find((st) => st.id === selectedMotorcycleSubtype)?.name}` : ""}
+                        </p>
+                      </div>
+                      <p className="text-3xl font-bold text-orange-600">₱{calculatedWashPrice.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex space-x-3 pt-4 border-t">
+                  <button
+                    onClick={() => {
+                      setSelectedWashService(null);
+                      setSelectedVehicleType("");
+                      setSelectedMotorcycleSubtype("");
+                      setCalculatedWashPrice(0);
+                    }}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleAddWashServiceToCart}
+                    disabled={!selectedVehicleType || (selectedVehicleType === "motorcycle" && !selectedMotorcycleSubtype)}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2 inline" />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Exit Confirmation Modal */}
       {showExitModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
