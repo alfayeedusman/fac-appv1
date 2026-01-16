@@ -319,16 +319,17 @@ export default function AdminSettings() {
   const handleDeleteUser = async () => {
     if (deleteId && deleteType === "user") {
       try {
-        await neonDbClient.deleteUser(deleteId);
-        toast({ title: "Success", description: "User deleted successfully" });
-        loadUsers();
+        toast({
+          title: "Info",
+          description: "User deletion functionality coming soon",
+        });
+        setShowDeleteDialog(false);
+        setDeleteId(null);
       } catch (error) {
         console.error("Error deleting user:", error);
         toast({ title: "Error", description: "Failed to delete user" });
       }
     }
-    setShowDeleteDialog(false);
-    setDeleteId(null);
   };
 
   // Tax Management Functions
