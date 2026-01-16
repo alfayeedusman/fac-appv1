@@ -234,14 +234,22 @@ class ReceiptPrintService {
 
     if (cfg.includeLogo) {
       if (cfg.logoUrl) {
-        html += `<div class="logo"><img src="${cfg.logoUrl}" style="max-width: 50mm; max-height: 20mm;"></div>`;
+        html += `<div class="logo"><img src="${cfg.logoUrl}" style="max-width: 50mm; max-height: 20mm; filter: grayscale(100%);"></div>`;
       } else {
-        html += `<div class="logo">🚗 FAC</div>`;
+        // Simple black and white system logo for thermal printer
+        html += `<div class="logo" style="font-family: monospace; font-size: 11pt; font-weight: bold; margin-bottom: 2mm;">
+                  ╔════════════════════╗<br>
+                  ║  FAYEED AUTO CARE  ║<br>
+                  ║  Professional Wash ║<br>
+                  ╚════════════════════╝
+                </div>`;
       }
+    } else {
+      // Display company name prominently even without logo
+      html += `<div class="company-name" style="font-size: 12pt; font-weight: bold; margin-bottom: 1mm;">FAYEED AUTO CARE</div>`;
     }
 
-    html += `<div class="company-name">${cfg.companyName}</div>
-            <div class="company-info">
+    html += `<div class="company-info">
                 ${cfg.headerMessage ? cfg.headerMessage + "<br>" : ""}
                 ${cfg.companyAddress}<br>
                 ${cfg.companyPhone}${cfg.companyEmail ? "<br>" + cfg.companyEmail : ""}
