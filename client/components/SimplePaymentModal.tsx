@@ -157,7 +157,7 @@ export function SimplePaymentModal({
             onClick={onPayment}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
           >
-            <DollarSign className="h-4 w-4 mr-2" />
+            <CreditCard className="h-4 w-4 mr-2" />
             Complete Payment
           </button>
         </div>
