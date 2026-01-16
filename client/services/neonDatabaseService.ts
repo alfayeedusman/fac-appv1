@@ -259,7 +259,7 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log("✅ Database connection test successful");
+            info("✅ Database connection test successful");
           } else {
             console.warn("⚠️ Database connection test returned false");
           }
@@ -281,7 +281,7 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log("✅ Fallback connection test successful");
+            info("✅ Fallback connection test successful");
           } else {
             console.warn("⚠️ Fallback connection test returned false");
           }
@@ -332,7 +332,7 @@ class NeonDatabaseClient {
     testResults: any;
     initResults: any;
   }> {
-    console.log("🔍 Starting database connection debug...");
+    log("🔍 Starting database connection debug...");
 
     const debug = {
       baseUrl: this.baseUrl,
@@ -343,7 +343,7 @@ class NeonDatabaseClient {
 
     try {
       // Test basic connectivity
-      console.log("🧪 Testing connection...");
+      log("🧪 Testing connection...");
       debug.testResults = await this.testConnection();
       console.log("✅ Test connection result:", debug.testResults);
     } catch (error) {
@@ -1171,9 +1171,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/customers`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
@@ -1294,9 +1294,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/staff`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
@@ -1355,9 +1355,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/users`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
