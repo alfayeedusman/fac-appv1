@@ -655,6 +655,57 @@ router.get('/messages/:recipientType/:recipientId', async (req, res) => {
 });
 
 // ============================================================================
+// AUTH: Pusher private channel auth endpoint
+// ============================================================================
+
+router.post('/pusher/auth', async (req, res) => {
+  try {
+    const { socket_id, channel_name } = req.body;
+    if (!socket_id || !channel_name) {
+      return res.status(400).json({ success: false, error: 'socket_id and channel_name required' });
+    }
+
+    const PUSHER_KEY = process.env.PUSHER_KEY;
+    const PUSHER_SECRET = process.env.PUSHER_SECRET;
+
+    if (!PUSHER_KEY || !PUSHER_SECRET) {
+      return res.status(500).json({ success: false, error: 'Pusher not configured' });
+    }
+
+    // Basic access control for private channels
+    // private-user-customer-<id> => require x-user-id header matching id
+    // private-admin-... => require x-user-role header includes admin
+    const userIdHeader = req.headers['x-user-id'] as string | undefined;
+    const userRoleHeader = req.headers['x-user-role'] as string | undefined;
+
+    if (channel_name.startsWith('private-user-customer-')) {
+      const parts = channel_name.split('private-user-customer-');
+      const channelUserId = parts[1];
+      if (!userIdHeader || userIdHeader !== channelUserId) {
+        return res.status(403).json({ success: false, error: 'Unauthorized for this channel' });
+      }
+    }
+
+    if (channel_name.startsWith('private-admin')) {
+      if (!userRoleHeader || !['admin', 'superadmin', 'manager'].includes(userRoleHeader)) {
+        return res.status(403).json({ success: false, error: 'Unauthorized for admin channel' });
+      }
+    }
+
+    // Create signature
+    const crypto = await import('crypto');
+    const stringToSign = `${socket_id}:${channel_name}`;
+    const signature = crypto.createHmac('sha256', PUSHER_SECRET).update(stringToSign).digest('hex');
+    const auth = `${PUSHER_KEY}:${signature}`;
+
+    return res.json({ auth });
+  } catch (error: any) {
+    console.error('Pusher auth error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Internal error' });
+  }
+});
+
+// ============================================================================
 // HEALTH CHECK AND SYSTEM STATUS
 // ============================================================================
 
