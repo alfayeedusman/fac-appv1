@@ -184,23 +184,25 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const digitalVariance = roundToTwo(actualDigitalAmount - expectedDigital);
     const isBalanced = Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
-    // Update session
+    // Update session with properly rounded values
+    const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
+
     await db
       .update(posSessions)
       .set({
         status: "closed",
         closedAt: new Date(),
-        closingBalance: (parseFloat(actualCash) + parseFloat(actualDigital)).toString(),
+        closingBalance: closingBalance.toString(),
         totalCashSales: totalCashSales.toString(),
         totalCardSales: totalCardSales.toString(),
         totalGcashSales: totalGcashSales.toString(),
         totalBankSales: totalBankSales.toString(),
         totalExpenses: totalExpenses.toString(),
         expectedCash: expectedCash.toString(),
-        actualCash: parseFloat(actualCash).toString(),
+        actualCash: actualCashAmount.toString(),
         cashVariance: cashVariance.toString(),
         expectedDigital: expectedDigital.toString(),
-        actualDigital: parseFloat(actualDigital).toString(),
+        actualDigital: actualDigitalAmount.toString(),
         digitalVariance: digitalVariance.toString(),
         remittanceNotes,
         isBalanced,
