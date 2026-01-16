@@ -60,6 +60,7 @@ import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
 import BookingReceiptModal from "@/components/BookingReceiptModal";
+import BookingProgressBar from "@/components/BookingProgressBar";
 
 interface BookingData {
   // Service Selection
