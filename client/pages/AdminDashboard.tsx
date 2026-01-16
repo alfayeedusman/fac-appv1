@@ -183,6 +183,9 @@ export default function AdminDashboard() {
     totalExpenses: 0,
     netIncome: 0,
     activeSubscriptions: 0,
+    totalSubscriptionRevenue: 0,
+    newSubscriptions: 0,
+    subscriptionUpgrades: 0,
     monthlyGrowth: 0,
     topPackage: "VIP Gold Ultimate",
   });
