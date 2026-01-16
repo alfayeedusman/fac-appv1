@@ -2081,11 +2081,8 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "bookings" && (
-            <div>
-              <EnhancedBookingManagement
-                userRole={userRole as "admin" | "superadmin"}
-                showCrewAssignment={true}
-              />
+            <div className="space-y-6">
+              <BookingHub />
             </div>
           )}
 
