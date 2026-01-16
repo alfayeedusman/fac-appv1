@@ -29,11 +29,16 @@ RUN adduser -S nextjs -u 1001
 # Set working directory
 WORKDIR /app
 
-# Copy built application
+# Copy built application with proper structure
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nextjs:nodejs /app/database ./database
+
+# Verify the dist structure
+RUN ls -la /app/dist/ 2>/dev/null || echo "dist directory not found"
+RUN ls -la /app/dist/spa 2>/dev/null || echo "dist/spa not found"
+RUN ls -la /app/dist/server 2>/dev/null || echo "dist/server not found"
 
 # Create necessary directories
 RUN mkdir -p /app/logs && chown nextjs:nodejs /app/logs
