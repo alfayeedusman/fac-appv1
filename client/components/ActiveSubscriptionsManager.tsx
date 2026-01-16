@@ -80,6 +80,7 @@ const ActiveSubscriptionsManager = () => {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+  const [isEndpointAvailable, setIsEndpointAvailable] = useState(true);
 
   useEffect(() => {
     loadSubscriptions();
