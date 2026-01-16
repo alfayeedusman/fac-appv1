@@ -18,6 +18,7 @@ export interface XenditPaymentParams {
   description: string;
   successRedirectUrl?: string;
   failureRedirectUrl?: string;
+  preferredPaymentMethod?: string; // e.g., 'gcash', 'paymaya', 'card', 'bank_transfer'
 }
 
 export interface XenditTokenResponse {
