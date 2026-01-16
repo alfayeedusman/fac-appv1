@@ -100,6 +100,15 @@ class AuthService {
         // Store complete user object for easy access
         localStorage.setItem('currentUser', JSON.stringify(result.user));
 
+        // Store server-issued session token (if provided) for authenticated requests
+        if ((result as any).sessionToken) {
+          localStorage.setItem('sessionToken', (result as any).sessionToken);
+        }
+
+        if ((result as any).expiresAt) {
+          localStorage.setItem('sessionExpiresAt', (result as any).expiresAt);
+        }
+
         toast({
           title: 'Login Successful',
           description: `Welcome back, ${result.user.fullName}!`,
