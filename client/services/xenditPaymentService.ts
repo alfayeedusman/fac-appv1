@@ -1,5 +1,6 @@
 // Xendit payment service for client-side payment handling
 import { toast } from "@/hooks/use-toast";
+import { log, info, warn, error as logError } from '@/utils/logger';
 
 export interface XenditInvoiceRequest {
   external_id: string;
