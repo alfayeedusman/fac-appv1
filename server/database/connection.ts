@@ -8,10 +8,14 @@ let db: any;
 
 // Function to initialize database connection
 export function initializeDatabase() {
+  if (db && sql) {
+    return db; // Already initialized
+  }
+
   try {
     // Get database URL from environment variables
     const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
-    
+
     if (!databaseUrl) {
       console.warn('No database URL found. Using fallback mode.');
       return null;
@@ -19,7 +23,7 @@ export function initializeDatabase() {
 
     sql = neon(databaseUrl);
     db = drizzle(sql, { schema });
-    
+
     console.log('✅ Neon database connection initialized');
     return db;
   } catch (error) {
@@ -27,6 +31,9 @@ export function initializeDatabase() {
     return null;
   }
 }
+
+// Initialize on module load
+initializeDatabase();
 
 // Get database instance
 export function getDatabase() {
