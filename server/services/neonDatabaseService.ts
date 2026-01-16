@@ -500,6 +500,15 @@ class NeonDatabaseService {
       .from(schema.bookings)
       .where(gte(schema.bookings.createdAt, startDate));
 
+    // Count online bookings (where customerId IS NOT NULL - registered customers)
+    const [onlineBookingCount] = await this.db
+      .select({ count: count() })
+      .from(schema.bookings)
+      .where(and(
+        sql`${schema.bookings.customerId} IS NOT NULL`,
+        gte(schema.bookings.createdAt, startDate)
+      ));
+
     const [adCount] = await this.db
       .select({ count: count() })
       .from(schema.ads)
