@@ -152,10 +152,10 @@ class NeonDatabaseClient {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
-    console.log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
+    log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
-      console.warn("⚠️ Background initialization failed:", err),
+      warn("⚠️ Background initialization failed:", err),
     );
   }
 
