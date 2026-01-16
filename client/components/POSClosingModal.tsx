@@ -431,7 +431,7 @@ export default function POSClosingModal({
                                 : "text-yellow-900"
                             }`}
                           >
-                            {isDigitalBalanced ? "✓ Digital Balanced" : "⚠️ Variance Detected"}
+                            {isDigitalBalanced ? "✓ Digital Matches!" : "⚠️ The Money Doesn't Match"}
                           </p>
                           <p
                             className={`text-sm ${
@@ -440,9 +440,9 @@ export default function POSClosingModal({
                                 : "text-yellow-700"
                             }`}
                           >
-                            Expected: ₱{expectedDigital.toFixed(2)} | Actual: ₱{actualDigitalAmount.toFixed(2)}
+                            Expected: ₱{expectedDigital.toFixed(2)} | Verified: ₱{actualDigitalAmount.toFixed(2)}
                             <br />
-                            Variance: {digitalVariance >= 0 ? "+" : ""}₱{digitalVariance.toFixed(2)} ({isDigitalBalanced ? "Balanced" : "Difference"})
+                            Difference: {digitalVariance >= 0 ? "+" : ""}₱{digitalVariance.toFixed(2)} ({isDigitalBalanced ? "Same" : "Different"})
                           </p>
                         </div>
                       </div>
