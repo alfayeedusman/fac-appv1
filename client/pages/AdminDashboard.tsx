@@ -513,6 +513,7 @@ export default function AdminDashboard() {
         // unsubscribe realtime subscriptions
         subs.forEach((u) => u && u());
         clearInterval(notificationInterval);
+        clearInterval(adminNotifInterval);
         clearInterval(statsInterval);
         clearInterval(realtimeInterval);
       };
