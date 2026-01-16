@@ -1204,7 +1204,7 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher('public-realtime', 'inventory.deleted', { id });
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.deleted', { id });
       } catch (err) {
         console.warn('Failed to emit inventory.deleted:', err);
       }
