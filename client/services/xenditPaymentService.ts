@@ -178,7 +178,7 @@ class XenditPaymentService {
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error("❌ Failed to check booking status:", error);
+      logError("❌ Failed to check booking status:", error);
       return { success: false, error: error.message };
     }
   }
