@@ -100,9 +100,16 @@ export default function POSKiosk() {
     notes: "",
   });
   const [todayExpenses, setTodayExpenses] = useState(0);
+  const [showOpeningModal, setShowOpeningModal] = useState(false);
+  const [showClosingModal, setShowClosingModal] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [openingBalance, setOpeningBalance] = useState(0);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
 
   const categories = getPOSCategories();
   const cashierName = localStorage.getItem("userEmail") || "Cashier";
+  const cashierId = localStorage.getItem("userEmail") || "unknown";
+  const branchId = "default";
 
   useEffect(() => {
     const loadData = async () => {
