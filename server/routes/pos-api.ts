@@ -606,4 +606,154 @@ router.get("/reports/daily/:date", async (req, res) => {
   }
 });
 
+// ============= TRANSACTION QUERY ROUTES =============
+
+// Get all transactions (with optional filters)
+router.get("/transactions", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { startDate, endDate, limit = 100, offset = 0 } = req.query;
+
+    let query = db.select().from(posTransactions);
+
+    // Apply date filters if provided
+    if (startDate || endDate) {
+      const filters = [];
+      if (startDate) {
+        const start = new Date(startDate as string);
+        filters.push(gte(posTransactions.createdAt, start));
+      }
+      if (endDate) {
+        const end = new Date(endDate as string);
+        filters.push(lte(posTransactions.createdAt, end));
+      }
+      query = query.where(and(...filters));
+    }
+
+    // Order by newest first
+    query = query.orderBy(desc(posTransactions.createdAt));
+
+    // Apply pagination
+    const transactions = await query
+      .limit(parseInt(limit as string) || 100)
+      .offset(parseInt(offset as string) || 0);
+
+    // Get total count
+    const countResult = await db.select().from(posTransactions);
+    const totalCount = countResult.length;
+
+    res.json({
+      success: true,
+      transactions,
+      totalCount,
+      count: transactions.length,
+      limit: parseInt(limit as string) || 100,
+      offset: parseInt(offset as string) || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// Get transaction details with items
+router.get("/transactions/:transactionId", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { transactionId } = req.params;
+
+    const transaction = await db
+      .select()
+      .from(posTransactions)
+      .where(eq(posTransactions.id, transactionId))
+      .limit(1);
+
+    if (!transaction.length) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    const items = await db
+      .select()
+      .from(posTransactionItems)
+      .where(eq(posTransactionItems.transactionId, transactionId));
+
+    res.json({
+      success: true,
+      transaction: transaction[0],
+      items,
+    });
+  } catch (error) {
+    console.error("Error fetching transaction:", error);
+    res.status(500).json({ error: "Failed to fetch transaction" });
+  }
+});
+
+// Get transactions summary/statistics
+router.get("/transactions/stats/summary", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days as string));
+
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(gte(posTransactions.createdAt, startDate))
+      .orderBy(desc(posTransactions.createdAt));
+
+    // Calculate statistics
+    const stats = {
+      totalTransactions: transactions.length,
+      totalRevenue: transactions.reduce((sum, t) => sum + parseFloat(t.totalAmount || "0"), 0),
+      totalTax: transactions.reduce((sum, t) => sum + parseFloat(t.taxAmount || "0"), 0),
+      totalDiscount: transactions.reduce((sum, t) => sum + parseFloat(t.discountAmount || "0"), 0),
+      paymentMethods: {} as Record<string, { count: number; amount: number }>,
+      averageTransaction: 0,
+      byStatus: {} as Record<string, number>,
+    };
+
+    // Group by payment method
+    transactions.forEach((t) => {
+      const method = t.paymentMethod || "cash";
+      if (!stats.paymentMethods[method]) {
+        stats.paymentMethods[method] = { count: 0, amount: 0 };
+      }
+      stats.paymentMethods[method].count++;
+      stats.paymentMethods[method].amount += parseFloat(t.totalAmount || "0");
+
+      // Count by status
+      const status = t.status || "completed";
+      stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
+    });
+
+    stats.averageTransaction = stats.totalTransactions > 0
+      ? stats.totalRevenue / stats.totalTransactions
+      : 0;
+
+    res.json({
+      success: true,
+      stats,
+      period: `${days} days`,
+      startDate: startDate.toISOString(),
+      endDate: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error fetching transaction stats:", error);
+    res.status(500).json({ error: "Failed to fetch transaction statistics" });
+  }
+});
+
 export default router;
