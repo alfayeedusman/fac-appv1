@@ -589,7 +589,7 @@ class NeonDatabaseClient {
 
       return processed;
     } catch (error: any) {
-      console.error("Database login failed:", error);
+      logError("Database login failed:", error);
 
       if (error?.name === "AbortError") {
         return {
