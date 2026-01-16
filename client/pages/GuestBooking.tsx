@@ -4,32 +4,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  UserPlus,
   Info,
   Sparkles,
   Clock,
   CheckCircle,
   X,
-  Zap,
-  Smartphone,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import StepperBooking from "@/components/StepperBooking";
-import FastBookingCard from "@/components/FastBookingCard";
 import { useState } from "react";
 
 export default function GuestBooking() {
   const [showInfoCard, setShowInfoCard] = useState(true);
-  const [fastBookingSelected, setFastBookingSelected] = useState(false);
-
-  const handleFastBookingSelect = (service: any) => {
-    setFastBookingSelected(true);
-    // Scroll to booking form
-    setTimeout(() => {
-      const bookingElement = document.getElementById("booking-form");
-      bookingElement?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  };
 
   return (
     <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
