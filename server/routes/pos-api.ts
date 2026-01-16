@@ -203,9 +203,13 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       digitalVariance,
       message: isBalanced ? "POS closed successfully and balanced!" : "POS closed with variance",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error closing POS session:", error);
-    res.status(500).json({ error: "Failed to close POS session" });
+    const errorMessage = error?.message || error?.toString() || "Unknown error";
+    res.status(500).json({
+      error: "Failed to close POS session",
+      details: errorMessage
+    });
   }
 });
 
