@@ -311,6 +311,9 @@ export default function AdminDashboard() {
           totalExpenses: result.stats.totalExpenses || 0,
           netIncome: result.stats.netIncome || 0,
           activeSubscriptions: result.stats.activeSubscriptions || 0,
+          totalSubscriptionRevenue: result.stats.totalSubscriptionRevenue || 0,
+          newSubscriptions: result.stats.newSubscriptions || 0,
+          subscriptionUpgrades: result.stats.subscriptionUpgrades || 0,
           monthlyGrowth: result.stats.monthlyGrowth || 0,
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
         };
