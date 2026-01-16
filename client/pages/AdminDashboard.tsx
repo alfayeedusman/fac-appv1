@@ -168,6 +168,7 @@ export default function AdminDashboard() {
   const [timeFilter, setTimeFilter] = useState<
     "daily" | "weekly" | "monthly" | "yearly"
   >("monthly");
+  const [bookingTypeFilter, setBookingTypeFilter] = useState<"all" | "walkin" | "booking">("all");
 
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 0,
