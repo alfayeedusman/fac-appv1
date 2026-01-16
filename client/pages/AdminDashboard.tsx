@@ -2191,6 +2191,139 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Edit Customer Modal */}
+      <Dialog
+        open={isEditCustomerModalOpen}
+        onOpenChange={setIsEditCustomerModalOpen}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-foreground">
+              Edit Customer
+            </DialogTitle>
+            <DialogDescription>
+              Update customer information and details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editCustomerName">Full Name *</Label>
+                <Input
+                  id="editCustomerName"
+                  value={editCustomerForm.name}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., John Dela Cruz"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerEmail">Email *</Label>
+                <Input
+                  id="editCustomerEmail"
+                  type="email"
+                  value={editCustomerForm.email}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., john@example.com"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerPhone">Phone Number</Label>
+                <Input
+                  id="editCustomerPhone"
+                  value={editCustomerForm.phone}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      phone: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., +63 123 456 7890"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerMembership">Membership Type</Label>
+                <Select
+                  value={editCustomerForm.membershipType}
+                  onValueChange={(value) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      membershipType: value,
+                    })
+                  }
+                >
+                  <SelectTrigger id="editCustomerMembership" className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Classic">Classic</SelectItem>
+                    <SelectItem value="VIP Silver">VIP Silver</SelectItem>
+                    <SelectItem value="VIP Gold">VIP Gold</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="editCustomerCar">Vehicle Model</Label>
+                <Input
+                  id="editCustomerCar"
+                  value={editCustomerForm.carUnit}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      carUnit: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Toyota Vios"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerPlate">Plate Number</Label>
+                <Input
+                  id="editCustomerPlate"
+                  value={editCustomerForm.plateNumber}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      plateNumber: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., ABC 1234"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditCustomerModalOpen(false)}
+              className="glass"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="btn-futuristic font-bold"
+              onClick={handleSaveEditedCustomer}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Customer Modal */}
       <Dialog
         open={isAddCustomerModalOpen}
