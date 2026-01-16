@@ -330,8 +330,9 @@ export default function POSClosingModal({
               </button>
               <button
                 onClick={handleCloseSession}
-                disabled={isLoading || !actualCash || !actualDigital}
+                disabled={isLoading || !actualCash || !actualDigital || !sessionId}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!sessionId ? "No active POS session" : ""}
               >
                 {isLoading ? "Closing..." : "Close & Balance POS"}
               </button>
