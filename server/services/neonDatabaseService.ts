@@ -1,4 +1,4 @@
-import { eq, and, or, desc, count, sql, lte, asc } from "drizzle-orm";
+import { eq, and, or, desc, count, sql, lte, asc, gte } from "drizzle-orm";
 import { getDatabase } from "../database/connection";
 import * as schema from "../database/schema";
 import bcrypt from "bcryptjs";
