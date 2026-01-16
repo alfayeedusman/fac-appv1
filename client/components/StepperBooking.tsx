@@ -1402,41 +1402,29 @@ export default function StepperBooking({
                   ))}
                 </div>
 
-                {/* Mobile Stepper - App-like Design */}
-                <div className="md:hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-foreground">
-                      Progress
-                    </span>
-                    <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                      {currentStep} of {STEPS.length}
-                    </span>
-                  </div>
+                {/* Mobile Stepper - App-like Design with BookingProgressBar */}
+                <div className="md:hidden space-y-4 mb-6">
+                  {/* Enhanced Booking Progress Bar */}
+                  <BookingProgressBar
+                    currentStep={currentStep}
+                    totalSteps={STEPS.length}
+                    estimatedTimeRemaining={300}
+                  />
 
-                  {/* Enhanced Progress Bar for Mobile */}
-                  <div className="w-full bg-muted rounded-full h-3 mb-4 shadow-inner">
-                    <div
-                      className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
-                      style={{
-                        width: `${(currentStep / STEPS.length) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* Enhanced Current Step Indicator */}
-                  <div className="p-4 rounded-2xl border-2 border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-lg">
+                  {/* Current Step Indicator Card */}
+                  <div className="p-4 rounded-2xl border-2 border-blue-500/50 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 shadow-md hover:shadow-lg transition-all">
                     <div className="flex items-center space-x-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg">
                         {(() => {
                           const CurrentIcon = STEPS[currentStep - 1].icon;
                           return <CurrentIcon className="h-5 w-5" />;
                         })()}
                       </div>
                       <div className="flex-1">
-                        <span className="text-base font-bold text-fac-orange-600 dark:text-fac-orange-400">
+                        <span className="text-base font-bold text-blue-600 dark:text-blue-400">
                           {STEPS[currentStep - 1].title}
                         </span>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           {STEPS[currentStep - 1].description}
                         </p>
                       </div>
