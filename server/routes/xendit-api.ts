@@ -1367,6 +1367,19 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           .returning();
 
         console.log(`📝 Booking ${bookingId} updated:`, updatedBooking);
+
+        // Emit Pusher event for booking update
+        (async () => {
+          try {
+            await emitPusher([`user-customer-${updatedBooking.userId}`, 'public-realtime'], 'booking.updated', {
+              bookingId,
+              paymentStatus: updatedBooking.paymentStatus,
+              booking: updatedBooking,
+            });
+          } catch (err) {
+            console.warn('Failed to emit booking pusher event:', err);
+          }
+        })();
       } else if (event.status === "EXPIRED" || event.status === "FAILED") {
         console.log(`❌ Payment failed/expired for booking ${bookingId}`);
 
@@ -1381,6 +1394,18 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           .returning();
 
         console.log(`📝 Booking ${bookingId} marked as failed:`, updatedBooking);
+
+        (async () => {
+          try {
+            await emitPusher([`user-customer-${updatedBooking.userId}`, 'public-realtime'], 'booking.updated', {
+              bookingId,
+              paymentStatus: updatedBooking.paymentStatus,
+              booking: updatedBooking,
+            });
+          } catch (err) {
+            console.warn('Failed to emit booking pusher event:', err);
+          }
+        })();
       }
     }
 
