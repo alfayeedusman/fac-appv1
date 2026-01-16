@@ -41,7 +41,7 @@ interface AdminSidebarProps {
 const sidebarItems = [
   {
     id: "overview",
-    label: "Command Center",
+    label: "Dashboard",
     icon: LayoutDashboard,
     description: "Overview & Analytics",
     gradient: "from-fac-orange-500 to-purple-600",
