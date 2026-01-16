@@ -169,6 +169,8 @@ export default function AdminDashboard() {
     totalCustomers: 0,
     totalRevenue: 0,
     totalWashes: 0,
+    totalExpenses: 0,
+    netIncome: 0,
     activeSubscriptions: 0,
     monthlyGrowth: 0,
     topPackage: "VIP Gold Ultimate",
