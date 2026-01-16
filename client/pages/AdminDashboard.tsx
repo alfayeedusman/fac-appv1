@@ -1805,6 +1805,7 @@ export default function AdminDashboard() {
                                 size="sm"
                                 title="Edit Customer"
                                 className="glass hover-lift"
+                                onClick={() => handleEditCustomer(customer)}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -1815,6 +1816,15 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
                                     title="Approve User"
+                                    onClick={() =>
+                                      handleApproveCustomer(
+                                        notifications.find(
+                                          (n) =>
+                                            n.message.includes(customer.name) &&
+                                            n.type === "new_customer"
+                                        )?.id || ""
+                                      )
+                                    }
                                   >
                                     <UserCheck className="h-4 w-4" />
                                   </Button>
@@ -1823,6 +1833,15 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
                                     title="Reject User"
+                                    onClick={() =>
+                                      handleRejectCustomer(
+                                        notifications.find(
+                                          (n) =>
+                                            n.message.includes(customer.name) &&
+                                            n.type === "new_customer"
+                                        )?.id || ""
+                                      )
+                                    }
                                   >
                                     <UserX className="h-4 w-4" />
                                   </Button>
