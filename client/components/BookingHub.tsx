@@ -54,8 +54,11 @@ interface BookingData {
   totalPrice: number;
   paymentMethod: string;
   status: "pending" | "waitinglist" | "onbay" | "washing" | "finish" | "paid" | "completed";
-  type: "booking" | "walkin";
+  paymentStatus?: "pending" | "completed" | "failed";
+  confirmationCode?: string;
+  type: "booking" | "walkin" | "guest";
   notes?: string;
+  rawBooking?: any;
 }
 
 type StatusType = "pending" | "waitinglist" | "onbay" | "washing" | "finish" | "paid" | "completed" | "all";
