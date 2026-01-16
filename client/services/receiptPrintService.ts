@@ -14,6 +14,8 @@ export interface ReceiptSettings {
   headerMessage?: string;
   showTermsConditions?: boolean;
   termsText?: string;
+  printingMode: "auto" | "manual";
+  printerType: "thermal" | "standard";
 }
 
 export interface ReceiptData {
