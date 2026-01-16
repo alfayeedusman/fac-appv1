@@ -2088,6 +2088,12 @@ export default function AdminDashboard() {
               <NeonDatabaseSetup />
             </div>
           )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <AdminSettings />
+            </div>
+          )}
         </div>
       </div>
 
