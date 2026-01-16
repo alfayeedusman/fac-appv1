@@ -1433,12 +1433,64 @@ export default function StepperBooking({
                 </div>
               </div>
 
-              {/* Step Content */}
+              {/* Step Content with Slide Animation */}
               <div className="w-full max-w-4xl">
-                <div className="w-full overflow-visible pb-4 md:pb-6">
-                  {renderStepContent()}
+                <div className="w-full overflow-hidden pb-4 md:pb-6">
+                  <div
+                    className="w-full transition-all duration-500 ease-out"
+                    style={{
+                      opacity: 1,
+                      animation: `slideIn 0.4s ease-out`,
+                    }}
+                  >
+                    {renderStepContent()}
+                  </div>
                 </div>
               </div>
+
+              {/* CSS for slide animation */}
+              <style>{`
+                @keyframes slideIn {
+                  from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+
+                @keyframes slideUp {
+                  from {
+                    opacity: 0;
+                    transform: translateY(12px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+
+                .slide-up {
+                  animation: slideUp 0.3s ease-out;
+                }
+
+                .shimmer {
+                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                  background-size: 200% 100%;
+                  animation: shimmer 1.5s infinite;
+                }
+
+                @keyframes shimmer {
+                  0% {
+                    background-position: -200% 0;
+                  }
+                  100% {
+                    background-position: 200% 0;
+                  }
+                }
+              `}</style>
 
               {/* Navigation - Desktop only; mobile uses sticky bottom bar */}
               <div className="hidden md:flex flex-row justify-between items-center gap-4 mt-6 max-w-4xl w-full">
