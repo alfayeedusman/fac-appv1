@@ -25,6 +25,11 @@ router.post("/sessions/open", async (req, res) => {
       });
     }
 
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const sessionId = createId();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -53,6 +58,11 @@ router.post("/sessions/open", async (req, res) => {
 // Get Current POS Session
 router.get("/sessions/current/:cashierId", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { cashierId } = req.params;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -84,6 +94,11 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
 // Close POS Session with Reconciliation
 router.post("/sessions/close/:sessionId", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { sessionId } = req.params;
     const {
       actualCash,
@@ -200,6 +215,11 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 // Save Transaction
 router.post("/transactions", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const {
       transactionNumber,
       customerInfo,
@@ -283,6 +303,11 @@ router.post("/transactions", async (req, res) => {
 // Get Transactions by Date
 router.get("/transactions/:date", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { date } = req.params;
     const startDate = new Date(date);
     startDate.setHours(0, 0, 0, 0);
@@ -350,6 +375,11 @@ router.get("/transactions/:date/detailed", async (req, res) => {
 // Save Expense
 router.post("/expenses", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const {
       posSessionId,
       category,
@@ -393,6 +423,11 @@ router.post("/expenses", async (req, res) => {
 // Get Expenses by Session
 router.get("/expenses/session/:sessionId", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { sessionId } = req.params;
 
     const expenses = await db
@@ -411,6 +446,11 @@ router.get("/expenses/session/:sessionId", async (req, res) => {
 // Delete Expense
 router.delete("/expenses/:expenseId", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { expenseId } = req.params;
 
     await db.delete(posExpenses).where(eq(posExpenses.id, expenseId));
@@ -430,6 +470,11 @@ router.delete("/expenses/:expenseId", async (req, res) => {
 // Get Daily Sales Report
 router.get("/reports/daily/:date", async (req, res) => {
   try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
     const { date } = req.params;
     const startDate = new Date(date);
     startDate.setHours(0, 0, 0, 0);
