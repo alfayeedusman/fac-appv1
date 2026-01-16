@@ -43,7 +43,15 @@ import {
   calculateServicePrice,
   CarWashService,
 } from "@/utils/carWashServices";
-import { Droplet } from "lucide-react";
+import { Droplet, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  saveTransaction,
+  getTodayTransactions,
+  getTodayExpenses,
+  getDailySalesReport,
+  saveExpense,
+  deleteExpense,
+} from "@/utils/posTransactionTracker";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
