@@ -51,7 +51,10 @@ import {
   User as UserIcon,
   Check,
   X,
+  Wifi,
 } from "lucide-react";
+import ReceiptLivePreview from "@/components/ReceiptLivePreview";
+import PrinterConfiguration from "@/components/PrinterConfiguration";
 import { toast } from "@/hooks/use-toast";
 import {
   Table,
