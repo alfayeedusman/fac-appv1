@@ -370,7 +370,7 @@ export default function POSClosingModal({
                                 : "text-yellow-900"
                             }`}
                           >
-                            {isCashBalanced ? "✓ Cash Balanced" : "⚠️ Variance Detected"}
+                            {isCashBalanced ? "✓ Cash Matches!" : "⚠️ The Money Doesn't Match"}
                           </p>
                           <p
                             className={`text-sm ${
@@ -379,9 +379,9 @@ export default function POSClosingModal({
                                 : "text-yellow-700"
                             }`}
                           >
-                            Expected: ₱{expectedCash.toFixed(2)} | Actual: ₱{actualCashAmount.toFixed(2)}
+                            Expected: ₱{expectedCash.toFixed(2)} | Counted: ₱{actualCashAmount.toFixed(2)}
                             <br />
-                            Variance: {cashVariance >= 0 ? "+" : ""}₱{cashVariance.toFixed(2)} ({isCashBalanced ? "Balanced" : "Difference"})
+                            Difference: {cashVariance >= 0 ? "+" : ""}₱{cashVariance.toFixed(2)} ({isCashBalanced ? "Same" : "Different"})
                           </p>
                         </div>
                       </div>
