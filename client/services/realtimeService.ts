@@ -209,7 +209,7 @@ class RealtimeService {
       try {
         callback(data);
       } catch (error) {
-        console.error(`Error in ${eventType} subscriber:`, error);
+        warn(`Error in ${eventType} subscriber:`, error);
       }
     });
   }
@@ -300,9 +300,9 @@ class RealtimeService {
         this.pusherChannels.push(branchChannel);
       }
 
-      console.log('🔌 Pusher channels subscribed');
+      info('🔌 Pusher channels subscribed');
     } catch (error) {
-      console.warn('⚠️ Failed to initialize Pusher client:', error);
+      warn('⚠️ Failed to initialize Pusher client:', error);
       // Do not throw - fallback to polling
     }
   }
@@ -325,7 +325,7 @@ class RealtimeService {
 
       // Skip if offline
       if (!navigator.onLine) {
-        console.log('📡 Offline - skipping real-time update');
+        log('📡 Offline - skipping real-time update');
         this.consecutiveErrors++;
         return;
       }
@@ -348,12 +348,12 @@ class RealtimeService {
 
       } catch (error) {
         this.consecutiveErrors++;
-        console.error(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
+        warn(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
         this.emit('error', error);
       }
     }, intervalMs);
 
-    console.log(`🔄 Real-time updates started (${intervalMs}ms interval)`);
+    info(`🔄 Real-time updates started (${intervalMs}ms interval)`);
   }
 
   /**
@@ -364,7 +364,7 @@ class RealtimeService {
       clearInterval(this.refreshInterval);
       this.refreshInterval = undefined;
       this.consecutiveErrors = 0; // Reset error counter
-      console.log('⏹️ Real-time updates stopped');
+      info('⏹️ Real-time updates stopped');
     }
   }
 
@@ -373,7 +373,7 @@ class RealtimeService {
    */
   resetErrorCounter(): void {
     this.consecutiveErrors = 0;
-    console.log('✅ Error counter reset - resuming normal operation');
+    info('✅ Error counter reset - resuming normal operation');
   }
 
   // ============================================================================
