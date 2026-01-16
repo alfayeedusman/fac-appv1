@@ -480,11 +480,34 @@ export default function POSKiosk() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
-                <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
-                <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Today's Sales: ₱{(total * 1.12).toFixed(2)}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
+                <div className="hidden sm:flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
+                  <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Sales: ₱{todaysSales.toFixed(2)}</span>
+                </div>
+                {todayExpenses > 0 && (
+                  <>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm font-semibold text-red-600">Expenses: ₱{todayExpenses.toFixed(2)}</span>
+                    </div>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-semibold text-green-600">Net: ₱{(todaysSales - todayExpenses).toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
               </div>
+              <Button
+                onClick={() => setShowExpenseModal(true)}
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 transition-all duration-200 px-6"
+              >
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Add Expense
+              </Button>
               <Button
                 onClick={() => setShowCarWashModal(true)}
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 px-6"
