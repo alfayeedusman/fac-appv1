@@ -528,12 +528,12 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     // Attempt background connection check but don't block login
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err),
+      warn("Background connection check failed:", err),
     );
 
     try {
       const url = `${this.baseUrl}/auth/login`;
-      console.log("🔎 Login request URL:", url);
+      log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
