@@ -293,7 +293,10 @@ export default function RealTimeMap({
         });
 
         map.current.on("load", () => {
-          console.log("✅ Mapbox loaded successfully");
+          // Map loaded
+          // Avoid verbose logs in production
+          // eslint-disable-next-line no-console
+          // console.log("✅ Mapbox loaded successfully");
           if (isMounted) {
             setError(null);
             setIsLoading(false);
