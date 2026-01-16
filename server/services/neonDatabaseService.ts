@@ -496,7 +496,8 @@ class NeonDatabaseService {
 
     const [bookingCount] = await this.db
       .select({ count: count() })
-      .from(schema.bookings);
+      .from(schema.bookings)
+      .where(gte(schema.bookings.createdAt, startDate));
 
     const [adCount] = await this.db
       .select({ count: count() })
@@ -506,43 +507,47 @@ class NeonDatabaseService {
     const [pendingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "pending"));
+      .where(and(eq(schema.bookings.status, "pending"), gte(schema.bookings.createdAt, startDate)));
 
-    // Calculate total revenue from completed bookings
+    // Calculate total revenue from completed bookings (within date range)
     const [bookingRevenueResult] = await this.db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "completed"));
+      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
 
-    // Calculate total revenue from POS transactions
+    // Calculate total revenue from POS transactions (within date range)
     const [posRevenueResult] = await this.db
       .select({ totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})` })
       .from(schema.posTransactions)
-      .where(eq(schema.posTransactions.status, "completed"));
+      .where(and(eq(schema.posTransactions.status, "completed"), gte(schema.posTransactions.createdAt, startDate)));
 
     // Combine both revenues
     const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
     const posRevenue = parseFloat(posRevenueResult.totalRevenue || "0");
     const totalRevenue = bookingRevenue + posRevenue;
 
-    // Count completed washes from bookings
+    // Count completed washes from bookings (within date range)
     const [bookingWashCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "completed"));
+      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
 
-    // Count POS carwash transactions (items with "Classic Wash" or "Wash" in name)
+    // Count POS carwash transactions (items with "Wash" in name, within date range)
     const [posWashCount] = await this.db
       .select({ count: count() })
       .from(schema.posTransactionItems)
-      .where(sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`);
+      .where(and(
+        sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
+        gte(schema.posTransactionItems.createdAt, startDate)
+      ));
 
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
-    // Calculate total expenses from POS sessions
+    // Calculate total expenses from POS sessions (within date range)
     const [expenseResult] = await this.db
       .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
-      .from(schema.posExpenses);
+      .from(schema.posExpenses)
+      .where(gte(schema.posExpenses.createdAt, startDate));
 
     const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
     const netIncome = totalRevenue - totalExpenses;
