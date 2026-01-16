@@ -461,6 +461,8 @@ class NeonDatabaseService {
     pendingBookings: number;
     totalRevenue: number;
     totalWashes: number;
+    totalExpenses: number;
+    netIncome: number;
     activeSubscriptions: number;
     monthlyGrowth: number;
   }> {
@@ -485,16 +487,43 @@ class NeonDatabaseService {
       .where(eq(schema.bookings.status, "pending"));
 
     // Calculate total revenue from completed bookings
-    const [revenueResult] = await this.db
+    const [bookingRevenueResult] = await this.db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
       .where(eq(schema.bookings.status, "completed"));
 
-    // Count completed washes
-    const [washCount] = await this.db
+    // Calculate total revenue from POS transactions
+    const [posRevenueResult] = await this.db
+      .select({ totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})` })
+      .from(schema.posTransactions)
+      .where(eq(schema.posTransactions.status, "completed"));
+
+    // Combine both revenues
+    const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
+    const posRevenue = parseFloat(posRevenueResult.totalRevenue || "0");
+    const totalRevenue = bookingRevenue + posRevenue;
+
+    // Count completed washes from bookings
+    const [bookingWashCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
       .where(eq(schema.bookings.status, "completed"));
+
+    // Count POS carwash transactions (items with "Classic Wash" or "Wash" in name)
+    const [posWashCount] = await this.db
+      .select({ count: count() })
+      .from(schema.posTransactionItems)
+      .where(sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`);
+
+    const totalWashes = bookingWashCount.count + posWashCount.count;
+
+    // Calculate total expenses from POS sessions
+    const [expenseResult] = await this.db
+      .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
+      .from(schema.posExpenses);
+
+    const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
+    const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
     const [subscriptionCount] = await this.db
@@ -532,8 +561,10 @@ class NeonDatabaseService {
       totalBookings: bookingCount.count,
       activeAds: adCount.count,
       pendingBookings: pendingCount.count,
-      totalRevenue: parseFloat(revenueResult.totalRevenue || "0"),
-      totalWashes: washCount.count,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      totalWashes: totalWashes,
+      totalExpenses: Math.round(totalExpenses * 100) / 100,
+      netIncome: Math.round(netIncome * 100) / 100,
       activeSubscriptions: subscriptionCount.count,
       monthlyGrowth: Math.round(monthlyGrowth * 100) / 100, // Round to 2 decimal places
     };
