@@ -148,7 +148,6 @@ class RealtimeService {
     const pusherKey = import.meta.env.VITE_PUSHER_KEY;
     const pusherCluster = import.meta.env.VITE_PUSHER_CLUSTER;
 
-    import { log, info, warn } from '@/utils/logger';
 
     if (pusherKey && pusherCluster) {
       this.initPusher(pusherKey as string, pusherCluster as string)
