@@ -13,7 +13,16 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: "dist/spa",
   },
-  plugins: [react(), expressPlugin()],
+  plugins: [
+    react(),
+    expressPlugin(),
+    visualizer({
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'dist/stats.html',
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
