@@ -6,6 +6,15 @@ import {
   sql,
 } from "../database/connection";
 import { migrate } from "../database/migrate";
+import { triggerPusherEvent } from "../services/pusherService.js"; // Fire events to Pusher
+
+const emitPusher = async (channels: string | string[], eventName: string, payload: any) => {
+  try {
+    await triggerPusherEvent(channels, eventName, payload);
+  } catch (e) {
+    console.warn('Pusher emit failed:', e);
+  }
+};
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
 let __NEON_DB_INITIALIZED__ = false;
