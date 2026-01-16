@@ -445,6 +445,11 @@ export default function AdminDashboard() {
     }
   }, [navigate]);
 
+  // Reload stats when time filter changes
+  useEffect(() => {
+    loadRealStats(timeFilter);
+  }, [timeFilter]);
+
   const loadSystemNotifications = () => {
     try {
       const userRole = localStorage.getItem("userRole") as
