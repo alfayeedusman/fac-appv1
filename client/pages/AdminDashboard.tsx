@@ -824,6 +824,7 @@ export default function AdminDashboard() {
                   {activeTab === "user-management" && "User Management"}
                   {activeTab === "images" && "Image Manager"}
                   {activeTab === "database" && "Database Management"}
+                  {activeTab === "settings" && "System Settings"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
