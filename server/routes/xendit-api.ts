@@ -1694,9 +1694,58 @@ export const handleWebhook: RequestHandler = async (req, res) => {
       }
     }
 
+    // ========== LOG WEBHOOK EVENT FOR IDEMPOTENCY ==========
+    if (isNewEvent) {
+      const processingTimeMs = Date.now() - startTime;
+      try {
+        await db
+          .insert(schema.webhookEventLogs)
+          .values({
+            provider: 'xendit',
+            eventId: eventId,
+            externalId: externalId || null,
+            eventType: event.status || event.type || null,
+            eventStatus: 'success',
+            payload: event,
+            processingTimeMs: processingTimeMs,
+            result: dbResult,
+            ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || null,
+            userAgent: req.headers['user-agent'] || null,
+          });
+        console.log(`📋 Webhook event logged for idempotency: ${eventId} (${processingTimeMs}ms)`);
+      } catch (logErr) {
+        console.warn('Failed to log webhook event:', logErr);
+        // Don't fail the entire webhook if logging fails
+      }
+    }
+
     // Always return success to Xendit
     res.json({ success: true });
   } catch (error: any) {
+    // ========== LOG FAILED WEBHOOK PROCESSING ==========
+    const processingTimeMs = Date.now() - startTime;
+    try {
+      if (isNewEvent) {
+        const eventId = req.body?.id || req.body?.reference_id || `xendit-${Date.now()}`;
+        await db
+          .insert(schema.webhookEventLogs)
+          .values({
+            provider: 'xendit',
+            eventId: eventId,
+            externalId: req.body?.external_id || null,
+            eventType: req.body?.status || req.body?.type || null,
+            eventStatus: 'failure',
+            payload: req.body,
+            processingTimeMs: processingTimeMs,
+            errorMessage: error.message || 'Unknown error',
+            ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || null,
+            userAgent: req.headers['user-agent'] || null,
+          });
+      }
+    } catch (logErr) {
+      console.warn('Failed to log failed webhook event:', logErr);
+    }
+
     console.error("❌ Webhook handler error:", error);
     res.status(500).json({
       success: false,
