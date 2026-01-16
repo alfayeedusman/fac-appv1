@@ -133,7 +133,7 @@ class XenditPaymentService {
    */
   openPaymentPopup(invoiceUrl: string, onSuccess?: () => void, onFail?: () => void): Window | null {
     try {
-      console.log("🔗 Opening payment popup...", invoiceUrl);
+      log("🔗 Opening payment popup...", invoiceUrl);
 
       const width = 800;
       const height = 600;
