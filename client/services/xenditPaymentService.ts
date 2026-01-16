@@ -229,14 +229,14 @@ class XenditPaymentService {
           }
         }
       } catch (error) {
-        console.error("Error polling status:", error);
+        logError("Error polling status:", error);
       }
 
       attempts++;
       await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
     }
 
-    console.warn(`⏱️ Payment status check timed out for ${type} ${id}`);
+    warn(`⏱️ Payment status check timed out for ${type} ${id}`);
     return false;
   }
 }
