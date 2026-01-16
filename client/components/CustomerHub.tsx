@@ -123,36 +123,55 @@ export default function CustomerHub() {
     try {
       setIsLoading(true);
 
-      const result = await neonDbClient.getCustomers();
+      // Fetch customers AND bookings in parallel (only once each!)
+      const [customersResult, allBookingsResult] = await Promise.all([
+        neonDbClient.getCustomers(),
+        neonDbClient.getAllBookings?.() || [],
+      ]);
 
-      if (result.success && result.users) {
-        const enrichedCustomers = await Promise.all(
-          result.users.map(async (user: any) => {
-            const bookingStats = await getCustomerBookingStats(user.id);
-            const customerData: CustomerData = {
-              id: user.id,
-              fullName: user.fullName || "Unknown",
-              email: user.email,
-              contactNumber: user.contactNumber || "-",
-              carUnit: user.carUnit || "-",
-              carPlateNumber: user.carPlateNumber || "-",
-              subscriptionStatus: user.subscriptionStatus || "free",
-              createdAt: user.createdAt,
-              totalBookings: bookingStats.totalBookings,
-              totalSpent: bookingStats.totalSpent,
-              lastBooking: bookingStats.lastBooking,
-              status: user.status || "active",
-              loyaltyScore: calculateLoyaltyScore(user, bookingStats),
-              lifecycle: calculateLifecycle(user, bookingStats),
-            };
-            return customerData;
-          })
-        );
+      if (customersResult.success && customersResult.users) {
+        // Build a map of customer bookings for O(1) lookup
+        const bookingsByCustomerId = new Map<string, any[]>();
+        const allBookings = Array.isArray(allBookingsResult) ? allBookingsResult : [];
+
+        allBookings.forEach((booking: any) => {
+          const customerId = booking.userId || booking.customerId;
+          if (customerId) {
+            if (!bookingsByCustomerId.has(customerId)) {
+              bookingsByCustomerId.set(customerId, []);
+            }
+            bookingsByCustomerId.get(customerId)!.push(booking);
+          }
+        });
+
+        // Now compute stats for all customers efficiently
+        const enrichedCustomers = customersResult.users.map((user: any) => {
+          const customerBookings = bookingsByCustomerId.get(user.id) || [];
+          const bookingStats = computeBookingStats(customerBookings);
+
+          const customerData: CustomerData = {
+            id: user.id,
+            fullName: user.fullName || "Unknown",
+            email: user.email,
+            contactNumber: user.contactNumber || "-",
+            carUnit: user.carUnit || "-",
+            carPlateNumber: user.carPlateNumber || "-",
+            subscriptionStatus: user.subscriptionStatus || "free",
+            createdAt: user.createdAt,
+            totalBookings: bookingStats.totalBookings,
+            totalSpent: bookingStats.totalSpent,
+            lastBooking: bookingStats.lastBooking,
+            status: user.status || "active",
+            loyaltyScore: calculateLoyaltyScore(user, bookingStats),
+            lifecycle: calculateLifecycle(user, bookingStats),
+          };
+          return customerData;
+        });
 
         setCustomers(enrichedCustomers);
-        console.log("✅ Customers loaded:", enrichedCustomers);
+        log("✅ Customers loaded:", enrichedCustomers.length);
       } else {
-        console.warn("Failed to load customers:", result);
+        warn("Failed to load customers:", customersResult);
         toast({
           title: "Error",
           description: "Failed to load customers from database",
@@ -160,7 +179,7 @@ export default function CustomerHub() {
         });
       }
     } catch (error) {
-      console.error("Error loading customers:", error);
+      logError("Error loading customers:", error);
       toast({
         title: "Error",
         description: "Failed to load customer data",
@@ -171,37 +190,27 @@ export default function CustomerHub() {
     }
   };
 
-  const getCustomerBookingStats = async (customerId: string) => {
-    try {
-      const result = await neonDbClient.getAllBookings?.() || [];
+  // Compute booking stats from a pre-filtered array (no more DB calls)
+  const computeBookingStats = (customerBookings: any[]) => {
+    const totalBookings = customerBookings.length;
+    const totalSpent = customerBookings.reduce(
+      (sum: number, b: any) => sum + (parseFloat(b.totalPrice) || 0),
+      0
+    );
 
-      const customerBookings = Array.isArray(result)
-        ? result.filter((b: any) => b.userId === customerId || b.customerId === customerId)
-        : [];
+    const sortedBookings = customerBookings.sort(
+      (a: any, b: any) =>
+        new Date(b.bookingDate || b.createdAt).getTime() -
+        new Date(a.bookingDate || a.createdAt).getTime()
+    );
 
-      const totalBookings = customerBookings.length;
-      const totalSpent = customerBookings.reduce(
-        (sum: number, b: any) => sum + (parseFloat(b.totalPrice) || 0),
-        0
-      );
+    const lastBooking = sortedBookings[0];
 
-      const sortedBookings = customerBookings.sort(
-        (a: any, b: any) =>
-          new Date(b.bookingDate || b.createdAt).getTime() -
-          new Date(a.bookingDate || a.createdAt).getTime()
-      );
-
-      const lastBooking = sortedBookings[0];
-
-      return {
-        totalBookings,
-        totalSpent,
-        lastBooking: lastBooking ? lastBooking.bookingDate || lastBooking.createdAt : null,
-      };
-    } catch (error) {
-      console.error("Error getting booking stats:", error);
-      return { totalBookings: 0, totalSpent: 0, lastBooking: null };
-    }
+    return {
+      totalBookings,
+      totalSpent,
+      lastBooking: lastBooking ? lastBooking.bookingDate || lastBooking.createdAt : null,
+    };
   };
 
   const calculateLoyaltyScore = (user: any, stats: any) => {
