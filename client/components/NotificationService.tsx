@@ -505,8 +505,6 @@ export function useNotificationService(userRole: string, userId: string) {
 
   useEffect(() => {
     checkUnreadCount();
-    const interval = setInterval(checkUnreadCount, 5000);
-    return () => clearInterval(interval);
   }, [checkUnreadCount]);
 
   return { unreadCount };
