@@ -88,7 +88,28 @@ export default function AdminSessions() {
 
   return (
     <div className="min-h-screen flex">
-      <AdminSidebar activeTab="sessions" onTabChange={() => {}} userRole={localStorage.getItem('userRole') || 'admin'} notificationCount={0} />
+      <AdminSidebar
+        activeTab="sessions"
+        onTabChange={(tab) => {
+          // Map sidebar tab ids to routes
+          switch (tab) {
+            case 'overview':
+              navigate('/admin-dashboard');
+              break;
+            case 'user-management':
+              navigate('/admin-user-management');
+              break;
+            case 'sessions':
+              navigate('/admin-sessions');
+              break;
+            default:
+              // Generic mapping for known admin routes
+              navigate(`/admin-${tab}`);
+          }
+        }}
+        userRole={localStorage.getItem('userRole') || 'admin'}
+        notificationCount={0}
+      />
 
       <div className="flex-1 ml-0 lg:ml-64 p-6">
         <div className="flex items-center justify-between mb-6">
