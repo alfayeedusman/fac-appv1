@@ -1262,6 +1262,22 @@ export default function StepperBooking({
     }
   };
 
+  // Swipe gesture support for mobile navigation
+  const { ref: swipeRef } = useSwipeNavigation({
+    onSwipeRight: () => {
+      if (currentStep > 1 && window.innerWidth < 768) {
+        prevStep();
+      }
+    },
+    onSwipeLeft: () => {
+      if (currentStep < STEPS.length && canProceed() && window.innerWidth < 768) {
+        nextStep();
+      }
+    },
+    enabled: true,
+    threshold: 30,
+  });
+
   return (
     <div className="min-h-screen bg-transparent relative">
       {/* Booking Receipt Modal */}
