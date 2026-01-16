@@ -44,6 +44,8 @@ import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
 import { notificationSoundService } from "@/services/notificationSoundService";
+import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
+import SubscriptionDetailsCard from "@/components/SubscriptionDetailsCard";
 
 interface CustomerData {
   id: string;
