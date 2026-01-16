@@ -167,6 +167,13 @@ const sidebarItems = [
     gradient: "from-blue-500 to-purple-500",
   },
   {
+    id: "active-subscriptions",
+    label: "Active Subscriptions",
+    icon: Sparkles,
+    description: "Manage Renewals & Auto-Pay",
+    gradient: "from-cyan-500 to-blue-500",
+  },
+  {
     id: "pos",
     label: "Point of Sale",
     icon: CreditCard,
