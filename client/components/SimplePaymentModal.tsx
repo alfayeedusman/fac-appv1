@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, DollarSign, CreditCard } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
 
 interface CustomerInfo {
   uniqueId: string;
