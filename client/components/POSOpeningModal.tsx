@@ -116,7 +116,7 @@ export default function POSOpeningModal({
           {/* Opening Balance Input */}
           <div>
             <label htmlFor="opening-balance" className="block text-sm font-medium text-gray-700 mb-2">
-              Opening Balance (₱)
+              Opening Balance (₱) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-bold">₱</span>
@@ -125,15 +125,17 @@ export default function POSOpeningModal({
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="0.00"
+                placeholder="Enter amount..."
                 value={openingBalance}
                 onChange={(e) => setOpeningBalance(e.target.value)}
                 disabled={isLoading}
                 className="pl-8 text-lg"
+                required
+                autoFocus
               />
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Enter the amount of cash on hand at the start of the shift
+              Enter the exact amount of cash on hand at the start of your shift
             </p>
           </div>
 
