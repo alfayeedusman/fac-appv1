@@ -80,6 +80,8 @@ class AuthService {
     localStorage.removeItem('userFullName');
     localStorage.removeItem('userLoggedInAt');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('sessionToken');
+    localStorage.removeItem('sessionExpiresAt');
   }
 
   async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: any; error?: string }> {
