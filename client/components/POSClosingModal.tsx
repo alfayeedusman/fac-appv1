@@ -29,7 +29,7 @@ export default function POSClosingModal({
   const [isCalculating, setIsCalculating] = useState(true);
 
   // Load sales data on mount
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       loadSalesData();
     }
