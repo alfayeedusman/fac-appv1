@@ -142,11 +142,23 @@ export function createServer() {
     "/api/neon/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
   );
+  app.post(
+    "/api/neon/payment/xendit/create-subscription-invoice",
+    xenditApiRoutes.createSubscriptionInvoice,
+  );
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
   app.get(
     "/api/neon/payment/xendit/invoice-status/:id",
     xenditApiRoutes.getInvoiceStatus,
+  );
+  app.get(
+    "/api/neon/payment/xendit/booking-status/:bookingId",
+    xenditApiRoutes.checkBookingPaymentStatus,
+  );
+  app.get(
+    "/api/neon/payment/xendit/subscription-status/:subscriptionId",
+    xenditApiRoutes.checkSubscriptionPaymentStatus,
   );
 
   // Users endpoints
