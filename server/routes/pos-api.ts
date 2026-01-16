@@ -123,7 +123,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       .from(posTransactions)
       .where(
         and(
-          gte(posTransactions.createdAt, session.openingAt || session.createdAt),
+          gte(posTransactions.createdAt, session.openedAt || session.createdAt),
           lte(posTransactions.createdAt, new Date())
         )
       );
