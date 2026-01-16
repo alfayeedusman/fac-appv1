@@ -380,10 +380,10 @@ export default function POSKiosk() {
 
       if (paymentInfo.method === "cash") {
         const amountPaid = parseFloat(paymentInfo.amountPaid);
-        if (isNaN(amountPaid) || amountPaid < total * 1.12) {
+        if (isNaN(amountPaid) || amountPaid < total) {
           notificationManager.error(
             "Insufficient Payment",
-            "Insufficient payment amount"
+            `Amount paid must be at least ₱${total.toFixed(2)}`
           );
           return;
         }
