@@ -596,6 +596,7 @@ class NeonDatabaseService {
     return {
       totalUsers: userCount.count,
       totalBookings: bookingCount.count,
+      totalOnlineBookings: onlineBookingCount.count,
       activeAds: adCount.count,
       pendingBookings: pendingCount.count,
       totalRevenue: Math.round(totalRevenue * 100) / 100,
