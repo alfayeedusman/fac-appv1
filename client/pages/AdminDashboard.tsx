@@ -864,6 +864,14 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 ml-0 lg:ml-64 min-h-screen">
+        {/* Admin Notifications Banner */}
+        <AdminNotificationBanner
+          notifications={adminNotifications}
+          onDismiss={(id) => {
+            setAdminNotifications(adminNotifications.filter((n) => n.id !== id));
+          }}
+        />
+
         <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-6">
           {/* Header */}
           <div className="mb-8">
