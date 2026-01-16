@@ -786,6 +786,56 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditCustomerForm({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      carUnit: customer.carUnit,
+      plateNumber: customer.plateNumber,
+      membershipType: customer.membershipType,
+    });
+    setIsEditCustomerModalOpen(true);
+  };
+
+  const handleSaveEditedCustomer = () => {
+    if (!editingCustomer) return;
+
+    if (!editCustomerForm.name.trim() || !editCustomerForm.email.trim()) {
+      toast({
+        title: "Error",
+        description: "Name and email are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedCustomers = customers.map((c) =>
+      c.id === editingCustomer.id
+        ? {
+            ...c,
+            name: editCustomerForm.name,
+            email: editCustomerForm.email,
+            phone: editCustomerForm.phone,
+            carUnit: editCustomerForm.carUnit,
+            plateNumber: editCustomerForm.plateNumber,
+            membershipType: editCustomerForm.membershipType,
+          }
+        : c
+    );
+
+    setCustomers(updatedCustomers);
+    setIsEditCustomerModalOpen(false);
+    setEditingCustomer(null);
+
+    toast({
+      title: "Success",
+      description: "Customer updated successfully",
+      variant: "default",
+    });
+  };
+
   const unreadNotificationCount = Array.isArray(notifications)
     ? notifications.filter((n) => !n.read).length
     : 0;
