@@ -41,12 +41,29 @@ export default function POSClosingModal({
     try {
       setIsCalculating(true);
       const today = new Date().toISOString().split("T")[0];
+      console.log(`🔄 Loading sales data for ${today}...`);
       const report = await getDailySalesReport(today);
       setSalesData(report);
-      console.log("Sales data loaded:", report);
-    } catch (error) {
-      console.error("Error loading sales data:", error);
-      notificationManager.error("Error", "Failed to load sales data");
+      console.log("✅ Sales data loaded:", report);
+    } catch (error: any) {
+      console.error("❌ Error loading sales data:", error);
+      notificationManager.error(
+        "Warning",
+        "Could not load sales data from server. Using empty report. Please refresh if needed."
+      );
+      // Set empty sales data to allow closing
+      setSalesData({
+        date: new Date().toISOString().split("T")[0],
+        totalSales: 0,
+        totalCash: 0,
+        totalCard: 0,
+        totalGcash: 0,
+        totalBank: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+        expenseCount: 0,
+      });
     } finally {
       setIsCalculating(false);
     }
