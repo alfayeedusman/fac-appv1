@@ -826,7 +826,7 @@ export default function AdminSettings() {
                       }
                       className="w-4 h-4"
                     />
-                    <span>Include Logo</span>
+                    <span>Include Company Logo/Name (Black & White)</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
