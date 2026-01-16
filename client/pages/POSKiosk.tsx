@@ -89,6 +89,16 @@ export default function POSKiosk() {
   const [selectedVehicleType, setSelectedVehicleType] = useState<string>("");
   const [selectedMotorcycleSubtype, setSelectedMotorcycleSubtype] = useState<string>("");
   const [calculatedWashPrice, setCalculatedWashPrice] = useState<number>(0);
+  const [todaysSales, setTodaysSales] = useState(0);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({
+    category: "supplies",
+    description: "",
+    amount: "",
+    paymentMethod: "cash",
+    notes: "",
+  });
+  const [todayExpenses, setTodayExpenses] = useState(0);
 
   const categories = getPOSCategories();
   const cashierName = localStorage.getItem("userEmail") || "Cashier";
