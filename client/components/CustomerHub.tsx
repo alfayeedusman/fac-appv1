@@ -349,11 +349,12 @@ export default function CustomerHub() {
     if (!selectedCustomer) return;
 
     // Play notification sound
-    playNotificationSound("upgrade");
+    notificationSoundService.playNotificationSound("upgrade");
 
+    // Show success toast with sound indicator
     toast({
       title: "✨ Upgrade Successful!",
-      description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan!`,
+      description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
     });
 
     // Update customer in list
@@ -365,38 +366,6 @@ export default function CustomerHub() {
     setCustomers(updatedCustomers);
     setIsSubscriptionModalOpen(false);
     setSelectedCustomer(null);
-  };
-
-  const playNotificationSound = (type: "new" | "booking" | "upgrade" | "subscribe") => {
-    // Create different notification sounds based on type
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    switch (type) {
-      case "new":
-      case "booking":
-        // Higher pitch beep for new customer/booking
-        oscillator.frequency.value = 800;
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-        break;
-      case "upgrade":
-      case "subscribe":
-        // Ascending pitch for upgrade/subscribe
-        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(900, audioContext.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-        break;
-    }
   };
 
   const stats = {
