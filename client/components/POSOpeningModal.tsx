@@ -157,8 +157,9 @@ export default function POSOpeningModal({
             </button>
             <button
               onClick={handleOpenSession}
-              disabled={isLoading || !openingBalance}
+              disabled={isLoading || !openingBalance || isNaN(parseFloat(openingBalance || "0")) || parseFloat(openingBalance || "0") < 0}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!openingBalance ? "Opening balance is required" : ""}
             >
               {isLoading ? "Opening..." : "Open POS"}
             </button>
