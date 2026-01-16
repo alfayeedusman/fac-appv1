@@ -492,8 +492,20 @@ export default function AdminDashboard() {
       // Load system notifications
       loadSystemNotifications();
 
+      // Load admin notifications from local store
+      import('@/utils/adminNotifications').then(({ getAdminNotifications }) => {
+        try {
+          setAdminNotifications(getAdminNotifications().slice(0, 50));
+        } catch (e) {}
+      });
+
       // Set up polling for new notifications and stats every 10 seconds
       const notificationInterval = setInterval(loadSystemNotifications, 10000);
+      const adminNotifInterval = setInterval(() => {
+        import('@/utils/adminNotifications').then(({ getAdminNotifications }) => {
+          setAdminNotifications(getAdminNotifications().slice(0, 50));
+        }).catch(() => {});
+      }, 5000);
       const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
       const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
 
