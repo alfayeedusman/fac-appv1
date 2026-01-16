@@ -230,8 +230,12 @@ export default function AdminSettings() {
   const loadUsers = async () => {
     try {
       setUsersLoading(true);
-      const allUsers = await neonDbClient.getAllUsers();
-      setUsers(allUsers || []);
+      const result = await neonDbClient.getStaffUsers();
+      if (result.success && result.users) {
+        setUsers(result.users);
+      } else {
+        setUsers([]);
+      }
     } catch (error) {
       console.error("Error loading users:", error);
       toast({ title: "Error", description: "Failed to load users" });
