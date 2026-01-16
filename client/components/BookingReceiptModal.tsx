@@ -143,11 +143,13 @@ export default function BookingReceiptModal({
             </div>
 
             {/* Confirmation Code */}
-            <div className="text-center mb-6">
-              <Badge className="bg-fac-orange-500 text-white text-lg px-6 py-2">
+            <div className="flex flex-col items-center justify-center mb-8 py-4">
+              <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">
+                Confirmation Code
+              </p>
+              <Badge className="bg-fac-orange-500 text-white text-xl px-8 py-3 rounded-full font-bold whitespace-nowrap">
                 {bookingData.confirmationCode}
               </Badge>
-              <p className="text-xs text-gray-500 mt-2">Confirmation Code</p>
             </div>
 
             {/* Customer Details */}
