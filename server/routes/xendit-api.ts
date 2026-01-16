@@ -1579,10 +1579,96 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 
         console.log(`📝 Booking ${bookingId} updated:`, updatedBooking);
 
+        // Create persistent system notification for admin
+        try {
+          await db.insert(schema.systemNotifications).values({
+            id: `notification-${bookingId}-paid-${Date.now()}`,
+            type: "payment_received",
+            title: "Payment Received",
+            message: `Payment received for booking ${updatedBooking.confirmationCode || bookingId}. Amount: ₱${updatedBooking.totalPrice}`,
+            priority: "high",
+            targetRoles: ["admin", "superadmin", "manager", "cashier"],
+            targetUsers: [],
+            data: {
+              bookingId,
+              amount: updatedBooking.totalPrice,
+              paymentMethod: "xendit",
+              invoiceId: event.id,
+            },
+            createdAt: new Date(),
+            readBy: [],
+          });
+          console.log(`✅ System notification created for payment on booking ${bookingId}`);
+        } catch (notifErr) {
+          console.warn(`⚠️ Failed to create notification for booking ${bookingId}:`, notifErr);
+        }
+
+        // Create POS transaction for sales tracking
+        try {
+          const posTransaction = {
+            id: `pos-${bookingId}-${Date.now()}`,
+            transactionNumber: `TXN-${updatedBooking.confirmationCode || bookingId}`,
+            branchId: updatedBooking.branch || "default",
+            cashierId: null, // Xendit payment - no cashier
+            totalAmount: updatedBooking.totalPrice,
+            totalDiscount: 0,
+            totalTax: 0,
+            paymentMethod: "card", // Xendit online payment
+            paymentReference: event.id, // Xendit invoice ID
+            status: "completed",
+            notes: `Booking payment - ${updatedBooking.confirmationCode || bookingId} (${updatedBooking.type})`,
+            sessionId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            metadata: {
+              bookingId,
+              bookingType: updatedBooking.type,
+              bookingConfirmation: updatedBooking.confirmationCode,
+              service: updatedBooking.service,
+              guestInfo: updatedBooking.type === "guest" ? updatedBooking.guestInfo : null,
+            },
+          };
+
+          await db.insert(schema.posTransactions).values(posTransaction);
+          console.log(`✅ POS transaction created for booking ${bookingId} payment`);
+
+          // Create POS transaction item for the booking service
+          await db.insert(schema.posTransactionItems).values({
+            id: `pos-item-${bookingId}-${Date.now()}`,
+            transactionId: posTransaction.id,
+            productId: `booking-${updatedBooking.service}`,
+            productName: updatedBooking.service,
+            quantity: 1,
+            unitPrice: updatedBooking.basePrice || updatedBooking.totalPrice,
+            discount: updatedBooking.basePrice && updatedBooking.totalPrice ? updatedBooking.basePrice - updatedBooking.totalPrice : 0,
+            subtotal: updatedBooking.totalPrice,
+            createdAt: new Date(),
+          });
+
+          // Emit POS transaction event for dashboard updates
+          (async () => {
+            try {
+              await emitPusher(['public-realtime', 'admin-dashboard'], 'pos.transaction.created', {
+                transactionId: posTransaction.id,
+                totalAmount: posTransaction.totalAmount,
+                bookingId,
+              });
+            } catch (err) {
+              console.warn('Failed to emit POS transaction pusher event:', err);
+            }
+          })();
+        } catch (posErr) {
+          console.warn(`⚠️ Failed to create POS transaction for booking ${bookingId}:`, posErr);
+        }
+
         // Emit Pusher event for booking update
         (async () => {
           try {
-            await emitPusher([`user-customer-${updatedBooking.userId}`, 'public-realtime'], 'booking.updated', {
+            const channels = ['public-realtime', 'admin-dashboard'];
+            if (updatedBooking.userId) {
+              channels.push(`user-customer-${updatedBooking.userId}`);
+            }
+            await emitPusher(channels, 'booking.updated', {
               bookingId,
               paymentStatus: updatedBooking.paymentStatus,
               booking: updatedBooking,
