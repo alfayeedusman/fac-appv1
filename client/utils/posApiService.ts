@@ -282,23 +282,76 @@ export async function deleteExpense(expenseId: string): Promise<boolean> {
 // ============= REPORT FUNCTIONS =============
 
 export async function getDailySalesReport(date: string): Promise<DailySalesReport> {
-  try {
-    const response = await fetch(`${API_BASE}/reports/daily/${date}`);
-    if (!response.ok) throw new Error("Failed to fetch daily report");
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching daily report:", error);
-    return {
-      date,
-      totalSales: 0,
-      totalCash: 0,
-      totalCard: 0,
-      totalGcash: 0,
-      totalBank: 0,
-      totalExpenses: 0,
-      netIncome: 0,
-      transactionCount: 0,
-      expenseCount: 0,
-    };
+  const maxRetries = 3;
+  let lastError: any = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`📊 Fetching daily report for ${date} (Attempt ${attempt}/${maxRetries})`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(`${API_BASE}/reports/daily/${date}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.warn(`⚠️ API returned status ${response.status} for daily report`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error:", errorData);
+
+        // If it's a 500 error, it might have returned fallback data
+        if (response.status === 500 && errorData.totalSales !== undefined) {
+          return errorData;
+        }
+        throw new Error(`HTTP ${response.status}: Failed to fetch daily report`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Daily report fetched successfully:`, data);
+      return data;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`❌ Attempt ${attempt} failed:`, error?.message || error);
+
+      if (attempt < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
   }
+
+  // All retries failed, return empty report
+  console.error(
+    `❌ Failed to fetch daily report after ${maxRetries} attempts:`,
+    lastError
+  );
+
+  // Return fallback data
+  const fallbackReport: DailySalesReport = {
+    date,
+    totalSales: 0,
+    totalCash: 0,
+    totalCard: 0,
+    totalGcash: 0,
+    totalBank: 0,
+    totalExpenses: 0,
+    netIncome: 0,
+    transactionCount: 0,
+    expenseCount: 0,
+  };
+
+  console.log(
+    "📋 Using fallback empty report. Please refresh or check server status."
+  );
+  return fallbackReport;
 }
