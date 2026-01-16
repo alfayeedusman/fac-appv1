@@ -144,13 +144,16 @@ export default function POSKiosk() {
           },
         ]);
       }
-      notificationManager.showNotification(
-        `${product.name} added to cart`,
-        "success"
+      notificationManager.success(
+        "Added to Cart",
+        `${product.name} added to cart`
       );
     } catch (error) {
       console.error("Error adding to cart:", error);
-      notificationManager.showNotification("Failed to add item to cart", "error");
+      notificationManager.error(
+        "Error",
+        "Failed to add item to cart"
+      );
     } finally {
       setAddingToCart(null);
     }
@@ -202,26 +205,38 @@ export default function POSKiosk() {
       setIsProcessingPayment(true);
 
       if (cartItems.length === 0) {
-        notificationManager.showNotification("Cart is empty", "error");
+        notificationManager.error(
+          "Empty Cart",
+          "Cart is empty"
+        );
         return;
       }
 
       if (!customerInfo.uniqueId.trim()) {
-        notificationManager.showNotification("Customer ID is required", "error");
+        notificationManager.error(
+          "Missing Info",
+          "Customer ID is required"
+        );
         return;
       }
 
       if (paymentInfo.method === "cash") {
         const amountPaid = parseFloat(paymentInfo.amountPaid);
         if (isNaN(amountPaid) || amountPaid < total * 1.12) {
-          notificationManager.showNotification("Insufficient payment amount", "error");
+          notificationManager.error(
+            "Insufficient Payment",
+            "Insufficient payment amount"
+          );
           return;
         }
       }
 
       if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") &&
           !paymentInfo.referenceNumber.trim()) {
-        notificationManager.showNotification("Reference number is required", "error");
+        notificationManager.error(
+          "Missing Info",
+          "Reference number is required"
+        );
         return;
       }
 
@@ -254,7 +269,10 @@ export default function POSKiosk() {
         }
       );
 
-      notificationManager.showNotification("Payment processed successfully!", "success");
+      notificationManager.success(
+        "Success",
+        "Payment processed successfully!"
+      );
 
       // Reset form
       clearCart();
@@ -267,7 +285,10 @@ export default function POSKiosk() {
       setShowPaymentModal(false);
     } catch (error) {
       console.error("Payment error:", error);
-      notificationManager.showNotification("Payment failed. Please try again.", "error");
+      notificationManager.error(
+        "Payment Failed",
+        "Payment failed. Please try again."
+      );
     } finally {
       setIsProcessingPayment(false);
     }
