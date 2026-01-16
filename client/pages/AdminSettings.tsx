@@ -272,32 +272,44 @@ export default function AdminSettings() {
       toast({ title: "Error", description: "Email is required" });
       return;
     }
+    if (!userForm.fullName.trim()) {
+      toast({ title: "Error", description: "Full name is required" });
+      return;
+    }
+    if (!userForm.role) {
+      toast({ title: "Error", description: "Role is required" });
+      return;
+    }
 
     try {
       if (editingUser) {
-        const updatedUser = {
-          ...editingUser,
-          email: userForm.email,
-          fullName: userForm.fullName,
-          phoneNumber: userForm.phoneNumber,
-          role: userForm.role,
-        };
-        await neonDbClient.updateUser(editingUser.id, updatedUser);
-        toast({ title: "Success", description: "User updated successfully" });
+        toast({
+          title: "Info",
+          description: "User update functionality coming soon",
+        });
       } else {
         const newUser = {
-          email: userForm.email,
           fullName: userForm.fullName,
-          phoneNumber: userForm.phoneNumber,
+          email: userForm.email,
           role: userForm.role,
-          status: "active" as const,
-          approvalStatus: "approved" as const,
+          permissions:
+            roleDefinitions[userForm.role as keyof typeof roleDefinitions]
+              ?.permissions || [],
+          contactNumber: userForm.phoneNumber,
+          branchLocation: "Main",
         };
-        await neonDbClient.createUser(newUser);
-        toast({ title: "Success", description: "User created successfully" });
+        const result = await neonDbClient.createStaffUser(newUser);
+        if (result.success) {
+          toast({ title: "Success", description: "User created successfully" });
+          setShowUserDialog(false);
+          loadUsers();
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to create user",
+          });
+        }
       }
-      setShowUserDialog(false);
-      loadUsers();
     } catch (error) {
       console.error("Error saving user:", error);
       toast({ title: "Error", description: "Failed to save user" });
