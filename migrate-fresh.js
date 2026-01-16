@@ -1,5 +1,5 @@
 // Fresh migration runner
-import { migrate } from "./server/database/migrate.js";
+import { migrate } from "./dist/server/database/migrate.js";
 
 async function runFreshMigration() {
   try {
