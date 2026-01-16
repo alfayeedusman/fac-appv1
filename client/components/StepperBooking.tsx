@@ -63,6 +63,7 @@ import PaymentMethodsSelection from '@/components/PaymentMethodsSelection';
 const BookingReceiptModal = React.lazy(() => import('@/components/BookingReceiptModal'));
 import React, { Suspense } from 'react';
 import BookingProgressBar from "@/components/BookingProgressBar";
+import React, { Suspense } from 'react';
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 
 interface BookingData {
