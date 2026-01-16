@@ -3027,6 +3027,7 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
                 <span className="text-muted-foreground">Method:</span>
                 <span className="font-medium capitalize">
                   {bookingData.paymentMethod}
+                  {bookingData.paymentMethodDetail ? ` — ${bookingData.paymentMethodDetail}` : ''}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-border">
