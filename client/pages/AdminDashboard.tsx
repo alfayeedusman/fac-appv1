@@ -2186,12 +2186,6 @@ export default function AdminDashboard() {
               <SalesTransactions />
             </div>
           )}
-
-          {activeTab === "bookings" && (
-            <div className="space-y-6">
-              <BookingHub />
-            </div>
-          )}
         </div>
       </div>
 
