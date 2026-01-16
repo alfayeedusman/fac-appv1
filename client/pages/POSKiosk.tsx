@@ -422,23 +422,27 @@ export default function POSKiosk() {
         }
       );
 
-      // Save transaction to tracker for sales reporting
-      const today = new Date().toISOString().split("T")[0];
-      const timeNow = new Date().toLocaleTimeString();
-      saveTransaction({
-        date: today,
-        time: timeNow,
-        amount: total,
+      // Save transaction to database
+      await saveTransactionAPI({
+        transactionNumber: `TXN-${Date.now()}`,
         customerInfo: {
           id: customerInfo.uniqueId,
           name: customerInfo.name,
         },
+        items: cartItems,
+        subtotal: total,
+        taxAmount: 0,
+        discountAmount: 0,
+        totalAmount: total,
         paymentMethod: paymentInfo.method,
-        items: cartItems.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.price,
-        })),
+        paymentReference: paymentInfo.referenceNumber,
+        amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+        changeAmount: change,
+        cashierInfo: {
+          id: cashierId,
+          name: cashierName,
+        },
+        branchId,
       });
 
       notificationManager.success(
