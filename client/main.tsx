@@ -42,7 +42,6 @@ import AdminImageManager from "./pages/AdminImageManager";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import PaymentHistory from "./pages/PaymentHistory";
-import POS from "./pages/POS";
 import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
@@ -282,7 +281,7 @@ const AppComponent = () => {
                   path="/pos"
                   element={
                     <ProtectedRoute requiredRole="cashier">
-                      <POS />
+                      <POSKiosk />
                     </ProtectedRoute>
                   }
                 />
