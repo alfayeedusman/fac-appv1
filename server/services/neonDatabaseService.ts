@@ -596,6 +596,35 @@ class NeonDatabaseService {
           ? 100
           : 0;
 
+    // === SUBSCRIPTION METRICS ===
+
+    // Calculate total subscription revenue from active/completed subscriptions (within date range)
+    const [subscriptionRevenueResult] = await this.db
+      .select({ totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})` })
+      .from(schema.packageSubscriptions)
+      .where(and(
+        ne(schema.packageSubscriptions.status, "cancelled"),
+        ne(schema.packageSubscriptions.status, "expired"),
+        gte(schema.packageSubscriptions.startDate, startDate)
+      ));
+
+    const totalSubscriptionRevenue = parseFloat(subscriptionRevenueResult.totalRevenue || "0");
+
+    // Count new subscriptions (within date range)
+    const [newSubscriptionCount] = await this.db
+      .select({ count: count() })
+      .from(schema.packageSubscriptions)
+      .where(gte(schema.packageSubscriptions.startDate, startDate));
+
+    // Count subscription upgrades (users with non-free subscription status created/updated in period)
+    const [upgradeCount] = await this.db
+      .select({ count: count() })
+      .from(schema.users)
+      .where(and(
+        ne(schema.users.subscriptionStatus, "free"),
+        gte(schema.users.updatedAt, startDate)
+      ));
+
     return {
       totalUsers: userCount.count,
       totalBookings: bookingCount.count,
