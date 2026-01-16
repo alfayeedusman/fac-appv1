@@ -192,6 +192,7 @@ export default function AdminDashboard() {
   const [realtimeLoading, setRealtimeLoading] = useState(true);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
