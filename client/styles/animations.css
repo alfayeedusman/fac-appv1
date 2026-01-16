@@ -154,6 +154,10 @@
   animation: slideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.animate-slideIn {
+  animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .animate-breathe {
   animation: none !important;
 }
