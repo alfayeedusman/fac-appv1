@@ -82,13 +82,10 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
 // Test database connection
 export const testNeonConnection: RequestHandler = async (req, res) => {
   try {
-    console.log("🔍 Testing database connection...");
-
     // Check if database URL is configured
     const databaseUrl =
       process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
     if (!databaseUrl) {
-      console.log("❌ No database URL configured");
       return res.json({
         success: false,
         connected: false,
@@ -99,17 +96,14 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
       });
     }
 
-    console.log("✅ Database URL found, testing connection...");
     const isConnected = await testConnection();
-    console.log("🔗 Connection test result:", isConnected);
 
     let stats = null;
     if (isConnected) {
       try {
         stats = await neonDbService.getStats();
-        console.log("📊 Stats retrieved:", stats);
       } catch (statsError) {
-        console.warn("⚠️ Failed to get stats:", statsError);
+        // Silently fail - don't log
       }
     }
 
@@ -120,7 +114,6 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("❌ Database test error:", error);
     res.json({
       success: false,
       connected: false,
