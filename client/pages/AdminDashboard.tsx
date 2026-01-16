@@ -235,6 +235,8 @@ export default function AdminDashboard() {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
   const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
     "add",
