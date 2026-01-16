@@ -218,7 +218,7 @@ class XenditPaymentService {
 
         if (result.success) {
           const status = result.paymentStatus || result.status;
-          console.log(`✅ ${type} status: ${status}`);
+          log(`✅ ${type} status: ${status}`);
 
           if (status === "completed" || status === "active") {
             return true;
