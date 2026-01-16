@@ -63,7 +63,9 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { neonDbClient } from "@/services/neonDatabaseService";
+import { receiptPrintService } from "@/services/receiptPrintService";
 import Swal from "sweetalert2";
+import { Upload, Download } from "lucide-react";
 
 interface User {
   id: string;
