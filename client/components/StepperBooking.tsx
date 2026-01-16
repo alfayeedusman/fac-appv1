@@ -842,6 +842,7 @@ export default function StepperBooking({
         description: `Payment for booking ${bookingId} - ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || "Service"}`,
         successRedirectUrl: `${window.location.origin}/booking-success?bookingId=${bookingId}`,
         failureRedirectUrl: `${window.location.origin}/booking-failed?bookingId=${bookingId}`,
+        preferredPaymentMethod: bookingData.paymentMethodDetail || undefined,
       });
 
       if (invoiceData && invoiceData.invoice_url) {
