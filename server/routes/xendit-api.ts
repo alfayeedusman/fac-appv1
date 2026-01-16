@@ -1242,21 +1242,23 @@ async function refreshPaymentMethodsCache() {
 }
 
 // Start background refresh interval (if TTL > 0)
-try {
-  if (PAYMENT_METHODS_CACHE_TTL > 0) {
-    // Trigger an initial refresh without blocking startup
-    setTimeout(() => {
-      refreshPaymentMethodsCache().catch((e) => console.warn('Initial payment methods refresh failed:', e));
-    }, 0);
+// NOTE: Disabled because Xendit API endpoint /invoices/available_payment_methods
+// appears to be invalid or changed. The listPaymentMethods endpoint has fallback hardcoded methods.
+// try {
+//   if (PAYMENT_METHODS_CACHE_TTL > 0) {
+//     // Trigger an initial refresh without blocking startup
+//     setTimeout(() => {
+//       refreshPaymentMethodsCache().catch((e) => console.warn('Initial payment methods refresh failed:', e));
+//     }, 0);
 
-    // Schedule periodic refresh
-    setInterval(() => {
-      refreshPaymentMethodsCache().catch((e) => console.warn('Periodic payment methods refresh failed:', e));
-    }, Math.max(1000, PAYMENT_METHODS_CACHE_TTL * 1000));
-  }
-} catch (e) {
-  console.warn('Failed to start payment methods background refresher:', e);
-}
+//     // Schedule periodic refresh
+//     setInterval(() => {
+//       refreshPaymentMethodsCache().catch((e) => console.warn('Periodic payment methods refresh failed:', e));
+//     }, Math.max(1000, PAYMENT_METHODS_CACHE_TTL * 1000));
+//   }
+// } catch (e) {
+//   console.warn('Failed to start payment methods background refresher:', e);
+// }
 
 // List payment methods supported by Xendit (frontend helper - dynamic with caching)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
