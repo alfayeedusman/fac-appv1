@@ -178,7 +178,7 @@ export default function POSClosingModal({
 
                 <div>
                   <label htmlFor="actual-cash" className="block text-sm font-medium text-gray-700 mb-2">
-                    Actual Cash Counted (₱)
+                    Actual Cash Counted (₱) <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-bold">₱</span>
@@ -187,11 +187,12 @@ export default function POSClosingModal({
                       type="number"
                       step="0.01"
                       min="0"
-                      placeholder="0.00"
+                      placeholder="Enter amount..."
                       value={actualCash}
                       onChange={(e) => setActualCash(e.target.value)}
                       disabled={isLoading}
                       className="pl-8 text-lg"
+                      required
                     />
                   </div>
                 </div>
