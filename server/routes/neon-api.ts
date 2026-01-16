@@ -188,6 +188,23 @@ export const loginUser: RequestHandler = async (req, res) => {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
+    // Create a server side session token and store it in user_sessions
+    const crypto = await import('crypto');
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
+
+    try {
+      await neonDbService.createUserSession(
+        userWithoutPassword.id,
+        sessionToken,
+        expiresAt,
+        req.ip,
+        (req.headers['user-agent'] || '') as string,
+      );
+    } catch (sessionErr) {
+      console.warn('⚠️ Failed to create user session:', sessionErr);
+    }
+
     console.log("✅ Login successful", {
       email,
       role: userWithoutPassword.role,
@@ -196,6 +213,8 @@ export const loginUser: RequestHandler = async (req, res) => {
     const response = {
       success: true,
       user: userWithoutPassword,
+      sessionToken,
+      expiresAt: expiresAt.toISOString(),
       message: "Login successful",
     };
     console.log(
