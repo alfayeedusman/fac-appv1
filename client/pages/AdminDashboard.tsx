@@ -1489,6 +1489,90 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Subscription Revenue
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalSubscriptionRevenue)
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Active plans
+                        </p>
+                      </div>
+                      <div className="bg-emerald-500 p-3 rounded-lg">
+                        <CreditCard className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          New Subscriptions
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.newSubscriptions.toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          This period
+                        </p>
+                      </div>
+                      <div className="bg-indigo-500 p-3 rounded-lg">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("customers")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Account Upgrades
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.subscriptionUpgrades.toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Free → Premium
+                        </p>
+                      </div>
+                      <div className="bg-pink-500 p-3 rounded-lg">
+                        <Zap className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Location Summary */}
