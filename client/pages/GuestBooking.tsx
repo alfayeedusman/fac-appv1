@@ -50,16 +50,9 @@ export default function GuestBooking() {
       {/* Header Section - Mobile Optimized */}
       <div className="pt-16 px-4 sm:px-6 relative z-10">
         <div className="text-center mb-6 sm:mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-              <Smartphone className="h-3 w-3 mr-1" />
-              Quick Booking
-            </Badge>
-            <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200 animate-pulse">
-              <Zap className="h-3 w-3 mr-1" />
-              Fast
-            </Badge>
-          </div>
+          <Badge className="mb-4 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+            Quick Booking
+          </Badge>
           <h1 className="text-4xl sm:text-5xl font-black text-foreground mb-3 leading-tight">
             Book Your<br />
             <span className="bg-gradient-to-r from-fac-orange-500 via-blue-500 to-purple-600 bg-clip-text text-transparent">
@@ -69,23 +62,6 @@ export default function GuestBooking() {
           <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
             No account needed. No signup. Just book instantly and get confirmed.
           </p>
-        </div>
-
-        {/* Fast Booking Card - Premium Option */}
-        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
-          <FastBookingCard
-            services={[]}
-            onSelectService={handleFastBookingSelect}
-          />
-        </div>
-
-        {/* Or Divider */}
-        <div className="max-w-2xl mx-auto mb-6 flex items-center gap-3">
-          <div className="flex-1 h-px bg-border/50"></div>
-          <span className="text-xs text-muted-foreground font-semibold uppercase">
-            Or customize
-          </span>
-          <div className="flex-1 h-px bg-border/50"></div>
         </div>
 
         {/* Enhanced Info Card (dismissible; reappears on refresh) */}
