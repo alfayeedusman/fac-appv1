@@ -246,7 +246,7 @@ class XenditService {
     const timeout = setTimeout(() => ac.abort(), 15000);
 
     try {
-      console.log("📅 Creating recurring billing plan...", params);
+      log("📅 Creating recurring billing plan...", params);
 
       const response = await fetch(
         "/api/neon/payment/xendit/create-subscription",
@@ -265,7 +265,7 @@ class XenditService {
       }
 
       const data = await response.json();
-      console.log("✅ Subscription plan created:", data);
+      log("✅ Subscription plan created:", data);
       return data;
     } catch (error: any) {
       clearTimeout(timeout);
@@ -274,7 +274,7 @@ class XenditService {
         throw new Error("Request timed out");
       }
 
-      console.error("Xendit subscription error:", error);
+      logError("Xendit subscription error:", error);
       throw error;
     }
   };
@@ -289,7 +289,7 @@ class XenditService {
     const timeout = setTimeout(() => ac.abort(), 15000);
 
     try {
-      console.log("💳 Processing subscription renewal...", params);
+      log("💳 Processing subscription renewal...", params);
 
       const response = await fetch(
         "/api/neon/payment/xendit/renew-subscription",
@@ -308,7 +308,7 @@ class XenditService {
       }
 
       const data = await response.json();
-      console.log("✅ Renewal processed:", data);
+      log("✅ Renewal processed:", data);
       return data;
     } catch (error: any) {
       clearTimeout(timeout);
@@ -317,7 +317,7 @@ class XenditService {
         throw new Error("Request timed out");
       }
 
-      console.error("Xendit renewal error:", error);
+      logError("Xendit renewal error:", error);
       throw error;
     }
   };
