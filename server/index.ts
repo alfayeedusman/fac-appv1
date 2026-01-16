@@ -86,6 +86,10 @@ export function createServer() {
   // Auth endpoints
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
   app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
+  app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
+
+  // Session management (admin)
+  app.post("/api/neon/sessions/revoke", neonApiRoutes.revokeSession);
 
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
