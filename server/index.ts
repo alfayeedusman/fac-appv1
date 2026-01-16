@@ -90,6 +90,7 @@ export function createServer() {
 
   // Session management (admin)
   app.post("/api/neon/sessions/revoke", neonApiRoutes.revokeSession);
+  app.get("/api/neon/sessions", neonApiRoutes.getSessions);
 
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
