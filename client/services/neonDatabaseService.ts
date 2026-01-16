@@ -435,8 +435,8 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("📝 Response status:", response.status, response.statusText);
-      console.log("📝 Response URL:", response.url);
+      log("📝 Response status:", response.status, response.statusText);
+      log("📝 Response URL:", response.url);
       console.log(
         "��� Content-Type:",
         response.headers.get("content-type") || "unknown",
