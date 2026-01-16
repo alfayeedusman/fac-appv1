@@ -551,36 +551,70 @@ router.get('/dashboard/stats', async (req, res) => {
 // WEBSOCKET NOTIFICATIONS (Basic HTTP endpoint for now)
 // ============================================================================
 
+import { triggerPusherEvent } from "../services/pusherService.js";
+
 // Send real-time message
 router.post('/messages/send', async (req, res) => {
   try {
     const { job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority } = req.body;
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
       const [result] = await connection.execute(
-        `INSERT INTO realtime_messages 
+        `INSERT INTO realtime_messages
          (job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [job_id || null, sender_type, sender_id, recipient_type, recipient_id || null, message_type, content, JSON.stringify(metadata || {}), priority || 'normal']
       );
 
+      const messageId = (result as any).insertId;
+
       res.json({
         success: true,
-        message_id: (result as any).insertId,
+        message_id: messageId,
         message: 'Message sent successfully'
       });
-      
+
+      // Fire-and-forget Pusher event
+      (async () => {
+        try {
+          const payload = {
+            id: messageId,
+            job_id: job_id || null,
+            sender_type,
+            sender_id,
+            recipient_type,
+            recipient_id: recipient_id || null,
+            message_type,
+            content,
+            metadata: metadata || {},
+            priority: priority || 'normal',
+            created_at: new Date().toISOString(),
+          };
+
+          // Trigger user-specific channel if recipient_id provided
+          if (recipient_id) {
+            const userChannel = `user-${recipient_type}-${recipient_id}`;
+            await triggerPusherEvent(userChannel, 'new-message', payload);
+          }
+
+          // Also broadcast to a public realtime channel for admin dashboards
+          await triggerPusherEvent('public-realtime', 'new-message', payload);
+        } catch (err) {
+          console.warn('⚠️ Failed to trigger Pusher event:', err);
+        }
+      })();
+
     } finally {
       connection.release();
     }
-    
+
   } catch (error) {
     console.error('Send message error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to send message' 
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send message'
     });
   }
 });
