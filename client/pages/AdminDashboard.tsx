@@ -103,6 +103,7 @@ import {
   type SystemNotification,
 } from "@/utils/databaseSchema";
 import { neonDbClient } from "@/services/neonDatabaseService";
+import realtimeService from "@/services/realtimeService";
 import { toast } from "@/hooks/use-toast";
 import Swal from "sweetalert2";
 
