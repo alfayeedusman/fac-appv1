@@ -2879,7 +2879,7 @@ const PaymentStep = ({
             <div className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
               <p>The crew will collect payment at your location.</p>
               <p>
-                <strong>Amount:</strong> ���
+                <strong>Amount:</strong> ₱
                 {bookingData.totalPrice.toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -3256,7 +3256,7 @@ const BookingSummary = ({
                   Total:
                 </span>
                 <span className="font-bold text-fac-orange-500 text-lg md:text-xl">
-                  ���{(bookingData.totalPrice || 0).toLocaleString()}
+                  ₱{(bookingData.totalPrice || 0).toLocaleString()}
                 </span>
               </div>
             </div>
