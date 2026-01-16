@@ -222,7 +222,7 @@ class XenditService {
         );
       }
 
-      console.error("Xendit charge error:", error);
+      logError("Xendit charge error:", error);
       throw error;
     }
   };
