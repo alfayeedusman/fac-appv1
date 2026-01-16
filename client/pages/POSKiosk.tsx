@@ -547,8 +547,19 @@ export default function POSKiosk() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowClosingModal(true)}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6"
+                onClick={() => {
+                  if (!currentSessionId) {
+                    notificationManager.error(
+                      "Error",
+                      "No active POS session. Please open a session first."
+                    );
+                    return;
+                  }
+                  setShowClosingModal(true);
+                }}
+                disabled={!currentSessionId}
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!currentSessionId ? "No active POS session" : "Close the current POS session"}
               >
                 <X className="h-4 w-4 mr-2" />
                 Close & Exit
