@@ -91,6 +91,7 @@ import AdminCrewManagement from "./AdminCrewManagement";
 import AdminSettings from "./AdminSettings";
 import CustomerHub from "@/components/CustomerHub";
 import SalesTransactions from "@/components/SalesTransactions";
+import BookingHub from "@/components/BookingHub";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
