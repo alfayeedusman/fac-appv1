@@ -2855,7 +2855,7 @@ const PaymentStep = ({
                     ✓ You will be redirected to FACPay to complete your payment
                   </p>
                   <p>
-                    �� Accept multiple payment methods (Cards, GCash, PayMaya)
+                    ✓ Accept multiple payment methods (Cards, GCash, PayMaya)
                   </p>
                   <p>✓ Secure payment powered by Xendit</p>
                   <div className="mt-3 pt-3 border-t border-fac-orange-200">
@@ -2864,6 +2864,9 @@ const PaymentStep = ({
                     </p>
                   </div>
                 </div>
+
+                {/* Dynamically load available payment channels from server */}
+                <PaymentMethodsSelection bookingData={bookingData} updateBookingData={updateBookingData} />
               </div>
             </div>
           </div>
