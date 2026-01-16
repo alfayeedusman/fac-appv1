@@ -228,6 +228,96 @@ class XenditService {
     window.location.href = invoiceUrl;
   };
 
+  public createSubscriptionPlan = async (params: {
+    reference_id: string;
+    customer_email: string;
+    description: string;
+    amount: number;
+    interval: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+    interval_count: number;
+    payment_method: "CARD" | "EWALLET";
+    notification_url?: string;
+  }): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
+    try {
+      console.log("📅 Creating recurring billing plan...", params);
+
+      const response = await fetch(
+        "/api/neon/payment/xendit/create-subscription",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params),
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error("Failed to create subscription plan");
+      }
+
+      const data = await response.json();
+      console.log("✅ Subscription plan created:", data);
+      return data;
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        throw new Error("Request timed out");
+      }
+
+      console.error("Xendit subscription error:", error);
+      throw error;
+    }
+  };
+
+  public renewSubscription = async (params: {
+    subscription_id: string;
+    amount: number;
+    description: string;
+    payment_method: "CARD" | "EWALLET";
+  }): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
+    try {
+      console.log("💳 Processing subscription renewal...", params);
+
+      const response = await fetch(
+        "/api/neon/payment/xendit/renew-subscription",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params),
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error("Failed to process renewal");
+      }
+
+      const data = await response.json();
+      console.log("✅ Renewal processed:", data);
+      return data;
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        throw new Error("Request timed out");
+      }
+
+      console.error("Xendit renewal error:", error);
+      throw error;
+    }
+  };
+
   public isInitialized(): boolean {
     return this.initialized;
   }
