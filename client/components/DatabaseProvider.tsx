@@ -39,7 +39,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
 
       // Retry logic with multiple attempts
       let attempts = 0;
-      const maxAttempts = 3;
+      const maxAttempts = 2; // Reduce attempts to fail fast
       let connected = false;
       let lastError = null;
 
@@ -55,7 +55,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
             timeoutPromise
           ]);
 
-          if (health.connected) {
+          if (health && health.connected) {
             connected = true;
             setIsConnected(true);
             console.log('✅ Database connected successfully');
@@ -73,6 +73,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         } catch (error) {
           lastError = error;
           attempts++;
+          console.log(`⚠️ Connection attempt ${attempts} failed:`, (error as Error).message);
 
           if (attempts < maxAttempts) {
             // Wait before retrying (exponential backoff)
@@ -84,7 +85,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
       // If all attempts failed, mark as offline
       if (!connected) {
         setIsConnected(false);
-        console.log('ℹ️ Database connection unavailable after', attempts, 'attempts');
+        console.log('ℹ️ Database connection unavailable. App will operate in offline/demo mode.');
 
         // Only show toast once and only if truly necessary
         // Don't show in development or if already shown
