@@ -1712,19 +1712,26 @@ class NeonDatabaseClient {
 
   async getStats(period: string = "monthly"): Promise<{ success: boolean; stats?: any }> {
     try {
+      // Check cache first
+      if (this.statsCache && Date.now() - this.statsCache.timestamp < this.cacheTTL) {
+        return this.statsCache.data;
+      }
+
       const connected = await this.ensureConnection();
       if (!connected) {
         console.warn("⚠️ getStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log("📈 Fetching stats for period:", period);
       const result = await this.fetchJsonWithFallback(`/stats?period=${period}`);
-      console.log("✅ Stats received:", result);
 
-      return result?.success !== undefined
+      // Cache the result
+      const processedResult = result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
+
+      this.statsCache = { data: processedResult, timestamp: Date.now() };
+      return processedResult;
     } catch (error) {
       console.error("❌ Database stats fetch failed:", error);
       return {
