@@ -257,6 +257,15 @@ export default function AdminDashboard() {
     motorcycleType: "",
   });
 
+  const [editCustomerForm, setEditCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    carUnit: "",
+    plateNumber: "",
+    membershipType: "Classic",
+  });
+
   const [newPackage, setNewPackage] = useState({
     name: "",
     basePrice: 0,
