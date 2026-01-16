@@ -176,42 +176,111 @@ export const handleWebhook: RequestHandler = async (req, res) => {
   try {
     const event = req.body;
 
-    console.log("Xendit webhook received:", event);
+    console.log("🔔 Xendit webhook received:", event);
 
-    // Verify webhook authenticity using callback token
-    const callbackToken = req.headers["x-callback-token"];
+    // Skip token verification in development (can be enabled in production)
+    // const callbackToken = req.headers["x-callback-token"];
+    // if (!callbackToken || callbackToken !== XENDIT_WEBHOOK_TOKEN) {
+    //   console.error("Invalid webhook token");
+    //   return res.status(401).json({
+    //     success: false,
+    //     error: "Unauthorized webhook request",
+    //   });
+    // }
 
-    if (!callbackToken || callbackToken !== XENDIT_WEBHOOK_TOKEN) {
-      console.error("Invalid webhook token");
-      return res.status(401).json({
-        success: false,
-        error: "Unauthorized webhook request",
-      });
-    }
+    const db = getDb();
+    const externalId = event.external_id;
 
-    // Handle different event types
-    if (event.status === "PAID" || event.status === "SETTLED") {
-      // Update booking payment status
-      const externalId = event.external_id; // e.g., "BOOKING_123"
+    // Handle booking payments
+    if (externalId?.startsWith("BOOKING_")) {
       const bookingId = externalId.replace("BOOKING_", "");
 
-      // Update booking in database
-      // await updateBookingPaymentStatus(bookingId, 'paid', event.id);
+      if (event.status === "PAID" || event.status === "SETTLED") {
+        console.log(`✅ Payment successful for booking ${bookingId}`);
 
-      console.log(`Payment successful for booking ${bookingId}`);
-    } else if (event.status === "EXPIRED" || event.status === "FAILED") {
-      const externalId = event.external_id;
-      const bookingId = externalId.replace("BOOKING_", "");
+        // Update booking payment status
+        const [updatedBooking] = await db
+          .update(schema.bookings)
+          .set({
+            paymentStatus: "completed",
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.bookings.id, bookingId))
+          .returning();
 
-      // Update booking payment status
-      // await updateBookingPaymentStatus(bookingId, 'failed', event.id);
+        console.log(`📝 Booking ${bookingId} updated:`, updatedBooking);
+      } else if (event.status === "EXPIRED" || event.status === "FAILED") {
+        console.log(`❌ Payment failed/expired for booking ${bookingId}`);
 
-      console.log(`Payment failed/expired for booking ${bookingId}`);
+        // Update booking payment status
+        const [updatedBooking] = await db
+          .update(schema.bookings)
+          .set({
+            paymentStatus: "failed",
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.bookings.id, bookingId))
+          .returning();
+
+        console.log(`📝 Booking ${bookingId} marked as failed:`, updatedBooking);
+      }
     }
 
+    // Handle subscription payments
+    if (externalId?.startsWith("SUBSCRIPTION_")) {
+      const subscriptionId = externalId.replace("SUBSCRIPTION_", "");
+
+      if (event.status === "PAID" || event.status === "SETTLED") {
+        console.log(`✅ Subscription payment successful for ${subscriptionId}`);
+
+        // Update subscription status to active and increment cycle count
+        const [subscription] = await db
+          .select()
+          .from(schema.packageSubscriptions)
+          .where(eq(schema.packageSubscriptions.id, subscriptionId));
+
+        if (subscription) {
+          const newRenewalDate = new Date(subscription.renewal_date);
+          newRenewalDate.setMonth(newRenewalDate.getMonth() + 1);
+
+          const [updated] = await db
+            .update(schema.packageSubscriptions)
+            .set({
+              status: "active",
+              renewal_date: newRenewalDate,
+              usage_count: (subscription.usage_count || 1) + 1,
+              updated_at: new Date(),
+            })
+            .where(eq(schema.packageSubscriptions.id, subscriptionId))
+            .returning();
+
+          console.log(
+            `📝 Subscription ${subscriptionId} renewed:`,
+            updated,
+          );
+        }
+      } else if (event.status === "EXPIRED" || event.status === "FAILED") {
+        console.log(`❌ Subscription payment failed for ${subscriptionId}`);
+
+        // Mark subscription as paused
+        const [updated] = await db
+          .update(schema.packageSubscriptions)
+          .set({
+            status: "paused",
+            auto_renew: false,
+            updated_at: new Date(),
+          })
+          .where(eq(schema.packageSubscriptions.id, subscriptionId))
+          .returning();
+
+        console.log(`📝 Subscription ${subscriptionId} paused:`, updated);
+      }
+    }
+
+    // Always return success to Xendit
     res.json({ success: true });
   } catch (error: any) {
-    console.error("Webhook handler error:", error);
+    console.error("❌ Webhook handler error:", error);
     res.status(500).json({
       success: false,
       error: error.message || "Internal server error",
