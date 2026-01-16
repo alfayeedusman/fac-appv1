@@ -1685,19 +1685,26 @@ class NeonDatabaseClient {
 
   async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
     try {
+      // Check cache first
+      if (this.realtimeStatsCache && Date.now() - this.realtimeStatsCache.timestamp < this.cacheTTL) {
+        return this.realtimeStatsCache.data;
+      }
+
       const connected = await this.ensureConnection();
       if (!connected) {
         console.warn("⚠️ getRealtimeStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log("📊 Fetching realtime stats...");
       const result = await this.fetchJsonWithFallback("/realtime-stats");
-      console.log("✅ Realtime stats received:", result);
 
-      return result?.success !== undefined
+      // Cache the result
+      const processedResult = result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
+
+      this.realtimeStatsCache = { data: processedResult, timestamp: Date.now() };
+      return processedResult;
     } catch (error) {
       console.error("❌ Database realtime stats fetch failed:", error);
       return {
