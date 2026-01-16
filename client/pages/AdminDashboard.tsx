@@ -301,6 +301,7 @@ export default function AdminDashboard() {
           totalCustomers: result.stats.totalUsers || 0,
           totalRevenue: result.stats.totalRevenue || 0,
           totalWashes: result.stats.totalWashes || 0,
+          totalOnlineBookings: result.stats.totalOnlineBookings || 0,
           totalExpenses: result.stats.totalExpenses || 0,
           netIncome: result.stats.netIncome || 0,
           activeSubscriptions: result.stats.activeSubscriptions || 0,
