@@ -186,7 +186,7 @@ class NeonDatabaseClient {
           return true;
         }
       } else {
-        console.warn(
+        warn(
           `⚠️ Init request failed: ${response.status} ${response.statusText}`,
         );
       }
@@ -211,7 +211,7 @@ class NeonDatabaseClient {
         return this.isConnected;
       }
     } catch (e) {
-      console.warn(
+      warn(
         "⚠️ Test request failed:",
         e instanceof Error ? e.message : e,
       );
@@ -261,13 +261,13 @@ class NeonDatabaseClient {
           if (this.isConnected) {
             info("✅ Database connection test successful");
           } else {
-            console.warn("⚠️ Database connection test returned false");
+            warn("⚠️ Database connection test returned false");
           }
           return result;
         }
-        console.error(`Connection test failed: HTTP ${response.status}`);
+        logError(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        console.warn(
+        warn(
           "Primary connection test failed:",
           (err as any).message || err,
         );
@@ -287,11 +287,11 @@ class NeonDatabaseClient {
           }
           return result;
         }
-        console.error(
+        logError(
           `Fallback connection test failed: HTTP ${response.status}`,
         );
       } catch (err) {
-        console.warn(
+        warn(
           "Fallback connection test failed:",
           (err as any).message || err,
         );
