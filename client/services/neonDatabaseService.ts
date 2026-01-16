@@ -890,18 +890,36 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
+      console.log("📋 Fetching subscriptions from:", `${this.baseUrl}/subscriptions?${queryParams.toString()}`);
+
       const response = await fetch(
         `${this.baseUrl}/subscriptions?${queryParams.toString()}`,
         { signal: ac.signal },
       );
 
       clearTimeout(to);
+
+      if (!response.ok) {
+        console.error("❌ Subscription fetch failed with status:", response.status);
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const errorData = await response.json();
+          console.error("Error response:", errorData);
+          return { success: false, subscriptions: [], error: errorData.error };
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON error response:", text.substring(0, 200));
+          return { success: false, subscriptions: [], error: "Invalid response format" };
+        }
+      }
+
       const result = await response.json();
+      console.log("✅ Subscriptions fetched successfully:", result?.subscriptions?.length || 0);
       return result;
     } catch (error: any) {
-      console.error("Database subscription fetch failed:", error);
+      console.error("❌ Database subscription fetch failed:", error);
       if (error?.name === "AbortError") {
-        console.warn("Subscriptions fetch timed out");
+        console.warn("⚠️ Subscriptions fetch timed out");
       }
       return { success: false, subscriptions: [] };
     }
