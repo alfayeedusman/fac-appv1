@@ -453,6 +453,36 @@ export default function AdminDashboard() {
       // Load real-time crew and customer statistics
       loadRealtimeStats();
 
+      // Subscribe to realtime events (booking, pos, inventory, dashboard stats)
+      const subs: Array<() => void> = [];
+      try {
+        subs.push(realtimeService.subscribe('dashboard-stats', (d: any) => {
+          if (d && d.stats) {
+            setRealtimeStats({
+              onlineCrew: d.stats.onlineCrew || 0,
+              busyCrew: d.stats.busyCrew || 0,
+              activeCustomers: d.stats.activeCustomers || 0,
+              activeGroups: d.stats.activeGroups || 0,
+            });
+          }
+        }));
+
+        subs.push(realtimeService.subscribe('booking.created', (d: any) => {
+          setStats((prev) => ({ ...prev, totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1 }));
+        }));
+
+        subs.push(realtimeService.subscribe('pos.transaction.created', (d: any) => {
+          setStats((prev) => ({ ...prev, totalRevenue: (prev.totalRevenue || 0) + (parseFloat(d.totalAmount) || 0) }));
+        }));
+
+        subs.push(realtimeService.subscribe('inventory.updated', (d: any) => {
+          // simple UI hint: trigger a toast
+          toast({ title: 'Inventory updated', description: d.item?.name || 'An inventory item was updated' });
+        }));
+      } catch (e) {
+        console.warn('Realtime subscription failed:', e);
+      }
+
       // Load real customer data from database
       console.log("📋 About to call loadRealCustomers...");
       loadRealCustomers()
@@ -468,6 +498,8 @@ export default function AdminDashboard() {
       const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
 
       return () => {
+        // unsubscribe realtime subscriptions
+        subs.forEach((u) => u && u());
         clearInterval(notificationInterval);
         clearInterval(statsInterval);
         clearInterval(realtimeInterval);
