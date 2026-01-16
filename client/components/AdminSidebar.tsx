@@ -195,6 +195,13 @@ const sidebarItems = [
     gradient: "from-purple-500 to-violet-600",
   },
   {
+    id: "sessions",
+    label: "Sessions",
+    icon: Shield,
+    description: "Active user sessions",
+    gradient: "from-slate-500 to-gray-600",
+  },
+  {
     id: "crew-management",
     label: "Crew Management",
     icon: Users,
