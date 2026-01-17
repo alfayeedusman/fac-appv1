@@ -160,7 +160,9 @@ export const loginUser: RequestHandler = async (req, res) => {
         console.log("✅ User found in database", {
           email: user.email,
           hasPassword: !!user.password,
-          passwordHash: user.password ? user.password.substring(0, 10) + "..." : "NO_PASSWORD",
+          passwordHash: user.password
+            ? user.password.substring(0, 10) + "..."
+            : "NO_PASSWORD",
           isActive: user.isActive,
           role: user.role,
         });

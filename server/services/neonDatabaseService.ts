@@ -59,9 +59,7 @@ class NeonDatabaseService {
 
     // If no exact match, try case-insensitive search (fallback)
     const lowercaseEmail = email.toLowerCase();
-    const result = await this.db
-      .select()
-      .from(schema.users);
+    const result = await this.db.select().from(schema.users);
 
     const caseInsensitiveUser = result.find(
       (u) => u.email.toLowerCase() === lowercaseEmail,
@@ -104,7 +102,7 @@ class NeonDatabaseService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    if (!this.db) throw new Error('Database not connected');
+    if (!this.db) throw new Error("Database not connected");
 
     const [session] = await this.db
       .insert(schema.userSessions)
@@ -124,7 +122,7 @@ class NeonDatabaseService {
 
   // Retrieve a session by its token. Returns null if not found.
   async getSessionByToken(sessionToken: string) {
-    if (!this.db) throw new Error('Database not connected');
+    if (!this.db) throw new Error("Database not connected");
 
     const [session] = await this.db
       .select()
@@ -137,7 +135,7 @@ class NeonDatabaseService {
 
   // Deactivate (invalidate) a session token
   async deactivateSession(sessionToken: string) {
-    if (!this.db) throw new Error('Database not connected');
+    if (!this.db) throw new Error("Database not connected");
 
     await this.db
       .update(schema.userSessions)
@@ -149,7 +147,7 @@ class NeonDatabaseService {
 
   // Deactivate session by its database id
   async deactivateSessionById(sessionId: string) {
-    if (!this.db) throw new Error('Database not connected');
+    if (!this.db) throw new Error("Database not connected");
 
     await this.db
       .update(schema.userSessions)
@@ -161,7 +159,7 @@ class NeonDatabaseService {
 
   // Deactivate all sessions for a given user id
   async deactivateSessionsByUserId(userId: string) {
-    if (!this.db) throw new Error('Database not connected');
+    if (!this.db) throw new Error("Database not connected");
 
     await this.db
       .update(schema.userSessions)
@@ -172,8 +170,11 @@ class NeonDatabaseService {
   }
 
   // Get sessions with optional filters
-  async getSessions(params?: { userId?: string; activeOnly?: boolean }): Promise<any[]> {
-    if (!this.db) throw new Error('Database not connected');
+  async getSessions(params?: {
+    userId?: string;
+    activeOnly?: boolean;
+  }): Promise<any[]> {
+    if (!this.db) throw new Error("Database not connected");
 
     let query = this.db.select().from(schema.userSessions);
 
@@ -185,7 +186,7 @@ class NeonDatabaseService {
       query = query.where(eq(schema.userSessions.isActive, true));
     }
 
-    const sessions = await query.orderBy(schema.userSessions.createdAt, 'desc');
+    const sessions = await query.orderBy(schema.userSessions.createdAt, "desc");
 
     return sessions.map((s: any) => ({
       id: s.id,
@@ -329,7 +330,10 @@ class NeonDatabaseService {
       .orderBy(desc(schema.bookings.createdAt));
   }
 
-  async getBookingsByBranchAndStatus(branch: string, status: string): Promise<Booking[]> {
+  async getBookingsByBranchAndStatus(
+    branch: string,
+    status: string,
+  ): Promise<Booking[]> {
     if (!this.db) throw new Error("Database not connected");
 
     return await this.db
@@ -338,8 +342,8 @@ class NeonDatabaseService {
       .where(
         and(
           eq(schema.bookings.branch, branch),
-          eq(schema.bookings.status, status)
-        )
+          eq(schema.bookings.status, status),
+        ),
       )
       .orderBy(desc(schema.bookings.createdAt));
   }
@@ -610,8 +614,8 @@ class NeonDatabaseService {
             .where(
               and(
                 eq(schema.users.branchLocation, branch.name),
-                eq(schema.users.role, "user")
-              )
+                eq(schema.users.role, "user"),
+              ),
             );
 
           // Count staff in this branch
@@ -621,19 +625,21 @@ class NeonDatabaseService {
             .where(
               and(
                 eq(schema.users.branchLocation, branch.name),
-                sql`${schema.users.role} != 'user'`
-              )
+                sql`${schema.users.role} != 'user'`,
+              ),
             );
 
           // Calculate revenue from bookings in this branch
           const [revenueResult] = await this.db
-            .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
+            .select({
+              totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})`,
+            })
             .from(schema.bookings)
             .where(
               and(
                 eq(schema.bookings.branch, branch.name),
-                eq(schema.bookings.status, "completed")
-              )
+                eq(schema.bookings.status, "completed"),
+              ),
             );
 
           // Count completed washes
@@ -643,8 +649,8 @@ class NeonDatabaseService {
             .where(
               and(
                 eq(schema.bookings.branch, branch.name),
-                eq(schema.bookings.status, "completed")
-              )
+                eq(schema.bookings.status, "completed"),
+              ),
             );
 
           return {
@@ -657,7 +663,7 @@ class NeonDatabaseService {
               staffCount: staffCount.count,
             },
           };
-        })
+        }),
       );
 
       return branchesWithStats;
@@ -691,7 +697,7 @@ class NeonDatabaseService {
     const now = new Date();
     let startDate = new Date();
 
-    switch(period) {
+    switch (period) {
       case "daily":
         startDate.setHours(0, 0, 0, 0);
         break;
@@ -722,10 +728,12 @@ class NeonDatabaseService {
     const [onlineBookingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(and(
-        ne(schema.bookings.userId, null),
-        gte(schema.bookings.createdAt, startDate)
-      ));
+      .where(
+        and(
+          ne(schema.bookings.userId, null),
+          gte(schema.bookings.createdAt, startDate),
+        ),
+      );
 
     const [adCount] = await this.db
       .select({ count: count() })
@@ -735,19 +743,36 @@ class NeonDatabaseService {
     const [pendingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(and(eq(schema.bookings.status, "pending"), gte(schema.bookings.createdAt, startDate)));
+      .where(
+        and(
+          eq(schema.bookings.status, "pending"),
+          gte(schema.bookings.createdAt, startDate),
+        ),
+      );
 
     // Calculate total revenue from completed bookings (within date range)
     const [bookingRevenueResult] = await this.db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
-      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
+      .where(
+        and(
+          eq(schema.bookings.status, "completed"),
+          gte(schema.bookings.createdAt, startDate),
+        ),
+      );
 
     // Calculate total revenue from POS transactions (within date range)
     const [posRevenueResult] = await this.db
-      .select({ totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})` })
+      .select({
+        totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
+      })
       .from(schema.posTransactions)
-      .where(and(eq(schema.posTransactions.status, "completed"), gte(schema.posTransactions.createdAt, startDate)));
+      .where(
+        and(
+          eq(schema.posTransactions.status, "completed"),
+          gte(schema.posTransactions.createdAt, startDate),
+        ),
+      );
 
     // Combine both revenues
     const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
@@ -758,16 +783,23 @@ class NeonDatabaseService {
     const [bookingWashCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
+      .where(
+        and(
+          eq(schema.bookings.status, "completed"),
+          gte(schema.bookings.createdAt, startDate),
+        ),
+      );
 
     // Count POS carwash transactions (items with "Wash" in name, within date range)
     const [posWashCount] = await this.db
       .select({ count: count() })
       .from(schema.posTransactionItems)
-      .where(and(
-        sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
-        gte(schema.posTransactionItems.createdAt, startDate)
-      ));
+      .where(
+        and(
+          sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
+          gte(schema.posTransactionItems.createdAt, startDate),
+        ),
+      );
 
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
@@ -815,15 +847,21 @@ class NeonDatabaseService {
 
     // Calculate total subscription revenue from active/completed subscriptions (within date range)
     const [subscriptionRevenueResult] = await this.db
-      .select({ totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})` })
+      .select({
+        totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
+      })
       .from(schema.packageSubscriptions)
-      .where(and(
-        ne(schema.packageSubscriptions.status, "cancelled"),
-        ne(schema.packageSubscriptions.status, "expired"),
-        gte(schema.packageSubscriptions.startDate, startDate)
-      ));
+      .where(
+        and(
+          ne(schema.packageSubscriptions.status, "cancelled"),
+          ne(schema.packageSubscriptions.status, "expired"),
+          gte(schema.packageSubscriptions.startDate, startDate),
+        ),
+      );
 
-    const totalSubscriptionRevenue = parseFloat(subscriptionRevenueResult.totalRevenue || "0");
+    const totalSubscriptionRevenue = parseFloat(
+      subscriptionRevenueResult.totalRevenue || "0",
+    );
 
     // Count new subscriptions (within date range)
     const [newSubscriptionCount] = await this.db
@@ -835,10 +873,12 @@ class NeonDatabaseService {
     const [upgradeCount] = await this.db
       .select({ count: count() })
       .from(schema.users)
-      .where(and(
-        ne(schema.users.subscriptionStatus, "free"),
-        gte(schema.users.updatedAt, startDate)
-      ));
+      .where(
+        and(
+          ne(schema.users.subscriptionStatus, "free"),
+          gte(schema.users.updatedAt, startDate),
+        ),
+      );
 
     return {
       totalUsers: userCount.count,
@@ -851,7 +891,8 @@ class NeonDatabaseService {
       totalExpenses: Math.round(totalExpenses * 100) / 100,
       netIncome: Math.round(netIncome * 100) / 100,
       activeSubscriptions: subscriptionCount.count,
-      totalSubscriptionRevenue: Math.round(totalSubscriptionRevenue * 100) / 100,
+      totalSubscriptionRevenue:
+        Math.round(totalSubscriptionRevenue * 100) / 100,
       newSubscriptions: newSubscriptionCount.count,
       subscriptionUpgrades: upgradeCount.count,
       monthlyGrowth: Math.round(monthlyGrowth * 100) / 100, // Round to 2 decimal places
@@ -1017,10 +1058,7 @@ class NeonDatabaseService {
         .select({ count: count() })
         .from(schema.users)
         .where(
-          and(
-            eq(schema.users.role, "user"),
-            eq(schema.users.isActive, true),
-          ),
+          and(eq(schema.users.role, "user"), eq(schema.users.isActive, true)),
         );
 
       // Active customers (with sessions in last 24 hours)
@@ -1141,7 +1179,7 @@ class NeonDatabaseService {
       // Return fallback data based on existing users if available
       try {
         const allUsers = await this.getAllUsers();
-        const customers = allUsers.filter(user => user.role === 'user');
+        const customers = allUsers.filter((user) => user.role === "user");
 
         return {
           crew: {
@@ -1212,7 +1250,6 @@ class NeonDatabaseService {
   }
 
   // ============= NEW FEATURES METHODS =============
-
 
   // Service packages methods
   async getServicePackages() {
