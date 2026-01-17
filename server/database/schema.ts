@@ -1187,4 +1187,4 @@ export const webhookEventLogs = pgTable("webhook_event_logs", {
 });
 
 // Export CMS schema types and tables
-export * from "./cmsSchema.js";
+export * from "./cmsSchema";
