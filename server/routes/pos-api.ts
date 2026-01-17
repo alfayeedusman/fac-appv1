@@ -8,7 +8,7 @@ import {
 } from "../database/schema";
 import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { triggerPusherEvent } from "../services/pusherService.js";
+import { triggerPusherEvent } from "../services/pusherService";
 
 const router = express.Router();
 
@@ -81,8 +81,8 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
         and(
           eq(posSessions.cashierId, cashierId),
           gte(posSessions.sessionDate, today),
-          eq(posSessions.status, "open")
-        )
+          eq(posSessions.status, "open"),
+        ),
       )
       .limit(1);
 
@@ -107,11 +107,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     }
 
     const { sessionId } = req.params;
-    const {
-      actualCash,
-      actualDigital,
-      remittanceNotes,
-    } = req.body;
+    const { actualCash, actualDigital, remittanceNotes } = req.body;
 
     // Fetch session
     const sessionResult = await db
@@ -132,8 +128,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       .where(
         and(
           gte(posTransactions.createdAt, session.openedAt || session.createdAt),
-          lte(posTransactions.createdAt, new Date())
-        )
+          lte(posTransactions.createdAt, new Date()),
+        ),
       );
 
     // Calculate totals with proper rounding to prevent floating-point errors
@@ -169,21 +165,28 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const totalExpenses = roundToTwo(
       expenses.reduce(
         (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
-        0
-      )
+        0,
+      ),
     );
 
     // Calculate expected balances with proper rounding
-    const openingBalance = roundToTwo(parseFloat(session.openingBalance.toString()));
-    const expectedCash = roundToTwo(openingBalance + totalCashSales - totalExpenses);
-    const expectedDigital = roundToTwo(totalCardSales + totalGcashSales + totalBankSales);
+    const openingBalance = roundToTwo(
+      parseFloat(session.openingBalance.toString()),
+    );
+    const expectedCash = roundToTwo(
+      openingBalance + totalCashSales - totalExpenses,
+    );
+    const expectedDigital = roundToTwo(
+      totalCardSales + totalGcashSales + totalBankSales,
+    );
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
     const actualDigitalAmount = roundToTwo(parseFloat(actualDigital));
     const cashVariance = roundToTwo(actualCashAmount - expectedCash);
     const digitalVariance = roundToTwo(actualDigitalAmount - expectedDigital);
-    const isBalanced = Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
+    const isBalanced =
+      Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
     // Update session with properly rounded values
     const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
@@ -215,14 +218,16 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       isBalanced,
       cashVariance,
       digitalVariance,
-      message: isBalanced ? "POS closed successfully and balanced!" : "POS closed with variance",
+      message: isBalanced
+        ? "POS closed successfully and balanced!"
+        : "POS closed with variance",
     });
   } catch (error: any) {
     console.error("Error closing POS session:", error);
     const errorMessage = error?.message || error?.toString() || "Unknown error";
     res.status(500).json({
       error: "Failed to close POS session",
-      details: errorMessage
+      details: errorMessage,
     });
   }
 });
@@ -325,11 +330,19 @@ router.post("/transactions", async (req, res) => {
         };
         // Broadcast to public and branch channels (also private versions)
         await Promise.all([
-          triggerPusherEvent(['public-realtime', `branch-${branchId}`], 'pos.transaction.created', payload),
-          triggerPusherEvent([`private-public-realtime`, `private-branch-${branchId}`], 'pos.transaction.created', payload),
+          triggerPusherEvent(
+            ["public-realtime", `branch-${branchId}`],
+            "pos.transaction.created",
+            payload,
+          ),
+          triggerPusherEvent(
+            [`private-public-realtime`, `private-branch-${branchId}`],
+            "pos.transaction.created",
+            payload,
+          ),
         ]);
       } catch (err) {
-        console.warn('Failed to emit pos.transaction.created:', err);
+        console.warn("Failed to emit pos.transaction.created:", err);
       }
     })();
   } catch (error) {
@@ -358,8 +371,8 @@ router.get("/transactions/:date", async (req, res) => {
       .where(
         and(
           gte(posTransactions.createdAt, startDate),
-          lte(posTransactions.createdAt, endDate)
-        )
+          lte(posTransactions.createdAt, endDate),
+        ),
       )
       .orderBy(desc(posTransactions.createdAt));
 
@@ -390,8 +403,8 @@ router.get("/transactions/:date/detailed", async (req, res) => {
       .where(
         and(
           gte(posTransactions.createdAt, startDate),
-          lte(posTransactions.createdAt, endDate)
-        )
+          lte(posTransactions.createdAt, endDate),
+        ),
       )
       .orderBy(desc(posTransactions.createdAt));
 
@@ -403,7 +416,7 @@ router.get("/transactions/:date/detailed", async (req, res) => {
           .from(posTransactionItems)
           .where(eq(posTransactionItems.transactionId, trans.id));
         return { ...trans, items };
-      })
+      }),
     );
 
     res.json({ transactions: transactionsWithItems });
@@ -549,7 +562,9 @@ router.get("/reports/daily/:date", async (req, res) => {
     const endDate = new Date(dateObj);
     endDate.setHours(23, 59, 59, 999);
 
-    console.log(`⏰ Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    console.log(
+      `⏰ Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`,
+    );
 
     // Get transactions for the day
     const transactions = await db
@@ -559,8 +574,8 @@ router.get("/reports/daily/:date", async (req, res) => {
         and(
           gte(posTransactions.createdAt, startDate),
           lte(posTransactions.createdAt, endDate),
-          eq(posTransactions.status, "completed")
-        )
+          eq(posTransactions.status, "completed"),
+        ),
       );
 
     console.log(`✅ Found ${transactions.length} transactions`);
@@ -572,21 +587,23 @@ router.get("/reports/daily/:date", async (req, res) => {
       .where(
         and(
           gte(posExpenses.createdAt, startDate),
-          lte(posExpenses.createdAt, endDate)
-        )
+          lte(posExpenses.createdAt, endDate),
+        ),
       );
 
     const totalExpenses = expenses.reduce(
       (sum, exp) => sum + parseFloat(exp.amount.toString()),
-      0
+      0,
     );
 
-    console.log(`💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`);
+    console.log(
+      `💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`,
+    );
 
     // Calculate totals
     const totalSales = transactions.reduce(
       (sum, trans) => sum + parseFloat(trans.totalAmount.toString()),
-      0
+      0,
     );
 
     const totalCash = transactions
@@ -752,9 +769,18 @@ router.get("/transactions/stats/summary", async (req, res) => {
     // Calculate statistics
     const stats = {
       totalTransactions: transactions.length,
-      totalRevenue: transactions.reduce((sum, t) => sum + parseFloat(t.totalAmount || "0"), 0),
-      totalTax: transactions.reduce((sum, t) => sum + parseFloat(t.taxAmount || "0"), 0),
-      totalDiscount: transactions.reduce((sum, t) => sum + parseFloat(t.discountAmount || "0"), 0),
+      totalRevenue: transactions.reduce(
+        (sum, t) => sum + parseFloat(t.totalAmount || "0"),
+        0,
+      ),
+      totalTax: transactions.reduce(
+        (sum, t) => sum + parseFloat(t.taxAmount || "0"),
+        0,
+      ),
+      totalDiscount: transactions.reduce(
+        (sum, t) => sum + parseFloat(t.discountAmount || "0"),
+        0,
+      ),
       paymentMethods: {} as Record<string, { count: number; amount: number }>,
       averageTransaction: 0,
       byStatus: {} as Record<string, number>,
@@ -774,9 +800,10 @@ router.get("/transactions/stats/summary", async (req, res) => {
       stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
     });
 
-    stats.averageTransaction = stats.totalTransactions > 0
-      ? stats.totalRevenue / stats.totalTransactions
-      : 0;
+    stats.averageTransaction =
+      stats.totalTransactions > 0
+        ? stats.totalRevenue / stats.totalTransactions
+        : 0;
 
     res.json({
       success: true,

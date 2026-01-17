@@ -6,7 +6,7 @@ import {
   sql,
 } from "../database/connection";
 import { migrate } from "../database/migrate";
-import { triggerPusherEvent } from "../services/pusherService.js"; // Fire events to Pusher
+import { triggerPusherEvent } from "../services/pusherService"; // Fire events to Pusher
 
 const emitPusher = async (
   channels: string | string[],

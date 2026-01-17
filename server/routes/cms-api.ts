@@ -1,13 +1,13 @@
-import { Router } from 'express';
-import { neonDatabaseService } from '../services/neonDatabaseService.js';
-import { 
-  homepageContent, 
-  cmsContentHistory, 
+import { Router } from "express";
+import { neonDbService } from "../services/neonDatabaseService";
+import {
+  homepageContent,
+  cmsContentHistory,
   cmsSettings,
   type HomepageContent,
-  type NewHomepageContent 
-} from '../database/cmsSchema.js';
-import { eq, desc, and } from 'drizzle-orm';
+  type NewHomepageContent,
+} from "../database/cmsSchema";
+import { eq, desc, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -19,7 +19,8 @@ const defaultHomepageContent = {
     mainTitle: "Smart Auto Care",
     highlightedTitle: "for Modern Drivers",
     subtitle: "Premium Quality • Affordable Prices",
-    description: "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
+    description:
+      "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
     features: [
       {
         id: "feature1",
@@ -71,13 +72,15 @@ const defaultHomepageContent = {
     badge: "Our Services",
     title: "Premium Auto Care",
     highlightedTitle: "",
-    description: "Professional services designed to keep your vehicle in perfect condition",
+    description:
+      "Professional services designed to keep your vehicle in perfect condition",
     items: [
       {
         id: "service1",
         icon: "Car",
         title: "Car & Motor Wash",
-        description: "Premium cleaning with eco-friendly products for a spotless finish",
+        description:
+          "Premium cleaning with eco-friendly products for a spotless finish",
         gradient: "from-fac-orange-500 to-fac-orange-600",
         enabled: true,
       },
@@ -93,7 +96,8 @@ const defaultHomepageContent = {
         id: "service3",
         icon: "Sparkles",
         title: "Headlight Restoration",
-        description: "Crystal clear headlights for enhanced visibility and safety",
+        description:
+          "Crystal clear headlights for enhanced visibility and safety",
         gradient: "from-blue-500 to-blue-600",
         enabled: true,
       },
@@ -113,13 +117,15 @@ const defaultHomepageContent = {
     highlightedTitle: "",
     vision: {
       title: "Our Vision",
-      content: "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
+      content:
+        "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
       icon: "Crown",
       gradient: "from-fac-orange-500 to-fac-orange-600",
     },
     mission: {
       title: "Our Mission",
-      content: "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
+      content:
+        "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
       icon: "Star",
       gradient: "from-purple-500 to-purple-600",
     },
@@ -163,18 +169,18 @@ const defaultHomepageContent = {
  * Get current homepage content
  * GET /api/cms/homepage
  */
-router.get('/homepage', async (req, res) => {
+router.get("/homepage", async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.json({
         success: true,
         data: defaultHomepageContent,
-        message: "Using default content (database not available)"
+        message: "Using default content (database not available)",
       });
     }
 
     // Get the active homepage content
-    const [activeContent] = await neonDatabaseService.db
+    const [activeContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -186,7 +192,7 @@ router.get('/homepage', async (req, res) => {
       return res.json({
         success: true,
         data: defaultHomepageContent,
-        message: "Using default content (no content found)"
+        message: "Using default content (no content found)",
       });
     }
 
@@ -208,17 +214,16 @@ router.get('/homepage', async (req, res) => {
         version: activeContent.version,
         lastUpdated: activeContent.updatedAt,
         publishedAt: activeContent.publishedAt,
-      }
+      },
     });
-
   } catch (error) {
-    console.error('Error getting homepage content:', error);
-    
+    console.error("Error getting homepage content:", error);
+
     // Return default content on error
     res.json({
       success: true,
       data: defaultHomepageContent,
-      message: "Using default content (error occurred)"
+      message: "Using default content (error occurred)",
     });
   }
 });
@@ -227,26 +232,26 @@ router.get('/homepage', async (req, res) => {
  * Save homepage content
  * POST /api/cms/homepage
  */
-router.post('/homepage', async (req, res) => {
+router.post("/homepage", async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.status(503).json({
         success: false,
-        error: "Database not available"
+        error: "Database not available",
       });
     }
 
     const { content, userId, userName } = req.body;
-    
+
     if (!content) {
       return res.status(400).json({
         success: false,
-        error: "Content is required"
+        error: "Content is required",
       });
     }
 
     // Get current active content for history tracking
-    const [currentContent] = await neonDatabaseService.db
+    const [currentContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -254,7 +259,7 @@ router.post('/homepage', async (req, res) => {
 
     // Deactivate current content
     if (currentContent) {
-      await neonDatabaseService.db
+      await neonDbService.db
         .update(homepageContent)
         .set({ isActive: false })
         .where(eq(homepageContent.id, currentContent.id));
@@ -263,33 +268,36 @@ router.post('/homepage', async (req, res) => {
     // Create new content record
     const newContentData: NewHomepageContent = {
       heroSection: content.hero || defaultHomepageContent.heroSection,
-      servicesSection: content.services || defaultHomepageContent.servicesSection,
-      visionMissionSection: content.visionMission || defaultHomepageContent.visionMissionSection,
-      locationsSection: content.locations || defaultHomepageContent.locationsSection,
+      servicesSection:
+        content.services || defaultHomepageContent.servicesSection,
+      visionMissionSection:
+        content.visionMission || defaultHomepageContent.visionMissionSection,
+      locationsSection:
+        content.locations || defaultHomepageContent.locationsSection,
       footerSection: content.footer || defaultHomepageContent.footerSection,
       themeSettings: content.theme || defaultHomepageContent.themeSettings,
       isActive: true,
       publishedAt: new Date(),
-      createdBy: userId || 'system',
-      updatedBy: userId || 'system',
+      createdBy: userId || "system",
+      updatedBy: userId || "system",
     };
 
-    const [savedContent] = await neonDatabaseService.db
+    const [savedContent] = await neonDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDatabaseService.db
-      .insert(cmsContentHistory)
-      .values({
-        contentId: savedContent.id,
-        action: currentContent ? 'update' : 'create',
-        contentSnapshot: newContentData,
-        changeDescription: currentContent ? 'Content updated via CMS' : 'Initial content creation',
-        changedBy: userId || 'system',
-        changedByName: userName || 'System',
-      });
+    await neonDbService.db.insert(cmsContentHistory).values({
+      contentId: savedContent.id,
+      action: currentContent ? "update" : "create",
+      contentSnapshot: newContentData,
+      changeDescription: currentContent
+        ? "Content updated via CMS"
+        : "Initial content creation",
+      changedBy: userId || "system",
+      changedByName: userName || "System",
+    });
 
     res.json({
       success: true,
@@ -298,14 +306,13 @@ router.post('/homepage', async (req, res) => {
         version: savedContent.version,
         publishedAt: savedContent.publishedAt,
       },
-      message: "Homepage content saved successfully"
+      message: "Homepage content saved successfully",
     });
-
   } catch (error) {
-    console.error('Error saving homepage content:', error);
+    console.error("Error saving homepage content:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to save homepage content"
+      error: "Failed to save homepage content",
     });
   }
 });
@@ -314,19 +321,19 @@ router.post('/homepage', async (req, res) => {
  * Get content history
  * GET /api/cms/history
  */
-router.get('/history', async (req, res) => {
+router.get("/history", async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.json({
         success: true,
         data: [],
-        message: "Database not available"
+        message: "Database not available",
       });
     }
 
     const { limit = 20, offset = 0 } = req.query;
 
-    const history = await neonDatabaseService.db
+    const history = await neonDbService.db
       .select({
         id: cmsContentHistory.id,
         contentId: cmsContentHistory.contentId,
@@ -343,14 +350,13 @@ router.get('/history', async (req, res) => {
 
     res.json({
       success: true,
-      data: history
+      data: history,
     });
-
   } catch (error) {
-    console.error('Error getting content history:', error);
+    console.error("Error getting content history:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to get content history"
+      error: "Failed to get content history",
     });
   }
 });
@@ -359,19 +365,19 @@ router.get('/history', async (req, res) => {
  * Initialize default content (Admin only)
  * POST /api/cms/initialize
  */
-router.post('/initialize', async (req, res) => {
+router.post("/initialize", async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.status(503).json({
         success: false,
-        error: "Database not available"
+        error: "Database not available",
       });
     }
 
-    const { userId = 'system', userName = 'System' } = req.body;
+    const { userId = "system", userName = "System" } = req.body;
 
     // Check if content already exists
-    const [existingContent] = await neonDatabaseService.db
+    const [existingContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -381,7 +387,7 @@ router.post('/initialize', async (req, res) => {
       return res.json({
         success: true,
         message: "Content already initialized",
-        data: { id: existingContent.id }
+        data: { id: existingContent.id },
       });
     }
 
@@ -394,22 +400,20 @@ router.post('/initialize', async (req, res) => {
       updatedBy: userId,
     };
 
-    const [savedContent] = await neonDatabaseService.db
+    const [savedContent] = await neonDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDatabaseService.db
-      .insert(cmsContentHistory)
-      .values({
-        contentId: savedContent.id,
-        action: 'create',
-        contentSnapshot: newContentData,
-        changeDescription: 'Initial content setup',
-        changedBy: userId,
-        changedByName: userName,
-      });
+    await neonDbService.db.insert(cmsContentHistory).values({
+      contentId: savedContent.id,
+      action: "create",
+      contentSnapshot: newContentData,
+      changeDescription: "Initial content setup",
+      changedBy: userId,
+      changedByName: userName,
+    });
 
     res.json({
       success: true,
@@ -417,14 +421,13 @@ router.post('/initialize', async (req, res) => {
         id: savedContent.id,
         version: savedContent.version,
       },
-      message: "CMS content initialized successfully"
+      message: "CMS content initialized successfully",
     });
-
   } catch (error) {
-    console.error('Error initializing CMS content:', error);
+    console.error("Error initializing CMS content:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to initialize CMS content"
+      error: "Failed to initialize CMS content",
     });
   }
 });

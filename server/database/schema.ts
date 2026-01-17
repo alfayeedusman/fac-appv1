@@ -942,7 +942,10 @@ export const posSessions = pgTable("pos_sessions", {
   branchId: text("branch_id").notNull(),
 
   // Opening balance
-  openingBalance: decimal("opening_balance", { precision: 10, scale: 2 }).notNull(),
+  openingBalance: decimal("opening_balance", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
   openedAt: timestamp("opened_at").notNull().defaultNow(),
 
   // Closing balance and reconciliation
@@ -950,11 +953,25 @@ export const posSessions = pgTable("pos_sessions", {
   closedAt: timestamp("closed_at"),
 
   // Calculated totals
-  totalCashSales: decimal("total_cash_sales", { precision: 10, scale: 2 }).default("0"),
-  totalCardSales: decimal("total_card_sales", { precision: 10, scale: 2 }).default("0"),
-  totalGcashSales: decimal("total_gcash_sales", { precision: 10, scale: 2 }).default("0"),
-  totalBankSales: decimal("total_bank_sales", { precision: 10, scale: 2 }).default("0"),
-  totalExpenses: decimal("total_expenses", { precision: 10, scale: 2 }).default("0"),
+  totalCashSales: decimal("total_cash_sales", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  totalCardSales: decimal("total_card_sales", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  totalGcashSales: decimal("total_gcash_sales", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  totalBankSales: decimal("total_bank_sales", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  totalExpenses: decimal("total_expenses", { precision: 10, scale: 2 }).default(
+    "0",
+  ),
 
   // Reconciliation data
   expectedCash: decimal("expected_cash", { precision: 10, scale: 2 }), // Opening balance + cash sales - expenses
@@ -1163,9 +1180,9 @@ export const webhookEventLogs = pgTable("webhook_event_logs", {
 
   // Webhook identification
   provider: varchar("provider", { length: 50 }).notNull(), // 'xendit' | 'stripe' | etc
-  eventId: varchar("event_id", { length: 255}).notNull(), // External event ID from provider
-  externalId: varchar("external_id", { length: 255}), // e.g., "BOOKING_123" or "SUBSCRIPTION_456"
-  eventType: varchar("event_type", { length: 100}), // e.g., "PAID", "SETTLED", "FAILED"
+  eventId: varchar("event_id", { length: 255 }).notNull(), // External event ID from provider
+  externalId: varchar("external_id", { length: 255 }), // e.g., "BOOKING_123" or "SUBSCRIPTION_456"
+  eventType: varchar("event_type", { length: 100 }), // e.g., "PAID", "SETTLED", "FAILED"
   eventStatus: varchar("event_status", { length: 50 }).notNull(), // 'success' | 'failure' | 'pending'
 
   // Webhook payload (store original for audit)
@@ -1187,4 +1204,4 @@ export const webhookEventLogs = pgTable("webhook_event_logs", {
 });
 
 // Export CMS schema types and tables
-export * from "./cmsSchema.js";
+export * from "./cmsSchema";

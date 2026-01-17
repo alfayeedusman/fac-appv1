@@ -4,17 +4,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // Import routes
-import demoRoutes from "./routes/demo.js";
-import customerApiRoutes from "./routes/customer-api.js";
-import otpApiRoutes from "./routes/otp-api.js";
-import * as neonApiRoutes from "./routes/neon-api.js";
-import * as crewApiRoutes from "./routes/crew-api.js";
-import * as xenditApiRoutes from "./routes/xendit-api.js";
-import notificationsApiRoutes from "./routes/notifications-api.js";
-import imagesApiRoutes from "./routes/images-api.js";
-import cmsApiRoutes from "./routes/cms-api.js";
-import { seedBranches } from "./database/seed-branches.js";
-import { seedUsers } from "./database/seed-users.js";
+import demoRoutes from "./routes/demo";
+import customerApiRoutes from "./routes/customer-api";
+import otpApiRoutes from "./routes/otp-api";
+import * as neonApiRoutes from "./routes/neon-api";
+import * as crewApiRoutes from "./routes/crew-api";
+import * as xenditApiRoutes from "./routes/xendit-api";
+import notificationsApiRoutes from "./routes/notifications-api";
+import imagesApiRoutes from "./routes/images-api";
+import cmsApiRoutes from "./routes/cms-api";
+import { seedBranches } from "./database/seed-branches";
+import { seedUsers } from "./database/seed-users";
 import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);

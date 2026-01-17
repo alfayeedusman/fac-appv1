@@ -1,21 +1,21 @@
-import express from 'express';
-import mysql from 'mysql2/promise';
-import { z } from 'zod';
+import express from "express";
+import mysql from "mysql2/promise";
+import { z } from "zod";
 import { neonDbService } from "../services/neonDatabaseService";
 
 const router = express.Router();
 
 // Database connection configuration
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'fayeed_auto_care',
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "fayeed_auto_care",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   acquireTimeout: 60000,
-  reconnect: true
+  reconnect: true,
 };
 
 let pool: mysql.Pool;
@@ -23,7 +23,7 @@ let pool: mysql.Pool;
 try {
   pool = mysql.createPool(dbConfig);
 } catch (error) {
-  console.error('Database connection failed:', error);
+  console.error("Database connection failed:", error);
 }
 
 // Validation schemas
@@ -38,23 +38,50 @@ const LocationUpdateSchema = z.object({
   address: z.string().optional(),
   battery_level: z.number().int().min(0).max(100).optional(),
   signal_strength: z.number().int().min(0).max(100).optional(),
-  timestamp: z.string().datetime().optional()
+  timestamp: z.string().datetime().optional(),
 });
 
 const StatusUpdateSchema = z.object({
   crew_id: z.number().int().positive(),
-  status: z.enum(['online', 'offline', 'busy', 'available', 'break', 'emergency']),
+  status: z.enum([
+    "online",
+    "offline",
+    "busy",
+    "available",
+    "break",
+    "emergency",
+  ]),
   reason: z.string().optional(),
-  location_id: z.number().int().positive().optional()
+  location_id: z.number().int().positive().optional(),
 });
 
 const JobUpdateSchema = z.object({
   job_id: z.number().int().positive(),
-  status: z.enum(['pending', 'assigned', 'en_route', 'in_progress', 'completed', 'cancelled', 'on_hold']),
+  status: z.enum([
+    "pending",
+    "assigned",
+    "en_route",
+    "in_progress",
+    "completed",
+    "cancelled",
+    "on_hold",
+  ]),
   progress_percentage: z.number().min(0).max(100).optional(),
-  stage: z.enum(['preparation', 'pre_wash', 'washing', 'rinsing', 'drying', 'interior', 'detailing', 'inspection', 'completed']).optional(),
+  stage: z
+    .enum([
+      "preparation",
+      "pre_wash",
+      "washing",
+      "rinsing",
+      "drying",
+      "interior",
+      "detailing",
+      "inspection",
+      "completed",
+    ])
+    .optional(),
   notes: z.string().optional(),
-  photos: z.array(z.string()).optional()
+  photos: z.array(z.string()).optional(),
 });
 
 // ============================================================================
@@ -62,12 +89,12 @@ const JobUpdateSchema = z.object({
 // ============================================================================
 
 // Update crew location
-router.post('/crew/location', async (req, res) => {
+router.post("/crew/location", async (req, res) => {
   try {
     const validatedData = LocationUpdateSchema.parse(req.body);
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
       // Insert new location record
       const [result] = await connection.execute(
@@ -85,8 +112,8 @@ router.post('/crew/location', async (req, res) => {
           validatedData.address || null,
           validatedData.battery_level || null,
           validatedData.signal_strength || null,
-          validatedData.timestamp || new Date().toISOString()
-        ]
+          validatedData.timestamp || new Date().toISOString(),
+        ],
       );
 
       // Auto-update crew status to online if they were offline
@@ -97,41 +124,43 @@ router.post('/crew/location', async (req, res) => {
            SELECT 1 FROM crew_status 
            WHERE crew_id = ? AND ended_at IS NULL
          )`,
-        [validatedData.crew_id, (result as any).insertId, validatedData.crew_id]
+        [
+          validatedData.crew_id,
+          (result as any).insertId,
+          validatedData.crew_id,
+        ],
       );
 
       res.json({
         success: true,
         location_id: (result as any).insertId,
-        message: 'Location updated successfully'
+        message: "Location updated successfully",
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Location update error:', error);
+    console.error("Location update error:", error);
     if (error instanceof z.ZodError) {
-      res.status(400).json({ 
-        success: false, 
-        error: 'Invalid data', 
-        details: error.errors 
+      res.status(400).json({
+        success: false,
+        error: "Invalid data",
+        details: error.errors,
       });
     } else {
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to update location' 
+      res.status(500).json({
+        success: false,
+        error: "Failed to update location",
       });
     }
   }
 });
 
 // Get crew locations (real-time)
-router.get('/crew/locations', async (req, res) => {
+router.get("/crew/locations", async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    
+
     try {
       // Get latest location for each active crew member
       const [rows] = await connection.execute(`
@@ -186,18 +215,16 @@ router.get('/crew/locations', async (req, res) => {
       res.json({
         success: true,
         crews: rows,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Get locations error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get crew locations' 
+    console.error("Get locations error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get crew locations",
     });
   }
 });
@@ -207,19 +234,19 @@ router.get('/crew/locations', async (req, res) => {
 // ============================================================================
 
 // Update crew status
-router.post('/crew/status', async (req, res) => {
+router.post("/crew/status", async (req, res) => {
   try {
     const validatedData = StatusUpdateSchema.parse(req.body);
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
       await connection.beginTransaction();
 
       // Close any existing active status
       await connection.execute(
-        'UPDATE crew_status SET ended_at = NOW() WHERE crew_id = ? AND ended_at IS NULL',
-        [validatedData.crew_id]
+        "UPDATE crew_status SET ended_at = NOW() WHERE crew_id = ? AND ended_at IS NULL",
+        [validatedData.crew_id],
       );
 
       // Insert new status
@@ -230,8 +257,8 @@ router.post('/crew/status', async (req, res) => {
           validatedData.crew_id,
           validatedData.status,
           validatedData.reason || null,
-          validatedData.location_id || null
-        ]
+          validatedData.location_id || null,
+        ],
       );
 
       await connection.commit();
@@ -239,43 +266,42 @@ router.post('/crew/status', async (req, res) => {
       res.json({
         success: true,
         status_id: (result as any).insertId,
-        message: 'Status updated successfully'
+        message: "Status updated successfully",
       });
-      
     } catch (error) {
       await connection.rollback();
       throw error;
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Status update error:', error);
+    console.error("Status update error:", error);
     if (error instanceof z.ZodError) {
-      res.status(400).json({ 
-        success: false, 
-        error: 'Invalid data', 
-        details: error.errors 
+      res.status(400).json({
+        success: false,
+        error: "Invalid data",
+        details: error.errors,
       });
     } else {
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to update status' 
+      res.status(500).json({
+        success: false,
+        error: "Failed to update status",
       });
     }
   }
 });
 
 // Get crew status history
-router.get('/crew/:crewId/status-history', async (req, res) => {
+router.get("/crew/:crewId/status-history", async (req, res) => {
   try {
     const crewId = parseInt(req.params.crewId);
     const limit = parseInt(req.query.limit as string) || 50;
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
-      const [rows] = await connection.execute(`
+      const [rows] = await connection.execute(
+        `
         SELECT 
           cs.*,
           TIMESTAMPDIFF(MINUTE, cs.started_at, COALESCE(cs.ended_at, NOW())) as duration_minutes
@@ -283,22 +309,22 @@ router.get('/crew/:crewId/status-history', async (req, res) => {
         WHERE cs.crew_id = ?
         ORDER BY cs.started_at DESC
         LIMIT ?
-      `, [crewId, limit]);
+      `,
+        [crewId, limit],
+      );
 
       res.json({
         success: true,
-        history: rows
+        history: rows,
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Get status history error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get status history' 
+    console.error("Get status history error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get status history",
     });
   }
 });
@@ -308,44 +334,53 @@ router.get('/crew/:crewId/status-history', async (req, res) => {
 // ============================================================================
 
 // Update job status and progress
-router.post('/jobs/update', async (req, res) => {
+router.post("/jobs/update", async (req, res) => {
   try {
     const validatedData = JobUpdateSchema.parse(req.body);
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
       await connection.beginTransaction();
 
       // Update job status
-      const updateFields = ['status = ?'];
+      const updateFields = ["status = ?"];
       const updateValues = [validatedData.status];
 
-      if (validatedData.status === 'in_progress' && !validatedData.progress_percentage) {
-        updateFields.push('actual_start = NOW()');
-      } else if (validatedData.status === 'completed') {
-        updateFields.push('actual_end = NOW()');
+      if (
+        validatedData.status === "in_progress" &&
+        !validatedData.progress_percentage
+      ) {
+        updateFields.push("actual_start = NOW()");
+      } else if (validatedData.status === "completed") {
+        updateFields.push("actual_end = NOW()");
       }
 
       await connection.execute(
-        `UPDATE jobs SET ${updateFields.join(', ')} WHERE id = ?`,
-        [...updateValues, validatedData.job_id]
+        `UPDATE jobs SET ${updateFields.join(", ")} WHERE id = ?`,
+        [...updateValues, validatedData.job_id],
       );
 
       // Update job progress if provided
-      if (validatedData.stage || validatedData.progress_percentage !== undefined) {
+      if (
+        validatedData.stage ||
+        validatedData.progress_percentage !== undefined
+      ) {
         const progressData: any = {
           job_id: validatedData.job_id,
           progress_percentage: validatedData.progress_percentage || 0,
-          notes: validatedData.notes || null
+          notes: validatedData.notes || null,
         };
 
         if (validatedData.stage) {
           progressData.stage = validatedData.stage;
-          
+
           // Mark stage as in progress or completed
-          const stageStatus = validatedData.progress_percentage === 100 ? 'completed' : 'in_progress';
-          
+          const stageStatus =
+            validatedData.progress_percentage === 100
+              ? "completed"
+              : "in_progress";
+
           await connection.execute(
             `INSERT INTO job_progress (job_id, stage, status, started_at, completed_at, progress_percentage, notes, photos)
              VALUES (?, ?, ?, 
@@ -366,8 +401,8 @@ router.post('/jobs/update', async (req, res) => {
               stageStatus,
               validatedData.progress_percentage || 0,
               validatedData.notes || null,
-              JSON.stringify(validatedData.photos || [])
-            ]
+              JSON.stringify(validatedData.photos || []),
+            ],
           );
         }
       }
@@ -376,38 +411,36 @@ router.post('/jobs/update', async (req, res) => {
 
       res.json({
         success: true,
-        message: 'Job updated successfully'
+        message: "Job updated successfully",
       });
-      
     } catch (error) {
       await connection.rollback();
       throw error;
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Job update error:', error);
+    console.error("Job update error:", error);
     if (error instanceof z.ZodError) {
-      res.status(400).json({ 
-        success: false, 
-        error: 'Invalid data', 
-        details: error.errors 
+      res.status(400).json({
+        success: false,
+        error: "Invalid data",
+        details: error.errors,
       });
     } else {
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to update job' 
+      res.status(500).json({
+        success: false,
+        error: "Failed to update job",
       });
     }
   }
 });
 
 // Get active jobs with locations
-router.get('/jobs/active', async (req, res) => {
+router.get("/jobs/active", async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    
+
     try {
       const [rows] = await connection.execute(`
         SELECT 
@@ -463,18 +496,16 @@ router.get('/jobs/active', async (req, res) => {
       res.json({
         success: true,
         jobs: rows,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Get active jobs error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get active jobs' 
+    console.error("Get active jobs error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get active jobs",
     });
   }
 });
@@ -484,10 +515,10 @@ router.get('/jobs/active', async (req, res) => {
 // ============================================================================
 
 // Get dashboard statistics
-router.get('/dashboard/stats', async (req, res) => {
+router.get("/dashboard/stats", async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    
+
     try {
       // Get current statistics
       const [crewStats] = await connection.execute(`
@@ -530,20 +561,18 @@ router.get('/dashboard/stats', async (req, res) => {
         stats: {
           crew: crewStats[0],
           jobs: jobStats[0],
-          revenue: revenueStats[0]
+          revenue: revenueStats[0],
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get dashboard statistics' 
+    console.error("Get dashboard stats error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get dashboard statistics",
     });
   }
 });
@@ -552,12 +581,22 @@ router.get('/dashboard/stats', async (req, res) => {
 // WEBSOCKET NOTIFICATIONS (Basic HTTP endpoint for now)
 // ============================================================================
 
-import { triggerPusherEvent } from "../services/pusherService.js";
+import { triggerPusherEvent } from "../services/pusherService";
 
 // Send real-time message
-router.post('/messages/send', async (req, res) => {
+router.post("/messages/send", async (req, res) => {
   try {
-    const { job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority } = req.body;
+    const {
+      job_id,
+      sender_type,
+      sender_id,
+      recipient_type,
+      recipient_id,
+      message_type,
+      content,
+      metadata,
+      priority,
+    } = req.body;
 
     const connection = await pool.getConnection();
 
@@ -566,7 +605,17 @@ router.post('/messages/send', async (req, res) => {
         `INSERT INTO realtime_messages
          (job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [job_id || null, sender_type, sender_id, recipient_type, recipient_id || null, message_type, content, JSON.stringify(metadata || {}), priority || 'normal']
+        [
+          job_id || null,
+          sender_type,
+          sender_id,
+          recipient_type,
+          recipient_id || null,
+          message_type,
+          content,
+          JSON.stringify(metadata || {}),
+          priority || "normal",
+        ],
       );
 
       const messageId = (result as any).insertId;
@@ -574,7 +623,7 @@ router.post('/messages/send', async (req, res) => {
       res.json({
         success: true,
         message_id: messageId,
-        message: 'Message sent successfully'
+        message: "Message sent successfully",
       });
 
       // Fire-and-forget Pusher event
@@ -590,7 +639,7 @@ router.post('/messages/send', async (req, res) => {
             message_type,
             content,
             metadata: metadata || {},
-            priority: priority || 'normal',
+            priority: priority || "normal",
             created_at: new Date().toISOString(),
           };
 
@@ -599,65 +648,68 @@ router.post('/messages/send', async (req, res) => {
             const userChannel = `user-${recipient_type}-${recipient_id}`;
             const privateUserChannel = `private-user-${recipient_type}-${recipient_id}`;
             await Promise.all([
-              triggerPusherEvent(userChannel, 'new-message', payload),
-              triggerPusherEvent(privateUserChannel, 'new-message', payload),
+              triggerPusherEvent(userChannel, "new-message", payload),
+              triggerPusherEvent(privateUserChannel, "new-message", payload),
             ]);
           }
 
           // Also broadcast to a public realtime channel for admin dashboards
           await Promise.all([
-            triggerPusherEvent('public-realtime', 'new-message', payload),
-            triggerPusherEvent('private-public-realtime', 'new-message', payload),
+            triggerPusherEvent("public-realtime", "new-message", payload),
+            triggerPusherEvent(
+              "private-public-realtime",
+              "new-message",
+              payload,
+            ),
           ]);
         } catch (err) {
-          console.warn('⚠️ Failed to trigger Pusher event:', err);
+          console.warn("⚠️ Failed to trigger Pusher event:", err);
         }
       })();
-
     } finally {
       connection.release();
     }
-
   } catch (error) {
-    console.error('Send message error:', error);
+    console.error("Send message error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to send message'
+      error: "Failed to send message",
     });
   }
 });
 
 // Get recent messages
-router.get('/messages/:recipientType/:recipientId', async (req, res) => {
+router.get("/messages/:recipientType/:recipientId", async (req, res) => {
   try {
     const { recipientType, recipientId } = req.params;
     const limit = parseInt(req.query.limit as string) || 50;
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
-      const [rows] = await connection.execute(`
+      const [rows] = await connection.execute(
+        `
         SELECT *
         FROM realtime_messages
         WHERE recipient_type = ? AND (recipient_id = ? OR recipient_id IS NULL)
         ORDER BY created_at DESC
         LIMIT ?
-      `, [recipientType, recipientId, limit]);
+      `,
+        [recipientType, recipientId, limit],
+      );
 
       res.json({
         success: true,
-        messages: rows
+        messages: rows,
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
-    console.error('Get messages error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get messages' 
+    console.error("Get messages error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get messages",
     });
   }
 });
@@ -666,18 +718,22 @@ router.get('/messages/:recipientType/:recipientId', async (req, res) => {
 // AUTH: Pusher private channel auth endpoint
 // ============================================================================
 
-router.post('/pusher/auth', async (req, res) => {
+router.post("/pusher/auth", async (req, res) => {
   try {
     const { socket_id, channel_name } = req.body;
     if (!socket_id || !channel_name) {
-      return res.status(400).json({ success: false, error: 'socket_id and channel_name required' });
+      return res
+        .status(400)
+        .json({ success: false, error: "socket_id and channel_name required" });
     }
 
     const PUSHER_KEY = process.env.PUSHER_KEY;
     const PUSHER_SECRET = process.env.PUSHER_SECRET;
 
     if (!PUSHER_KEY || !PUSHER_SECRET) {
-      return res.status(500).json({ success: false, error: 'Pusher not configured' });
+      return res
+        .status(500)
+        .json({ success: false, error: "Pusher not configured" });
     }
 
     // Server-side authentication: prefer Authorization Bearer <token> header
@@ -685,63 +741,87 @@ router.post('/pusher/auth', async (req, res) => {
     let authenticatedUserId: string | null = null;
     let authenticatedUserRole: string | null = null;
 
-    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
+    const authHeader = (req.headers["authorization"] ||
+      req.headers["Authorization"]) as string | undefined;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
       try {
         const session = await neonDbService.getSessionByToken(token);
         if (!session || !session.isActive) {
-          return res.status(403).json({ success: false, error: 'Invalid or inactive session token' });
+          return res
+            .status(403)
+            .json({
+              success: false,
+              error: "Invalid or inactive session token",
+            });
         }
         const expiresAt = new Date(session.expiresAt);
         if (expiresAt < new Date()) {
-          return res.status(403).json({ success: false, error: 'Session token expired' });
+          return res
+            .status(403)
+            .json({ success: false, error: "Session token expired" });
         }
 
         const user = await neonDbService.getUserById(session.userId);
         if (!user) {
-          return res.status(403).json({ success: false, error: 'User not found for session' });
+          return res
+            .status(403)
+            .json({ success: false, error: "User not found for session" });
         }
 
         authenticatedUserId = user.id;
         authenticatedUserRole = user.role;
       } catch (sessionErr) {
-        console.warn('⚠️ Session validation error on pusher auth:', sessionErr);
-        return res.status(500).json({ success: false, error: 'Session validation failed' });
+        console.warn("⚠️ Session validation error on pusher auth:", sessionErr);
+        return res
+          .status(500)
+          .json({ success: false, error: "Session validation failed" });
       }
     } else {
       // Fallback to header-based checks (deprecated) for backward compatibility
-      const userIdHeader = req.headers['x-user-id'] as string | undefined;
-      const userRoleHeader = req.headers['x-user-role'] as string | undefined;
+      const userIdHeader = req.headers["x-user-id"] as string | undefined;
+      const userRoleHeader = req.headers["x-user-role"] as string | undefined;
       if (userIdHeader) authenticatedUserId = userIdHeader;
       if (userRoleHeader) authenticatedUserRole = userRoleHeader as string;
     }
 
     // Basic access control for private channels
-    if (channel_name.startsWith('private-user-customer-')) {
-      const parts = channel_name.split('private-user-customer-');
+    if (channel_name.startsWith("private-user-customer-")) {
+      const parts = channel_name.split("private-user-customer-");
       const channelUserId = parts[1];
       if (!authenticatedUserId || authenticatedUserId !== channelUserId) {
-        return res.status(403).json({ success: false, error: 'Unauthorized for this channel' });
+        return res
+          .status(403)
+          .json({ success: false, error: "Unauthorized for this channel" });
       }
     }
 
-    if (channel_name.startsWith('private-admin')) {
-      if (!authenticatedUserRole || !['admin', 'superadmin', 'manager'].includes(authenticatedUserRole)) {
-        return res.status(403).json({ success: false, error: 'Unauthorized for admin channel' });
+    if (channel_name.startsWith("private-admin")) {
+      if (
+        !authenticatedUserRole ||
+        !["admin", "superadmin", "manager"].includes(authenticatedUserRole)
+      ) {
+        return res
+          .status(403)
+          .json({ success: false, error: "Unauthorized for admin channel" });
       }
     }
 
     // Create signature
-    const crypto = await import('crypto');
+    const crypto = await import("crypto");
     const stringToSign = `${socket_id}:${channel_name}`;
-    const signature = crypto.createHmac('sha256', PUSHER_SECRET).update(stringToSign).digest('hex');
+    const signature = crypto
+      .createHmac("sha256", PUSHER_SECRET)
+      .update(stringToSign)
+      .digest("hex");
     const auth = `${PUSHER_KEY}:${signature}`;
 
     return res.json({ auth });
   } catch (error: any) {
-    console.error('Pusher auth error:', error);
-    res.status(500).json({ success: false, error: error.message || 'Internal error' });
+    console.error("Pusher auth error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: error.message || "Internal error" });
   }
 });
 
@@ -749,31 +829,29 @@ router.post('/pusher/auth', async (req, res) => {
 // HEALTH CHECK AND SYSTEM STATUS
 // ============================================================================
 
-router.get('/health', async (req, res) => {
+router.get("/health", async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    
+
     try {
-      await connection.execute('SELECT 1');
-      
+      await connection.execute("SELECT 1");
+
       res.json({
         success: true,
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date().toISOString(),
-        database: 'connected'
+        database: "connected",
       });
-      
     } finally {
       connection.release();
     }
-    
   } catch (error) {
     res.status(500).json({
       success: false,
-      status: 'unhealthy',
+      status: "unhealthy",
       timestamp: new Date().toISOString(),
-      database: 'disconnected',
-      error: error.message
+      database: "disconnected",
+      error: error.message,
     });
   }
 });

@@ -1,5 +1,5 @@
-import { getDatabase } from "./connection.js";
-import * as schema from "./schema.js";
+import { getDatabase } from "./connection";
+import * as schema from "./schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
