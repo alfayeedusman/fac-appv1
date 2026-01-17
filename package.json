@@ -23,7 +23,9 @@
     "start:dev": "tsx server/main-server.ts",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "setup:netlify": "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build",
+    "setup:netlify:clean": "rm -rf node_modules dist && npm run setup:netlify"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
