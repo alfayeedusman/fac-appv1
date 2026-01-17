@@ -6,16 +6,16 @@ on:
       - main
       - production
     paths:
-      - '.env.production'
-      - '.env.production.local'
-      - '.github/workflows/sync-netlify-env.yml'
-  workflow_dispatch:  # Allow manual trigger
+      - ".env.production"
+      - ".env.production.local"
+      - ".github/workflows/sync-netlify-env.yml"
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   sync-env:
     runs-on: ubuntu-latest
     name: Sync Environment Variables
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Check if Netlify CLI is installed
         run: |
@@ -41,7 +41,7 @@ jobs:
         run: |
           # Make script executable
           chmod +x scripts/sync-netlify-env.js
-          
+
           # Run sync script with skip confirmation flag
           node scripts/sync-netlify-env.js .env.production --skip-confirm
         env:

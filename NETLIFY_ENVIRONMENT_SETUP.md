@@ -17,15 +17,18 @@ Environment variables in Netlify are **NOT automatically imported** from a `.env
 ### For first-time setup or occasional updates:
 
 1. **Go to Netlify Dashboard**
+
    - Navigate to your site at https://app.netlify.com
    - Select your site
    - Go to **Site settings** → **Build & deploy** → **Environment**
 
 2. **Click "Edit variables"**
+
    - Add each environment variable from `.env.example`
    - For sensitive values (API keys, database URLs), use "**Scoped to: Production**" or "**Scoped to: Deploy previews**"
 
 3. **Required Environment Variables** (copy from `.env.example`):
+
    - `NEON_DATABASE_URL` - Your database connection string
    - `DATABASE_URL` - Same as above (some functions may use this)
    - `VITE_FIREBASE_*` - All Firebase frontend keys
@@ -69,6 +72,7 @@ netlify link
 ### Step 4: Set Environment Variables
 
 **Option A: Set individual variables**
+
 ```bash
 netlify env:set NEON_DATABASE_URL "postgresql://..."
 netlify env:set VITE_MAPBOX_TOKEN "pk.eyJ..."
@@ -79,10 +83,11 @@ netlify env:set XENDIT_SECRET_KEY "xnd_..."
 **Option B: Sync from local .env file (Recommended)**
 
 1. **Create `.env.production.local` in your project root:**
+
    ```bash
    # Copy template and fill in values
    cp .env.example .env.production.local
-   
+
    # Edit with your actual values
    nano .env.production.local
    ```
@@ -91,46 +96,48 @@ netlify env:set XENDIT_SECRET_KEY "xnd_..."
 
    ```javascript
    #!/usr/bin/env node
-   const fs = require('fs');
-   const path = require('path');
-   const { exec } = require('child_process');
-   const { promisify } = require('util');
+   const fs = require("fs");
+   const path = require("path");
+   const { exec } = require("child_process");
+   const { promisify } = require("util");
 
    const execAsync = promisify(exec);
 
    // Load environment file
-   const envFile = process.argv[2] || '.env.production.local';
-   
+   const envFile = process.argv[2] || ".env.production.local";
+
    if (!fs.existsSync(envFile)) {
      console.error(`❌ Error: ${envFile} not found`);
-     console.log('Create it first: cp .env.example .env.production.local');
+     console.log("Create it first: cp .env.example .env.production.local");
      process.exit(1);
    }
 
-   const envContent = fs.readFileSync(envFile, 'utf8');
-   const lines = envContent.split('\n');
+   const envContent = fs.readFileSync(envFile, "utf8");
+   const lines = envContent.split("\n");
 
    const variables = {};
-   
+
    for (const line of lines) {
      const trimmed = line.trim();
-     
+
      // Skip comments and empty lines
-     if (!trimmed || trimmed.startsWith('#')) continue;
-     
-     const [key, ...valueParts] = trimmed.split('=');
-     const value = valueParts.join('=').trim();
-     
+     if (!trimmed || trimmed.startsWith("#")) continue;
+
+     const [key, ...valueParts] = trimmed.split("=");
+     const value = valueParts.join("=").trim();
+
      if (key && value) {
        variables[key] = value;
      }
    }
 
-   console.log(`📝 Found ${Object.keys(variables).length} variables to sync...`);
-   console.log('Variables to set:');
-   Object.keys(variables).forEach(key => {
+   console.log(
+     `📝 Found ${Object.keys(variables).length} variables to sync...`,
+   );
+   console.log("Variables to set:");
+   Object.keys(variables).forEach((key) => {
      const value = variables[key];
-     const masked = value.length > 10 ? value.substring(0, 10) + '...' : value;
+     const masked = value.length > 10 ? value.substring(0, 10) + "..." : value;
      console.log(`  ✓ ${key} = ${masked}`);
    });
 
@@ -141,10 +148,10 @@ netlify env:set XENDIT_SECRET_KEY "xnd_..."
          await execAsync(`netlify env:set ${key} "${value}"`);
          console.log(`✅ ${key} set successfully`);
        }
-       console.log('\n🎉 All environment variables synced to Netlify!');
-       console.log('📢 Next step: Push your code and trigger a new deploy');
+       console.log("\n🎉 All environment variables synced to Netlify!");
+       console.log("📢 Next step: Push your code and trigger a new deploy");
      } catch (error) {
-       console.error('❌ Error syncing environment variables:', error.message);
+       console.error("❌ Error syncing environment variables:", error.message);
        process.exit(1);
      }
    })();
@@ -179,23 +186,23 @@ on:
   push:
     branches: [main]
     paths:
-      - '.env.production'
-      - '.env.production.local'
+      - ".env.production"
+      - ".env.production.local"
 
 jobs:
   sync-env:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
-      
+
       - name: Sync Environment Variables
         run: node scripts/sync-netlify-env.js .env.production
         env:
@@ -204,6 +211,7 @@ jobs:
 ```
 
 **Setup GitHub Secrets:**
+
 1. Go to GitHub repo → Settings → Secrets and variables → Actions
 2. Add these secrets:
    - `NETLIFY_AUTH_TOKEN`: Get from Netlify → Account → Applications → Tokens → Create new token
@@ -224,6 +232,7 @@ jobs:
 ### 📦 Organization
 
 1. **Local Development:**
+
    ```bash
    .env.local                # Git ignored - your local values
    .env.production.local     # Git ignored - production values
@@ -231,6 +240,7 @@ jobs:
    ```
 
 2. **Commit to Git:**
+
    ```bash
    # Add to .gitignore
    .env
@@ -247,12 +257,14 @@ jobs:
 ### 🔄 Workflow
 
 1. **Initial Setup:**
+
    ```bash
    netlify link
    node scripts/sync-netlify-env.js .env.production.local
    ```
 
 2. **For each update:**
+
    - Update `.env.production.local` locally
    - Run: `node scripts/sync-netlify-env.js .env.production.local`
    - Push code: `git push origin main`
@@ -268,14 +280,17 @@ jobs:
 ### Variables not working after deploy?
 
 1. **Check Netlify build logs:**
+
    - Site settings → Deploys → Click latest deploy → Deploy log
    - Look for environment variable loading
 
 2. **Verify in netlify.toml:**
+
    - Environment variables in `[build.environment]` are read-only
    - Dynamic vars must be set in Netlify UI or CLI
 
 3. **Clear cache and redeploy:**
+
    ```bash
    netlify deploy --prod --clear-cache
    ```
@@ -307,16 +322,16 @@ npx netlify-cli env:list
 
 ## Quick Reference
 
-| Task | Command |
-|------|---------|
-| Setup CLI | `netlify login` |
-| Link site | `netlify link` |
-| List variables | `netlify env:list` |
-| Set variable | `netlify env:set KEY value` |
-| Delete variable | `netlify env:unset KEY` |
-| Sync from file | `node scripts/sync-netlify-env.js .env.production.local` |
-| Deploy | `netlify deploy --prod` |
-| View logs | `netlify logs` |
+| Task            | Command                                                  |
+| --------------- | -------------------------------------------------------- |
+| Setup CLI       | `netlify login`                                          |
+| Link site       | `netlify link`                                           |
+| List variables  | `netlify env:list`                                       |
+| Set variable    | `netlify env:set KEY value`                              |
+| Delete variable | `netlify env:unset KEY`                                  |
+| Sync from file  | `node scripts/sync-netlify-env.js .env.production.local` |
+| Deploy          | `netlify deploy --prod`                                  |
+| View logs       | `netlify logs`                                           |
 
 ---
 

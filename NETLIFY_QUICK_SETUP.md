@@ -25,30 +25,35 @@ Choose your preferred method below:
 ### Use Netlify CLI for easier management
 
 **Prerequisites:**
+
 - [ ] Have npm or Homebrew installed
 - [ ] Netlify account created
 
 **Steps:**
 
 1. **Install Netlify CLI**
+
    ```bash
    npm install -g netlify-cli
    # or: brew install netlify-cli
    ```
 
 2. **Authenticate**
+
    ```bash
    netlify login
    # Opens browser for login
    ```
 
 3. **Link your site**
+
    ```bash
    netlify link
    # Select your site from the list
    ```
 
 4. **Set up your environment file**
+
    ```bash
    cp .env.example .env.production.local
    # Edit with your actual values
@@ -56,18 +61,21 @@ Choose your preferred method below:
    ```
 
 5. **Sync variables to Netlify**
+
    ```bash
    node scripts/sync-netlify-env.js .env.production.local
    # Confirm when prompted
    ```
 
 6. **Verify**
+
    ```bash
    netlify env:list
    # Should show all your variables
    ```
 
 7. **Push code**
+
    ```bash
    git add .
    git commit -m "Add env var sync script"
@@ -83,17 +91,20 @@ Choose your preferred method below:
 ### Use GitHub Actions for automatic syncing
 
 **Prerequisites:**
+
 - [ ] Repository connected to GitHub
 - [ ] Netlify authenticated
 
 **Steps:**
 
 1. **Get your Netlify tokens**
+
    - Go to https://app.netlify.com/account/applications/personal-access-tokens
    - Create a **Personal access token**
    - Copy the token
 
 2. **Add GitHub Secrets**
+
    - Go to your GitHub repo
    - Settings → **Secrets and variables** → **Actions**
    - Click **New repository secret**
@@ -101,6 +112,7 @@ Choose your preferred method below:
    - Add `NETLIFY_SITE_ID` (get from Netlify Site settings → General → Site ID)
 
 3. **Prepare environment file**
+
    ```bash
    cp .env.example .env.production
    # Edit with your actual values
@@ -108,6 +120,7 @@ Choose your preferred method below:
    ```
 
 4. **Push to GitHub**
+
    ```bash
    git add .github/workflows/sync-netlify-env.yml .env.production scripts/sync-netlify-env.js
    git commit -m "Add automated Netlify env sync"
@@ -115,6 +128,7 @@ Choose your preferred method below:
    ```
 
 5. **Verify workflow**
+
    - Go to GitHub repo → Actions tab
    - Should see "Sync Environment Variables to Netlify" running
    - Check if green checkmark appears
@@ -128,6 +142,7 @@ Choose your preferred method below:
 These variables are automatically managed:
 
 **Frontend (Client)**
+
 - `VITE_MAPBOX_TOKEN`
 - `VITE_FIREBASE_*`
 - `VITE_PUSHER_*`
@@ -137,6 +152,7 @@ These variables are automatically managed:
 - `VITE_CHAT_ENABLED`
 
 **Backend (Server)**
+
 - `NEON_DATABASE_URL` / `DATABASE_URL`
 - `FIREBASE_*` (admin SDK)
 - `PUSHER_*`
@@ -152,18 +168,22 @@ These variables are automatically managed:
 After setup, verify everything works:
 
 1. **Check Netlify Dashboard**
+
    ```
    https://app.netlify.com/sites/YOUR_SITE/settings/build
    ```
+
    Look for your variables in Environment section
 
 2. **Check build logs**
+
    ```
    Go to Deploys → Click latest deploy → Deploy log
    Should show variables being loaded
    ```
 
 3. **Test your app**
+
    - Visit your deployed site
    - Check if it connects to database
    - Verify payments work
@@ -192,15 +212,15 @@ After setup, verify everything works:
 
 ## 🆘 Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
+| Problem                            | Solution                                                                               |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
 | **Variables not appearing in app** | Check Netlify build logs. Redeploy manually. Variables take effect on new deploy only. |
-| **"Command not found: netlify"** | Install globally: `npm install -g netlify-cli` |
-| **"Not authenticated"** | Run `netlify login` and select your account |
-| **"Site not linked"** | Run `netlify link` in project directory |
-| **Sync script fails** | Check your `.env.production.local` exists and has valid format |
-| **Database connection fails** | Verify `NEON_DATABASE_URL` is correct and Neon allows Netlify IPs |
-| **Firebase errors** | Make sure all `FIREBASE_*` variables are set correctly |
+| **"Command not found: netlify"**   | Install globally: `npm install -g netlify-cli`                                         |
+| **"Not authenticated"**            | Run `netlify login` and select your account                                            |
+| **"Site not linked"**              | Run `netlify link` in project directory                                                |
+| **Sync script fails**              | Check your `.env.production.local` exists and has valid format                         |
+| **Database connection fails**      | Verify `NEON_DATABASE_URL` is correct and Neon allows Netlify IPs                      |
+| **Firebase errors**                | Make sure all `FIREBASE_*` variables are set correctly                                 |
 
 ---
 
@@ -213,8 +233,9 @@ For detailed info, see: [`NETLIFY_ENVIRONMENT_SETUP.md`](./NETLIFY_ENVIRONMENT_S
 ## 🎯 Your Next Step
 
 **Choose one:**
+
 - ⚡ **Fast?** → Use UI method (5 min)
-- 🔧 **Medium?** → Use Netlify CLI (10 min)  
+- 🔧 **Medium?** → Use Netlify CLI (10 min)
 - 🤖 **Want automation?** → Use GitHub Actions (15 min)
 
 Then verify with the ✅ Verification Steps above.

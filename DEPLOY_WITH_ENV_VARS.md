@@ -83,7 +83,7 @@
 
 ---
 
-## Method 1: Manual (UI) 
+## Method 1: Manual (UI)
 
 **Timeline: 5 minutes**
 
@@ -145,21 +145,21 @@ $ nano .env.production.local
 
 $ node scripts/sync-netlify-env.js .env.production.local
   📝 Found 25 variables in .env.production.local
-  
+
   Variables to sync:
     🔐 NEON_DATABASE_URL = postgresql://...
     🔐 XENDIT_SECRET_KEY = xnd_...
     🔐 FIREBASE_PRIVATE_KEY = -----BEGIN...
     ... more variables ...
-  
+
   Continue syncing to Netlify? (yes/no): yes
-  
+
   🚀 Syncing 25 variables to Netlify...
     ✅ VITE_MAPBOX_TOKEN
     ✅ NEON_DATABASE_URL
     ✅ FIREBASE_PROJECT_ID
     ... more success ...
-  
+
   ✅ Successfully synced: 25/25 variables
 
 $ netlify env:list
@@ -336,21 +336,22 @@ Your Local Machine
 
 ## Quick Reference Matrix
 
-| Aspect | Manual UI | Netlify CLI | GitHub Actions |
-|--------|-----------|-------------|----------------|
-| **Time** | 5 min | 10 min | 15 min (setup) |
-| **Setup** | Easy | Medium | Medium |
-| **Automation** | ❌ Manual | ⚠️ Per-update | ✅ Auto |
-| **Error-prone** | ⚠️ Risky | ✅ Safe | ✅ Safe |
-| **Best for** | Testing | Development | Production |
-| **Cost** | Free | Free | Free |
-| **Team-friendly** | ❌ No | ⚠️ Individual | ✅ Yes |
+| Aspect            | Manual UI | Netlify CLI   | GitHub Actions |
+| ----------------- | --------- | ------------- | -------------- |
+| **Time**          | 5 min     | 10 min        | 15 min (setup) |
+| **Setup**         | Easy      | Medium        | Medium         |
+| **Automation**    | ❌ Manual | ⚠️ Per-update | ✅ Auto        |
+| **Error-prone**   | ⚠️ Risky  | ✅ Safe       | ✅ Safe        |
+| **Best for**      | Testing   | Development   | Production     |
+| **Cost**          | Free      | Free          | Free           |
+| **Team-friendly** | ❌ No     | ⚠️ Individual | ✅ Yes         |
 
 ---
 
 ## After Setup
 
 ### First Deploy
+
 ```
 git push origin main
   ↓
@@ -362,6 +363,7 @@ App deployed and working!
 ```
 
 ### Later Updates
+
 ```
 Edit .env.production.local
   ↓
