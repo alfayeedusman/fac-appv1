@@ -552,7 +552,7 @@ router.get('/dashboard/stats', async (req, res) => {
 // WEBSOCKET NOTIFICATIONS (Basic HTTP endpoint for now)
 // ============================================================================
 
-import { triggerPusherEvent } from "../services/pusherService.js";
+import { triggerPusherEvent } from "../services/pusherService";
 
 // Send real-time message
 router.post('/messages/send', async (req, res) => {
