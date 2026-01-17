@@ -803,7 +803,7 @@ class NeonDatabaseClient {
 
     const tryCreate = async (url: string) => {
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 15000);
+      const timeoutHandler = createSafeTimeoutAbort(ac, 15000);
       try {
         const response = await fetch(url, {
           method: "POST",
@@ -811,7 +811,7 @@ class NeonDatabaseClient {
           body: JSON.stringify(bookingData),
           signal: ac.signal,
         });
-        clearTimeout(to);
+        timeoutHandler.clearTimeout();
         const ct = response.headers.get("content-type") || "";
         const data = ct.includes("application/json")
           ? await response.json()
@@ -836,7 +836,7 @@ class NeonDatabaseClient {
         this.isConnected = true;
         return data;
       } catch (e: any) {
-        clearTimeout(to);
+        timeoutHandler.clearTimeout();
         if (e?.name === "AbortError") {
           return {
             success: false,
