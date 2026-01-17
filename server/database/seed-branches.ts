@@ -13,9 +13,13 @@ export async function seedBranches() {
 
     // Check if branches already exist
     const existingBranches = await db.select().from(schema.branches);
-    
+
     if (existingBranches.length > 0) {
-      console.log("✅ Branches already exist:", existingBranches.length, "branches found");
+      console.log(
+        "✅ Branches already exist:",
+        existingBranches.length,
+        "branches found",
+      );
       return;
     }
 
@@ -38,8 +42,18 @@ export async function seedBranches() {
         managerName: "Juan Dela Cruz",
         managerPhone: "+63 962 123 4567",
         capacity: 15,
-        services: ["Classic Wash", "VIP Silver", "VIP Gold", "Premium Detail", "Graphene Coating"],
-        specializations: ["Auto Detailing", "Paint Protection", "Interior Cleaning"],
+        services: [
+          "Classic Wash",
+          "VIP Silver",
+          "VIP Gold",
+          "Premium Detail",
+          "Graphene Coating",
+        ],
+        specializations: [
+          "Auto Detailing",
+          "Paint Protection",
+          "Interior Cleaning",
+        ],
         operatingHours: {
           monday: { open: "07:00", close: "19:00" },
           tuesday: { open: "07:00", close: "19:00" },
@@ -47,7 +61,7 @@ export async function seedBranches() {
           thursday: { open: "07:00", close: "19:00" },
           friday: { open: "07:00", close: "19:00" },
           saturday: { open: "07:00", close: "19:00" },
-          sunday: { open: "08:00", close: "18:00" }
+          sunday: { open: "08:00", close: "18:00" },
         },
         isActive: true,
         isMainBranch: true,
@@ -59,7 +73,7 @@ export async function seedBranches() {
       },
       {
         name: "Boalan Branch",
-        code: "BOA01", 
+        code: "BOA01",
         type: "full_service",
         address: "Boalan Road, Zamboanga City, Philippines",
         city: "Zamboanga City",
@@ -83,7 +97,7 @@ export async function seedBranches() {
           thursday: { open: "08:00", close: "18:00" },
           friday: { open: "08:00", close: "18:00" },
           saturday: { open: "08:00", close: "18:00" },
-          sunday: { open: "09:00", close: "17:00" }
+          sunday: { open: "09:00", close: "17:00" },
         },
         isActive: true,
         isMainBranch: false,
@@ -92,7 +106,7 @@ export async function seedBranches() {
         hasWaitingArea: true,
         has24HourService: false,
         images: [],
-      }
+      },
     ];
 
     // Insert branches
@@ -105,7 +119,6 @@ export async function seedBranches() {
 
     // Now seed some users for these branches
     await seedBranchUsers(db, insertedBranches);
-
   } catch (error) {
     console.error("❌ Error seeding branches:", error);
     throw error;
@@ -118,7 +131,7 @@ async function seedBranchUsers(db: any, branches: any[]) {
 
     // Check if users already exist
     const existingUsers = await db.select().from(schema.users);
-    
+
     if (existingUsers.length > 10) {
       console.log("✅ Users already exist, skipping user seeding");
       return;
@@ -145,7 +158,7 @@ async function seedBranchUsers(db: any, branches: any[]) {
         subscriptionStatus: "basic",
       },
       {
-        email: "customer2@tumaga.com", 
+        email: "customer2@tumaga.com",
         fullName: "John Dela Cruz",
         password: hashedPassword,
         role: "user",
@@ -200,7 +213,7 @@ async function seedBranchUsers(db: any, branches: any[]) {
         crewStatus: "available",
       },
 
-      // Boalan Branch Users  
+      // Boalan Branch Users
       {
         email: "customer1@boalan.com",
         fullName: "Ana Rodriguez",
@@ -264,8 +277,11 @@ async function seedBranchUsers(db: any, branches: any[]) {
       .values(sampleUsers)
       .returning();
 
-    console.log("✅ Successfully seeded", insertedUsers.length, "users for branches");
-
+    console.log(
+      "✅ Successfully seeded",
+      insertedUsers.length,
+      "users for branches",
+    );
   } catch (error) {
     console.error("❌ Error seeding branch users:", error);
     // Don't throw - users are optional

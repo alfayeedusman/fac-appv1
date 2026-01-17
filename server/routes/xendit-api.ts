@@ -7,1161 +7,18 @@ import { triggerPusherEvent } from "../services/pusherService";
 const router = express.Router();
 
 // Helper to emit events (fire and forget)
-const emitPusher = async (channel: string | string[], eventName: string, payload: any) => {
+const emitPusher = async (
+  channel: string | string[],
+  eventName: string,
+  payload: any,
+) => {
   try {
     const res = await triggerPusherEvent(channel, eventName, payload);
-    if (!res.success) console.warn('Pusher emit failed:', res.error);
+    if (!res.success) console.warn("Pusher emit failed:", res.error);
   } catch (e) {
-    console.warn('Pusher emit error:', e);
+    console.warn("Pusher emit error:", e);
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Xendit Secret Key (use environment variable in production)
 const XENDIT_SECRET_KEY =
@@ -1173,7 +30,9 @@ const XENDIT_API_URL = "https://api.xendit.co/v2";
 const getDb = () => getDatabase();
 
 // Cache for available payment methods to speed up responses
-const PAYMENT_METHODS_CACHE_TTL = Number(process.env.XENDIT_METHODS_CACHE_TTL_SECONDS || 300); // default 5 minutes
+const PAYMENT_METHODS_CACHE_TTL = Number(
+  process.env.XENDIT_METHODS_CACHE_TTL_SECONDS || 300,
+); // default 5 minutes
 let paymentMethodsCache: { methods: any[]; expiresAt: number } | null = null;
 let paymentMethodsRefreshInProgress = false;
 
@@ -1184,58 +43,79 @@ async function refreshPaymentMethodsCache() {
   paymentMethodsRefreshInProgress = true;
 
   try {
-    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes("YOUR_SECRET_KEY")) {
       // Nothing to refresh from Xendit; set fallback and return
       const fallback = [
-        { id: 'card', label: 'Credit / Debit Card' },
-        { id: 'gcash', label: 'GCash (e-wallet)' },
-        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-        { id: 'bank_transfer', label: 'Bank Transfer' },
-        { id: 'offline', label: 'Pay at Counter (Cash)' },
+        { id: "card", label: "Credit / Debit Card" },
+        { id: "gcash", label: "GCash (e-wallet)" },
+        { id: "paymaya", label: "PayMaya (e-wallet)" },
+        { id: "bank_transfer", label: "Bank Transfer" },
+        { id: "offline", label: "Pay at Counter (Cash)" },
       ];
-      paymentMethodsCache = { methods: fallback, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
+      paymentMethodsCache = {
+        methods: fallback,
+        expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000,
+      };
       return;
     }
 
     const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
     const resp = await fetch(url, {
       headers: {
-        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
-        'Content-Type': 'application/json',
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ":").toString("base64")}`,
+        "Content-Type": "application/json",
       },
     });
 
     if (!resp.ok) {
-      const text = await resp.text().catch(() => '');
-      console.warn('Background refresh: Xendit returned non-ok status', resp.status, text);
+      const text = await resp.text().catch(() => "");
+      console.warn(
+        "Background refresh: Xendit returned non-ok status",
+        resp.status,
+        text,
+      );
       return;
     }
 
     const data = await resp.json().catch(() => null);
     if (!data) {
-      console.warn('Background refresh: invalid JSON from Xendit');
+      console.warn("Background refresh: invalid JSON from Xendit");
       return;
     }
 
-    const list = Array.isArray(data) ? data : data.available_payment_methods || data.payment_methods || [];
+    const list = Array.isArray(data)
+      ? data
+      : data.available_payment_methods || data.payment_methods || [];
     const methods = (list || []).map((m: any) => {
-      const id = (m.code || m.id || m.payment_method || m.type || m.name || '').toString().toLowerCase();
-      const label = m.name || m.display_name || m.label || m.payment_method || m.id || id;
+      const id = (m.code || m.id || m.payment_method || m.type || m.name || "")
+        .toString()
+        .toLowerCase();
+      const label =
+        m.name || m.display_name || m.label || m.payment_method || m.id || id;
       return { id, label };
     });
 
-    const finalMethods = methods && methods.length > 0 ? methods : [
-      { id: 'card', label: 'Credit / Debit Card' },
-      { id: 'gcash', label: 'GCash (e-wallet)' },
-      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-      { id: 'bank_transfer', label: 'Bank Transfer' },
-      { id: 'offline', label: 'Pay at Counter (Cash)' },
-    ];
+    const finalMethods =
+      methods && methods.length > 0
+        ? methods
+        : [
+            { id: "card", label: "Credit / Debit Card" },
+            { id: "gcash", label: "GCash (e-wallet)" },
+            { id: "paymaya", label: "PayMaya (e-wallet)" },
+            { id: "bank_transfer", label: "Bank Transfer" },
+            { id: "offline", label: "Pay at Counter (Cash)" },
+          ];
 
-    paymentMethodsCache = { methods: finalMethods, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
-    console.log('✅ Payment methods cache refreshed (background) -', finalMethods.map(m => m.id).join(', '));
+    paymentMethodsCache = {
+      methods: finalMethods,
+      expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000,
+    };
+    console.log(
+      "✅ Payment methods cache refreshed (background) -",
+      finalMethods.map((m) => m.id).join(", "),
+    );
   } catch (err) {
-    console.warn('⚠️ Background refresh error:', err);
+    console.warn("⚠️ Background refresh error:", err);
   } finally {
     paymentMethodsRefreshInProgress = false;
   }
@@ -1263,90 +143,122 @@ async function refreshPaymentMethodsCache() {
 // List payment methods supported by Xendit (frontend helper - dynamic with caching)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
   try {
-    const forceRefresh = req.query.refresh === 'true';
+    const forceRefresh = req.query.refresh === "true";
 
     // Return cached if valid and not forced
     const now = Date.now();
-    if (!forceRefresh && paymentMethodsCache && paymentMethodsCache.expiresAt > now) {
-      return res.json({ success: true, methods: paymentMethodsCache.methods, source: 'cache' });
+    if (
+      !forceRefresh &&
+      paymentMethodsCache &&
+      paymentMethodsCache.expiresAt > now
+    ) {
+      return res.json({
+        success: true,
+        methods: paymentMethodsCache.methods,
+        source: "cache",
+      });
     }
 
     // If Xendit key is not configured, return a reasonable fallback (and cache it briefly)
-    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes('YOUR_SECRET_KEY')) {
+    if (!XENDIT_SECRET_KEY || XENDIT_SECRET_KEY.includes("YOUR_SECRET_KEY")) {
       const fallback = [
-        { id: 'card', label: 'Credit / Debit Card' },
-        { id: 'gcash', label: 'GCash (e-wallet)' },
-        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-        { id: 'bank_transfer', label: 'Bank Transfer' },
-        { id: 'offline', label: 'Pay at Counter (Cash)' },
+        { id: "card", label: "Credit / Debit Card" },
+        { id: "gcash", label: "GCash (e-wallet)" },
+        { id: "paymaya", label: "PayMaya (e-wallet)" },
+        { id: "bank_transfer", label: "Bank Transfer" },
+        { id: "offline", label: "Pay at Counter (Cash)" },
       ];
-      paymentMethodsCache = { methods: fallback, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
-      return res.json({ success: true, methods: fallback, source: 'fallback' });
+      paymentMethodsCache = {
+        methods: fallback,
+        expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000,
+      };
+      return res.json({ success: true, methods: fallback, source: "fallback" });
     }
 
     const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
     const response = await fetch(url, {
       headers: {
-        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')}`,
-        'Content-Type': 'application/json',
+        Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ":").toString("base64")}`,
+        "Content-Type": "application/json",
       },
       // small timeout via AbortController could be added, but keep simple here
     });
 
     if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      console.warn('Xendit available_payment_methods returned non-ok status', response.status, text);
+      const text = await response.text().catch(() => "");
+      console.warn(
+        "Xendit available_payment_methods returned non-ok status",
+        response.status,
+        text,
+      );
       // Fallback
       const fallback = [
-        { id: 'card', label: 'Credit / Debit Card' },
-        { id: 'gcash', label: 'GCash (e-wallet)' },
-        { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-        { id: 'bank_transfer', label: 'Bank Transfer' },
-        { id: 'offline', label: 'Pay at Counter (Cash)' },
+        { id: "card", label: "Credit / Debit Card" },
+        { id: "gcash", label: "GCash (e-wallet)" },
+        { id: "paymaya", label: "PayMaya (e-wallet)" },
+        { id: "bank_transfer", label: "Bank Transfer" },
+        { id: "offline", label: "Pay at Counter (Cash)" },
       ];
-      paymentMethodsCache = { methods: fallback, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
-      return res.json({ success: true, methods: fallback, source: 'fallback' });
+      paymentMethodsCache = {
+        methods: fallback,
+        expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000,
+      };
+      return res.json({ success: true, methods: fallback, source: "fallback" });
     }
 
     const data = await response.json().catch(() => null);
     if (!data) {
-      throw new Error('Invalid response from Xendit');
+      throw new Error("Invalid response from Xendit");
     }
 
     // The response may be an array or an object containing a list
-    const list = Array.isArray(data) ? data : data.available_payment_methods || data.payment_methods || [];
+    const list = Array.isArray(data)
+      ? data
+      : data.available_payment_methods || data.payment_methods || [];
 
     // Map Xendit entries to {id,label}
     const methods = (list || []).map((m: any) => {
-      const id = (m.code || m.id || m.payment_method || m.type || m.name || '').toString().toLowerCase();
-      const label = m.name || m.display_name || m.label || m.payment_method || m.id || id;
+      const id = (m.code || m.id || m.payment_method || m.type || m.name || "")
+        .toString()
+        .toLowerCase();
+      const label =
+        m.name || m.display_name || m.label || m.payment_method || m.id || id;
       return { id, label };
     });
 
     // If mapping produced no results, fallback to defaults
-    const finalMethods = methods && methods.length > 0 ? methods : [
-      { id: 'card', label: 'Credit / Debit Card' },
-      { id: 'gcash', label: 'GCash (e-wallet)' },
-      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-      { id: 'bank_transfer', label: 'Bank Transfer' },
-      { id: 'offline', label: 'Pay at Counter (Cash)' },
-    ];
+    const finalMethods =
+      methods && methods.length > 0
+        ? methods
+        : [
+            { id: "card", label: "Credit / Debit Card" },
+            { id: "gcash", label: "GCash (e-wallet)" },
+            { id: "paymaya", label: "PayMaya (e-wallet)" },
+            { id: "bank_transfer", label: "Bank Transfer" },
+            { id: "offline", label: "Pay at Counter (Cash)" },
+          ];
 
-    paymentMethodsCache = { methods: finalMethods, expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000 };
+    paymentMethodsCache = {
+      methods: finalMethods,
+      expiresAt: now + PAYMENT_METHODS_CACHE_TTL * 1000,
+    };
 
-    res.json({ success: true, methods: finalMethods, source: 'xendit' });
+    res.json({ success: true, methods: finalMethods, source: "xendit" });
   } catch (error: any) {
-    console.error('List payment methods error:', error);
+    console.error("List payment methods error:", error);
     const fallback = [
-      { id: 'card', label: 'Credit / Debit Card' },
-      { id: 'gcash', label: 'GCash (e-wallet)' },
-      { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-      { id: 'bank_transfer', label: 'Bank Transfer' },
-      { id: 'offline', label: 'Pay at Counter (Cash)' },
+      { id: "card", label: "Credit / Debit Card" },
+      { id: "gcash", label: "GCash (e-wallet)" },
+      { id: "paymaya", label: "PayMaya (e-wallet)" },
+      { id: "bank_transfer", label: "Bank Transfer" },
+      { id: "offline", label: "Pay at Counter (Cash)" },
     ];
     // Cache fallback briefly to avoid repeated failing calls
-    paymentMethodsCache = { methods: fallback, expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000 };
-    res.json({ success: true, methods: fallback, source: 'fallback' });
+    paymentMethodsCache = {
+      methods: fallback,
+      expiresAt: Date.now() + PAYMENT_METHODS_CACHE_TTL * 1000,
+    };
+    res.json({ success: true, methods: fallback, source: "fallback" });
   }
 };
 
@@ -1408,7 +320,8 @@ export const createInvoice: RequestHandler = async (req, res) => {
     // If client provided a preferred payment method, attach it to metadata for tracking
     if (req.body.preferred_payment_method) {
       payload.metadata = payload.metadata || {};
-      payload.metadata.preferred_payment_method = req.body.preferred_payment_method;
+      payload.metadata.preferred_payment_method =
+        req.body.preferred_payment_method;
     }
 
     console.log("📤 Sending request to Xendit API...");
@@ -1525,20 +438,28 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 
     // If webhook token is configured, require clients to present it.
     try {
-      const headerToken = (req.headers['x-callback-token'] || req.headers['x-callback-token'.toLowerCase()]) as string | undefined;
+      const headerToken = (req.headers["x-callback-token"] ||
+        req.headers["x-callback-token".toLowerCase()]) as string | undefined;
       if (XENDIT_WEBHOOK_TOKEN) {
         if (!headerToken || headerToken !== XENDIT_WEBHOOK_TOKEN) {
-          console.warn('Unauthorized Xendit webhook - invalid token');
-          return res.status(401).json({ success: false, error: 'Unauthorized webhook request' });
+          console.warn("Unauthorized Xendit webhook - invalid token");
+          return res
+            .status(401)
+            .json({ success: false, error: "Unauthorized webhook request" });
         }
       }
     } catch (verifyErr) {
-      console.warn('Webhook verification failed:', verifyErr);
-      return res.status(401).json({ success: false, error: 'Webhook verification failed' });
+      console.warn("Webhook verification failed:", verifyErr);
+      return res
+        .status(401)
+        .json({ success: false, error: "Webhook verification failed" });
     }
 
     // Log event type only (avoid dumping entire payload)
-    console.log('🔔 Xendit webhook received (type):', event?.type || event?.event || 'unknown');
+    console.log(
+      "🔔 Xendit webhook received (type):",
+      event?.type || event?.event || "unknown",
+    );
 
     const db = getDb();
     const externalId = event.external_id;
@@ -1598,9 +519,14 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             createdAt: new Date(),
             readBy: [],
           });
-          console.log(`✅ System notification created for payment on booking ${bookingId}`);
+          console.log(
+            `✅ System notification created for payment on booking ${bookingId}`,
+          );
         } catch (notifErr) {
-          console.warn(`⚠️ Failed to create notification for booking ${bookingId}:`, notifErr);
+          console.warn(
+            `⚠️ Failed to create notification for booking ${bookingId}:`,
+            notifErr,
+          );
         }
 
         // Create POS transaction for sales tracking
@@ -1625,12 +551,17 @@ export const handleWebhook: RequestHandler = async (req, res) => {
               bookingType: updatedBooking.type,
               bookingConfirmation: updatedBooking.confirmationCode,
               service: updatedBooking.service,
-              guestInfo: updatedBooking.type === "guest" ? updatedBooking.guestInfo : null,
+              guestInfo:
+                updatedBooking.type === "guest"
+                  ? updatedBooking.guestInfo
+                  : null,
             },
           };
 
           await db.insert(schema.posTransactions).values(posTransaction);
-          console.log(`✅ POS transaction created for booking ${bookingId} payment`);
+          console.log(
+            `✅ POS transaction created for booking ${bookingId} payment`,
+          );
 
           // Create POS transaction item for the booking service
           await db.insert(schema.posTransactionItems).values({
@@ -1640,7 +571,10 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             productName: updatedBooking.service,
             quantity: 1,
             unitPrice: updatedBooking.basePrice || updatedBooking.totalPrice,
-            discount: updatedBooking.basePrice && updatedBooking.totalPrice ? updatedBooking.basePrice - updatedBooking.totalPrice : 0,
+            discount:
+              updatedBooking.basePrice && updatedBooking.totalPrice
+                ? updatedBooking.basePrice - updatedBooking.totalPrice
+                : 0,
             subtotal: updatedBooking.totalPrice,
             createdAt: new Date(),
           });
@@ -1648,33 +582,40 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           // Emit POS transaction event for dashboard updates
           (async () => {
             try {
-              await emitPusher(['public-realtime', 'admin-dashboard'], 'pos.transaction.created', {
-                transactionId: posTransaction.id,
-                totalAmount: posTransaction.totalAmount,
-                bookingId,
-              });
+              await emitPusher(
+                ["public-realtime", "admin-dashboard"],
+                "pos.transaction.created",
+                {
+                  transactionId: posTransaction.id,
+                  totalAmount: posTransaction.totalAmount,
+                  bookingId,
+                },
+              );
             } catch (err) {
-              console.warn('Failed to emit POS transaction pusher event:', err);
+              console.warn("Failed to emit POS transaction pusher event:", err);
             }
           })();
         } catch (posErr) {
-          console.warn(`⚠️ Failed to create POS transaction for booking ${bookingId}:`, posErr);
+          console.warn(
+            `⚠️ Failed to create POS transaction for booking ${bookingId}:`,
+            posErr,
+          );
         }
 
         // Emit Pusher event for booking update
         (async () => {
           try {
-            const channels = ['public-realtime', 'admin-dashboard'];
+            const channels = ["public-realtime", "admin-dashboard"];
             if (updatedBooking.userId) {
               channels.push(`user-customer-${updatedBooking.userId}`);
             }
-            await emitPusher(channels, 'booking.updated', {
+            await emitPusher(channels, "booking.updated", {
               bookingId,
               paymentStatus: updatedBooking.paymentStatus,
               booking: updatedBooking,
             });
           } catch (err) {
-            console.warn('Failed to emit booking pusher event:', err);
+            console.warn("Failed to emit booking pusher event:", err);
           }
         })();
       } else if (event.status === "EXPIRED" || event.status === "FAILED") {
@@ -1690,17 +631,24 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           .where(eq(schema.bookings.id, bookingId))
           .returning();
 
-        console.log(`📝 Booking ${bookingId} marked as failed:`, updatedBooking);
+        console.log(
+          `📝 Booking ${bookingId} marked as failed:`,
+          updatedBooking,
+        );
 
         (async () => {
           try {
-            await emitPusher([`user-customer-${updatedBooking.userId}`, 'public-realtime'], 'booking.updated', {
-              bookingId,
-              paymentStatus: updatedBooking.paymentStatus,
-              booking: updatedBooking,
-            });
+            await emitPusher(
+              [`user-customer-${updatedBooking.userId}`, "public-realtime"],
+              "booking.updated",
+              {
+                bookingId,
+                paymentStatus: updatedBooking.paymentStatus,
+                booking: updatedBooking,
+              },
+            );
           } catch (err) {
-            console.warn('Failed to emit booking pusher event:', err);
+            console.warn("Failed to emit booking pusher event:", err);
           }
         })();
       }
@@ -1734,20 +682,24 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             .where(eq(schema.packageSubscriptions.id, subscriptionId))
             .returning();
 
-          console.log(
-            `📝 Subscription ${subscriptionId} renewed:`,
-            updated,
-          );
+          console.log(`📝 Subscription ${subscriptionId} renewed:`, updated);
 
           // Emit Pusher event for subscription update
           (async () => {
             try {
-              await emitPusher([`user-customer-${updated.user_id || updated.userId}`, 'public-realtime'], 'subscription.renewed', {
-                subscriptionId,
-                subscription: updated,
-              });
+              await emitPusher(
+                [
+                  `user-customer-${updated.user_id || updated.userId}`,
+                  "public-realtime",
+                ],
+                "subscription.renewed",
+                {
+                  subscriptionId,
+                  subscription: updated,
+                },
+              );
             } catch (err) {
-              console.warn('Failed to emit subscription pusher event:', err);
+              console.warn("Failed to emit subscription pusher event:", err);
             }
           })();
         }
@@ -1769,12 +721,19 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 
         (async () => {
           try {
-            await emitPusher([`user-customer-${updated.user_id || updated.userId}`, 'public-realtime'], 'subscription.failed', {
-              subscriptionId,
-              subscription: updated,
-            });
+            await emitPusher(
+              [
+                `user-customer-${updated.user_id || updated.userId}`,
+                "public-realtime",
+              ],
+              "subscription.failed",
+              {
+                subscriptionId,
+                subscription: updated,
+              },
+            );
           } catch (err) {
-            console.warn('Failed to emit subscription pusher event:', err);
+            console.warn("Failed to emit subscription pusher event:", err);
           }
         })();
       }
@@ -1784,23 +743,26 @@ export const handleWebhook: RequestHandler = async (req, res) => {
     if (isNewEvent) {
       const processingTimeMs = Date.now() - startTime;
       try {
-        await db
-          .insert(schema.webhookEventLogs)
-          .values({
-            provider: 'xendit',
-            eventId: eventId,
-            externalId: externalId || null,
-            eventType: event.status || event.type || null,
-            eventStatus: 'success',
-            payload: event,
-            processingTimeMs: processingTimeMs,
-            result: dbResult,
-            ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || null,
-            userAgent: req.headers['user-agent'] || null,
-          });
-        console.log(`📋 Webhook event logged for idempotency: ${eventId} (${processingTimeMs}ms)`);
+        await db.insert(schema.webhookEventLogs).values({
+          provider: "xendit",
+          eventId: eventId,
+          externalId: externalId || null,
+          eventType: event.status || event.type || null,
+          eventStatus: "success",
+          payload: event,
+          processingTimeMs: processingTimeMs,
+          result: dbResult,
+          ipAddress:
+            (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+            req.socket.remoteAddress ||
+            null,
+          userAgent: req.headers["user-agent"] || null,
+        });
+        console.log(
+          `📋 Webhook event logged for idempotency: ${eventId} (${processingTimeMs}ms)`,
+        );
       } catch (logErr) {
-        console.warn('Failed to log webhook event:', logErr);
+        console.warn("Failed to log webhook event:", logErr);
         // Don't fail the entire webhook if logging fails
       }
     }
@@ -1812,24 +774,26 @@ export const handleWebhook: RequestHandler = async (req, res) => {
     const processingTimeMs = Date.now() - startTime;
     try {
       if (isNewEvent) {
-        const eventId = req.body?.id || req.body?.reference_id || `xendit-${Date.now()}`;
-        await db
-          .insert(schema.webhookEventLogs)
-          .values({
-            provider: 'xendit',
-            eventId: eventId,
-            externalId: req.body?.external_id || null,
-            eventType: req.body?.status || req.body?.type || null,
-            eventStatus: 'failure',
-            payload: req.body,
-            processingTimeMs: processingTimeMs,
-            errorMessage: error.message || 'Unknown error',
-            ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || null,
-            userAgent: req.headers['user-agent'] || null,
-          });
+        const eventId =
+          req.body?.id || req.body?.reference_id || `xendit-${Date.now()}`;
+        await db.insert(schema.webhookEventLogs).values({
+          provider: "xendit",
+          eventId: eventId,
+          externalId: req.body?.external_id || null,
+          eventType: req.body?.status || req.body?.type || null,
+          eventStatus: "failure",
+          payload: req.body,
+          processingTimeMs: processingTimeMs,
+          errorMessage: error.message || "Unknown error",
+          ipAddress:
+            (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+            req.socket.remoteAddress ||
+            null,
+          userAgent: req.headers["user-agent"] || null,
+        });
       }
     } catch (logErr) {
-      console.warn('Failed to log failed webhook event:', logErr);
+      console.warn("Failed to log failed webhook event:", logErr);
     }
 
     console.error("❌ Webhook handler error:", error);
@@ -1880,7 +844,9 @@ export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
     const { bookingId } = req.params;
 
     if (!bookingId) {
-      return res.status(400).json({ success: false, error: "bookingId required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "bookingId required" });
     }
 
     const db = getDb();
@@ -1890,7 +856,9 @@ export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
       .where(eq(schema.bookings.id, bookingId));
 
     if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Booking not found" });
     }
 
     res.json({
@@ -1907,7 +875,10 @@ export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
 };
 
 // Check subscription payment status
-export const checkSubscriptionPaymentStatus: RequestHandler = async (req, res) => {
+export const checkSubscriptionPaymentStatus: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { subscriptionId } = req.params;
 
@@ -1974,7 +945,8 @@ export const createSubscriptionInvoice: RequestHandler = async (req, res) => {
       external_id: `SUBSCRIPTION_${subscriptionId}`,
       amount,
       payer_email: customerEmail,
-      description: description || `Subscription Renewal - ${customerName || "Customer"}`,
+      description:
+        description || `Subscription Renewal - ${customerName || "Customer"}`,
       customer: {
         given_names: customerName || "Customer",
         email: customerEmail,

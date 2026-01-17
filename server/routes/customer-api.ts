@@ -21,7 +21,7 @@ router.get("/health", async (req, res) => {
       services: {
         neon: "connected",
         firebase: "mock-connected",
-        stats
+        stats,
       },
     });
   } catch (error) {
@@ -29,18 +29,18 @@ router.get("/health", async (req, res) => {
       status: "unhealthy",
       system: "neon-database",
       timestamp: new Date().toISOString(),
-      error: "Database connection failed"
+      error: "Database connection failed",
     });
   }
 });
 
 // User routes
 router.get("/users", async (req, res) => {
-  console.log('🔍 GET /api/users endpoint called');
+  console.log("🔍 GET /api/users endpoint called");
   try {
-    console.log('📋 Fetching users from database...');
+    console.log("📋 Fetching users from database...");
     const users = await neonDbService.getAllUsers();
-    console.log('✅ Users retrieved:', users);
+    console.log("✅ Users retrieved:", users);
     res.json({ success: true, users });
   } catch (error) {
     console.error("❌ Error fetching users:", error);
@@ -65,9 +65,10 @@ router.get("/user/analytics", mockAuth, async (req, res) => {
     const bookings = await neonDbService.getBookingsByUserId(req.user.uid);
     const analytics = {
       totalBookings: bookings.length,
-      pendingBookings: bookings.filter(b => b.status === 'pending').length,
-      completedBookings: bookings.filter(b => b.status === 'completed').length,
-      recentBookings: bookings.slice(0, 5)
+      pendingBookings: bookings.filter((b) => b.status === "pending").length,
+      completedBookings: bookings.filter((b) => b.status === "completed")
+        .length,
+      recentBookings: bookings.slice(0, 5),
     };
     res.json(analytics);
   } catch (error) {
@@ -82,7 +83,7 @@ router.get("/services", async (req, res) => {
     const services = [
       { id: "1", name: "Basic Wash", price: 15, duration: 30 },
       { id: "2", name: "Premium Wash", price: 25, duration: 45 },
-      { id: "3", name: "Full Detail", price: 50, duration: 90 }
+      { id: "3", name: "Full Detail", price: 50, duration: 90 },
     ];
     res.json(services);
   } catch (error) {
@@ -95,9 +96,24 @@ router.get("/branches", async (req, res) => {
   try {
     // Mock branches data since we don't have a branches table yet
     const branches = [
-      { id: "1", name: "Downtown Branch", address: "123 Main St", phone: "+1234567890" },
-      { id: "2", name: "Mall Branch", address: "456 Mall Ave", phone: "+1234567891" },
-      { id: "3", name: "Airport Branch", address: "789 Airport Rd", phone: "+1234567892" }
+      {
+        id: "1",
+        name: "Downtown Branch",
+        address: "123 Main St",
+        phone: "+1234567890",
+      },
+      {
+        id: "2",
+        name: "Mall Branch",
+        address: "456 Mall Ave",
+        phone: "+1234567891",
+      },
+      {
+        id: "3",
+        name: "Airport Branch",
+        address: "789 Airport Rd",
+        phone: "+1234567892",
+      },
     ];
     res.json(branches);
   } catch (error) {
