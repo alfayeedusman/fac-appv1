@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { OTPService } from "../services/otpService.js";
+import { OTPService } from "../services/otpService";
 import admin from "firebase-admin";
 
 const router = Router();
