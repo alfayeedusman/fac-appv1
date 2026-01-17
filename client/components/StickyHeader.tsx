@@ -34,7 +34,13 @@ export default function StickyHeader({
   const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
   // Define routes where StickyHeader should not appear
-  const noHeaderRoutes = ["/", "/login", "/signup", "/forgot-password", "/credential-setup"];
+  const noHeaderRoutes = [
+    "/",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/credential-setup",
+  ];
   const shouldHideHeader = noHeaderRoutes.includes(location.pathname);
 
   // Don't show StickyHeader on POS Kiosk (it has its own fullscreen header)
@@ -45,7 +51,8 @@ export default function StickyHeader({
   const isGuestBookingRoute = location.pathname === "/guest-booking";
 
   // Determine if we should show navigation elements (search, notifications, logout)
-  const shouldShowNavigation = isAuthenticated && !isGuestMode && !isGuestBookingRoute && !hideNavigation;
+  const shouldShowNavigation =
+    isAuthenticated && !isGuestMode && !isGuestBookingRoute && !hideNavigation;
 
   // useEffect must be called before any conditional returns (Rules of Hooks)
   useEffect(() => {

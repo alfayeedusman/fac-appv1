@@ -61,7 +61,8 @@ export default function BookingProgressBar({
         </div>
         <div className="flex items-center gap-1 text-muted-foreground">
           <span className="font-semibold text-foreground/60">
-            {totalSteps - currentStep} step{totalSteps - currentStep !== 1 ? "s" : ""} left
+            {totalSteps - currentStep} step
+            {totalSteps - currentStep !== 1 ? "s" : ""} left
           </span>
         </div>
       </div>

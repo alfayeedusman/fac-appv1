@@ -8,11 +8,15 @@ import {
 import { migrate } from "../database/migrate";
 import { triggerPusherEvent } from "../services/pusherService.js"; // Fire events to Pusher
 
-const emitPusher = async (channels: string | string[], eventName: string, payload: any) => {
+const emitPusher = async (
+  channels: string | string[],
+  eventName: string,
+  payload: any,
+) => {
   try {
     await triggerPusherEvent(channels, eventName, payload);
   } catch (e) {
-    console.warn('Pusher emit failed:', e);
+    console.warn("Pusher emit failed:", e);
   }
 };
 
@@ -192,9 +196,9 @@ export const loginUser: RequestHandler = async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
 
     // Create a server side session token and store it in user_sessions
-    const crypto = await import('crypto');
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
+    const crypto = await import("crypto");
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     try {
       await neonDbService.createUserSession(
@@ -202,10 +206,10 @@ export const loginUser: RequestHandler = async (req, res) => {
         sessionToken,
         expiresAt,
         req.ip,
-        (req.headers['user-agent'] || '') as string,
+        (req.headers["user-agent"] || "") as string,
       );
     } catch (sessionErr) {
-      console.warn('⚠️ Failed to create user session:', sessionErr);
+      console.warn("⚠️ Failed to create user session:", sessionErr);
     }
 
     console.log("✅ Login successful", {
@@ -270,7 +274,16 @@ export const registerUser: RequestHandler = async (req, res) => {
 export const createBooking: RequestHandler = async (req, res) => {
   try {
     // Validate required fields
-    const { category, service, date, timeSlot, branch, fullName, mobile, email } = req.body;
+    const {
+      category,
+      service,
+      date,
+      timeSlot,
+      branch,
+      fullName,
+      mobile,
+      email,
+    } = req.body;
 
     const missingFields = [];
     if (!category) missingFields.push("category");
@@ -283,7 +296,9 @@ export const createBooking: RequestHandler = async (req, res) => {
     if (!email) missingFields.push("email");
 
     if (missingFields.length > 0) {
-      console.warn("🔐 Booking validation failed: missing fields", { missingFields });
+      console.warn("🔐 Booking validation failed: missing fields", {
+        missingFields,
+      });
       return res.status(400).json({
         success: false,
         error: `Missing required fields: ${missingFields.join(", ")}`,
@@ -305,7 +320,7 @@ export const createBooking: RequestHandler = async (req, res) => {
         soundType: "new_booking",
       });
     } catch (notifyErr) {
-      console.warn('⚠️ Failed to create notification:', notifyErr);
+      console.warn("⚠️ Failed to create notification:", notifyErr);
     }
 
     res.status(201).json({
@@ -317,8 +332,10 @@ export const createBooking: RequestHandler = async (req, res) => {
     // Emit Pusher events for new booking (admin & user channels) - non-blocking
     (async () => {
       try {
-        const adminChannel = 'public-realtime';
-        const userChannel = booking.userId ? `user-customer-${booking.userId}` : null;
+        const adminChannel = "public-realtime";
+        const userChannel = booking.userId
+          ? `user-customer-${booking.userId}`
+          : null;
         const payload = {
           bookingId: booking.id,
           booking,
@@ -326,24 +343,42 @@ export const createBooking: RequestHandler = async (req, res) => {
 
         if (userChannel) {
           const privateUserChannel = `private-${userChannel}`;
-          await emitPusher([userChannel, privateUserChannel, adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+          await emitPusher(
+            [
+              userChannel,
+              privateUserChannel,
+              adminChannel,
+              `private-${adminChannel}`,
+            ],
+            "booking.created",
+            payload,
+          );
         } else {
-          await emitPusher([adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+          await emitPusher(
+            [adminChannel, `private-${adminChannel}`],
+            "booking.created",
+            payload,
+          );
         }
       } catch (err) {
-        console.warn('Failed to emit pusher booking.created:', err);
+        console.warn("Failed to emit pusher booking.created:", err);
       }
     })();
-
   } catch (error) {
-    console.error("Create booking error:", error instanceof Error ? error.message : error);
+    console.error(
+      "Create booking error:",
+      error instanceof Error ? error.message : error,
+    );
 
     // Provide more specific error messages
     let errorMessage = "Failed to create booking. Please try again.";
     let statusCode = 500;
 
     if (error instanceof Error) {
-      if (error.message.includes("database") || error.message.includes("connection")) {
+      if (
+        error.message.includes("database") ||
+        error.message.includes("connection")
+      ) {
         errorMessage = "Database connection error. Please try again later.";
         statusCode = 503;
       } else if (error.message.includes("validation")) {
@@ -436,23 +471,28 @@ export const getBookings: RequestHandler = async (req, res) => {
 // Logout endpoint: invalidates the current session token
 export const logoutUser: RequestHandler = async (req, res) => {
   try {
-    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(400).json({ success: false, error: 'Authorization Bearer token required' });
+    const authHeader = (req.headers["authorization"] ||
+      req.headers["Authorization"]) as string | undefined;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Authorization Bearer token required" });
     }
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
 
     const session = await neonDbService.getSessionByToken(token);
     if (!session) {
-      return res.status(400).json({ success: false, error: 'Session not found' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Session not found" });
     }
 
     await neonDbService.deactivateSession(token);
 
-    res.json({ success: true, message: 'Logged out successfully' });
+    res.json({ success: true, message: "Logged out successfully" });
   } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ success: false, error: 'Failed to logout' });
+    console.error("Logout error:", error);
+    res.status(500).json({ success: false, error: "Failed to logout" });
   }
 };
 
@@ -460,75 +500,113 @@ export const logoutUser: RequestHandler = async (req, res) => {
 export const revokeSession: RequestHandler = async (req, res) => {
   try {
     // Validate caller's session
-    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    const authHeader = (req.headers["authorization"] ||
+      req.headers["Authorization"]) as string | undefined;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(403)
+        .json({ success: false, error: "Admin Authorization required" });
     }
-    const callerToken = authHeader.split(' ')[1];
+    const callerToken = authHeader.split(" ")[1];
     const callerSession = await neonDbService.getSessionByToken(callerToken);
-    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    if (!callerSession)
+      return res.status(403).json({ success: false, error: "Invalid session" });
     const callerUser = await neonDbService.getUserById(callerSession.userId);
-    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
-      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    if (
+      !callerUser ||
+      !["admin", "superadmin", "manager"].includes(callerUser.role)
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, error: "Insufficient privileges" });
     }
 
-    const { sessionToken, sessionId, userId } = req.body as { sessionToken?: string; sessionId?: string; userId?: string };
+    const { sessionToken, sessionId, userId } = req.body as {
+      sessionToken?: string;
+      sessionId?: string;
+      userId?: string;
+    };
 
     if (sessionToken) {
       await neonDbService.deactivateSession(sessionToken);
-      return res.json({ success: true, message: 'Session token revoked' });
+      return res.json({ success: true, message: "Session token revoked" });
     }
 
     if (sessionId) {
       await neonDbService.deactivateSessionById(sessionId);
-      return res.json({ success: true, message: 'Session id revoked' });
+      return res.json({ success: true, message: "Session id revoked" });
     }
 
     if (userId) {
       await neonDbService.deactivateSessionsByUserId(userId);
-      return res.json({ success: true, message: 'All sessions for user revoked' });
+      return res.json({
+        success: true,
+        message: "All sessions for user revoked",
+      });
     }
 
-    return res.status(400).json({ success: false, error: 'sessionToken or sessionId or userId required' });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        error: "sessionToken or sessionId or userId required",
+      });
   } catch (error) {
-    console.error('Revoke session error:', error);
-    res.status(500).json({ success: false, error: 'Failed to revoke session' });
+    console.error("Revoke session error:", error);
+    res.status(500).json({ success: false, error: "Failed to revoke session" });
   }
 };
 
 // Admin: list sessions (optional ?userId and ?activeOnly)
 export const getSessions: RequestHandler = async (req, res) => {
   try {
-    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    const authHeader = (req.headers["authorization"] ||
+      req.headers["Authorization"]) as string | undefined;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(403)
+        .json({ success: false, error: "Admin Authorization required" });
     }
-    const callerToken = authHeader.split(' ')[1];
+    const callerToken = authHeader.split(" ")[1];
     const callerSession = await neonDbService.getSessionByToken(callerToken);
-    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    if (!callerSession)
+      return res.status(403).json({ success: false, error: "Invalid session" });
     const callerUser = await neonDbService.getUserById(callerSession.userId);
-    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
-      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    if (
+      !callerUser ||
+      !["admin", "superadmin", "manager"].includes(callerUser.role)
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, error: "Insufficient privileges" });
     }
 
-    const { userId, activeOnly } = req.query as { userId?: string; activeOnly?: string };
-    const sessions = await neonDbService.getSessions({ userId, activeOnly: activeOnly === 'true' });
+    const { userId, activeOnly } = req.query as {
+      userId?: string;
+      activeOnly?: string;
+    };
+    const sessions = await neonDbService.getSessions({
+      userId,
+      activeOnly: activeOnly === "true",
+    });
 
     // Attach basic user info
-    const sessionsWithUser = await Promise.all(sessions.map(async (s: any) => {
-      const user = await neonDbService.getUserById(s.userId);
-      return {
-        ...s,
-        userEmail: user?.email || null,
-        userFullName: user?.fullName || null,
-        userRole: user?.role || null,
-      };
-    }));
+    const sessionsWithUser = await Promise.all(
+      sessions.map(async (s: any) => {
+        const user = await neonDbService.getUserById(s.userId);
+        return {
+          ...s,
+          userEmail: user?.email || null,
+          userFullName: user?.fullName || null,
+          userRole: user?.role || null,
+        };
+      }),
+    );
 
     res.json({ success: true, sessions: sessionsWithUser });
   } catch (error) {
-    console.error('Get sessions error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch sessions' });
+    console.error("Get sessions error:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch sessions" });
   }
 };
 
@@ -630,12 +708,10 @@ export const validateVoucher: RequestHandler = async (req, res) => {
     // Audience rules
     const isRegistered = !!userEmail;
     if (voucher.audience === "registered" && !isRegistered) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "Voucher is only for registered users",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "Voucher is only for registered users",
+      });
     }
 
     // Usage limits
@@ -654,24 +730,20 @@ export const validateVoucher: RequestHandler = async (req, res) => {
         ? usedByUser[0]?.cnt
         : usedByUser?.rows?.[0]?.cnt;
       if (Number(usedCount || 0) >= voucher.per_user_limit) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: "You have already used this voucher",
-          });
+        return res.status(400).json({
+          success: false,
+          error: "You have already used this voucher",
+        });
       }
     }
 
     // Min amount
     const minAmt = Number(voucher.minimum_amount || 0);
     if (minAmt > 0 && bookingAmount < minAmt) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: `Minimum amount ₱${minAmt.toFixed(2)} not met`,
-        });
+      return res.status(400).json({
+        success: false,
+        error: `Minimum amount ₱${minAmt.toFixed(2)} not met`,
+      });
     }
 
     // Calculate discount
@@ -712,12 +784,10 @@ export const redeemVoucher: RequestHandler = async (req, res) => {
   try {
     const { code, userEmail, bookingId, discountAmount } = req.body || {};
     if (!code || !bookingId || typeof discountAmount !== "number") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: "code, bookingId and discountAmount are required",
-        });
+      return res.status(400).json({
+        success: false,
+        error: "code, bookingId and discountAmount are required",
+      });
     }
 
     await ensureVoucherTables();
@@ -1202,15 +1272,22 @@ export const getBranches: RequestHandler = async (req, res) => {
   try {
     const now = Date.now();
     if (branchesCache && branchesCache.expiresAt > now) {
-      return res.json({ success: true, branches: branchesCache.branches, source: 'cache' });
+      return res.json({
+        success: true,
+        branches: branchesCache.branches,
+        source: "cache",
+      });
     }
 
     const branches = await neonDbService.getBranches();
-    branchesCache = { branches: branches || [], expiresAt: Date.now() + BRANCHES_CACHE_TTL * 1000 };
-    res.json({ success: true, branches: branches || [], source: 'db' });
+    branchesCache = {
+      branches: branches || [],
+      expiresAt: Date.now() + BRANCHES_CACHE_TTL * 1000,
+    };
+    res.json({ success: true, branches: branches || [], source: "db" });
   } catch (error) {
-    console.error('❌ Get branches error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch branches' });
+    console.error("❌ Get branches error:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch branches" });
   }
 };
 
@@ -1316,9 +1393,13 @@ export const createInventoryItem: RequestHandler = async (req, res) => {
     // Emit pusher event
     (async () => {
       try {
-        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.created', { item });
+        await emitPusher(
+          ["public-realtime", "private-public-realtime"],
+          "inventory.created",
+          { item },
+        );
       } catch (err) {
-        console.warn('Failed to emit inventory.created:', err);
+        console.warn("Failed to emit inventory.created:", err);
       }
     })();
   } catch (error) {
@@ -1342,9 +1423,13 @@ export const updateInventoryItem: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.updated', { item });
+        await emitPusher(
+          ["public-realtime", "private-public-realtime"],
+          "inventory.updated",
+          { item },
+        );
       } catch (err) {
-        console.warn('Failed to emit inventory.updated:', err);
+        console.warn("Failed to emit inventory.updated:", err);
       }
     })();
   } catch (error) {
@@ -1367,9 +1452,13 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.deleted', { id });
+        await emitPusher(
+          ["public-realtime", "private-public-realtime"],
+          "inventory.deleted",
+          { id },
+        );
       } catch (err) {
-        console.warn('Failed to emit inventory.deleted:', err);
+        console.warn("Failed to emit inventory.deleted:", err);
       }
     })();
   } catch (error) {
@@ -1380,7 +1469,6 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
     });
   }
 };
-
 
 // Stock movements endpoints
 export const getStockMovements: RequestHandler = async (req, res) => {
@@ -1414,9 +1502,13 @@ export const createStockMovement: RequestHandler = async (req, res) => {
 
     (async () => {
       try {
-        await emitPusher(['public-realtime', 'private-public-realtime'], 'stock.movement', { movement });
+        await emitPusher(
+          ["public-realtime", "private-public-realtime"],
+          "stock.movement",
+          { movement },
+        );
       } catch (err) {
-        console.warn('Failed to emit stock.movement:', err);
+        console.warn("Failed to emit stock.movement:", err);
       }
     })();
   } catch (error) {
@@ -1863,7 +1955,10 @@ export const getSubscriptions: RequestHandler = async (req, res) => {
   }
 };
 
-export const createXenditSubscriptionPlan: RequestHandler = async (req, res) => {
+export const createXenditSubscriptionPlan: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const {
       subscriptionId,
