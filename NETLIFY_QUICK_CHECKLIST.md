@@ -22,7 +22,8 @@
 
 Go to **Site Settings** → **Build & Deploy** → **Environment**
 
-### Frontend Variables (VITE_*)
+### Frontend Variables (VITE\_\*)
+
 - [ ] `VITE_MAPBOX_TOKEN` = `pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg`
 - [ ] `VITE_FIREBASE_API_KEY` = `AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM`
 - [ ] `VITE_FIREBASE_AUTH_DOMAIN` = `facapp-dbdc1.firebaseapp.com`
@@ -37,6 +38,7 @@ Go to **Site Settings** → **Build & Deploy** → **Environment**
 - [ ] `XENDIT_PUBLIC_KEY` = `xnd_public_development_0GsLabVLX_CfyXBlEErMSO7jjhbNI7ZcUhYKhS6zhwBugx8ZnYV6UGD9yCP1sg`
 
 ### Backend Variables (Server-only, NOT in frontend code)
+
 - [ ] `NEON_DATABASE_URL` = `postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require`
 - [ ] `PUSHER_APP_ID` = `2102895`
 - [ ] `PUSHER_CLUSTER` = `ap1`

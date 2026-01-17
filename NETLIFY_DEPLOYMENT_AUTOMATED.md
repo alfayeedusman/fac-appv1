@@ -3,16 +3,19 @@
 ## Quick Start (One-Click Deployment)
 
 ### For Mac/Linux Users:
+
 ```bash
 bash scripts/setup-netlify.sh
 ```
 
 ### For Windows Users:
+
 ```bash
 scripts/setup-netlify.bat
 ```
 
 ### Alternative (npm command):
+
 ```bash
 npm run setup:netlify
 ```
@@ -39,6 +42,7 @@ npm run setup:netlify:clean
 ```
 
 This will:
+
 - Remove all node_modules
 - Remove all dist folders
 - Fresh install of all dependencies
@@ -51,12 +55,14 @@ This will:
 The `netlify.toml` file is already configured with:
 
 ### Build Settings
+
 - **Node Version**: 22 (Latest LTS)
 - **Build Command**: `npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build && npm run build:server`
 - **Publish Directory**: `dist/spa`
 - **Functions Directory**: `netlify/functions`
 
 ### External Node Modules
+
 ```
 - express
 - cors
@@ -65,9 +71,11 @@ The `netlify.toml` file is already configured with:
 ```
 
 ### Environment Variables
+
 The following environment variables must be set in Netlify UI:
 
-#### Frontend Variables (VITE_ prefixed - safe for client bundling)
+#### Frontend Variables (VITE\_ prefixed - safe for client bundling)
+
 - `VITE_MAPBOX_TOKEN`
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
@@ -82,6 +90,7 @@ The following environment variables must be set in Netlify UI:
 - `XENDIT_PUBLIC_KEY` (client-safe Xendit key)
 
 #### Backend Variables (Server-only - NOT exposed to frontend)
+
 - `NEON_DATABASE_URL`
 - `NETLIFY_DATABASE_URL` (if using)
 - `PUSHER_APP_ID`
@@ -96,6 +105,7 @@ The following environment variables must be set in Netlify UI:
 ## Step-by-Step: Connecting to Netlify
 
 ### 1. Prepare Your Repository
+
 ```bash
 # Make sure everything is committed
 git add .
@@ -104,6 +114,7 @@ git push origin main
 ```
 
 ### 2. Connect to Netlify
+
 - Go to [netlify.com](https://netlify.com)
 - Click "Add new site"
 - Choose "Connect to Git"
@@ -111,6 +122,7 @@ git push origin main
 - Click "Deploy site"
 
 ### 3. Configure Environment Variables
+
 Netlify will start building. Once connected:
 
 1. Go to **Site Settings** → **Build & Deploy** → **Environment**
@@ -119,7 +131,9 @@ Netlify will start building. Once connected:
 4. Save changes
 
 ### 4. Trigger a New Deployment
+
 After adding environment variables:
+
 ```bash
 # Make a small change and push
 git commit --allow-empty -m "Trigger Netlify build with env vars"
@@ -133,27 +147,37 @@ Netlify will automatically deploy!
 ## Troubleshooting
 
 ### Build Fails with Exit Code 127
+
 **Solution**: This usually means a command wasn't found.
+
 - Run `npm run setup:netlify` locally first to verify
 - Check that all environment variables are set in Netlify
 - Clear cache: Go to **Deploys** → **Clear cache and retry**
 
 ### Build Fails with Peer Dependency Errors
+
 **Solution**: Already handled by the `--legacy-peer-deps` flag
+
 - If you still see errors, run locally: `npm run setup:netlify:clean`
 
 ### "dist/spa" Directory Not Found
+
 **Solution**: Vite build failed
+
 - Run `npm run build:client` locally to debug
 - Check for TypeScript errors: `npm run typecheck`
 
 ### Missing Environment Variables
+
 **Solution**: Variables are not set in Netlify
+
 - Verify each variable in Netlify **Site Settings** → **Environment**
 - Redeploy after adding variables: **Deploys** → **Trigger Deploy** → **Deploy Site**
 
 ### Database Connection Issues
+
 **Solution**: Database URL might be wrong or unavailable
+
 - Verify `NEON_DATABASE_URL` is correct
 - Test connection: `psql $NEON_DATABASE_URL -c "SELECT version();"`
 - Check Neon console for connection limits
@@ -163,18 +187,21 @@ Netlify will automatically deploy!
 ## Monitoring Deployments
 
 ### Real-Time Logs
+
 1. Go to **Deploys** in Netlify
 2. Click the deployment you want to monitor
 3. Scroll to **Deploy log** at the bottom
 4. Watch logs in real-time
 
 ### Deploy History
+
 1. Go to **Deploys**
 2. See all deployments with timestamps
 3. Click any deployment to see details
 4. Rollback to previous version if needed
 
 ### Debugging Failed Builds
+
 ```bash
 # Reproduce the build locally
 npm run setup:netlify:clean
@@ -230,11 +257,13 @@ Or edit the npm scripts in `package.json`:
 ## Performance Tips
 
 ### Reduce Build Time
+
 1. **Clear cache regularly**: Netlify UI → **Deploys** → **Clear cache and retry**
 2. **Use prefetch**: `--prefer-offline` flag speeds up npm installs
 3. **Check bundle size**: Build logs show final bundle size
 
 ### Reduce Deployed Size
+
 1. Check build stats: `dist/stats.html` (generated after build)
 2. Remove unused dependencies: `npm audit --audit-level=moderate`
 3. Compress images before uploading

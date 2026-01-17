@@ -3,9 +3,11 @@
 ## Common Build Errors and Fixes
 
 ### Error: Exit Code 127 (Command Not Found)
+
 **Cause**: npm command not found in Netlify environment
 
 **Fix**:
+
 1. Run locally first: `npm run setup:netlify:clean`
 2. Verify it works
 3. Clear Netlify cache: **Deploys** → **Clear cache and retry**
@@ -15,21 +17,26 @@
 ---
 
 ### Error: Exit Code 2 (Build Failed)
+
 **Cause**: Build script returned error (compilation failed)
 
 **Solutions**:
+
 1. **Run locally to debug**:
+
    ```bash
    npm run setup:netlify:clean
    npm run build
    ```
 
 2. **Check for TypeScript errors**:
+
    ```bash
    npm run typecheck
    ```
 
 3. **Look for missing dependencies**:
+
    ```bash
    npm install --legacy-peer-deps --prefer-offline --no-audit
    npm run build:client
@@ -41,9 +48,11 @@
 ---
 
 ### Error: "Cannot find module" or "Module not found"
+
 **Cause**: Dependency missing or installed incorrectly
 
 **Fix**:
+
 ```bash
 # Locally
 npm run setup:netlify:clean
@@ -57,16 +66,20 @@ npm run setup:netlify:clean
 ---
 
 ### Error: "ENOENT: no such file or directory"
+
 **Cause**: Missing build artifacts
 
 **Fix**:
+
 1. Verify `dist/spa` and `dist/server` exist after build:
+
    ```bash
    npm run build
    ls -la dist/
    ```
 
 2. Check `netlify.toml` publish path:
+
    ```toml
    publish = "dist/spa"
    ```
@@ -76,11 +89,13 @@ npm run setup:netlify:clean
 ---
 
 ### Error: Peer Dependency Conflicts
+
 **Cause**: npm dependencies have version conflicts
 
 **Fix**: Already handled! Our command uses `--legacy-peer-deps`
 
 If still seeing errors:
+
 ```bash
 # Clean and reinstall
 npm run setup:netlify:clean
@@ -90,12 +105,14 @@ npm run setup:netlify:clean
 
 ---
 
-### Error: "VITE_* not defined" or "process.env undefined"
+### Error: "VITE\_\* not defined" or "process.env undefined"
+
 **Cause**: Environment variables not set in Netlify
 
 **Fix**:
+
 1. Go to **Site Settings** → **Build & Deploy** → **Environment**
-2. Add all VITE_ variables:
+2. Add all VITE\_ variables:
    ```
    VITE_MAPBOX_TOKEN=...
    VITE_FIREBASE_API_KEY=...
@@ -106,9 +123,11 @@ npm run setup:netlify:clean
 ---
 
 ### Error: "Cannot connect to database"
+
 **Cause**: `NEON_DATABASE_URL` not set or incorrect
 
 **Fix**:
+
 1. Verify in Netlify: **Site Settings** → **Environment**
 2. Check URL format (ends with `?sslmode=require`)
 3. Test connection locally:
@@ -120,9 +139,11 @@ npm run setup:netlify:clean
 ---
 
 ### Error: "Timeout" or "Build taking too long"
+
 **Cause**: Dependencies download too slow or build is hanging
 
 **Fix**:
+
 1. Use `--prefer-offline` flag (already in netlify.toml)
 2. Clear npm cache locally:
    ```bash
@@ -135,9 +156,11 @@ npm run setup:netlify:clean
 ---
 
 ### Error: TypeScript Compilation Errors
+
 **Cause**: TypeScript errors in code
 
 **Fix**:
+
 ```bash
 # Check errors locally
 npm run typecheck
@@ -151,9 +174,11 @@ git push origin main
 ---
 
 ### Error: "Unexpected token" or Syntax Error
+
 **Cause**: Invalid JavaScript/TypeScript in source
 
 **Fix**:
+
 1. Check build log for file path
 2. Open that file and verify syntax
 3. Compare with other files in same folder
@@ -166,16 +191,20 @@ git push origin main
 ---
 
 ### Error: "dist/spa is empty"
+
 **Cause**: Vite build didn't generate files
 
 **Fix**:
+
 1. Run locally to debug:
+
    ```bash
    npm run build:client
    ls -la dist/spa/
    ```
 
 2. Check `vite.config.ts`:
+
    ```ts
    build: {
      outDir: "dist/spa",
@@ -189,9 +218,11 @@ git push origin main
 ## Deployment Not Happening
 
 ### Git Push But No Deploy Triggered
+
 **Cause**: Git not connected to Netlify
 
 **Fix**:
+
 1. Go to **Site Settings** → **Build & Deploy** → **Connected repositories**
 2. Connect your GitHub/GitLab repo
 3. Select main branch
@@ -200,14 +231,17 @@ git push origin main
 ---
 
 ### Changes Made But Site Not Updated
+
 **Cause**: Netlify cache not cleared
 
 **Fix**:
+
 1. Go to **Deploys**
 2. Click **Clear cache and retry**
 3. Watch deploy log
 
 Or deploy manually:
+
 ```bash
 # Make changes
 git add .
@@ -219,9 +253,11 @@ git push origin main
 ---
 
 ### Build Succeeded But Site Not Updated
+
 **Cause**: Changes not published properly
 
 **Fix**:
+
 1. Hard refresh browser: **Ctrl+Shift+R** (Windows) or **Cmd+Shift+R** (Mac)
 2. Clear browser cache
 3. Check Netlify deploy log for publish errors
@@ -237,6 +273,7 @@ git push origin main
 When anything goes wrong, run this sequence:
 
 ### Step 1: Test Locally
+
 ```bash
 npm run setup:netlify:clean
 npm run typecheck
@@ -245,6 +282,7 @@ npm run typecheck
 If fails locally, fix it first before pushing.
 
 ### Step 2: Check Git
+
 ```bash
 git status
 git log -1
@@ -252,23 +290,27 @@ git push origin main
 ```
 
 ### Step 3: Monitor Netlify
+
 1. Go to **Deploys**
 2. Watch the new deployment
 3. Click it to see full log
 4. Look for error messages
 
 ### Step 4: Clear Cache & Retry
+
 1. Go to **Deploys**
 2. Click **Clear cache and retry**
 3. Watch new deploy
 
 ### Step 5: Check Environment
+
 1. Go to **Site Settings** → **Build & Deploy** → **Environment**
-2. Verify all VITE_ and backend variables present
+2. Verify all VITE\_ and backend variables present
 3. No typos in variable names
 4. Redeploy if changes made
 
 ### Step 6: Check Configuration
+
 1. Review `netlify.toml`
 2. Verify build command
 3. Verify publish directory
@@ -287,6 +329,7 @@ If live site is broken:
 5. Site reverts immediately
 
 To prevent future issues:
+
 1. Test locally first: `npm run dev`
 2. Build locally: `npm run build`
 3. Only push if tests pass
@@ -296,6 +339,7 @@ To prevent future issues:
 ## Performance Issues
 
 ### Site Loading Slowly
+
 1. Check **Deploys** → **Deploy time** (should be <30s)
 2. If slow build, check:
    - `npm install` taking long (npm cache issue)
@@ -307,6 +351,7 @@ To prevent future issues:
    ```
 
 ### Deploy Takes Too Long (>10 min)
+
 1. Clear npm cache: `npm cache clean --force`
 2. Check for large files being installed
 3. Reduce dependencies if possible
@@ -319,6 +364,7 @@ To prevent future issues:
 ### Reading the Netlify Build Log
 
 Look for these sections:
+
 ```
 1. Downloading cache (0s)
 2. Installing dependencies (npm ci or npm install) - takes 30-60s
