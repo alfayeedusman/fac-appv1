@@ -145,10 +145,20 @@ export const loginUser: RequestHandler = async (req, res) => {
       });
     }
 
-    const user = await neonDbService.getUserByEmail(email);
+    let user;
+    try {
+      user = await neonDbService.getUserByEmail(email);
+    } catch (dbErr) {
+      console.error("🔐 Database error fetching user:", dbErr);
+      return res.status(503).json({
+        success: false,
+        error: "Service temporarily unavailable. Please try again later.",
+      });
+    }
+
     if (!user) {
       console.warn("🔐 Login failed: user not found", { email });
-      const response = { success: false, error: "Invalid credentials" };
+      const response = { success: false, error: "Invalid email or password" };
       console.log(
         "📤 Sending user not found response:",
         JSON.stringify(response),
