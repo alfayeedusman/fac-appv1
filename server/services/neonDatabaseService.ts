@@ -200,10 +200,35 @@ class NeonDatabaseService {
   }
 
   async verifyPassword(email: string, password: string): Promise<boolean> {
-    const user = await this.getUserByEmail(email);
-    if (!user) return false;
+    try {
+      const user = await this.getUserByEmail(email);
+      if (!user) {
+        console.warn("verifyPassword: User not found", { email });
+        return false;
+      }
 
-    return bcrypt.compare(password, user.password);
+      if (!user.password) {
+        console.warn("verifyPassword: User has no password", { email });
+        return false;
+      }
+
+      if (!password) {
+        console.warn("verifyPassword: No password provided");
+        return false;
+      }
+
+      const result = await bcrypt.compare(password, user.password);
+      if (!result) {
+        console.log("verifyPassword: Password mismatch for", { email });
+      }
+      return result;
+    } catch (error) {
+      console.error("verifyPassword: Error comparing passwords", {
+        error: error instanceof Error ? error.message : String(error),
+        email,
+      });
+      return false;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
