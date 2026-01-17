@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { neonDbService } from '../services/neonDbService';
+import { neonDbService } from '../services/neonDatabaseService';
 import {
   homepageContent,
   cmsContentHistory,
