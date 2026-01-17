@@ -1,5 +1,5 @@
-import { getDatabase } from "./connection.js";
-import * as schema from "./schema.js";
+import { getDatabase } from "./connection";
+import * as schema from "./schema";
 
 export async function seedBranches() {
   const db = getDatabase();
