@@ -1,0 +1,73 @@
+name: Sync Environment Variables to Netlify
+
+on:
+  push:
+    branches:
+      - main
+      - production
+    paths:
+      - '.env.production'
+      - '.env.production.local'
+      - '.github/workflows/sync-netlify-env.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-env:
+    runs-on: ubuntu-latest
+    name: Sync Environment Variables
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Check if Netlify CLI is installed
+        run: |
+          npm list -g netlify-cli || npm install -g netlify-cli
+
+      - name: Verify Netlify credentials
+        run: netlify --version
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Sync environment variables to Netlify
+        run: |
+          # Make script executable
+          chmod +x scripts/sync-netlify-env.js
+          
+          # Run sync script with skip confirmation flag
+          node scripts/sync-netlify-env.js .env.production --skip-confirm
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Trigger Netlify deploy
+        run: |
+          if command -v netlify &> /dev/null; then
+            echo "✅ Environment variables synced. Next deploy will use updated variables."
+            echo "📢 To manually trigger a deploy, go to:"
+            echo "   https://app.netlify.com/sites/$(echo $NETLIFY_SITE_ID | cut -d- -f1)/deploys"
+          fi
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Environment variables successfully synced to Netlify"
+          echo "📊 Check deployment status: https://app.netlify.com"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Failed to sync environment variables"
+          echo "📋 Check GitHub Actions logs for details"
+          exit 1
