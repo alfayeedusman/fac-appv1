@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { neonDbService } from '../services/neonDatabaseService';
+import { neonDbService } from '../services/neonDbService';
 import {
   homepageContent,
   cmsContentHistory,
@@ -165,7 +165,7 @@ const defaultHomepageContent = {
  */
 router.get('/homepage', async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.json({
         success: true,
         data: defaultHomepageContent,
@@ -174,7 +174,7 @@ router.get('/homepage', async (req, res) => {
     }
 
     // Get the active homepage content
-    const [activeContent] = await neonDatabaseService.db
+    const [activeContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -229,7 +229,7 @@ router.get('/homepage', async (req, res) => {
  */
 router.post('/homepage', async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available"
@@ -246,7 +246,7 @@ router.post('/homepage', async (req, res) => {
     }
 
     // Get current active content for history tracking
-    const [currentContent] = await neonDatabaseService.db
+    const [currentContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -254,7 +254,7 @@ router.post('/homepage', async (req, res) => {
 
     // Deactivate current content
     if (currentContent) {
-      await neonDatabaseService.db
+      await neonDbService.db
         .update(homepageContent)
         .set({ isActive: false })
         .where(eq(homepageContent.id, currentContent.id));
@@ -274,13 +274,13 @@ router.post('/homepage', async (req, res) => {
       updatedBy: userId || 'system',
     };
 
-    const [savedContent] = await neonDatabaseService.db
+    const [savedContent] = await neonDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDatabaseService.db
+    await neonDbService.db
       .insert(cmsContentHistory)
       .values({
         contentId: savedContent.id,
@@ -316,7 +316,7 @@ router.post('/homepage', async (req, res) => {
  */
 router.get('/history', async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.json({
         success: true,
         data: [],
@@ -326,7 +326,7 @@ router.get('/history', async (req, res) => {
 
     const { limit = 20, offset = 0 } = req.query;
 
-    const history = await neonDatabaseService.db
+    const history = await neonDbService.db
       .select({
         id: cmsContentHistory.id,
         contentId: cmsContentHistory.contentId,
@@ -361,7 +361,7 @@ router.get('/history', async (req, res) => {
  */
 router.post('/initialize', async (req, res) => {
   try {
-    if (!neonDatabaseService.db) {
+    if (!neonDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available"
@@ -371,7 +371,7 @@ router.post('/initialize', async (req, res) => {
     const { userId = 'system', userName = 'System' } = req.body;
 
     // Check if content already exists
-    const [existingContent] = await neonDatabaseService.db
+    const [existingContent] = await neonDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -394,13 +394,13 @@ router.post('/initialize', async (req, res) => {
       updatedBy: userId,
     };
 
-    const [savedContent] = await neonDatabaseService.db
+    const [savedContent] = await neonDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDatabaseService.db
+    await neonDbService.db
       .insert(cmsContentHistory)
       .values({
         contentId: savedContent.id,
