@@ -200,14 +200,18 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
     console.log(`🏠 Home: http://localhost:${PORT}/`);
 
-    // Seed branch data after server startup
+    // Seed branch and user data after server startup
     setTimeout(async () => {
       try {
         console.log("🏪 Auto-seeding branch data...");
         await seedBranches();
         console.log("✅ Branch seeding completed successfully");
+
+        console.log("👥 Auto-seeding user data...");
+        await seedUsers();
+        console.log("✅ User seeding completed successfully");
       } catch (error) {
-        console.log("⚠️ Branch seeding failed:", error);
+        console.log("⚠️ Seeding failed:", error);
       }
     }, 3000);
   });
