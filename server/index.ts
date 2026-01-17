@@ -16,6 +16,7 @@ import realtimeApiRoutes from "./routes/realtime-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
 import posApiRoutes from "./routes/pos-api.js";
 import { seedBranches } from "./database/seed-branches.js";
+import { seedUsers } from "./database/seed-users.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
