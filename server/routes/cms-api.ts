@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { neonDatabaseService } from '../services/neonDatabaseService.js';
-import { 
-  homepageContent, 
-  cmsContentHistory, 
+import { neonDatabaseService } from '../services/neonDatabaseService';
+import {
+  homepageContent,
+  cmsContentHistory,
   cmsSettings,
   type HomepageContent,
-  type NewHomepageContent 
-} from '../database/cmsSchema.js';
+  type NewHomepageContent
+} from '../database/cmsSchema';
 import { eq, desc, and } from 'drizzle-orm';
 
 const router = Router();
