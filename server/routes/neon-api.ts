@@ -137,12 +137,16 @@ export const loginUser: RequestHandler = async (req, res) => {
     console.log("🔐 Login attempt received", {
       email,
       hasPassword: typeof password === "string" && password.length > 0,
+      passwordLength: typeof password === "string" ? password.length : 0,
       contentType: req.headers["content-type"],
       time: new Date().toISOString(),
     });
 
     if (!email || !password) {
-      console.warn("🔐 Login failed: missing email or password");
+      console.warn("🔐 Login failed: missing email or password", {
+        hasEmail: !!email,
+        hasPassword: !!password,
+      });
       return res.status(400).json({
         success: false,
         error: "Email and password are required",
@@ -152,8 +156,22 @@ export const loginUser: RequestHandler = async (req, res) => {
     let user;
     try {
       user = await neonDbService.getUserByEmail(email);
+      if (user) {
+        console.log("✅ User found in database", {
+          email: user.email,
+          hasPassword: !!user.password,
+          passwordHash: user.password ? user.password.substring(0, 10) + "..." : "NO_PASSWORD",
+          isActive: user.isActive,
+          role: user.role,
+        });
+      } else {
+        console.warn("🔐 User not found in database", { email });
+      }
     } catch (dbErr) {
-      console.error("🔐 Database error fetching user:", dbErr);
+      console.error("🔐 Database error fetching user:", {
+        error: dbErr instanceof Error ? dbErr.message : String(dbErr),
+        email,
+      });
       return res.status(503).json({
         success: false,
         error: "Service temporarily unavailable. Please try again later.",
@@ -163,21 +181,39 @@ export const loginUser: RequestHandler = async (req, res) => {
     if (!user) {
       console.warn("🔐 Login failed: user not found", { email });
       const response = { success: false, error: "Invalid email or password" };
-      console.log(
-        "📤 Sending user not found response:",
-        JSON.stringify(response),
-      );
       return res.status(401).json(response);
     }
 
-    const isValidPassword = await neonDbService.verifyPassword(email, password);
+    // Check if password exists in database
+    if (!user.password) {
+      console.error("🔐 Login failed: user has no password hash", { email });
+      return res.status(401).json({
+        success: false,
+        error: "Invalid email or password",
+      });
+    }
+
+    let isValidPassword = false;
+    try {
+      isValidPassword = await neonDbService.verifyPassword(email, password);
+      console.log("🔐 Password verification result", {
+        email,
+        isValid: isValidPassword,
+      });
+    } catch (pwErr) {
+      console.error("🔐 Password verification error:", {
+        error: pwErr instanceof Error ? pwErr.message : String(pwErr),
+        email,
+      });
+      return res.status(500).json({
+        success: false,
+        error: "Authentication service error. Please try again.",
+      });
+    }
+
     if (!isValidPassword) {
       console.warn("🔐 Login failed: invalid password", { email });
       const response = { success: false, error: "Invalid credentials" };
-      console.log(
-        "📤 Sending invalid password response:",
-        JSON.stringify(response),
-      );
       return res.status(401).json(response);
     }
 
@@ -190,7 +226,12 @@ export const loginUser: RequestHandler = async (req, res) => {
     }
 
     // Update last login
-    await neonDbService.updateUser(user.id, { lastLoginAt: new Date() });
+    try {
+      await neonDbService.updateUser(user.id, { lastLoginAt: new Date() });
+    } catch (updateErr) {
+      console.warn("⚠️ Failed to update last login:", updateErr);
+      // Continue - this is not critical
+    }
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
@@ -210,6 +251,7 @@ export const loginUser: RequestHandler = async (req, res) => {
       );
     } catch (sessionErr) {
       console.warn("⚠️ Failed to create user session:", sessionErr);
+      // Continue - session is optional
     }
 
     console.log("✅ Login successful", {
@@ -224,10 +266,6 @@ export const loginUser: RequestHandler = async (req, res) => {
       expiresAt: expiresAt.toISOString(),
       message: "Login successful",
     };
-    console.log(
-      "📤 Sending login success response:",
-      JSON.stringify(response).substring(0, 200),
-    );
     return res.json(response);
   } catch (error: any) {
     console.error("❌ Login error:", error?.message || error);
