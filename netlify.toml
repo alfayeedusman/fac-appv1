@@ -1,6 +1,7 @@
 [build]
   # Build command: install dependencies and build both client and server
-  command = "npm ci && npm run build"
+  # Using --legacy-peer-deps to avoid dependency conflicts
+  command = "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build"
   functions = "netlify/functions"
   publish = "dist/spa"
   base = "/"
