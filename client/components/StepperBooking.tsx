@@ -1121,9 +1121,18 @@ export default function StepperBooking({
       };
 
       // Create booking using Neon database
+      console.log("📤 Submitting booking payload:", {
+        ...bookingPayload,
+        receiptUrl: bookingPayload.receiptUrl ? "[File present]" : undefined,
+      });
+
       const bookingResult = await neonDbClient.createBooking(bookingPayload);
+      console.log("📥 Booking response:", bookingResult);
+
       if (!bookingResult.success || !bookingResult.booking) {
-        throw new Error(bookingResult.error || "Failed to create booking");
+        const errorMsg = bookingResult.error || "Failed to create booking. Please try again.";
+        console.error("❌ Booking creation failed:", errorMsg);
+        throw new Error(errorMsg);
       }
       const createdBooking = bookingResult.booking;
 
