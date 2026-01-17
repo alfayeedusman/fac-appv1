@@ -545,12 +545,10 @@ export const revokeSession: RequestHandler = async (req, res) => {
       });
     }
 
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "sessionToken or sessionId or userId required",
-      });
+    return res.status(400).json({
+      success: false,
+      error: "sessionToken or sessionId or userId required",
+    });
   } catch (error) {
     console.error("Revoke session error:", error);
     res.status(500).json({ success: false, error: "Failed to revoke session" });
@@ -1180,6 +1178,50 @@ function calculateBranchPerformance(bookings: any[], users: any[]) {
     ...stats,
   }));
 }
+
+// Debug endpoint to test password verification
+export const debugLogin: RequestHandler = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log("🔍 DEBUG: Testing login with", { email });
+
+    const user = await neonDbService.getUserByEmail(email);
+    if (!user) {
+      console.error("❌ DEBUG: User not found:", email);
+      return res.json({
+        success: false,
+        error: "User not found",
+        debugInfo: { userExists: false },
+      });
+    }
+
+    console.log("✅ DEBUG: User found:", {
+      id: user.id,
+      email: user.email,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length,
+    });
+
+    const isValidPassword = await neonDbService.verifyPassword(email, password);
+    console.log("🔐 DEBUG: Password verification result:", isValidPassword);
+
+    return res.json({
+      success: isValidPassword,
+      debugInfo: {
+        userExists: true,
+        passwordCorrect: isValidPassword,
+        userEmail: user.email,
+        userRole: user.role,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ DEBUG endpoint error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Debug failed",
+    });
+  }
+};
 
 // Users endpoint - returns all users
 export const getAllUsers: RequestHandler = async (req, res) => {

@@ -16,6 +16,7 @@ import realtimeApiRoutes from "./routes/realtime-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
 import posApiRoutes from "./routes/pos-api.js";
 import { seedBranches } from "./database/seed-branches.js";
+import { seedUsers } from "./database/seed-users.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,10 @@ export function createServer() {
 
   // Middleware - CORS configuration
   const corsOptions = {
-    origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    origin: function (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) {
         callback(null, true);
@@ -43,13 +47,16 @@ export function createServer() {
       ];
 
       // Add FRONTEND_URL if configured
-      if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+      if (
+        process.env.FRONTEND_URL &&
+        !allowedOrigins.includes(process.env.FRONTEND_URL)
+      ) {
         allowedOrigins.push(process.env.FRONTEND_URL);
       }
 
       // In production, also allow same-origin requests (frontend served from same domain)
       // and requests from the current host
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === "production") {
         // Allow all requests in production to same domain (Fly.dev, etc.)
         callback(null, true);
       } else if (allowedOrigins.includes(origin)) {
@@ -60,8 +67,8 @@ export function createServer() {
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   };
 
   app.use(cors(corsOptions));
@@ -117,6 +124,7 @@ export function createServer() {
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
   app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
   app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
+  app.post("/api/neon/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
 
   // Session management (admin)
   app.post("/api/neon/sessions/revoke", neonApiRoutes.revokeSession);
@@ -177,7 +185,10 @@ export function createServer() {
     "/api/neon/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
   );
-  app.get('/api/neon/payment/xendit/methods', xenditApiRoutes.listPaymentMethods);
+  app.get(
+    "/api/neon/payment/xendit/methods",
+    xenditApiRoutes.listPaymentMethods,
+  );
   app.post(
     "/api/neon/payment/xendit/create-subscription-invoice",
     xenditApiRoutes.createSubscriptionInvoice,
@@ -232,6 +243,21 @@ export function createServer() {
   // Inventory analytics endpoints
   app.get("/api/neon/inventory/analytics", neonApiRoutes.getInventoryAnalytics);
   app.get("/api/neon/inventory/low-stock", neonApiRoutes.getLowStockItems);
+
+  // Auto-seed data on server startup
+  setTimeout(async () => {
+    try {
+      console.log("🏪 Auto-seeding branch data...");
+      await seedBranches();
+      console.log("✅ Branch seeding completed successfully");
+
+      console.log("👥 Auto-seeding user data...");
+      await seedUsers();
+      console.log("✅ User seeding completed successfully");
+    } catch (error) {
+      console.log("⚠️ Seeding failed:", error);
+    }
+  }, 2000);
 
   return app;
 }
