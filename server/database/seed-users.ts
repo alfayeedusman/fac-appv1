@@ -17,6 +17,52 @@ export async function seedUsers() {
 
     if (existingUsers.length > 0) {
       console.log("✅ Users already exist:", existingUsers.length, "users found");
+
+      // Update passwords for sample accounts if they exist
+      console.log("🔄 Updating sample user passwords...");
+      const hashPassword = async (password: string) =>
+        await bcrypt.hash(password, 10);
+
+      const superadmin = existingUsers.find(u => u.email === "superadmin@fayeedautocare.com");
+      if (superadmin) {
+        const hashedPassword = await hashPassword("SuperAdmin2024!");
+        await db.update(schema.users)
+          .set({ password: hashedPassword })
+          .where(eq(schema.users.id, superadmin.id));
+        console.log("✅ Updated superadmin password");
+      }
+
+      const adminFayeed = existingUsers.find(u => u.email === "admin.fayeed@gmail.com");
+      if (adminFayeed) {
+        const hashedPassword = await hashPassword("FayeedSuper123!");
+        await db.update(schema.users)
+          .set({ password: hashedPassword })
+          .where(eq(schema.users.id, adminFayeed.id));
+        console.log("✅ Updated admin.fayeed password");
+      }
+
+      // Update other sample user passwords
+      const sampleEmails: Record<string, string> = {
+        "manager.tumaga@fayeedautocare.com": "TumagaAdmin2024!",
+        "manager.boalan@fayeedautocare.com": "BoalanAdmin2024!",
+        "cashier.tumaga@fayeedautocare.com": "Cashier123!",
+        "john.doe@gmail.com": "Customer123!",
+        "maria.santos@gmail.com": "Maria2024!",
+        "carlos.reyes@gmail.com": "Carlos123!",
+        "anna.lopez@gmail.com": "Anna2024!",
+      };
+
+      for (const [email, password] of Object.entries(sampleEmails)) {
+        const user = existingUsers.find(u => u.email === email);
+        if (user) {
+          const hashedPassword = await hashPassword(password);
+          await db.update(schema.users)
+            .set({ password: hashedPassword })
+            .where(eq(schema.users.id, user.id));
+          console.log(`✅ Updated ${email} password`);
+        }
+      }
+
       return;
     }
 
