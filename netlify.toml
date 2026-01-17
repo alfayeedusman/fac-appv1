@@ -12,6 +12,8 @@
   # Ensure devDependencies (vite, typescript, etc.) are installed during build.
   # Netlify sets NODE_ENV=production during builds, which can cause npm to omit dev deps unless overridden.
   NPM_CONFIG_PRODUCTION = "false"
+  # Helps prevent build-time out-of-memory crashes during Vite bundling on CI.
+  NODE_OPTIONS = "--max_old_space_size=4096"
   NODE_ENV = "production"
 
 [context.production]
