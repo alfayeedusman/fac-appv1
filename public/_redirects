@@ -1,1 +1,3 @@
+# Netlify redirects are now configured in netlify.toml
+# Keep this file for reference, but primary config is in netlify.toml
 /*    /index.html   200

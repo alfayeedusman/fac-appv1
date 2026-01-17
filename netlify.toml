@@ -1,18 +1,14 @@
 [build]
-  # Robust build command with error handling
-  command = "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build && npm run build:server"
+  # Build command: install dependencies and build both client and server
+  command = "npm ci && npm run build"
   functions = "netlify/functions"
   publish = "dist/spa"
   base = "/"
 
 [build.environment]
-  # Node version: ensure compatibility with TypeScript & modern ES modules
-  NODE_VERSION = "22"
+  # Node version: LTS for maximum Netlify compatibility
+  NODE_VERSION = "20"
   NODE_ENV = "production"
-  # Build optimization flags
-  NPM_FLAGS = "--legacy-peer-deps --prefer-offline --no-audit"
-  # Only VITE_ prefixed variables are safe for frontend bundling
-  # Backend secrets (XENDIT_, PUSHER_, NEON_) must NOT be exposed to frontend
 
 [context.production]
   environment = { NODE_ENV = "production" }
@@ -22,34 +18,36 @@
   node_bundler = "esbuild"
   included_files = ["dist/**"]
 
-# Redirects configuration
+# API Redirect (MUST come before catch-all SPA redirect)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# SPA Catch-all Redirect (MUST come after specific redirects)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[[redirects]]
-  force = true
-  from = "/api/*"
-  status = 200
-  to = "/.netlify/functions/api/:splat"
-
-# HTTP headers for security and caching
+# HTTP headers for caching strategy
 [[headers]]
-  for = "/*"
+  for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
-  for = "/dist/**"
+  for = "/*.js"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Environment variable patterns (safety configuration)
-[[env]]
-  pattern = "VITE_*"
-  scope = "builds"
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-[[env]]
-  pattern = "NODE_ENV"
-  scope = "builds"
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
