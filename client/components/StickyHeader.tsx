@@ -161,41 +161,42 @@ export default function StickyHeader({
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 transform",
-        isVisible ? "translate-y-0" : "-translate-y-full",
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-200 ease-out transform",
+        isVisible ? "translate-y-0 shadow-lg" : "-translate-y-full shadow-none",
         className,
       )}
     >
-      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-lg">
-        <div className="max-w-md mx-auto px-4 py-3">
+      <div className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-md mx-auto px-4 py-2.5 sm:py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 min-w-0">
               {showBack && (
                 <Link to={backTo}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex-shrink-0"
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
                 </Link>
               )}
-              <div>
-                <h1 className="text-lg font-bold text-foreground">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
                   {getPageTitle()}
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               {shouldShowNavigation && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => alert("🔍 Search feature coming soon!")}
+                    title="Search"
                   >
                     <Search className="h-5 w-5" />
                   </Button>
@@ -203,7 +204,7 @@ export default function StickyHeader({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
+                    className="h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
                     onClick={() => setShowLogoutModal(true)}
                     title="Logout"
                   >
