@@ -199,27 +199,32 @@ class NeonDatabaseClient {
       log(`🔄 Initializing database connection to: ${initUrl}`);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutHandler = createSafeTimeoutAbort(controller, 8000);
 
-      const response = await fetch(initUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-      });
+      try {
+        const response = await fetch(initUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+        });
 
-      clearTimeout(timeoutId);
+        timeoutHandler.clearTimeout();
 
-      if (response.ok) {
-        const result = await response.json();
-        this.isConnected = !!result.success;
-        if (this.isConnected) {
-          info("✅ Database initialized successfully");
-          return true;
+        if (response.ok) {
+          const result = await response.json();
+          this.isConnected = !!result.success;
+          if (this.isConnected) {
+            info("✅ Database initialized successfully");
+            return true;
+          }
+        } else {
+          warn(
+            `⚠️ Init request failed: ${response.status} ${response.statusText}`,
+          );
         }
-      } else {
-        warn(
-          `⚠️ Init request failed: ${response.status} ${response.statusText}`,
-        );
+      } catch (error) {
+        timeoutHandler.clearTimeout();
+        throw error;
       }
     } catch (error) {
       warn(
@@ -232,14 +237,19 @@ class NeonDatabaseClient {
     try {
       const testUrl = `${this.baseUrl}/test`;
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 5000);
-      const res = await fetch(testUrl, { method: "GET", signal: ac.signal });
-      clearTimeout(to);
-      if (res.ok) {
-        const result = await res.json();
-        this.isConnected = !!(result.connected || result.success);
-        info(`🔗 Test connection result: ${this.isConnected}`);
-        return this.isConnected;
+      const timeoutHandler = createSafeTimeoutAbort(ac, 5000);
+      try {
+        const res = await fetch(testUrl, { method: "GET", signal: ac.signal });
+        timeoutHandler.clearTimeout();
+        if (res.ok) {
+          const result = await res.json();
+          this.isConnected = !!(result.connected || result.success);
+          info(`🔗 Test connection result: ${this.isConnected}`);
+          return this.isConnected;
+        }
+      } catch (e) {
+        timeoutHandler.clearTimeout();
+        throw e;
       }
     } catch (e) {
       warn(
