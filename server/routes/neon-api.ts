@@ -545,12 +545,10 @@ export const revokeSession: RequestHandler = async (req, res) => {
       });
     }
 
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "sessionToken or sessionId or userId required",
-      });
+    return res.status(400).json({
+      success: false,
+      error: "sessionToken or sessionId or userId required",
+    });
   } catch (error) {
     console.error("Revoke session error:", error);
     res.status(500).json({ success: false, error: "Failed to revoke session" });
@@ -1193,7 +1191,7 @@ export const debugLogin: RequestHandler = async (req, res) => {
       return res.json({
         success: false,
         error: "User not found",
-        debugInfo: { userExists: false }
+        debugInfo: { userExists: false },
       });
     }
 
@@ -1201,7 +1199,7 @@ export const debugLogin: RequestHandler = async (req, res) => {
       id: user.id,
       email: user.email,
       hasPassword: !!user.password,
-      passwordLength: user.password?.length
+      passwordLength: user.password?.length,
     });
 
     const isValidPassword = await neonDbService.verifyPassword(email, password);
@@ -1213,14 +1211,14 @@ export const debugLogin: RequestHandler = async (req, res) => {
         userExists: true,
         passwordCorrect: isValidPassword,
         userEmail: user.email,
-        userRole: user.role
-      }
+        userRole: user.role,
+      },
     });
   } catch (error: any) {
     console.error("❌ DEBUG endpoint error:", error);
     res.status(500).json({
       success: false,
-      error: error.message || "Debug failed"
+      error: error.message || "Debug failed",
     });
   }
 };

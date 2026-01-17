@@ -89,8 +89,14 @@ export const createServer = () => {
 
   // Subscription endpoints
   app.get("/api/neon/subscriptions", neonApiRoutes.getSubscriptions);
-  app.post("/api/neon/subscription/xendit/create-plan", neonApiRoutes.createXenditSubscriptionPlan);
-  app.post("/api/neon/subscription/xendit/process-renewal", neonApiRoutes.processSubscriptionRenewal);
+  app.post(
+    "/api/neon/subscription/xendit/create-plan",
+    neonApiRoutes.createXenditSubscriptionPlan,
+  );
+  app.post(
+    "/api/neon/subscription/xendit/process-renewal",
+    neonApiRoutes.processSubscriptionRenewal,
+  );
 
   // Notification endpoints
   app.get("/api/neon/notifications", neonApiRoutes.getNotifications);

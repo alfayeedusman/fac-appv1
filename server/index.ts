@@ -26,7 +26,10 @@ export function createServer() {
 
   // Middleware - CORS configuration
   const corsOptions = {
-    origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    origin: function (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) {
         callback(null, true);
@@ -44,13 +47,16 @@ export function createServer() {
       ];
 
       // Add FRONTEND_URL if configured
-      if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+      if (
+        process.env.FRONTEND_URL &&
+        !allowedOrigins.includes(process.env.FRONTEND_URL)
+      ) {
         allowedOrigins.push(process.env.FRONTEND_URL);
       }
 
       // In production, also allow same-origin requests (frontend served from same domain)
       // and requests from the current host
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === "production") {
         // Allow all requests in production to same domain (Fly.dev, etc.)
         callback(null, true);
       } else if (allowedOrigins.includes(origin)) {
@@ -61,8 +67,8 @@ export function createServer() {
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   };
 
   app.use(cors(corsOptions));
@@ -179,7 +185,10 @@ export function createServer() {
     "/api/neon/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
   );
-  app.get('/api/neon/payment/xendit/methods', xenditApiRoutes.listPaymentMethods);
+  app.get(
+    "/api/neon/payment/xendit/methods",
+    xenditApiRoutes.listPaymentMethods,
+  );
   app.post(
     "/api/neon/payment/xendit/create-subscription-invoice",
     xenditApiRoutes.createSubscriptionInvoice,

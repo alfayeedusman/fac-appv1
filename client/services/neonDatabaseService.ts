@@ -1,7 +1,7 @@
 // Client-side service to interact with Neon database via API
 import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
-import { log, info, warn, error as logError } from '@/utils/logger';
+import { log, info, warn, error as logError } from "@/utils/logger";
 
 // Types based on our database schema
 export interface UserVehicle {
@@ -145,7 +145,10 @@ export interface Ad {
 }
 
 // Safe timeout handler to prevent issues with AbortController
-const createSafeTimeoutAbort = (controller: AbortController, timeoutMs: number) => {
+const createSafeTimeoutAbort = (
+  controller: AbortController,
+  timeoutMs: number,
+) => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let isAborted = false;
 
@@ -252,10 +255,7 @@ class NeonDatabaseClient {
         throw e;
       }
     } catch (e) {
-      warn(
-        "⚠️ Test request failed:",
-        e instanceof Error ? e.message : e,
-      );
+      warn("⚠️ Test request failed:", e instanceof Error ? e.message : e);
     }
 
     // Final: mark offline, allow UI to use fallbacks
@@ -289,7 +289,7 @@ class NeonDatabaseClient {
         isResolved = true;
         if (timeoutId) clearTimeout(timeoutId);
         // Handle abort errors gracefully (timeout is expected behavior)
-        if (e instanceof Error && e.name === 'AbortError') {
+        if (e instanceof Error && e.name === "AbortError") {
           throw new Error(`Request timeout after ${timeoutMs}ms`);
         }
         throw e;
@@ -313,10 +313,7 @@ class NeonDatabaseClient {
         }
         logError(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn(
-          "Primary connection test failed:",
-          (err as any).message || err,
-        );
+        warn("Primary connection test failed:", (err as any).message || err);
       }
 
       // 2) Fallback to same-origin relative API
@@ -333,14 +330,9 @@ class NeonDatabaseClient {
           }
           return result;
         }
-        logError(
-          `Fallback connection test failed: HTTP ${response.status}`,
-        );
+        logError(`Fallback connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn(
-          "Fallback connection test failed:",
-          (err as any).message || err,
-        );
+        warn("Fallback connection test failed:", (err as any).message || err);
       }
 
       // 3) Final: health check to distinguish server vs network
@@ -499,10 +491,7 @@ class NeonDatabaseClient {
         warn("⚠️ Response body already consumed; skipping read");
       }
     } catch (readErr: any) {
-      logError(
-        "❌ Failed to read response body:",
-        readErr?.message || readErr,
-      );
+      logError("❌ Failed to read response body:", readErr?.message || readErr);
       // Continue with empty text; we'll return a generic error below if needed
     }
 
@@ -623,10 +612,7 @@ class NeonDatabaseClient {
             return result;
           } catch (retryErr: any) {
             timeoutHandler2.clearTimeout();
-            logError(
-              "❌ Retry login failed:",
-              retryErr?.message || retryErr,
-            );
+            logError("❌ Retry login failed:", retryErr?.message || retryErr);
             return {
               success: false,
               error: "Login failed. Please try again.",
@@ -743,7 +729,8 @@ class NeonDatabaseClient {
             if (status === 409) msg = "Account already exists.";
             else if (status === 400)
               msg = "Please check your details and try again.";
-            else if (status === 503) msg = "System under maintenance. Try later.";
+            else if (status === 503)
+              msg = "System under maintenance. Try later.";
             else if (status >= 500)
               msg = "Server error. Please try again shortly.";
             return { success: false, error: msg };
@@ -961,21 +948,36 @@ class NeonDatabaseClient {
 
       // Check response status first
       if (!response.ok) {
-        console.error("❌ Subscription fetch failed with status:", response.status);
+        console.error(
+          "❌ Subscription fetch failed with status:",
+          response.status,
+        );
         const contentType = response.headers.get("content-type");
         if (contentType?.includes("application/json")) {
           try {
             const errorData = await response.json();
             console.error("Error response:", errorData);
-            return { success: false, subscriptions: [], error: errorData.error };
+            return {
+              success: false,
+              subscriptions: [],
+              error: errorData.error,
+            };
           } catch (parseErr) {
             console.error("Failed to parse error response:", parseErr);
-            return { success: false, subscriptions: [], error: `HTTP ${response.status}` };
+            return {
+              success: false,
+              subscriptions: [],
+              error: `HTTP ${response.status}`,
+            };
           }
         } else {
           const text = await response.text();
           console.error("Non-JSON error response:", text.substring(0, 200));
-          return { success: false, subscriptions: [], error: "Invalid response format" };
+          return {
+            success: false,
+            subscriptions: [],
+            error: "Invalid response format",
+          };
         }
       }
 
@@ -986,15 +988,26 @@ class NeonDatabaseClient {
           console.error("❌ Response content-type is not JSON:", contentType);
           const text = await response.text();
           console.error("Response body:", text.substring(0, 200));
-          return { success: false, subscriptions: [], error: "Invalid content type" };
+          return {
+            success: false,
+            subscriptions: [],
+            error: "Invalid content type",
+          };
         }
 
         const result = await response.json();
-        console.log("✅ Subscriptions fetched successfully:", result?.subscriptions?.length || 0);
+        console.log(
+          "✅ Subscriptions fetched successfully:",
+          result?.subscriptions?.length || 0,
+        );
         return result;
       } catch (parseErr) {
         console.error("❌ Failed to parse subscription response:", parseErr);
-        return { success: false, subscriptions: [], error: "Failed to parse response" };
+        return {
+          success: false,
+          subscriptions: [],
+          error: "Failed to parse response",
+        };
       }
     } catch (error: any) {
       console.error("❌ Database subscription fetch failed:", error);
@@ -1742,7 +1755,10 @@ class NeonDatabaseClient {
   async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
     try {
       // Check cache first
-      if (this.realtimeStatsCache && Date.now() - this.realtimeStatsCache.timestamp < this.cacheTTL) {
+      if (
+        this.realtimeStatsCache &&
+        Date.now() - this.realtimeStatsCache.timestamp < this.cacheTTL
+      ) {
         return this.realtimeStatsCache.data;
       }
 
@@ -1755,11 +1771,15 @@ class NeonDatabaseClient {
       const result = await this.fetchJsonWithFallback("/realtime-stats");
 
       // Cache the result
-      const processedResult = result?.success !== undefined
-        ? result
-        : { success: true, stats: result?.stats ?? result };
+      const processedResult =
+        result?.success !== undefined
+          ? result
+          : { success: true, stats: result?.stats ?? result };
 
-      this.realtimeStatsCache = { data: processedResult, timestamp: Date.now() };
+      this.realtimeStatsCache = {
+        data: processedResult,
+        timestamp: Date.now(),
+      };
       return processedResult;
     } catch (error) {
       console.error("❌ Database realtime stats fetch failed:", error);
@@ -1773,10 +1793,15 @@ class NeonDatabaseClient {
 
   // === STATS ===
 
-  async getStats(period: string = "monthly"): Promise<{ success: boolean; stats?: any }> {
+  async getStats(
+    period: string = "monthly",
+  ): Promise<{ success: boolean; stats?: any }> {
     try {
       // Check cache first
-      if (this.statsCache && Date.now() - this.statsCache.timestamp < this.cacheTTL) {
+      if (
+        this.statsCache &&
+        Date.now() - this.statsCache.timestamp < this.cacheTTL
+      ) {
         return this.statsCache.data;
       }
 
@@ -1786,12 +1811,15 @@ class NeonDatabaseClient {
         return { success: false, stats: null };
       }
 
-      const result = await this.fetchJsonWithFallback(`/stats?period=${period}`);
+      const result = await this.fetchJsonWithFallback(
+        `/stats?period=${period}`,
+      );
 
       // Cache the result
-      const processedResult = result?.success !== undefined
-        ? result
-        : { success: true, stats: result?.stats ?? result };
+      const processedResult =
+        result?.success !== undefined
+          ? result
+          : { success: true, stats: result?.stats ?? result };
 
       this.statsCache = { data: processedResult, timestamp: Date.now() };
       return processedResult;
