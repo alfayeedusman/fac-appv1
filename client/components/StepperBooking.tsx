@@ -1227,12 +1227,33 @@ export default function StepperBooking({
       );
     } catch (error) {
       console.error("Booking submission error:", error);
+
+      let errorDescription = "There was an error submitting your booking. Please try again.";
+
+      if (error instanceof Error) {
+        if (error.message.includes("network") || error.message.includes("fetch")) {
+          errorDescription = "Network connection error. Please check your internet connection and try again.";
+        } else if (error.message.includes("validation") || error.message.includes("required")) {
+          errorDescription = "Please fill in all required fields and try again.";
+        } else if (error.message.includes("database") || error.message.includes("503")) {
+          errorDescription = "Service temporarily unavailable. Please try again in a few moments.";
+        } else if (error.message) {
+          errorDescription = error.message;
+        }
+      }
+
       toast({
         title: "Booking Failed",
-        description:
-          "There was an error submitting your booking. Please try again.",
+        description: errorDescription,
         variant: "destructive",
       });
+
+      // Also show notification for better visibility
+      notificationManager.error(
+        "Booking Failed ❌",
+        errorDescription,
+        { autoClose: 5000 }
+      );
     } finally {
       setIsLoading(false);
     }
