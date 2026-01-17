@@ -134,25 +134,31 @@ export default function Login() {
     } catch (error: any) {
       console.error("Login error:", error);
 
+      let title = "Login Failed";
+      let description = "An unexpected error occurred. Please try again.";
+
       // Check if it's a network/connection error
       if (
         error.message?.includes("fetch") ||
         error.message?.includes("network") ||
-        error.message?.includes("connection")
+        error.message?.includes("connection") ||
+        error.name === "TypeError" // Network error
       ) {
-        toast({
-          title: "Connection Error",
-          description:
-            "Unable to connect to the server. Please check your internet connection and try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
+        title = "Connection Error";
+        description = "Unable to connect to the server. Please check your internet connection and try again.";
+      } else if (error.message?.includes("timeout")) {
+        title = "Connection Timeout";
+        description = "The server took too long to respond. Please try again.";
+      } else if (error.message?.includes("CORS")) {
+        title = "Access Error";
+        description = "Unable to connect to the authentication service. Please try again.";
       }
+
+      toast({
+        title,
+        description,
+        variant: "destructive",
+      });
     }
 
     setIsLoading(false);
