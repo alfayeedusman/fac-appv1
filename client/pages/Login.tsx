@@ -114,11 +114,20 @@ export default function Login() {
         }, 1000);
       } else {
         // Login failed with specific error message
+        let description = result.error || "Invalid email or password. Please check your credentials and try again.";
+
+        // Provide additional helpful context
+        if (result.error?.includes("Invalid") || result.error?.includes("credentials")) {
+          description = "Invalid email or password. Please check your credentials and try again.\n\nNeed help? Contact support at support@fayeedautocare.com";
+        } else if (result.error?.includes("disabled")) {
+          description = "Your account has been disabled. Please contact support.";
+        } else if (result.error?.includes("service") || result.error?.includes("503")) {
+          description = "Service temporarily unavailable. Please try again in a few moments.";
+        }
+
         toast({
           title: "Login Failed",
-          description:
-            result.error ||
-            "Invalid email or password. Please check your credentials and try again.",
+          description,
           variant: "destructive",
         });
       }
