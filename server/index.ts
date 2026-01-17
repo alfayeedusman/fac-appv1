@@ -234,5 +234,20 @@ export function createServer() {
   app.get("/api/neon/inventory/analytics", neonApiRoutes.getInventoryAnalytics);
   app.get("/api/neon/inventory/low-stock", neonApiRoutes.getLowStockItems);
 
+  // Auto-seed data on server startup
+  setTimeout(async () => {
+    try {
+      console.log("🏪 Auto-seeding branch data...");
+      await seedBranches();
+      console.log("✅ Branch seeding completed successfully");
+
+      console.log("👥 Auto-seeding user data...");
+      await seedUsers();
+      console.log("✅ User seeding completed successfully");
+    } catch (error) {
+      console.log("⚠️ Seeding failed:", error);
+    }
+  }, 2000);
+
   return app;
 }
