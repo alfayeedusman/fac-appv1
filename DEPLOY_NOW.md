@@ -41,7 +41,6 @@ This guide will help you deploy your app live to the internet in **3 simple step
    npm install --legacy-peer-deps
    npm run build
    ```
-   
 2. **Drag & Drop:**
    - Go to [https://app.netlify.com/drop](https://app.netlify.com/drop)
    - Drag the `dist/spa` folder to the page
@@ -60,11 +59,13 @@ Your app needs these settings to work. Copy them from your local `.env` file:
 5. **Add these variables ONE BY ONE:**
 
 ### Database (Required)
+
 ```
 NEON_DATABASE_URL = postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 ```
 
 ### Firebase (Required)
+
 ```
 VITE_FIREBASE_API_KEY = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM
 VITE_FIREBASE_AUTH_DOMAIN = facapp-dbdc1.firebaseapp.com
@@ -77,11 +78,13 @@ VITE_FIREBASE_FCM_KEY = BPZ7qJsAwjsYN03miKRrNbnPR2oU1y0wpHPmsHnz6Z9U12spAZi5L0il
 ```
 
 ### Mapbox (Required for Maps)
+
 ```
 VITE_MAPBOX_TOKEN = pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg
 ```
 
 ### Xendit Payment (Required for Payments)
+
 ```
 XENDIT_SECRET_KEY = xnd_development_DOtbVDk9E83dYEUgJGpiJT7RKmUZtrbLcEQRFKDu2qpJTMFHYi8I6PnwxB4g
 XENDIT_WEBHOOK_TOKEN = Q1kEJVOuDw5BUkkPNpJEu3KjioqCPcF0Wj7jhr1dc1vZvL39
@@ -89,6 +92,7 @@ XENDIT_PUBLIC_KEY = xnd_public_development_0GsLabVLX_CfyXBlEErMSO7jjhbNI7ZcUhYKh
 ```
 
 ### Pusher Realtime (Required for Notifications)
+
 ```
 PUSHER_KEY = bce5ef8f7770b2fea49d
 PUSHER_SECRET = 3ae85fd35d9f8eb46586
@@ -107,6 +111,7 @@ VITE_PUSHER_CLUSTER = ap1
 ## 🎉 YOU'RE DONE!
 
 Your site is now live! You'll get a URL like:
+
 ```
 https://your-site-name.netlify.app
 ```
@@ -126,6 +131,7 @@ https://your-site-name.netlify.app
 ## 🔄 Automatic Updates
 
 If you used **GitHub connection** (Option A):
+
 - Every time you push code to GitHub
 - Netlify automatically rebuilds and deploys
 - No manual work needed! 🎉
@@ -135,6 +141,7 @@ If you used **GitHub connection** (Option A):
 ## ❌ Troubleshooting
 
 ### Build Failed?
+
 1. Click on the failed deploy
 2. Read the error log
 3. Most common fixes:
@@ -143,16 +150,19 @@ If you used **GitHub connection** (Option A):
    - Try **"Clear cache and retry"** button
 
 ### Site Not Loading?
+
 1. Wait 2-5 minutes after deploy completes
 2. Hard refresh: Press `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
 3. Check browser console for errors (F12)
 
 ### Database Not Working?
+
 - Verify `NEON_DATABASE_URL` is set correctly
 - Make sure it ends with `?sslmode=require`
 - Check Neon dashboard for connection issues
 
 ### Still Stuck?
+
 - Check the deploy log for specific errors
 - Contact support: [https://answers.netlify.com/](https://answers.netlify.com/)
 - Or reach out to your developer
@@ -177,11 +187,13 @@ Before deploying, make sure:
 If you're comfortable with terminal:
 
 1. Install Netlify CLI:
+
    ```bash
    npm install -g netlify-cli
    ```
 
 2. Login:
+
    ```bash
    netlify login
    ```

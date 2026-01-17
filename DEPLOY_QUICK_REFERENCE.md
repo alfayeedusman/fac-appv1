@@ -7,11 +7,13 @@
 ## 🚀 ONE-LINE DEPLOYMENT
 
 ### Mac/Linux:
+
 ```bash
 bash deploy-to-netlify.sh
 ```
 
 ### Windows:
+
 ```
 deploy-to-netlify.bat
 ```
@@ -81,21 +83,27 @@ Before clicking deploy:
 ## 🆘 EMERGENCY FIXES
 
 ### Build fails with exit code 127?
+
 → Run: `npm install --legacy-peer-deps`
 
 ### "Cannot find module" error?
+
 → Delete `node_modules` and `dist`, then rebuild
 
 ### Environment variables not working?
+
 → Click "Save" in Netlify, then "Trigger deploy"
 
 ### Database connection fails?
+
 → Check `NEON_DATABASE_URL` ends with `?sslmode=require`
 
 ### Firebase errors?
+
 → Verify all Firebase variables are set
 
 ### Site not updating?
+
 → Hard refresh: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
 
 ---
@@ -142,6 +150,7 @@ netlify logs
 ## 🌐 WHERE TO SET ENVIRONMENT VARIABLES
 
 **Netlify UI:**
+
 1. Go to https://app.netlify.com
 2. Select your site
 3. Site settings → Build & deploy → Environment
@@ -151,11 +160,13 @@ netlify logs
 7. Trigger new deploy
 
 **Netlify CLI:**
+
 ```bash
 netlify env:set KEY "VALUE"
 ```
 
 **Bulk import:**
+
 ```bash
 netlify env:import .env
 ```
@@ -216,6 +227,7 @@ START_HERE_DEPLOYMENT.md  # Quick start guide
 ## 💡 BEST PRACTICES
 
 ✅ **DO:**
+
 - Test locally before deploying
 - Use GitHub for automatic deploys
 - Keep separate dev/prod environments
@@ -225,6 +237,7 @@ START_HERE_DEPLOYMENT.md  # Quick start guide
 - Set up deploy notifications
 
 ❌ **DON'T:**
+
 - Commit `.env` files to Git
 - Use development keys in production
 - Deploy without testing
@@ -237,6 +250,7 @@ START_HERE_DEPLOYMENT.md  # Quick start guide
 ## 🎊 SUCCESS INDICATORS
 
 Your deployment succeeded if:
+
 - ✅ Build log shows "Deploy complete"
 - ✅ Site URL opens without errors
 - ✅ Database connections work
