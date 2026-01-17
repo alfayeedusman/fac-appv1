@@ -3,13 +3,26 @@
   functions = "netlify/functions"
   publish = "dist/spa"
 
+[context.production]
+  environment = { NODE_ENV = "production" }
 
 [functions]
   external_node_modules = ["express"]
   node_bundler = "esbuild"
-  
+
 [[redirects]]
   force = true
   from = "/api/*"
   status = 200
   to = "/.netlify/functions/api/:splat"
+
+# Secrets scanning configuration
+# Whitelist firebase configuration which are safe to expose in frontend
+[[env]]
+  pattern = "VITE_FIREBASE_*"
+  scope = "builds"
+
+# Prevent Netlify from scanning build artifacts
+[build.environment]
+  # Only VITE_ prefixed variables are safe for frontend bundling
+  # Backend secrets (XENDIT_, PUSHER_, NEON_) must NOT be exposed
