@@ -93,7 +93,7 @@ export default function SignUp() {
     return phoneRegex.test(phone.replace(/\s/g, ""));
   };
 
-  const validateStep = (step: number) => {
+  const validateStep = (step: number): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
     if (step === 1) {
@@ -170,28 +170,31 @@ export default function SignUp() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    return { isValid, errors: newErrors };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🚀 Registration form submitted');
 
-    const isStep1Valid = validateStep(1);
-    const isStep2Valid = validateStep(2);
-    const isStep3Valid = validateStep(3);
+    const step1Result = validateStep(1);
+    const step2Result = validateStep(2);
+    const step3Result = validateStep(3);
 
     console.log('✅ Validation results:', {
-      step1: isStep1Valid,
-      step2: isStep2Valid,
-      step3: isStep3Valid
+      step1: step1Result.isValid,
+      step2: step2Result.isValid,
+      step3: step3Result.isValid
     });
 
-    if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
-      console.error('❌ Validation failed:', errors);
+    if (!step1Result.isValid || !step2Result.isValid || !step3Result.isValid) {
+      const allErrors = { ...step1Result.errors, ...step2Result.errors, ...step3Result.errors };
+      console.error('❌ Validation failed:', JSON.stringify(allErrors, null, 2));
+      const errorMessages = Object.values(allErrors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete All Fields',
-        description: 'Fill in all required fields correctly before submitting.',
+        description: errorMessages || 'Fill in all required fields correctly before submitting.',
         variant: 'destructive',
       });
       return;
@@ -309,14 +312,15 @@ export default function SignUp() {
 
   const nextStep = () => {
     console.log(`🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`);
-    const isValid = validateStep(currentStep);
-    console.log(`✅ Step ${currentStep} validation:`, isValid);
+    const validationResult = validateStep(currentStep);
+    console.log(`✅ Step ${currentStep} validation:`, validationResult.isValid);
 
-    if (!isValid) {
-      console.error(`❌ Step ${currentStep} validation failed:`, errors);
+    if (!validationResult.isValid) {
+      console.error(`❌ Step ${currentStep} validation failed:`, JSON.stringify(validationResult.errors, null, 2));
+      const errorMessages = Object.values(validationResult.errors).filter(Boolean).join(', ');
       toast({
         title: 'Please Complete This Step',
-        description: 'Fill in all required fields before continuing.',
+        description: errorMessages || 'Fill in all required fields before continuing.',
         variant: 'destructive',
       });
       return;

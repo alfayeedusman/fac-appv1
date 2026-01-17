@@ -128,26 +128,28 @@ export default function BookingReceiptModal({
             className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300"
           >
             {/* Header */}
-            <div className="text-center mb-6 pb-6 border-b-2 border-gray-200">
+            <div className="text-center mb-8 pb-6 border-b-2 border-gray-300">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2Faa4bc2d15e574dab80ef472ac32b06f9?format=webp&width=800"
                 alt="Fayeed Auto Care Logo"
-                className="h-16 mx-auto mb-3"
+                className="h-24 mx-auto mb-6 object-contain"
               />
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">
                 BOOKING RECEIPT
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Thank you for choosing Fayeed Auto Care
+              <p className="text-sm text-gray-600 font-medium whitespace-normal">
+                Thank&nbsp;you&nbsp;for&nbsp;choosing&nbsp;Fayeed&nbsp;Auto&nbsp;Care
               </p>
             </div>
 
             {/* Confirmation Code */}
-            <div className="text-center mb-6">
-              <Badge className="bg-fac-orange-500 text-white text-lg px-6 py-2">
+            <div className="flex flex-col items-center justify-center mb-8 py-4">
+              <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">
+                Confirmation Code
+              </p>
+              <Badge className="bg-fac-orange-500 text-white text-xl px-8 py-3 rounded-full font-bold whitespace-nowrap">
                 {bookingData.confirmationCode}
               </Badge>
-              <p className="text-xs text-gray-500 mt-2">Confirmation Code</p>
             </div>
 
             {/* Customer Details */}

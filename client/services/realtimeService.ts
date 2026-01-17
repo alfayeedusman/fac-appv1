@@ -3,6 +3,8 @@
  * Handles all communication with the real-time API endpoints
  */
 
+import { log, info, warn, error as logError } from '@/utils/logger';
+
 interface CrewLocation {
   crew_id: number;
   name: string;
@@ -136,8 +138,24 @@ class RealtimeService {
   private consecutiveErrors: number = 0;
   private maxConsecutiveErrors: number = 3;
 
+  private pusher: any = null;
+  private pusherChannels: any[] = [];
+
   constructor() {
     this.baseUrl = '/api/realtime';
+
+    // Try to initialize Pusher client if VITE_PUSHER_KEY is configured
+    const pusherKey = import.meta.env.VITE_PUSHER_KEY;
+    const pusherCluster = import.meta.env.VITE_PUSHER_CLUSTER;
+
+
+    if (pusherKey && pusherCluster) {
+      this.initPusher(pusherKey as string, pusherCluster as string)
+        .then(() => info('✅ Pusher client initialized'))
+        .catch((err) => warn('⚠️ Pusher client init failed:', err));
+    } else {
+      log('ℹ️ Pusher not configured on client (VITE_PUSHER_KEY missing)');
+    }
   }
 
   /**
@@ -192,7 +210,7 @@ class RealtimeService {
       try {
         callback(data);
       } catch (error) {
-        console.error(`Error in ${eventType} subscriber:`, error);
+        warn(`Error in ${eventType} subscriber:`, error);
       }
     });
   }
@@ -200,6 +218,96 @@ class RealtimeService {
   /**
    * Start real-time polling
    */
+  async initPusher(key: string, cluster: string) {
+    try {
+      // Dynamically load Pusher script
+      if (!(window as any).Pusher) {
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://js.pusher.com/7.2/pusher.min.js';
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = (e) => reject(e);
+          document.head.appendChild(s);
+        });
+      }
+
+      const Pusher = (window as any).Pusher;
+      Pusher.logToConsole = false;
+
+      // Configure auth endpoint for private channel subscriptions
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+      const sessionToken = localStorage.getItem('sessionToken');
+
+      const authHeaders: Record<string, string> = {};
+      if (sessionToken) {
+        authHeaders['Authorization'] = `Bearer ${sessionToken}`;
+      } else {
+        // Fallback for older clients that used header-based auth
+        authHeaders['x-user-id'] = userId || '';
+        authHeaders['x-user-role'] = userRole || '';
+      }
+
+      this.pusher = new Pusher(key, {
+        cluster,
+        forceTLS: true,
+        authEndpoint: '/api/realtime/pusher/auth',
+        auth: {
+          headers: authHeaders,
+        },
+      });
+
+      // Subscribe to public realtime channel (non-private)
+      const publicChannel = this.pusher.subscribe('public-realtime');
+      publicChannel.bind('new-message', (data: any) => this.emit('new-message', data));
+      publicChannel.bind('booking.created', (data: any) => this.emit('booking.created', data));
+      publicChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      publicChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
+      publicChannel.bind('subscription.failed', (data: any) => this.emit('subscription.failed', data));
+      publicChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      publicChannel.bind('inventory.created', (data: any) => this.emit('inventory.created', data));
+      publicChannel.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
+      publicChannel.bind('inventory.deleted', (data: any) => this.emit('inventory.deleted', data));
+      publicChannel.bind('stock.movement', (data: any) => this.emit('stock.movement', data));
+
+      this.pusherChannels.push(publicChannel);
+
+      // Subscribe to private public channel (for admins) if auth succeeds
+      const privatePublic = this.pusher.subscribe('private-public-realtime');
+      privatePublic.bind('booking.created', (data: any) => this.emit('booking.created', data));
+      privatePublic.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      privatePublic.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      privatePublic.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
+      this.pusherChannels.push(privatePublic);
+
+      // Subscribe to user specific channel if logged in (private)
+      if (userId) {
+        const privateUserChannel = `private-user-customer-${userId}`;
+        const userChannel = this.pusher.subscribe(privateUserChannel);
+        userChannel.bind('new-message', (data: any) => this.emit('new-message', data));
+        userChannel.bind('booking.created', (data: any) => this.emit('booking.created', data));
+        userChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+        userChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
+        this.pusherChannels.push(userChannel);
+      }
+
+      // Subscribe to branch channel if available in localStorage
+      const branchId = localStorage.getItem('userBranch') || localStorage.getItem('branchLocation');
+      if (branchId) {
+        const privateBranch = `private-branch-${branchId}`;
+        const branchChannel = this.pusher.subscribe(privateBranch);
+        branchChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+        this.pusherChannels.push(branchChannel);
+      }
+
+      info('🔌 Pusher channels subscribed');
+    } catch (error) {
+      warn('⚠️ Failed to initialize Pusher client:', error);
+      // Do not throw - fallback to polling
+    }
+  }
+
   startRealTimeUpdates(intervalMs: number = 5000): void {
     if (this.refreshInterval) {
       this.stopRealTimeUpdates();
@@ -218,7 +326,7 @@ class RealtimeService {
 
       // Skip if offline
       if (!navigator.onLine) {
-        console.log('📡 Offline - skipping real-time update');
+        log('📡 Offline - skipping real-time update');
         this.consecutiveErrors++;
         return;
       }
@@ -241,12 +349,12 @@ class RealtimeService {
 
       } catch (error) {
         this.consecutiveErrors++;
-        console.error(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
+        warn(`Real-time update error (${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`, error);
         this.emit('error', error);
       }
     }, intervalMs);
 
-    console.log(`🔄 Real-time updates started (${intervalMs}ms interval)`);
+    info(`🔄 Real-time updates started (${intervalMs}ms interval)`);
   }
 
   /**
@@ -257,7 +365,7 @@ class RealtimeService {
       clearInterval(this.refreshInterval);
       this.refreshInterval = undefined;
       this.consecutiveErrors = 0; // Reset error counter
-      console.log('⏹️ Real-time updates stopped');
+      info('⏹️ Real-time updates stopped');
     }
   }
 
@@ -266,7 +374,7 @@ class RealtimeService {
    */
   resetErrorCounter(): void {
     this.consecutiveErrors = 0;
-    console.log('✅ Error counter reset - resuming normal operation');
+    info('✅ Error counter reset - resuming normal operation');
   }
 
   // ============================================================================

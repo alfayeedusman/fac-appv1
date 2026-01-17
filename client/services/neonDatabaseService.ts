@@ -1,6 +1,7 @@
 // Client-side service to interact with Neon database via API
 import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
+import { log, info, warn, error as logError } from '@/utils/logger';
 
 // Types based on our database schema
 export interface UserVehicle {
@@ -148,14 +149,19 @@ class NeonDatabaseClient {
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
 
+  // Cache with TTL to prevent excessive API calls
+  private statsCache: { data: any; timestamp: number } | null = null;
+  private realtimeStatsCache: { data: any; timestamp: number } | null = null;
+  private cacheTTL = 5000; // 5 seconds cache
+
   constructor() {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
-    console.log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
+    log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
-      console.warn("⚠️ Background initialization failed:", err),
+      warn("⚠️ Background initialization failed:", err),
     );
   }
 
@@ -164,7 +170,7 @@ class NeonDatabaseClient {
     // Try POST /init, then GET /test as fallback; degrade gracefully to offline
     try {
       const initUrl = `${this.baseUrl}/init`;
-      console.log(`🔄 Initializing database connection to: ${initUrl}`);
+      log(`🔄 Initializing database connection to: ${initUrl}`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -181,16 +187,16 @@ class NeonDatabaseClient {
         const result = await response.json();
         this.isConnected = !!result.success;
         if (this.isConnected) {
-          console.log("✅ Database initialized successfully");
+          info("✅ Database initialized successfully");
           return true;
         }
       } else {
-        console.warn(
+        warn(
           `⚠️ Init request failed: ${response.status} ${response.statusText}`,
         );
       }
     } catch (error) {
-      console.warn(
+      warn(
         "⚠️ Init request error, will try /test fallback:",
         error instanceof Error ? error.message : error,
       );
@@ -206,11 +212,11 @@ class NeonDatabaseClient {
       if (res.ok) {
         const result = await res.json();
         this.isConnected = !!(result.connected || result.success);
-        console.log(`🔗 Test connection result: ${this.isConnected}`);
+        info(`🔗 Test connection result: ${this.isConnected}`);
         return this.isConnected;
       }
     } catch (e) {
-      console.warn(
+      warn(
         "⚠️ Test request failed:",
         e instanceof Error ? e.message : e,
       );
@@ -218,7 +224,7 @@ class NeonDatabaseClient {
 
     // Final: mark offline, allow UI to use fallbacks
     this.isConnected = false;
-    console.info("📴 Running in offline/demo mode (database unreachable)");
+    info("📴 Running in offline/demo mode (database unreachable)");
     return false;
   }
 
@@ -229,13 +235,22 @@ class NeonDatabaseClient {
   }> {
     const tryFetch = async (url: string, timeoutMs = 8000) => {
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), timeoutMs);
+      let timeoutId: NodeJS.Timeout | null = null;
+
       try {
+        timeoutId = setTimeout(() => {
+          if (ac) ac.abort();
+        }, timeoutMs);
+
         const res = await fetch(url, { signal: ac.signal });
-        clearTimeout(to);
+        if (timeoutId) clearTimeout(timeoutId);
         return res;
       } catch (e) {
-        clearTimeout(to);
+        if (timeoutId) clearTimeout(timeoutId);
+        // Handle abort errors gracefully (timeout is expected behavior)
+        if (e instanceof Error && e.name === 'AbortError') {
+          throw new Error(`Request timeout after ${timeoutMs}ms`);
+        }
         throw e;
       }
     };
@@ -249,15 +264,15 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log("✅ Database connection test successful");
+            info("✅ Database connection test successful");
           } else {
-            console.warn("⚠️ Database connection test returned false");
+            warn("⚠️ Database connection test returned false");
           }
           return result;
         }
-        console.error(`Connection test failed: HTTP ${response.status}`);
+        logError(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        console.warn(
+        warn(
           "Primary connection test failed:",
           (err as any).message || err,
         );
@@ -271,17 +286,17 @@ class NeonDatabaseClient {
           const result = await response.json();
           this.isConnected = result.connected || result.success || false;
           if (this.isConnected) {
-            console.log("✅ Fallback connection test successful");
+            info("✅ Fallback connection test successful");
           } else {
             console.warn("⚠️ Fallback connection test returned false");
           }
           return result;
         }
-        console.error(
+        logError(
           `Fallback connection test failed: HTTP ${response.status}`,
         );
       } catch (err) {
-        console.warn(
+        warn(
           "Fallback connection test failed:",
           (err as any).message || err,
         );
@@ -301,7 +316,7 @@ class NeonDatabaseClient {
       this.isConnected = false;
       return { connected: false, error: "Network error" };
     } catch (error: any) {
-      console.error("❌ Connection test failed:", error.message || error);
+      logError("❌ Connection test failed:", error.message || error);
       this.isConnected = false;
       if (error.name === "AbortError") {
         return { connected: false, error: "Connection timeout" };
@@ -322,7 +337,7 @@ class NeonDatabaseClient {
     testResults: any;
     initResults: any;
   }> {
-    console.log("🔍 Starting database connection debug...");
+    log("🔍 Starting database connection debug...");
 
     const debug = {
       baseUrl: this.baseUrl,
@@ -333,11 +348,11 @@ class NeonDatabaseClient {
 
     try {
       // Test basic connectivity
-      console.log("🧪 Testing connection...");
+      log("🧪 Testing connection...");
       debug.testResults = await this.testConnection();
-      console.log("✅ Test connection result:", debug.testResults);
+      log("✅ Test connection result:", debug.testResults);
     } catch (error) {
-      console.error("❌ Test connection failed:", error);
+      logError("❌ Test connection failed:", error);
       debug.testResults = {
         error: error instanceof Error ? error.message : "Unknown test error",
       };
@@ -345,17 +360,17 @@ class NeonDatabaseClient {
 
     try {
       // Try initialization
-      console.log("🚀 Testing initialization...");
+      log("🚀 Testing initialization...");
       debug.initResults = await this.initialize();
-      console.log("✅ Init result:", debug.initResults);
+      log("✅ Init result:", debug.initResults);
     } catch (error) {
-      console.error("❌ Initialization failed:", error);
+      logError("❌ Initialization failed:", error);
       debug.initResults = {
         error: error instanceof Error ? error.message : "Unknown init error",
       };
     }
 
-    console.log("🔍 Debug completed:", debug);
+    log("🔍 Debug completed:", debug);
     return debug;
   }
 
@@ -380,7 +395,7 @@ class NeonDatabaseClient {
   // Auto-initialize without user interaction
   private async autoInitialize(): Promise<boolean> {
     try {
-      console.log("🔄 Auto-initializing Neon database...");
+      log("🔄 Auto-initializing Neon database...");
 
       // First try test connection
       const testResult = await this.testConnection();
@@ -392,7 +407,7 @@ class NeonDatabaseClient {
       const initResult = await this.initialize();
       return initResult;
     } catch (error) {
-      console.error("❌ Auto-initialization failed:", error);
+      logError("❌ Auto-initialization failed:", error);
       return false;
     }
   }
@@ -425,8 +440,8 @@ class NeonDatabaseClient {
     }
 
     try {
-      console.log("📝 Response status:", response.status, response.statusText);
-      console.log("📝 Response URL:", response.url);
+      log("📝 Response status:", response.status, response.statusText);
+      log("📝 Response URL:", response.url);
       console.log(
         "��� Content-Type:",
         response.headers.get("content-type") || "unknown",
@@ -440,10 +455,10 @@ class NeonDatabaseClient {
         text = await response.text();
       } else {
         // If already consumed (by an interceptor), we cannot read again safely
-        console.warn("⚠️ Response body already consumed; skipping read");
+        warn("⚠️ Response body already consumed; skipping read");
       }
     } catch (readErr: any) {
-      console.error(
+      logError(
         "❌ Failed to read response body:",
         readErr?.message || readErr,
       );
@@ -484,7 +499,7 @@ class NeonDatabaseClient {
         localStorage.setItem("userRole", json.user.role);
         localStorage.setItem("userId", json.user.id);
       } catch (e) {
-        console.warn(
+        warn(
           "⚠️ Storage unavailable, proceeding without persisting session:",
           (e as any)?.message || e,
         );
@@ -518,12 +533,12 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     // Attempt background connection check but don't block login
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err),
+      warn("Background connection check failed:", err),
     );
 
     try {
       const url = `${this.baseUrl}/auth/login`;
-      console.log("🔎 Login request URL:", url);
+      log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
@@ -548,7 +563,7 @@ class NeonDatabaseClient {
         processed.error?.toLowerCase().includes("cors") ||
         processed.error?.toLowerCase().includes("network")
       ) {
-        console.log("🔄 Retrying login via same-origin fallback...");
+        log("🔄 Retrying login via same-origin fallback...");
         const ac2 = new AbortController();
         const to2 = setTimeout(() => ac2.abort(), 10000);
         try {
@@ -566,7 +581,7 @@ class NeonDatabaseClient {
           return result;
         } catch (retryErr: any) {
           clearTimeout(to2);
-          console.error(
+          logError(
             "❌ Retry login failed:",
             retryErr?.message || retryErr,
           );
@@ -579,7 +594,7 @@ class NeonDatabaseClient {
 
       return processed;
     } catch (error: any) {
-      console.error("Database login failed:", error);
+      logError("Database login failed:", error);
 
       if (error?.name === "AbortError") {
         return {
@@ -595,7 +610,7 @@ class NeonDatabaseClient {
       ) {
         // Try fallback URL directly on network error
         try {
-          console.log("🔄 Network error, trying fallback login...");
+          log("🔄 Network error, trying fallback login...");
           const ac4 = new AbortController();
           const to4 = setTimeout(() => ac4.abort(), 10000);
           const resp3 = await fetch(`/api/neon/auth/login`, {
@@ -611,7 +626,7 @@ class NeonDatabaseClient {
           }
           return result;
         } catch (e3: any) {
-          console.error("❌ Fallback login also failed:", e3?.message || e3);
+          logError("❌ Fallback login also failed:", e3?.message || e3);
           return {
             success: false,
             error:
@@ -630,18 +645,18 @@ class NeonDatabaseClient {
   async register(
     userData: Omit<User, "id" | "createdAt" | "updatedAt">,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    console.log("📝 Starting registration for:", userData.email);
+    log("📝 Starting registration for:", userData.email);
 
     // Attempt background connection check but don't block registration
     this.ensureConnection().catch((err) =>
-      console.warn("Background connection check failed:", err),
+      warn("Background connection check failed:", err),
     );
 
     const tryRegister = async (
       url: string,
     ): Promise<{ success: boolean; user?: User; error?: string }> => {
       try {
-        console.log("🔄 Attempting registration at:", url);
+        log("🔄 Attempting registration at:", url);
         const ac = new AbortController();
         const to = setTimeout(() => ac.abort(), 15000);
 
@@ -653,7 +668,7 @@ class NeonDatabaseClient {
         });
 
         clearTimeout(to);
-        console.log("📡 Registration response status:", response.status);
+        log("📡 Registration response status:", response.status);
 
         const ct = response.headers.get("content-type") || "";
         let data: any = null;
@@ -668,7 +683,7 @@ class NeonDatabaseClient {
           }
         }
 
-        console.log("📦 Registration response data:", data);
+        log("📦 Registration response data:", data);
 
         if (!response.ok || !data?.success) {
           const status = response.status;
@@ -682,12 +697,12 @@ class NeonDatabaseClient {
           return { success: false, error: msg };
         }
 
-        console.log("✅ Registration successful!");
+        log("✅ Registration successful!");
         // Update connection status on successful registration
         this.isConnected = true;
         return data;
       } catch (error: any) {
-        console.error("❌ Registration attempt failed:", error);
+        logError("❌ Registration attempt failed:", error);
         if (error?.name === "AbortError") {
           return {
             success: false,
@@ -703,13 +718,13 @@ class NeonDatabaseClient {
       const primaryUrl = `${this.baseUrl}/auth/register`;
       return await tryRegister(primaryUrl);
     } catch (primaryError) {
-      console.warn("⚠️ Primary registration URL failed, trying fallback...");
+      warn("⚠️ Primary registration URL failed, trying fallback...");
       // Try fallback URL
       try {
         const fallbackUrl = `/api/neon/auth/register`;
         return await tryRegister(fallbackUrl);
       } catch (fallbackError) {
-        console.error("❌ Both registration attempts failed");
+        logError("❌ Both registration attempts failed");
         return {
           success: false,
           error:
@@ -856,6 +871,81 @@ class NeonDatabaseClient {
         console.warn("Booking update timed out");
       }
       return { success: false };
+    }
+  }
+
+  // === SUBSCRIPTIONS ===
+
+  async getSubscriptions(params?: {
+    status?: string;
+    userId?: string;
+  }): Promise<{
+    success: boolean;
+    subscriptions?: any[];
+    error?: string;
+  }> {
+    if (!this.isConnected) {
+      return { success: false, subscriptions: [] };
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.status) queryParams.append("status", params.status);
+      if (params?.userId) queryParams.append("userId", params.userId);
+
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const url = `${this.baseUrl}/subscriptions?${queryParams.toString()}`;
+      console.log("📋 Fetching subscriptions from:", url);
+
+      const response = await fetch(url, { signal: ac.signal });
+
+      clearTimeout(to);
+
+      // Check response status first
+      if (!response.ok) {
+        console.error("❌ Subscription fetch failed with status:", response.status);
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          try {
+            const errorData = await response.json();
+            console.error("Error response:", errorData);
+            return { success: false, subscriptions: [], error: errorData.error };
+          } catch (parseErr) {
+            console.error("Failed to parse error response:", parseErr);
+            return { success: false, subscriptions: [], error: `HTTP ${response.status}` };
+          }
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON error response:", text.substring(0, 200));
+          return { success: false, subscriptions: [], error: "Invalid response format" };
+        }
+      }
+
+      // Parse successful response
+      try {
+        const contentType = response.headers.get("content-type");
+        if (!contentType?.includes("application/json")) {
+          console.error("❌ Response content-type is not JSON:", contentType);
+          const text = await response.text();
+          console.error("Response body:", text.substring(0, 200));
+          return { success: false, subscriptions: [], error: "Invalid content type" };
+        }
+
+        const result = await response.json();
+        console.log("✅ Subscriptions fetched successfully:", result?.subscriptions?.length || 0);
+        return result;
+      } catch (parseErr) {
+        console.error("❌ Failed to parse subscription response:", parseErr);
+        return { success: false, subscriptions: [], error: "Failed to parse response" };
+      }
+    } catch (error: any) {
+      console.error("❌ Database subscription fetch failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("⚠️ Subscriptions fetch timed out");
+      }
+      return { success: false, subscriptions: [] };
     }
   }
 
@@ -1086,9 +1176,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/customers`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
@@ -1102,7 +1192,7 @@ class NeonDatabaseClient {
       }
 
       const result = await response.json();
-      console.log("✅ getCustomers result:", result);
+      info("✅ getCustomers result:", result);
       return result;
     } catch (error) {
       console.error("❌ Database customers fetch failed:", error);
@@ -1209,9 +1299,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/staff`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
@@ -1270,9 +1360,9 @@ class NeonDatabaseClient {
 
     try {
       const url = `${this.baseUrl}/users`;
-      console.log("📞 Making request to", url);
+      log("📞 Making request to", url);
       const response = await fetch(url);
-      console.log("📥 Response status:", response.status, response.statusText);
+      log("📥 Response status:", response.status, response.statusText);
 
       if (!response.ok) {
         console.error(
@@ -1595,19 +1685,26 @@ class NeonDatabaseClient {
 
   async getRealtimeStats(): Promise<{ success: boolean; stats?: any }> {
     try {
+      // Check cache first
+      if (this.realtimeStatsCache && Date.now() - this.realtimeStatsCache.timestamp < this.cacheTTL) {
+        return this.realtimeStatsCache.data;
+      }
+
       const connected = await this.ensureConnection();
       if (!connected) {
         console.warn("⚠️ getRealtimeStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log("📊 Fetching realtime stats...");
       const result = await this.fetchJsonWithFallback("/realtime-stats");
-      console.log("✅ Realtime stats received:", result);
 
-      return result?.success !== undefined
+      // Cache the result
+      const processedResult = result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
+
+      this.realtimeStatsCache = { data: processedResult, timestamp: Date.now() };
+      return processedResult;
     } catch (error) {
       console.error("❌ Database realtime stats fetch failed:", error);
       return {
@@ -1620,21 +1717,28 @@ class NeonDatabaseClient {
 
   // === STATS ===
 
-  async getStats(): Promise<{ success: boolean; stats?: any }> {
+  async getStats(period: string = "monthly"): Promise<{ success: boolean; stats?: any }> {
     try {
+      // Check cache first
+      if (this.statsCache && Date.now() - this.statsCache.timestamp < this.cacheTTL) {
+        return this.statsCache.data;
+      }
+
       const connected = await this.ensureConnection();
       if (!connected) {
         console.warn("⚠️ getStats: Database not connected");
         return { success: false, stats: null };
       }
 
-      console.log("📈 Fetching stats...");
-      const result = await this.fetchJsonWithFallback("/stats");
-      console.log("✅ Stats received:", result);
+      const result = await this.fetchJsonWithFallback(`/stats?period=${period}`);
 
-      return result?.success !== undefined
+      // Cache the result
+      const processedResult = result?.success !== undefined
         ? result
         : { success: true, stats: result?.stats ?? result };
+
+      this.statsCache = { data: processedResult, timestamp: Date.now() };
+      return processedResult;
     } catch (error) {
       console.error("❌ Database stats fetch failed:", error);
       return {

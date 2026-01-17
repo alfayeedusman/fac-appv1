@@ -41,7 +41,7 @@ interface AdminSidebarProps {
 const sidebarItems = [
   {
     id: "overview",
-    label: "Command Center",
+    label: "Dashboard",
     icon: LayoutDashboard,
     description: "Overview & Analytics",
     gradient: "from-fac-orange-500 to-purple-600",
@@ -167,6 +167,13 @@ const sidebarItems = [
     gradient: "from-blue-500 to-purple-500",
   },
   {
+    id: "active-subscriptions",
+    label: "Active Subscriptions",
+    icon: Sparkles,
+    description: "Manage Renewals & Auto-Pay",
+    gradient: "from-cyan-500 to-blue-500",
+  },
+  {
     id: "pos",
     label: "Point of Sale",
     icon: CreditCard,
@@ -188,6 +195,13 @@ const sidebarItems = [
     gradient: "from-purple-500 to-violet-600",
   },
   {
+    id: "sessions",
+    label: "Sessions",
+    icon: Shield,
+    description: "Active user sessions",
+    gradient: "from-slate-500 to-gray-600",
+  },
+  {
     id: "crew-management",
     label: "Crew Management",
     icon: Users,
@@ -200,6 +214,13 @@ const sidebarItems = [
     icon: Database,
     description: "Neon Database Management",
     gradient: "from-slate-500 to-gray-600",
+  },
+  {
+    id: "settings",
+    label: "System Settings",
+    icon: Settings,
+    description: "Receipt & Tax Configuration",
+    gradient: "from-purple-500 to-pink-500",
   },
 ];
 

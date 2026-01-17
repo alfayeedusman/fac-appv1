@@ -42,12 +42,12 @@ import AdminImageManager from "./pages/AdminImageManager";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import PaymentHistory from "./pages/PaymentHistory";
-import POS from "./pages/POS";
 import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
+import AdminSessions from "./pages/AdminSessions";
 import AdminHomeService from "./pages/AdminHomeService";
 import AdminBookingSettings from "./pages/AdminBookingSettings";
 import AdminCrewManagement from "./pages/AdminCrewManagement";
@@ -63,6 +63,10 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import { neonDbClient } from "./services/neonDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
+import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
+
+// Setup global error catching to get clearer errors in console
+setupGlobalErrorCatching();
 
 const queryClient = new QueryClient();
 
@@ -282,7 +286,7 @@ const AppComponent = () => {
                   path="/pos"
                   element={
                     <ProtectedRoute requiredRole="cashier">
-                      <POS />
+                      <POSKiosk />
                     </ProtectedRoute>
                   }
                 />
@@ -307,6 +311,14 @@ const AppComponent = () => {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminUserManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin-sessions"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminSessions />
                     </ProtectedRoute>
                   }
                 />

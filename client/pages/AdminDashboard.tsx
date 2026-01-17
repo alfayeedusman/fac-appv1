@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,7 +68,7 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import AnalyticsCharts from "@/components/AnalyticsCharts";
+const AnalyticsCharts = React.lazy(() => import('@/components/AnalyticsCharts'));
 import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDistanceToNow } from "date-fns";
@@ -86,9 +86,14 @@ import AdminGamification from "./AdminGamification";
 import AdminImageManager from "./AdminImageManager";
 import AdminSubscriptionApproval from "./AdminSubscriptionApproval";
 import AdminBookingSettings from "./AdminBookingSettings";
-import POS from "./POS";
 import AdminUserManagement from "./AdminUserManagement";
 import AdminCrewManagement from "./AdminCrewManagement";
+import AdminSettings from "./AdminSettings";
+import CustomerHub from "@/components/CustomerHub";
+import SalesTransactions from "@/components/SalesTransactions";
+import BookingHub from "@/components/BookingHub";
+import ActiveSubscriptionsManager from "@/components/ActiveSubscriptionsManager";
+import { AdminNotificationBanner } from "@/components/AdminNotificationBanner";
 import { createAd, getAds } from "@/utils/adsUtils";
 import { initializeSampleAds } from "@/utils/initializeSampleAds";
 import {
@@ -98,6 +103,7 @@ import {
   type SystemNotification,
 } from "@/utils/databaseSchema";
 import { neonDbClient } from "@/services/neonDatabaseService";
+import realtimeService from "@/services/realtimeService";
 import { toast } from "@/hooks/use-toast";
 import Swal from "sweetalert2";
 
@@ -134,7 +140,13 @@ interface DashboardStats {
   totalCustomers: number;
   totalRevenue: number;
   totalWashes: number;
+  totalOnlineBookings: number;
+  totalExpenses: number;
+  netIncome: number;
   activeSubscriptions: number;
+  totalSubscriptionRevenue: number;
+  newSubscriptions: number;
+  subscriptionUpgrades: number;
   monthlyGrowth: number;
   topPackage: string;
 }
@@ -163,12 +175,19 @@ export default function AdminDashboard() {
   const [timeFilter, setTimeFilter] = useState<
     "daily" | "weekly" | "monthly" | "yearly"
   >("monthly");
+  const [bookingTypeFilter, setBookingTypeFilter] = useState<"all" | "walkin" | "booking">("all");
 
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 0,
     totalRevenue: 0,
     totalWashes: 0,
+    totalOnlineBookings: 0,
+    totalExpenses: 0,
+    netIncome: 0,
     activeSubscriptions: 0,
+    totalSubscriptionRevenue: 0,
+    newSubscriptions: 0,
+    subscriptionUpgrades: 0,
     monthlyGrowth: 0,
     topPackage: "VIP Gold Ultimate",
   });
@@ -183,6 +202,7 @@ export default function AdminDashboard() {
   const [realtimeLoading, setRealtimeLoading] = useState(true);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
@@ -229,6 +249,8 @@ export default function AdminDashboard() {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
   const [packageModalMode, setPackageModalMode] = useState<"add" | "edit">(
     "add",
@@ -249,6 +271,15 @@ export default function AdminDashboard() {
     motorcycleType: "",
   });
 
+  const [editCustomerForm, setEditCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    carUnit: "",
+    plateNumber: "",
+    membershipType: "Classic",
+  });
+
   const [newPackage, setNewPackage] = useState({
     name: "",
     basePrice: 0,
@@ -265,12 +296,12 @@ export default function AdminDashboard() {
   const [editingFeatures, setEditingFeatures] = useState("");
 
   // Function to load real statistics from database
-  const loadRealStats = async () => {
+  const loadRealStats = async (period: string = timeFilter) => {
     try {
       setStatsLoading(true);
-      console.log('📊 Loading real stats...');
+      console.log('📊 Loading real stats for period:', period);
 
-      const result = await neonDbClient.getStats();
+      const result = await neonDbClient.getStats(period);
       console.log('📈 Stats result:', result);
 
       if (result.success && result.stats) {
@@ -278,7 +309,13 @@ export default function AdminDashboard() {
           totalCustomers: result.stats.totalUsers || 0,
           totalRevenue: result.stats.totalRevenue || 0,
           totalWashes: result.stats.totalWashes || 0,
+          totalOnlineBookings: result.stats.totalOnlineBookings || 0,
+          totalExpenses: result.stats.totalExpenses || 0,
+          netIncome: result.stats.netIncome || 0,
           activeSubscriptions: result.stats.activeSubscriptions || 0,
+          totalSubscriptionRevenue: result.stats.totalSubscriptionRevenue || 0,
+          newSubscriptions: result.stats.newSubscriptions || 0,
+          subscriptionUpgrades: result.stats.subscriptionUpgrades || 0,
           monthlyGrowth: result.stats.monthlyGrowth || 0,
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
         };
@@ -416,6 +453,36 @@ export default function AdminDashboard() {
       // Load real-time crew and customer statistics
       loadRealtimeStats();
 
+      // Subscribe to realtime events (booking, pos, inventory, dashboard stats)
+      const subs: Array<() => void> = [];
+      try {
+        subs.push(realtimeService.subscribe('dashboard-stats', (d: any) => {
+          if (d && d.stats) {
+            setRealtimeStats({
+              onlineCrew: d.stats.onlineCrew || 0,
+              busyCrew: d.stats.busyCrew || 0,
+              activeCustomers: d.stats.activeCustomers || 0,
+              activeGroups: d.stats.activeGroups || 0,
+            });
+          }
+        }));
+
+        subs.push(realtimeService.subscribe('booking.created', (d: any) => {
+          setStats((prev) => ({ ...prev, totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1 }));
+        }));
+
+        subs.push(realtimeService.subscribe('pos.transaction.created', (d: any) => {
+          setStats((prev) => ({ ...prev, totalRevenue: (prev.totalRevenue || 0) + (parseFloat(d.totalAmount) || 0) }));
+        }));
+
+        subs.push(realtimeService.subscribe('inventory.updated', (d: any) => {
+          // simple UI hint: trigger a toast
+          toast({ title: 'Inventory updated', description: d.item?.name || 'An inventory item was updated' });
+        }));
+      } catch (e) {
+        console.warn('Realtime subscription failed:', e);
+      }
+
       // Load real customer data from database
       console.log("📋 About to call loadRealCustomers...");
       loadRealCustomers()
@@ -425,20 +492,30 @@ export default function AdminDashboard() {
       // Load system notifications
       loadSystemNotifications();
 
-      // Set up polling for new notifications and stats every 10 seconds
-      const notificationInterval = setInterval(loadSystemNotifications, 10000);
-      const statsInterval = setInterval(loadRealStats, 30000); // Refresh stats every 30 seconds
-      const realtimeInterval = setInterval(loadRealtimeStats, 15000); // Refresh realtime stats every 15 seconds
+      // Load admin notifications from local store
+      import('@/utils/adminNotifications').then(({ getAdminNotifications }) => {
+        try {
+          setAdminNotifications(getAdminNotifications().slice(0, 50));
+        } catch (e) {}
+      });
+
+      // Disable polling to prevent lag - use realtime subscriptions instead
+      // Stats will be updated via realtime service subscriptions above
+      // Users can manually refresh by clicking buttons
 
       return () => {
-        clearInterval(notificationInterval);
-        clearInterval(statsInterval);
-        clearInterval(realtimeInterval);
+        // unsubscribe realtime subscriptions
+        subs.forEach((u) => u && u());
       };
     } else {
       navigate("/login");
     }
   }, [navigate]);
+
+  // Reload stats when time filter changes
+  useEffect(() => {
+    loadRealStats(timeFilter);
+  }, [timeFilter]);
 
   const loadSystemNotifications = () => {
     try {
@@ -762,6 +839,56 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditCustomerForm({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      carUnit: customer.carUnit,
+      plateNumber: customer.plateNumber,
+      membershipType: customer.membershipType,
+    });
+    setIsEditCustomerModalOpen(true);
+  };
+
+  const handleSaveEditedCustomer = () => {
+    if (!editingCustomer) return;
+
+    if (!editCustomerForm.name.trim() || !editCustomerForm.email.trim()) {
+      toast({
+        title: "Error",
+        description: "Name and email are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedCustomers = customers.map((c) =>
+      c.id === editingCustomer.id
+        ? {
+            ...c,
+            name: editCustomerForm.name,
+            email: editCustomerForm.email,
+            phone: editCustomerForm.phone,
+            carUnit: editCustomerForm.carUnit,
+            plateNumber: editCustomerForm.plateNumber,
+            membershipType: editCustomerForm.membershipType,
+          }
+        : c
+    );
+
+    setCustomers(updatedCustomers);
+    setIsEditCustomerModalOpen(false);
+    setEditingCustomer(null);
+
+    toast({
+      title: "Success",
+      description: "Customer updated successfully",
+      variant: "default",
+    });
+  };
+
   const unreadNotificationCount = Array.isArray(notifications)
     ? notifications.filter((n) => !n.read).length
     : 0;
@@ -786,6 +913,14 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 ml-0 lg:ml-64 min-h-screen">
+        {/* Admin Notifications Banner */}
+        <AdminNotificationBanner
+          notifications={adminNotifications}
+          onDismiss={(id) => {
+            setAdminNotifications(adminNotifications.filter((n) => n.id !== id));
+          }}
+        />
+
         <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-6">
           {/* Header */}
           <div className="mb-8">
@@ -813,6 +948,7 @@ export default function AdminDashboard() {
                   {activeTab === "user-management" && "User Management"}
                   {activeTab === "images" && "Image Manager"}
                   {activeTab === "database" && "Database Management"}
+                  {activeTab === "settings" && "System Settings"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
@@ -841,6 +977,8 @@ export default function AdminDashboard() {
                   {activeTab === "user-management" && "Manage staff and users"}
                   {activeTab === "images" &&
                     "Manage media assets and galleries"}
+                  {activeTab === "settings" &&
+                    "Configure receipts, taxes, features, and user management"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
@@ -1129,12 +1267,12 @@ export default function AdminDashboard() {
                 </DropdownMenu>
 
                 <Button
-                  onClick={() => navigate("/pos-kiosk")}
+                  onClick={() => navigate("/pos")}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
                   size="sm"
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">POS Kiosk</span>
+                  <span className="hidden sm:inline">POS System</span>
                 </Button>
                 <Button
                   onClick={() => navigate("/admin-receipt-designer")}
@@ -1184,6 +1322,31 @@ export default function AdminDashboard() {
           {/* Content based on active tab */}
           {activeTab === "overview" && (
             <div className="space-y-8">
+              {/* Time Period & Booking Type Filter */}
+              <div className="flex justify-end gap-3 flex-wrap">
+                <Select value={bookingTypeFilter} onValueChange={(value: any) => setBookingTypeFilter(value)}>
+                  <SelectTrigger className="w-40 border-orange-500">
+                    <SelectValue placeholder="Booking type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Bookings</SelectItem>
+                    <SelectItem value="booking">Bookings Only</SelectItem>
+                    <SelectItem value="walkin">Walk-in Only</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={timeFilter} onValueChange={setTimeFilter}>
+                  <SelectTrigger className="w-40 border-orange-500">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Today</SelectItem>
+                    <SelectItem value="weekly">This Week</SelectItem>
+                    <SelectItem value="monthly">This Month</SelectItem>
+                    <SelectItem value="yearly">This Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card
@@ -1263,6 +1426,31 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("bookings")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Online Bookings
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.totalOnlineBookings.toLocaleString()
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-cyan-500 p-3 rounded-lg">
+                        <Smartphone className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("packages")}
                 >
                   <CardContent className="p-6">
@@ -1281,6 +1469,143 @@ export default function AdminDashboard() {
                       </div>
                       <div className="bg-purple-500 p-3 rounded-lg">
                         <Crown className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("sales")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Expenses
+                        </p>
+                        <div className="text-3xl font-bold text-red-600">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalExpenses)
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-red-500 p-3 rounded-lg">
+                        <Wrench className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("sales")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Net Income (Profit)
+                        </p>
+                        <div className={`text-3xl font-bold ${stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.netIncome)
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Gross - Expenses
+                        </p>
+                      </div>
+                      <div className={`${stats.netIncome >= 0 ? 'bg-green-500' : 'bg-red-500'} p-3 rounded-lg`}>
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Subscription Revenue
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(stats.totalSubscriptionRevenue)
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Active plans
+                        </p>
+                      </div>
+                      <div className="bg-emerald-500 p-3 rounded-lg">
+                        <CreditCard className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("packages")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          New Subscriptions
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.newSubscriptions.toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          This period
+                        </p>
+                      </div>
+                      <div className="bg-indigo-500 p-3 rounded-lg">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setActiveTab("customers")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Account Upgrades
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {statsLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            stats.subscriptionUpgrades.toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Free → Premium
+                        </p>
+                      </div>
+                      <div className="bg-pink-500 p-3 rounded-lg">
+                        <Zap className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
@@ -1660,6 +1985,7 @@ export default function AdminDashboard() {
                                 size="sm"
                                 title="Edit Customer"
                                 className="glass hover-lift"
+                                onClick={() => handleEditCustomer(customer)}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -1670,6 +1996,15 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="text-green-600 border-green-300 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950 hover-lift"
                                     title="Approve User"
+                                    onClick={() =>
+                                      handleApproveCustomer(
+                                        notifications.find(
+                                          (n) =>
+                                            n.message.includes(customer.name) &&
+                                            n.type === "new_customer"
+                                        )?.id || ""
+                                      )
+                                    }
                                   >
                                     <UserCheck className="h-4 w-4" />
                                   </Button>
@@ -1678,6 +2013,15 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 hover-lift"
                                     title="Reject User"
+                                    onClick={() =>
+                                      handleRejectCustomer(
+                                        notifications.find(
+                                          (n) =>
+                                            n.message.includes(customer.name) &&
+                                            n.type === "new_customer"
+                                        )?.id || ""
+                                      )
+                                    }
                                   >
                                     <UserX className="h-4 w-4" />
                                   </Button>
@@ -1837,10 +2181,12 @@ export default function AdminDashboard() {
           {activeTab === "branches" && <BranchManagement userRole={userRole} />}
 
           {activeTab === "analytics" && (
-            <AnalyticsCharts
-              timeFilter={timeFilter}
-              onTimeFilterChange={setTimeFilter}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+              <AnalyticsCharts
+                timeFilter={timeFilter}
+                onTimeFilterChange={setTimeFilter}
+              />
+            </Suspense>
           )}
 
           {activeTab === "sales" && <SalesDashboard />}
@@ -1892,10 +2238,12 @@ export default function AdminDashboard() {
               </div>
 
               {/* Sales Analytics Chart */}
-              <AnalyticsCharts
-                timeFilter={timeFilter}
-                onTimeFilterChange={setTimeFilter}
-              />
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+                <AnalyticsCharts
+                  timeFilter={timeFilter}
+                  onTimeFilterChange={setTimeFilter}
+                />
+              </Suspense>
             </div>
           )}
 
@@ -1916,11 +2264,8 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "bookings" && (
-            <div>
-              <EnhancedBookingManagement
-                userRole={userRole as "admin" | "superadmin"}
-                showCrewAssignment={true}
-              />
+            <div className="space-y-6">
+              <BookingHub />
             </div>
           )}
 
@@ -1975,6 +2320,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "active-subscriptions" && (
+            <div className="space-y-6">
+              <ActiveSubscriptionsManager />
+            </div>
+          )}
+
           {activeTab === "booking" && (
             <div>
               <AdminBookingSettings />
@@ -2006,8 +2357,159 @@ export default function AdminDashboard() {
               <NeonDatabaseSetup />
             </div>
           )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <AdminSettings />
+            </div>
+          )}
+
+          {activeTab === "customers" && (
+            <div className="space-y-6">
+              <CustomerHub />
+            </div>
+          )}
+
+          {activeTab === "sales" && (
+            <div className="space-y-6">
+              <SalesTransactions />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Edit Customer Modal */}
+      <Dialog
+        open={isEditCustomerModalOpen}
+        onOpenChange={setIsEditCustomerModalOpen}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-foreground">
+              Edit Customer
+            </DialogTitle>
+            <DialogDescription>
+              Update customer information and details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editCustomerName">Full Name *</Label>
+                <Input
+                  id="editCustomerName"
+                  value={editCustomerForm.name}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., John Dela Cruz"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerEmail">Email *</Label>
+                <Input
+                  id="editCustomerEmail"
+                  type="email"
+                  value={editCustomerForm.email}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., john@example.com"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerPhone">Phone Number</Label>
+                <Input
+                  id="editCustomerPhone"
+                  value={editCustomerForm.phone}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      phone: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., +63 123 456 7890"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerMembership">Membership Type</Label>
+                <Select
+                  value={editCustomerForm.membershipType}
+                  onValueChange={(value) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      membershipType: value,
+                    })
+                  }
+                >
+                  <SelectTrigger id="editCustomerMembership" className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Classic">Classic</SelectItem>
+                    <SelectItem value="VIP Silver">VIP Silver</SelectItem>
+                    <SelectItem value="VIP Gold">VIP Gold</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="editCustomerCar">Vehicle Model</Label>
+                <Input
+                  id="editCustomerCar"
+                  value={editCustomerForm.carUnit}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      carUnit: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Toyota Vios"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCustomerPlate">Plate Number</Label>
+                <Input
+                  id="editCustomerPlate"
+                  value={editCustomerForm.plateNumber}
+                  onChange={(e) =>
+                    setEditCustomerForm({
+                      ...editCustomerForm,
+                      plateNumber: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., ABC 1234"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditCustomerModalOpen(false)}
+              className="glass"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="btn-futuristic font-bold"
+              onClick={handleSaveEditedCustomer}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Customer Modal */}
       <Dialog

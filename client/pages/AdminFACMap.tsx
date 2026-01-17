@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import React, { Suspense } from 'react';
 import {
   MapPin,
   Users,
@@ -25,7 +26,7 @@ import {
   Settings,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
-import RealTimeMap from "@/components/RealTimeMap";
+const RealTimeMap = React.lazy(() => import('@/components/RealTimeMap'));
 import ThemeToggle from "@/components/ThemeToggle";
 import AdminNotificationDropdown from "@/components/AdminNotificationDropdown";
 
@@ -537,15 +538,17 @@ export default function AdminFACMap() {
                     isFullscreen ? "h-[calc(100vh-200px)]" : "h-[700px]"
                   }
                 >
-                  <RealTimeMap
-                    onCrewSelect={(crew) => console.log("Selected crew:", crew)}
-                    onCustomerSelect={(customer) =>
-                      console.log("Selected customer:", customer)
-                    }
-                    height={isFullscreen ? "calc(100vh - 200px)" : "700px"}
-                    showCustomers={true}
-                    showCrew={true}
-                  />
+                  <Suspense fallback={<div className="h-full w-full flex items-center justify-center">Loading map...</div>}>
+                    <RealTimeMap
+                      onCrewSelect={(crew) => console.log("Selected crew:", crew)}
+                      onCustomerSelect={(customer) =>
+                        console.log("Selected customer:", customer)
+                      }
+                      height={isFullscreen ? "calc(100vh - 200px)" : "700px"}
+                      showCustomers={true}
+                      showCrew={true}
+                    />
+                  </Suspense>
                 </div>
               </CardContent>
             </Card>

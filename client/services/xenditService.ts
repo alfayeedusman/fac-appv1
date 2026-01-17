@@ -1,6 +1,8 @@
 // Xendit Payment Service
 // Documentation: https://developers.xendit.co/api-reference/
 
+import { log, info, warn, error as logError } from '@/utils/logger';
+
 declare global {
   interface Window {
     Xendit: any;
@@ -18,6 +20,7 @@ export interface XenditPaymentParams {
   description: string;
   successRedirectUrl?: string;
   failureRedirectUrl?: string;
+  preferredPaymentMethod?: string; // e.g., 'gcash', 'paymaya', 'card', 'bank_transfer'
 }
 
 export interface XenditTokenResponse {
@@ -45,9 +48,9 @@ class XenditService {
       this.xendit = window.Xendit;
       this.xendit.setPublishableKey(XENDIT_PUBLIC_KEY);
       this.initialized = true;
-      console.log("✅ Xendit SDK initialized");
+      log("✅ Xendit SDK initialized");
     } else {
-      console.warn(
+      warn(
         "⚠️ Xendit SDK not loaded - card tokenization features will not be available",
       );
       // Still allow invoice creation via backend
@@ -60,7 +63,7 @@ class XenditService {
     const timeout = setTimeout(() => ac.abort(), 15000); // 15s timeout for payment
 
     try {
-      console.log("💳 Creating Xendit invoice...", params);
+      log("💳 Creating Xendit invoice...", params);
 
       // Create invoice via backend API
       const response = await fetch("/api/neon/payment/xendit/create-invoice", {
@@ -83,23 +86,24 @@ class XenditService {
           failure_redirect_url:
             params.failureRedirectUrl ||
             window.location.origin + "/booking-failed",
+          preferred_payment_method: params.preferredPaymentMethod || undefined,
         }),
         signal: ac.signal,
       });
 
       clearTimeout(timeout);
-      console.log("📡 Xendit API response status:", response.status);
+      log("📡 Xendit API response status:", response.status);
 
       if (!response.ok) {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Failed to parse error response" }));
-        console.error("❌ Xendit API error:", errorData);
+        logError("❌ Xendit API error:", errorData);
         throw new Error(errorData.error || "Failed to create invoice");
       }
 
       const data = await response.json();
-      console.log("✅ Xendit invoice created:", data);
+      log("✅ Xendit invoice created:", data);
       return data;
     } catch (error: any) {
       clearTimeout(timeout);
@@ -108,11 +112,11 @@ class XenditService {
         const timeoutError = new Error(
           "Payment request timed out. Please check your internet connection and try again.",
         );
-        console.error("❌ Xendit request timeout");
+        logError("❌ Xendit request timeout");
         throw timeoutError;
       }
 
-      console.error("❌ Xendit invoice creation error:", error);
+      logError("❌ Xendit invoice creation error:", error);
       throw error;
     }
   };
@@ -143,7 +147,7 @@ class XenditService {
         },
         (err: any, token: XenditTokenResponse) => {
           if (err) {
-            console.error("Xendit tokenization error:", err);
+            logError("Xendit tokenization error:", err);
             reject(err);
           } else {
             resolve(token);
@@ -170,7 +174,7 @@ class XenditService {
         },
         (err: any, authentication: any) => {
           if (err) {
-            console.error("Xendit 3DS authentication error:", err);
+            logError("Xendit 3DS authentication error:", err);
             reject(err);
           } else {
             resolve(authentication);
@@ -218,7 +222,7 @@ class XenditService {
         );
       }
 
-      console.error("Xendit charge error:", error);
+      logError("Xendit charge error:", error);
       throw error;
     }
   };
@@ -226,6 +230,96 @@ class XenditService {
   public openInvoice = (invoiceUrl: string) => {
     // Redirect to Xendit invoice in the same window
     window.location.href = invoiceUrl;
+  };
+
+  public createSubscriptionPlan = async (params: {
+    reference_id: string;
+    customer_email: string;
+    description: string;
+    amount: number;
+    interval: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+    interval_count: number;
+    payment_method: "CARD" | "EWALLET";
+    notification_url?: string;
+  }): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
+    try {
+      log("📅 Creating recurring billing plan...", params);
+
+      const response = await fetch(
+        "/api/neon/payment/xendit/create-subscription",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params),
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error("Failed to create subscription plan");
+      }
+
+      const data = await response.json();
+      log("✅ Subscription plan created:", data);
+      return data;
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        throw new Error("Request timed out");
+      }
+
+      logError("Xendit subscription error:", error);
+      throw error;
+    }
+  };
+
+  public renewSubscription = async (params: {
+    subscription_id: string;
+    amount: number;
+    description: string;
+    payment_method: "CARD" | "EWALLET";
+  }): Promise<any> => {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
+    try {
+      log("💳 Processing subscription renewal...", params);
+
+      const response = await fetch(
+        "/api/neon/payment/xendit/renew-subscription",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params),
+          signal: ac.signal,
+        },
+      );
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error("Failed to process renewal");
+      }
+
+      const data = await response.json();
+      log("✅ Renewal processed:", data);
+      return data;
+    } catch (error: any) {
+      clearTimeout(timeout);
+
+      if (error?.name === "AbortError") {
+        throw new Error("Request timed out");
+      }
+
+      logError("Xendit renewal error:", error);
+      throw error;
+    }
   };
 
   public isInitialized(): boolean {

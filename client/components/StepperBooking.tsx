@@ -59,7 +59,12 @@ import {
 import { getSlotAvailability } from "@/utils/databaseSchema";
 import { xenditService } from "@/services/xenditService";
 import FACPayButton from "@/components/FACPayButton";
-import BookingReceiptModal from "@/components/BookingReceiptModal";
+import PaymentMethodsSelection from '@/components/PaymentMethodsSelection';
+import React, { Suspense } from 'react';
+import BookingProgressBar from "@/components/BookingProgressBar";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
+
+const BookingReceiptModal = React.lazy(() => import('@/components/BookingReceiptModal'));
 
 interface BookingData {
   // Service Selection
@@ -87,6 +92,7 @@ interface BookingData {
 
   // Payment
   paymentMethod: string; // "branch", "online", or "onsite"
+  paymentMethodDetail?: string; // e.g., 'gcash', 'paymaya', 'card'
   receiptFile: File | null;
 
   // Terms
@@ -401,6 +407,7 @@ export default function StepperBooking({
     timeSlot: "",
     branch: "",
     paymentMethod: "",
+    paymentMethodDetail: undefined,
     receiptFile: null,
     acceptTerms: false,
     basePrice: 0,
@@ -412,6 +419,9 @@ export default function StepperBooking({
 
   const [voucherInput, setVoucherInput] = useState("");
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
+
+  // Inline step errors to show near navigation
+  const [stepErrors, setStepErrors] = useState<string[]>([]);
 
   // User vehicles and data for registered users
   const [savedVehicles, setSavedVehicles] = useState<any[]>([]);
@@ -706,11 +716,98 @@ export default function StepperBooking({
     }
   };
 
+  const focusFirstInvalidField = () => {
+    // Try to focus the first visible invalid input or control marked by the red border
+    setTimeout(() => {
+      try {
+        const invalidEl = document.querySelector('.border-red-500');
+        if (!invalidEl) return;
+        // Prefer an input/textarea/select/button inside the invalid element
+        const focusable = (invalidEl as HTMLElement).querySelector(
+          'input, textarea, select, button, [role="button"]',
+        ) as HTMLElement | null;
+        let toFocus: HTMLElement | null = focusable;
+        if (!toFocus) {
+          const el = invalidEl as HTMLElement;
+          if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName)) {
+            toFocus = el;
+          } else {
+            // Make non-focusable element focusable briefly so keyboard users land there
+            el.setAttribute('tabindex', '-1');
+            toFocus = el;
+          }
+        }
+        if (toFocus) {
+          toFocus.focus();
+          toFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        // swallow errors - this is a best-effort accessibility enhancement
+      }
+    }, 50);
+  };
+
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
     if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // If validation failed, compute friendly feedback and show toast to explain why
+    const errors: string[] = [];
+    switch (currentStep) {
+      case 1:
+        if (!bookingData.serviceType) errors.push('Select service type (Branch or Home)');
+        if (!bookingData.date || !bookingData.timeSlot) errors.push('Choose a date and time slot');
+        if (bookingData.serviceType === 'branch' && !bookingData.branch) errors.push('Select a branch');
+        break;
+      case 2:
+        if (!bookingData.unitType || !bookingData.unitSize) errors.push('Select your vehicle type and size');
+        break;
+      case 3:
+        if (!bookingData.category) errors.push('Pick a service category');
+        break;
+      case 4:
+        if ((bookingData.category === 'carwash' || bookingData.category === 'motorwash') && !bookingData.service)
+          errors.push('Choose a package for your service');
+        break;
+      case 5:
+        if (!bookingData.fullName) errors.push('Enter your name');
+        if (!bookingData.mobile) errors.push('Provide your mobile number');
+        if (!bookingData.plateNo) errors.push('Enter your vehicle plate number');
+        if (!bookingData.carModel) errors.push('Provide your vehicle model');
+        if (isGuest && !bookingData.email) errors.push('Email is required for guest bookings');
+        if (bookingData.serviceType === 'home' && !bookingData.address) errors.push('Provide your address for home service');
+        break;
+      case 6:
+        if (!bookingData.paymentMethod) errors.push('Select a payment method');
+        if (bookingData.paymentMethod === 'online' && !bookingData.paymentMethodDetail)
+          errors.push('Choose a payment channel (e.g., GCash, Card)');
+        break;
+      default:
+        errors.push('Please complete the required fields for this step');
+    }
+
+    if (errors.length > 0) {
+      setStepErrors(errors);
+      toast({
+        title: 'Complete required fields',
+        description: errors.slice(0, 3).join('; '),
+        variant: 'destructive',
+      });
+      // Focus the first invalid field for keyboard users
+      focusFirstInvalidField();
+      // Move user to payment step if error relates to payment so they can fix quickly
+      if (errors.some(e => e.toLowerCase().includes('payment'))) {
+        setCurrentStep(6);
+      }
+    } else {
+      // Clear any previous step errors and do not auto-advance silently
+      setStepErrors([]);
+      // If canProceed is false we politely do nothing (validation prevents moving)
+      // but if canProceed is true we would have advanced earlier
     }
   };
 
@@ -838,6 +935,7 @@ export default function StepperBooking({
         description: `Payment for booking ${bookingId} - ${SERVICE_CATEGORIES[bookingData.category as keyof typeof SERVICE_CATEGORIES]?.name || "Service"}`,
         successRedirectUrl: `${window.location.origin}/booking-success?bookingId=${bookingId}`,
         failureRedirectUrl: `${window.location.origin}/booking-failed?bookingId=${bookingId}`,
+        preferredPaymentMethod: bookingData.paymentMethodDetail || undefined,
       });
 
       if (invoiceData && invoiceData.invoice_url) {
@@ -897,6 +995,51 @@ export default function StepperBooking({
   };
 
   const submitBooking = async () => {
+    // Prevent submission if payment method isn't selected — fix for guests receiving receipt immediately
+    if (!bookingData.paymentMethod) {
+      // Move user back to Payment step (6)
+      setCurrentStep(6);
+      toast({
+        title: 'Select payment method',
+        description: 'Please choose a payment method before confirming your booking.',
+        variant: 'destructive',
+      });
+      focusFirstInvalidField();
+      return;
+    }
+
+    if (bookingData.paymentMethod === 'online' && !bookingData.paymentMethodDetail) {
+      setCurrentStep(6);
+      toast({
+        title: 'Select payment channel',
+        description: 'Please select a payment channel (e.g., GCash, Card) before proceeding.',
+        variant: 'destructive',
+      });
+      focusFirstInvalidField();
+      return;
+    }
+
+    // If offline payment method selected (branch / onsite), confirm with user before creating booking
+    if (bookingData.paymentMethod !== 'online') {
+      const offlineLabel = bookingData.paymentMethod === 'branch'
+        ? adminConfig.paymentMethods.branch.name
+        : adminConfig.paymentMethods.onsite?.name || 'Offline Payment';
+
+      const confirmation = await Swal.fire({
+        title: `Confirm ${offlineLabel}`,
+        html: `You selected <strong>${offlineLabel}</strong>.<br/>You will pay <strong>₱${bookingData.totalPrice?.toLocaleString() || '0.00'}</strong> at the location. Do you want to continue and create the booking?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Confirm Booking',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f97316',
+      });
+
+      if (!confirmation.isConfirmed) {
+        return; // user cancelled
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -978,23 +1121,11 @@ export default function StepperBooking({
       };
 
       // Create booking using Neon database
-      console.log(
-        "📝 Creating booking with userId:",
-        userId,
-        "isGuest:",
-        isGuest,
-      );
       const bookingResult = await neonDbClient.createBooking(bookingPayload);
       if (!bookingResult.success || !bookingResult.booking) {
         throw new Error(bookingResult.error || "Failed to create booking");
       }
       const createdBooking = bookingResult.booking;
-      console.log(
-        "✅ Booking created successfully:",
-        createdBooking.id,
-        "for userId:",
-        createdBooking.userId,
-      );
 
       // Send system notification to admin and manager about new booking
       const customerName = isGuest
@@ -1008,7 +1139,6 @@ export default function StepperBooking({
         `Type: ${isGuest ? "Guest" : "Registered User"}`;
 
       // Create system notification through API (this happens automatically in the API)
-      console.log("🎯 New booking created:", createdBooking.id);
 
       // Redeem voucher if applied
       if (
@@ -1026,7 +1156,7 @@ export default function StepperBooking({
             bookingId: createdBooking.id,
             discountAmount: bookingData.voucherDiscount,
           });
-          console.log("✅ Voucher redeemed:", bookingData.voucherCode);
+          // Voucher redeemed (silent)
         } catch (voucherErr) {
           console.warn(
             "⚠️ Voucher redemption failed (non-critical):",
@@ -1240,15 +1370,16 @@ export default function StepperBooking({
       date: "",
       timeSlot: "",
       branch: "",
-      paymentMethod: "",
-      receiptFile: null,
-      acceptTerms: false,
-      basePrice: 0,
-      totalPrice: 0,
-      voucherCode: undefined,
-      voucherDiscount: 0,
-      voucherData: undefined,
-    });
+    paymentMethod: "",
+    paymentMethodDetail: undefined,
+    receiptFile: null,
+    acceptTerms: false,
+    basePrice: 0,
+    totalPrice: 0,
+    voucherCode: undefined,
+    voucherDiscount: 0,
+    voucherData: undefined,
+  });
     setVoucherInput("");
     setCurrentStep(1);
 
@@ -1260,15 +1391,33 @@ export default function StepperBooking({
     }
   };
 
+  // Swipe gesture support for mobile navigation
+  const { ref: swipeRef } = useSwipeNavigation({
+    onSwipeRight: () => {
+      if (currentStep > 1 && window.innerWidth < 768) {
+        prevStep();
+      }
+    },
+    onSwipeLeft: () => {
+      if (currentStep < STEPS.length && canProceed() && window.innerWidth < 768) {
+        nextStep();
+      }
+    },
+    enabled: true,
+    threshold: 30,
+  });
+
   return (
     <div className="min-h-screen bg-transparent relative">
       {/* Booking Receipt Modal */}
       {completedBooking && (
-        <BookingReceiptModal
-          isOpen={showReceiptModal}
-          onClose={handleCloseReceipt}
-          bookingData={completedBooking}
-        />
+        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-white/80 z-50">Loading receipt...</div>}>
+          <BookingReceiptModal
+            isOpen={showReceiptModal}
+            onClose={handleCloseReceipt}
+            bookingData={completedBooking}
+          />
+        </Suspense>
       )}
 
       {/* Mobile Bottom Sheet for Booking Summary */}
@@ -1290,8 +1439,8 @@ export default function StepperBooking({
         </SheetContent>
       </Sheet>
 
-      {/* Container with max width */}
-      <div className="max-w-7xl mx-auto">
+      {/* Container with max width and swipe support */}
+      <div className="max-w-7xl mx-auto" ref={swipeRef}>
         <div className="flex flex-col lg:flex-row">
           {/* Sidebar (desktop only) */}
           <div
@@ -1346,11 +1495,11 @@ export default function StepperBooking({
                     </span>
                   </h1>
                   <Badge
-                    variant="outline"
-                    className="text-sm md:text-sm w-fit px-3 py-1 rounded-full"
-                  >
-                    Step {currentStep} of 5
-                  </Badge>
+                  variant="outline"
+                  className="text-sm md:text-sm w-fit px-3 py-1 rounded-full"
+                >
+                  Step {currentStep} of {STEPS.length}
+                </Badge>
                 </div>
 
                 {/* Desktop Stepper */}
@@ -1401,41 +1550,29 @@ export default function StepperBooking({
                   ))}
                 </div>
 
-                {/* Mobile Stepper - App-like Design */}
-                <div className="md:hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-foreground">
-                      Progress
-                    </span>
-                    <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                      {currentStep} of {STEPS.length}
-                    </span>
-                  </div>
+                {/* Mobile Stepper - App-like Design with BookingProgressBar */}
+                <div className="md:hidden space-y-4 mb-6">
+                  {/* Enhanced Booking Progress Bar */}
+                  <BookingProgressBar
+                    currentStep={currentStep}
+                    totalSteps={STEPS.length}
+                    estimatedTimeRemaining={300}
+                  />
 
-                  {/* Enhanced Progress Bar for Mobile */}
-                  <div className="w-full bg-muted rounded-full h-3 mb-4 shadow-inner">
-                    <div
-                      className="bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
-                      style={{
-                        width: `${(currentStep / STEPS.length) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* Enhanced Current Step Indicator */}
-                  <div className="p-4 rounded-2xl border-2 border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/50 shadow-lg">
+                  {/* Current Step Indicator Card */}
+                  <div className="p-4 rounded-2xl border-2 border-blue-500/50 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 shadow-md hover:shadow-lg transition-all">
                     <div className="flex items-center space-x-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white shadow-lg">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg">
                         {(() => {
                           const CurrentIcon = STEPS[currentStep - 1].icon;
                           return <CurrentIcon className="h-5 w-5" />;
                         })()}
                       </div>
                       <div className="flex-1">
-                        <span className="text-base font-bold text-fac-orange-600 dark:text-fac-orange-400">
+                        <span className="text-base font-bold text-blue-600 dark:text-blue-400">
                           {STEPS[currentStep - 1].title}
                         </span>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           {STEPS[currentStep - 1].description}
                         </p>
                       </div>
@@ -1444,12 +1581,64 @@ export default function StepperBooking({
                 </div>
               </div>
 
-              {/* Step Content */}
+              {/* Step Content with Slide Animation */}
               <div className="w-full max-w-4xl">
-                <div className="w-full overflow-visible pb-4 md:pb-6">
-                  {renderStepContent()}
+                <div className="w-full overflow-hidden pb-4 md:pb-6">
+                  <div
+                    className="w-full transition-all duration-500 ease-out"
+                    style={{
+                      opacity: 1,
+                      animation: `slideIn 0.4s ease-out`,
+                    }}
+                  >
+                    {renderStepContent()}
+                  </div>
                 </div>
               </div>
+
+              {/* CSS for slide animation */}
+              <style>{`
+                @keyframes slideIn {
+                  from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+
+                @keyframes slideUp {
+                  from {
+                    opacity: 0;
+                    transform: translateY(12px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+
+                .slide-up {
+                  animation: slideUp 0.3s ease-out;
+                }
+
+                .shimmer {
+                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                  background-size: 200% 100%;
+                  animation: shimmer 1.5s infinite;
+                }
+
+                @keyframes shimmer {
+                  0% {
+                    background-position: -200% 0;
+                  }
+                  100% {
+                    background-position: 200% 0;
+                  }
+                }
+              `}</style>
 
               {/* Navigation - Desktop only; mobile uses sticky bottom bar */}
               <div className="hidden md:flex flex-row justify-between items-center gap-4 mt-6 max-w-4xl w-full">
@@ -1464,8 +1653,17 @@ export default function StepperBooking({
                   Back
                 </Button>
 
+                {/* Inline step errors (desktop) */}
+                {stepErrors.length > 0 && (
+                  <div className="mr-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 max-w-md">
+                    {stepErrors.slice(0, 3).map((err, idx) => (
+                      <div key={idx}>{err}</div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Next/Submit Button - Right side */}
-                {currentStep === 5 ? (
+                {currentStep === 7 ? (
                   bookingData.paymentMethod === "online" ? (
                     <FACPayButton
                       amount={bookingData.totalPrice}
@@ -1495,7 +1693,7 @@ export default function StepperBooking({
                   )
                 ) : (
                   <Button
-                    onClick={nextStep}
+                    onClick={() => { setStepErrors([]); nextStep(); }}
                     disabled={!canProceed()}
                     className={`min-w-[140px] h-12 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 rounded-lg active:scale-95 ${
                       !canProceed()
@@ -1560,6 +1758,15 @@ export default function StepperBooking({
               <span>Back</span>
             </Button>
 
+            {/* Inline step errors (mobile) */}
+            {stepErrors.length > 0 && (
+              <div className="w-full mb-2 p-2 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+                {stepErrors.slice(0,2).map((err, i) => (
+                  <div key={i}>{err}</div>
+                ))}
+              </div>
+            )}
+
             {/* Next/Confirm Button */}
             {currentStep === 7 ? (
               bookingData.paymentMethod === "online" ? (
@@ -1581,7 +1788,7 @@ export default function StepperBooking({
               )
             ) : (
               <Button
-                onClick={nextStep}
+                onClick={() => { setStepErrors([]); nextStep(); }}
                 disabled={!canProceed()}
                 className="flex-[1.5] h-12 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-base"
               >
@@ -2142,9 +2349,9 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const load = async () => {
       setLoadingBranches(true);
       try {
-        console.log("📍 Loading branches from database...");
+        // Loading branches from database (silent)
         const res = await neonDbClient.getBranches();
-        console.log("📍 Branches response:", res);
+        // Branches response (silent)
 
         if (
           res.success &&
@@ -2157,11 +2364,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             name: b.name,
             address: b.address,
           }));
-          console.log(
-            "✅ Loaded",
-            mappedBranches.length,
-            "branches from database",
-          );
+          // Loaded branches from database
           setBranches(mappedBranches);
         } else {
           console.warn("⚠️ No branches in database, using fallback config");
@@ -2170,11 +2373,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
             .filter((b: any) => b.enabled)
             .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
           setBranches(fallbackBranches);
-          console.log(
-            "📍 Using",
-            fallbackBranches.length,
-            "fallback branches from config",
-          );
+          // Using fallback branches from config
         }
       } catch (e) {
         // Silently handle error and use fallback - this is expected behavior
@@ -2184,11 +2383,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
           .filter((b: any) => b.enabled)
           .map((b: any) => ({ id: b.id, name: b.name, address: b.address }));
         setBranches(fallbackBranches);
-        console.log(
-          "📍 Loaded",
-          fallbackBranches.length,
-          "branches from config",
-        );
+        // Loaded fallback branches from config
       } finally {
         setLoadingBranches(false);
       }
@@ -2797,7 +2992,7 @@ const PaymentStep = ({
                     ✓ You will be redirected to FACPay to complete your payment
                   </p>
                   <p>
-                    �� Accept multiple payment methods (Cards, GCash, PayMaya)
+                    ✓ Accept multiple payment methods (Cards, GCash, PayMaya)
                   </p>
                   <p>✓ Secure payment powered by Xendit</p>
                   <div className="mt-3 pt-3 border-t border-fac-orange-200">
@@ -2806,6 +3001,9 @@ const PaymentStep = ({
                     </p>
                   </div>
                 </div>
+
+                {/* Dynamically load available payment channels from server */}
+                <PaymentMethodsSelection bookingData={bookingData} updateBookingData={updateBookingData} />
               </div>
             </div>
           </div>
@@ -2821,7 +3019,7 @@ const PaymentStep = ({
             <div className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
               <p>The crew will collect payment at your location.</p>
               <p>
-                <strong>Amount:</strong> ���
+                <strong>Amount:</strong> ₱
                 {bookingData.totalPrice.toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -2961,6 +3159,7 @@ const ReviewStep = ({ bookingData, updateBookingData, isGuest }: any) => {
                 <span className="text-muted-foreground">Method:</span>
                 <span className="font-medium capitalize">
                   {bookingData.paymentMethod}
+                  {bookingData.paymentMethodDetail ? ` — ${bookingData.paymentMethodDetail}` : ''}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-border">
@@ -3198,7 +3397,7 @@ const BookingSummary = ({
                   Total:
                 </span>
                 <span className="font-bold text-fac-orange-500 text-lg md:text-xl">
-                  ���{(bookingData.totalPrice || 0).toLocaleString()}
+                  ₱{(bookingData.totalPrice || 0).toLocaleString()}
                 </span>
               </div>
             </div>

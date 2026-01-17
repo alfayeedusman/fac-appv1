@@ -162,13 +162,13 @@ export default function AdminFeaturesShowcase() {
                   Access Admin Dashboard
                 </Button>
               </Link>
-              <Link to="/pos-kiosk">
+              <Link to="/pos">
                 <Button
                   variant="outline"
                   className="border-orange-500 text-orange-600 hover:bg-orange-50"
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  Try Kiosk Mode
+                  Try POS System
                 </Button>
               </Link>
             </div>

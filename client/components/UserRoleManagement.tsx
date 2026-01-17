@@ -62,7 +62,7 @@ const DEFAULT_PERMISSIONS: Permission[] = [
   // Tab Access Permissions
   {
     id: "tab.overview",
-    name: "Command Center Tab",
+    name: "Dashboard Tab",
     description: "Access to overview dashboard",
     category: "Tab Access",
   },

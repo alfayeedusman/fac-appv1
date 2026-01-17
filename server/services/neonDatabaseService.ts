@@ -1,4 +1,4 @@
-import { eq, and, or, desc, count, sql, lte, asc } from "drizzle-orm";
+import { eq, and, or, desc, count, sql, lte, asc, gte, ne } from "drizzle-orm";
 import { getDatabase } from "../database/connection";
 import * as schema from "../database/schema";
 import bcrypt from "bcryptjs";
@@ -79,6 +79,111 @@ class NeonDatabaseService {
       .returning();
 
     return user;
+  }
+
+  // === SESSION MANAGEMENT ===
+  // Create a server-side session record for the user. Sessions are used
+  // to authenticate private channel requests (Pusher auth) and API calls.
+  async createUserSession(
+    userId: string,
+    sessionToken: string,
+    expiresAt: Date,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (!this.db) throw new Error('Database not connected');
+
+    const [session] = await this.db
+      .insert(schema.userSessions)
+      .values({
+        id: createId(),
+        userId,
+        sessionToken,
+        expiresAt,
+        ipAddress: ipAddress || null,
+        userAgent: userAgent || null,
+        isActive: true,
+      })
+      .returning();
+
+    return session;
+  }
+
+  // Retrieve a session by its token. Returns null if not found.
+  async getSessionByToken(sessionToken: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    const [session] = await this.db
+      .select()
+      .from(schema.userSessions)
+      .where(eq(schema.userSessions.sessionToken, sessionToken))
+      .limit(1);
+
+    return session || null;
+  }
+
+  // Deactivate (invalidate) a session token
+  async deactivateSession(sessionToken: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.sessionToken, sessionToken));
+
+    return true;
+  }
+
+  // Deactivate session by its database id
+  async deactivateSessionById(sessionId: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.id, sessionId));
+
+    return true;
+  }
+
+  // Deactivate all sessions for a given user id
+  async deactivateSessionsByUserId(userId: string) {
+    if (!this.db) throw new Error('Database not connected');
+
+    await this.db
+      .update(schema.userSessions)
+      .set({ isActive: false })
+      .where(eq(schema.userSessions.userId, userId));
+
+    return true;
+  }
+
+  // Get sessions with optional filters
+  async getSessions(params?: { userId?: string; activeOnly?: boolean }): Promise<any[]> {
+    if (!this.db) throw new Error('Database not connected');
+
+    let query = this.db.select().from(schema.userSessions);
+
+    if (params?.userId) {
+      query = query.where(eq(schema.userSessions.userId, params.userId));
+    }
+
+    if (params?.activeOnly) {
+      query = query.where(eq(schema.userSessions.isActive, true));
+    }
+
+    const sessions = await query.orderBy(schema.userSessions.createdAt, 'desc');
+
+    return sessions.map((s: any) => ({
+      id: s.id,
+      userId: s.userId,
+      sessionToken: s.sessionToken,
+      expiresAt: s.expiresAt,
+      ipAddress: s.ipAddress,
+      userAgent: s.userAgent,
+      isActive: s.isActive,
+      createdAt: s.createdAt,
+    }));
   }
 
   async verifyPassword(email: string, password: string): Promise<boolean> {
@@ -199,6 +304,78 @@ class NeonDatabaseService {
         )
       )
       .orderBy(desc(schema.bookings.createdAt));
+  }
+
+  // === SUBSCRIPTIONS ===
+
+  async getSubscriptions(params?: {
+    status?: string;
+    userId?: string;
+  }): Promise<any[]> {
+    if (!this.db) {
+      console.warn("⚠️ Database not connected");
+      return [];
+    }
+
+    try {
+      console.log("📋 Fetching subscriptions with params:", params);
+
+      // Build the where conditions
+      const conditions: any[] = [];
+      if (params?.status) {
+        conditions.push(eq(schema.packageSubscriptions.status, params.status));
+      }
+      if (params?.userId) {
+        conditions.push(eq(schema.packageSubscriptions.userId, params.userId));
+      }
+
+      // Build query with optional where clause
+      let query = this.db.select().from(schema.packageSubscriptions);
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      // Execute query with ordering
+      const subscriptions = await query.orderBy(
+        desc(schema.packageSubscriptions.startDate),
+      );
+
+      console.log(`✅ Found ${subscriptions?.length || 0} subscriptions`);
+
+      // Map results to expected format, handling both snake_case and camelCase
+      if (!subscriptions || subscriptions.length === 0) {
+        return [];
+      }
+
+      return subscriptions
+        .map((sub: any) => {
+          try {
+            return {
+              id: sub.id,
+              userId: sub.user_id || sub.userId,
+              packageId: sub.package_id || sub.packageId,
+              status: sub.status,
+              startDate: sub.start_date || sub.startDate,
+              endDate: sub.end_date || sub.endDate,
+              renewalDate: sub.renewal_date || sub.renewalDate,
+              finalPrice: parseFloat(sub.final_price || sub.finalPrice || "0"),
+              autoRenew: sub.auto_renew !== false,
+              cycleCount: sub.usage_count || sub.usageCount || 1,
+              xenditPlanId: sub.xendit_plan_id || sub.xenditPlanId,
+              paymentMethod: sub.payment_method || sub.paymentMethod || "card",
+            };
+          } catch (mapError) {
+            console.warn("⚠️ Error mapping subscription:", sub, mapError);
+            return null;
+          }
+        })
+        .filter((sub) => sub !== null);
+    } catch (error) {
+      console.error("❌ Error fetching subscriptions:", error);
+      // Return empty array on error instead of throwing
+      return [];
+    }
   }
 
   // === NOTIFICATIONS ===
@@ -454,17 +631,45 @@ class NeonDatabaseService {
 
   // === UTILITY METHODS ===
 
-  async getStats(): Promise<{
+  async getStats(period: string = "monthly"): Promise<{
     totalUsers: number;
     totalBookings: number;
+    totalOnlineBookings: number;
     activeAds: number;
     pendingBookings: number;
     totalRevenue: number;
     totalWashes: number;
+    totalExpenses: number;
+    netIncome: number;
     activeSubscriptions: number;
+    totalSubscriptionRevenue: number;
+    newSubscriptions: number;
+    subscriptionUpgrades: number;
     monthlyGrowth: number;
   }> {
     if (!this.db) throw new Error("Database not connected");
+
+    // Calculate date range based on period
+    const now = new Date();
+    let startDate = new Date();
+
+    switch(period) {
+      case "daily":
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case "weekly":
+        startDate.setDate(now.getDate() - now.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case "yearly":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      case "monthly":
+      default:
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+    }
 
     const [userCount] = await this.db
       .select({ count: count() })
@@ -472,7 +677,17 @@ class NeonDatabaseService {
 
     const [bookingCount] = await this.db
       .select({ count: count() })
-      .from(schema.bookings);
+      .from(schema.bookings)
+      .where(gte(schema.bookings.createdAt, startDate));
+
+    // Count online bookings (where userId IS NOT NULL - registered customers)
+    const [onlineBookingCount] = await this.db
+      .select({ count: count() })
+      .from(schema.bookings)
+      .where(and(
+        ne(schema.bookings.userId, null),
+        gte(schema.bookings.createdAt, startDate)
+      ));
 
     const [adCount] = await this.db
       .select({ count: count() })
@@ -482,19 +697,50 @@ class NeonDatabaseService {
     const [pendingCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "pending"));
+      .where(and(eq(schema.bookings.status, "pending"), gte(schema.bookings.createdAt, startDate)));
 
-    // Calculate total revenue from completed bookings
-    const [revenueResult] = await this.db
+    // Calculate total revenue from completed bookings (within date range)
+    const [bookingRevenueResult] = await this.db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "completed"));
+      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
 
-    // Count completed washes
-    const [washCount] = await this.db
+    // Calculate total revenue from POS transactions (within date range)
+    const [posRevenueResult] = await this.db
+      .select({ totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})` })
+      .from(schema.posTransactions)
+      .where(and(eq(schema.posTransactions.status, "completed"), gte(schema.posTransactions.createdAt, startDate)));
+
+    // Combine both revenues
+    const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
+    const posRevenue = parseFloat(posRevenueResult.totalRevenue || "0");
+    const totalRevenue = bookingRevenue + posRevenue;
+
+    // Count completed washes from bookings (within date range)
+    const [bookingWashCount] = await this.db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(eq(schema.bookings.status, "completed"));
+      .where(and(eq(schema.bookings.status, "completed"), gte(schema.bookings.createdAt, startDate)));
+
+    // Count POS carwash transactions (items with "Wash" in name, within date range)
+    const [posWashCount] = await this.db
+      .select({ count: count() })
+      .from(schema.posTransactionItems)
+      .where(and(
+        sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
+        gte(schema.posTransactionItems.createdAt, startDate)
+      ));
+
+    const totalWashes = bookingWashCount.count + posWashCount.count;
+
+    // Calculate total expenses from POS sessions (within date range)
+    const [expenseResult] = await this.db
+      .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
+      .from(schema.posExpenses)
+      .where(gte(schema.posExpenses.createdAt, startDate));
+
+    const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
+    const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
     const [subscriptionCount] = await this.db
@@ -527,14 +773,49 @@ class NeonDatabaseService {
           ? 100
           : 0;
 
+    // === SUBSCRIPTION METRICS ===
+
+    // Calculate total subscription revenue from active/completed subscriptions (within date range)
+    const [subscriptionRevenueResult] = await this.db
+      .select({ totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})` })
+      .from(schema.packageSubscriptions)
+      .where(and(
+        ne(schema.packageSubscriptions.status, "cancelled"),
+        ne(schema.packageSubscriptions.status, "expired"),
+        gte(schema.packageSubscriptions.startDate, startDate)
+      ));
+
+    const totalSubscriptionRevenue = parseFloat(subscriptionRevenueResult.totalRevenue || "0");
+
+    // Count new subscriptions (within date range)
+    const [newSubscriptionCount] = await this.db
+      .select({ count: count() })
+      .from(schema.packageSubscriptions)
+      .where(gte(schema.packageSubscriptions.startDate, startDate));
+
+    // Count subscription upgrades (users with non-free subscription status created/updated in period)
+    const [upgradeCount] = await this.db
+      .select({ count: count() })
+      .from(schema.users)
+      .where(and(
+        ne(schema.users.subscriptionStatus, "free"),
+        gte(schema.users.updatedAt, startDate)
+      ));
+
     return {
       totalUsers: userCount.count,
       totalBookings: bookingCount.count,
+      totalOnlineBookings: onlineBookingCount.count,
       activeAds: adCount.count,
       pendingBookings: pendingCount.count,
-      totalRevenue: parseFloat(revenueResult.totalRevenue || "0"),
-      totalWashes: washCount.count,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      totalWashes: totalWashes,
+      totalExpenses: Math.round(totalExpenses * 100) / 100,
+      netIncome: Math.round(netIncome * 100) / 100,
       activeSubscriptions: subscriptionCount.count,
+      totalSubscriptionRevenue: Math.round(totalSubscriptionRevenue * 100) / 100,
+      newSubscriptions: newSubscriptionCount.count,
+      subscriptionUpgrades: upgradeCount.count,
       monthlyGrowth: Math.round(monthlyGrowth * 100) / 100, // Round to 2 decimal places
     };
   }

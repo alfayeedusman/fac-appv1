@@ -1,6 +1,7 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import { z } from 'zod';
+import { neonDbService } from "../services/neonDatabaseService";
 
 const router = express.Router();
 
@@ -551,36 +552,77 @@ router.get('/dashboard/stats', async (req, res) => {
 // WEBSOCKET NOTIFICATIONS (Basic HTTP endpoint for now)
 // ============================================================================
 
+import { triggerPusherEvent } from "../services/pusherService.js";
+
 // Send real-time message
 router.post('/messages/send', async (req, res) => {
   try {
     const { job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority } = req.body;
-    
+
     const connection = await pool.getConnection();
-    
+
     try {
       const [result] = await connection.execute(
-        `INSERT INTO realtime_messages 
+        `INSERT INTO realtime_messages
          (job_id, sender_type, sender_id, recipient_type, recipient_id, message_type, content, metadata, priority)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [job_id || null, sender_type, sender_id, recipient_type, recipient_id || null, message_type, content, JSON.stringify(metadata || {}), priority || 'normal']
       );
 
+      const messageId = (result as any).insertId;
+
       res.json({
         success: true,
-        message_id: (result as any).insertId,
+        message_id: messageId,
         message: 'Message sent successfully'
       });
-      
+
+      // Fire-and-forget Pusher event
+      (async () => {
+        try {
+          const payload = {
+            id: messageId,
+            job_id: job_id || null,
+            sender_type,
+            sender_id,
+            recipient_type,
+            recipient_id: recipient_id || null,
+            message_type,
+            content,
+            metadata: metadata || {},
+            priority: priority || 'normal',
+            created_at: new Date().toISOString(),
+          };
+
+          // Trigger user-specific channel if recipient_id provided
+          if (recipient_id) {
+            const userChannel = `user-${recipient_type}-${recipient_id}`;
+            const privateUserChannel = `private-user-${recipient_type}-${recipient_id}`;
+            await Promise.all([
+              triggerPusherEvent(userChannel, 'new-message', payload),
+              triggerPusherEvent(privateUserChannel, 'new-message', payload),
+            ]);
+          }
+
+          // Also broadcast to a public realtime channel for admin dashboards
+          await Promise.all([
+            triggerPusherEvent('public-realtime', 'new-message', payload),
+            triggerPusherEvent('private-public-realtime', 'new-message', payload),
+          ]);
+        } catch (err) {
+          console.warn('⚠️ Failed to trigger Pusher event:', err);
+        }
+      })();
+
     } finally {
       connection.release();
     }
-    
+
   } catch (error) {
     console.error('Send message error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to send message' 
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send message'
     });
   }
 });
@@ -617,6 +659,89 @@ router.get('/messages/:recipientType/:recipientId', async (req, res) => {
       success: false, 
       error: 'Failed to get messages' 
     });
+  }
+});
+
+// ============================================================================
+// AUTH: Pusher private channel auth endpoint
+// ============================================================================
+
+router.post('/pusher/auth', async (req, res) => {
+  try {
+    const { socket_id, channel_name } = req.body;
+    if (!socket_id || !channel_name) {
+      return res.status(400).json({ success: false, error: 'socket_id and channel_name required' });
+    }
+
+    const PUSHER_KEY = process.env.PUSHER_KEY;
+    const PUSHER_SECRET = process.env.PUSHER_SECRET;
+
+    if (!PUSHER_KEY || !PUSHER_SECRET) {
+      return res.status(500).json({ success: false, error: 'Pusher not configured' });
+    }
+
+    // Server-side authentication: prefer Authorization Bearer <token> header
+    // The token is validated against user_sessions table via neonDbService
+    let authenticatedUserId: string | null = null;
+    let authenticatedUserRole: string | null = null;
+
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const session = await neonDbService.getSessionByToken(token);
+        if (!session || !session.isActive) {
+          return res.status(403).json({ success: false, error: 'Invalid or inactive session token' });
+        }
+        const expiresAt = new Date(session.expiresAt);
+        if (expiresAt < new Date()) {
+          return res.status(403).json({ success: false, error: 'Session token expired' });
+        }
+
+        const user = await neonDbService.getUserById(session.userId);
+        if (!user) {
+          return res.status(403).json({ success: false, error: 'User not found for session' });
+        }
+
+        authenticatedUserId = user.id;
+        authenticatedUserRole = user.role;
+      } catch (sessionErr) {
+        console.warn('⚠️ Session validation error on pusher auth:', sessionErr);
+        return res.status(500).json({ success: false, error: 'Session validation failed' });
+      }
+    } else {
+      // Fallback to header-based checks (deprecated) for backward compatibility
+      const userIdHeader = req.headers['x-user-id'] as string | undefined;
+      const userRoleHeader = req.headers['x-user-role'] as string | undefined;
+      if (userIdHeader) authenticatedUserId = userIdHeader;
+      if (userRoleHeader) authenticatedUserRole = userRoleHeader as string;
+    }
+
+    // Basic access control for private channels
+    if (channel_name.startsWith('private-user-customer-')) {
+      const parts = channel_name.split('private-user-customer-');
+      const channelUserId = parts[1];
+      if (!authenticatedUserId || authenticatedUserId !== channelUserId) {
+        return res.status(403).json({ success: false, error: 'Unauthorized for this channel' });
+      }
+    }
+
+    if (channel_name.startsWith('private-admin')) {
+      if (!authenticatedUserRole || !['admin', 'superadmin', 'manager'].includes(authenticatedUserRole)) {
+        return res.status(403).json({ success: false, error: 'Unauthorized for admin channel' });
+      }
+    }
+
+    // Create signature
+    const crypto = await import('crypto');
+    const stringToSign = `${socket_id}:${channel_name}`;
+    const signature = crypto.createHmac('sha256', PUSHER_SECRET).update(stringToSign).digest('hex');
+    const auth = `${PUSHER_KEY}:${signature}`;
+
+    return res.json({ auth });
+  } catch (error: any) {
+    console.error('Pusher auth error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Internal error' });
   }
 });
 

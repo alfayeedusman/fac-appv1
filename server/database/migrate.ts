@@ -728,6 +728,54 @@ export async function runMigrations() {
       );
     `;
 
+    // Create pos_sessions table (Opening and Closing)
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_sessions (
+        id TEXT PRIMARY KEY,
+        status VARCHAR(20) NOT NULL DEFAULT 'open',
+        session_date TIMESTAMP NOT NULL,
+        cashier_id TEXT NOT NULL,
+        cashier_name VARCHAR(255) NOT NULL,
+        branch_id TEXT NOT NULL,
+        opening_balance DECIMAL(10,2) NOT NULL,
+        opened_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        closing_balance DECIMAL(10,2),
+        closed_at TIMESTAMP,
+        total_cash_sales DECIMAL(10,2) DEFAULT 0,
+        total_card_sales DECIMAL(10,2) DEFAULT 0,
+        total_gcash_sales DECIMAL(10,2) DEFAULT 0,
+        total_bank_sales DECIMAL(10,2) DEFAULT 0,
+        total_expenses DECIMAL(10,2) DEFAULT 0,
+        expected_cash DECIMAL(10,2),
+        actual_cash DECIMAL(10,2),
+        cash_variance DECIMAL(10,2),
+        expected_digital DECIMAL(10,2),
+        actual_digital DECIMAL(10,2),
+        digital_variance DECIMAL(10,2),
+        remittance_notes TEXT,
+        is_balanced BOOLEAN DEFAULT false,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create pos_expenses table
+    await sql`
+      CREATE TABLE IF NOT EXISTS pos_expenses (
+        id TEXT PRIMARY KEY,
+        pos_session_id TEXT NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        description VARCHAR(255) NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        payment_method VARCHAR(50) NOT NULL,
+        notes TEXT,
+        recorded_by TEXT NOT NULL,
+        recorded_by_name VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // ============= IMAGE MANAGEMENT SYSTEM =============
 
     // Create images table
@@ -927,6 +975,10 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_cashier ON pos_transactions(cashier_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_transactions_date ON pos_transactions(created_at);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_transaction_items_transaction ON pos_transaction_items(transaction_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_cashier ON pos_sessions(cashier_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_status ON pos_sessions(status);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_date ON pos_sessions(session_date);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_expenses_session ON pos_expenses(pos_session_id);`;
 
     // Image Management indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_images_category ON images(category);`;

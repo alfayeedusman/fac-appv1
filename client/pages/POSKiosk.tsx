@@ -36,6 +36,24 @@ import {
 } from "@/utils/posData";
 import { notificationManager } from "@/components/NotificationModal";
 import { SimplePaymentModal } from "@/components/SimplePaymentModal";
+import {
+  getCarWashServices,
+  vehicleTypes,
+  motorcycleSubtypes,
+  calculateServicePrice,
+  CarWashService,
+} from "@/utils/carWashServices";
+import { Droplet, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  saveTransaction as saveTransactionAPI,
+  saveExpense as saveExpenseAPI,
+  deleteExpense as deleteExpenseAPI,
+  getDailySalesReport as getDailyReportAPI,
+  getCurrentPOSSession,
+} from "@/utils/posApiService";
+import { receiptPrintService } from "@/services/receiptPrintService";
+import POSOpeningModal from "@/components/POSOpeningModal";
+import POSClosingModal from "@/components/POSClosingModal";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
@@ -67,26 +85,81 @@ export default function POSKiosk() {
     amountPaid: "",
     referenceNumber: "",
   });
+  const [showCarWashModal, setShowCarWashModal] = useState(false);
+  const [carWashServices, setCarWashServices] = useState<CarWashService[]>([]);
+  const [selectedWashService, setSelectedWashService] = useState<CarWashService | null>(null);
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string>("");
+  const [selectedMotorcycleSubtype, setSelectedMotorcycleSubtype] = useState<string>("");
+  const [calculatedWashPrice, setCalculatedWashPrice] = useState<number>(0);
+  const [todaysSales, setTodaysSales] = useState(0);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({
+    category: "supplies",
+    description: "",
+    amount: "",
+    paymentMethod: "cash",
+    notes: "",
+  });
+  const [todayExpenses, setTodayExpenses] = useState(0);
+  const [showOpeningModal, setShowOpeningModal] = useState(false);
+  const [showClosingModal, setShowClosingModal] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [openingBalance, setOpeningBalance] = useState(0);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
 
   const categories = getPOSCategories();
   const cashierName = localStorage.getItem("userEmail") || "Cashier";
+  const cashierId = localStorage.getItem("userEmail") || "unknown";
+  const branchId = "default";
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+
+        // Check for existing POS session
+        const session = await getCurrentPOSSession(cashierId);
+        if (session && session.status === "open") {
+          setCurrentSessionId(session.id);
+          setOpeningBalance(parseFloat(session.openingBalance?.toString() || "0"));
+          setSessionLoaded(true);
+        } else {
+          // No active session, show opening modal
+          setShowOpeningModal(true);
+        }
+
         // Simulate loading delay for better UX
         await new Promise(resolve => setTimeout(resolve, 1000));
         const productsData = await getProducts();
         setProducts(productsData || []);
+        const washServices = getCarWashServices().filter((s) => s.isActive);
+        setCarWashServices(washServices);
       } catch (error) {
         console.error("Error loading products:", error);
         setProducts([]);
+        setShowOpeningModal(true);
       } finally {
         setIsLoading(false);
       }
     };
     loadData();
+  }, []);
+
+  // Load today's sales and expenses
+  const loadTodaysSalesAndExpenses = async () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const report = await getDailyReportAPI(today);
+      setTodaysSales(report.totalSales);
+      setTodayExpenses(report.totalExpenses);
+    } catch (error) {
+      console.error("Error loading sales data:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadTodaysSalesAndExpenses();
+    // Load once on mount - avoid continuous polling to prevent lag
   }, []);
 
   useEffect(() => {
@@ -111,6 +184,90 @@ export default function POSKiosk() {
       setFilteredProducts([]);
     }
   }, [products, selectedCategory, searchQuery]);
+
+  const handleSelectWashService = (service: CarWashService) => {
+    setSelectedWashService(service);
+    setSelectedVehicleType("");
+    setSelectedMotorcycleSubtype("");
+    setCalculatedWashPrice(0);
+  };
+
+  const handleVehicleTypeSelect = (vehicleTypeId: string) => {
+    setSelectedVehicleType(vehicleTypeId);
+    const isMotorcycle = vehicleTypeId === "motorcycle";
+    if (!isMotorcycle) {
+      setSelectedMotorcycleSubtype("");
+    }
+    if (selectedWashService) {
+      const price = calculateServicePrice(
+        selectedWashService.basePrice,
+        vehicleTypeId,
+        isMotorcycle ? selectedMotorcycleSubtype : undefined
+      );
+      setCalculatedWashPrice(price);
+    }
+  };
+
+  const handleMotorcycleSubtypeSelect = (subtypeId: string) => {
+    setSelectedMotorcycleSubtype(subtypeId);
+    if (selectedWashService && selectedVehicleType) {
+      const price = calculateServicePrice(
+        selectedWashService.basePrice,
+        selectedVehicleType,
+        subtypeId
+      );
+      setCalculatedWashPrice(price);
+    }
+  };
+
+  const handleAddWashServiceToCart = () => {
+    if (!selectedWashService || !selectedVehicleType) {
+      notificationManager.error(
+        "Incomplete Selection",
+        "Please select a wash service and vehicle type"
+      );
+      return;
+    }
+
+    const vehicleType = vehicleTypes.find((vt) => vt.id === selectedVehicleType);
+    const vehicleName = vehicleType?.name || "Vehicle";
+    const subtypeName =
+      selectedVehicleType === "motorcycle"
+        ? ` - ${motorcycleSubtypes.find((st) => st.id === selectedMotorcycleSubtype)?.name}`
+        : "";
+
+    const cartItem = {
+      id: `wash_${selectedWashService.id}_${selectedVehicleType}_${selectedMotorcycleSubtype || "standard"}`,
+      name: `${selectedWashService.name} (${vehicleName}${subtypeName})`,
+      price: calculatedWashPrice,
+      quantity: 1,
+      sku: `WASH-${selectedWashService.id}-${selectedVehicleType}`,
+    };
+
+    const existingItem = cartItems.find((item) => item.id === cartItem.id);
+    if (existingItem) {
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === cartItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setCartItems([...cartItems, cartItem]);
+    }
+
+    notificationManager.success(
+      "Added to Cart",
+      `${selectedWashService.name} for ${vehicleName} added to cart`
+    );
+
+    setShowCarWashModal(false);
+    setSelectedWashService(null);
+    setSelectedVehicleType("");
+    setSelectedMotorcycleSubtype("");
+    setCalculatedWashPrice(0);
+  };
 
   const addToCart = async (product: Product) => {
     try {
@@ -144,13 +301,16 @@ export default function POSKiosk() {
           },
         ]);
       }
-      notificationManager.showNotification(
-        `${product.name} added to cart`,
-        "success"
+      notificationManager.success(
+        "Added to Cart",
+        `${product.name} added to cart`
       );
     } catch (error) {
       console.error("Error adding to cart:", error);
-      notificationManager.showNotification("Failed to add item to cart", "error");
+      notificationManager.error(
+        "Error",
+        "Failed to add item to cart"
+      );
     } finally {
       setAddingToCart(null);
     }
@@ -202,26 +362,38 @@ export default function POSKiosk() {
       setIsProcessingPayment(true);
 
       if (cartItems.length === 0) {
-        notificationManager.showNotification("Cart is empty", "error");
+        notificationManager.error(
+          "Empty Cart",
+          "Cart is empty"
+        );
         return;
       }
 
       if (!customerInfo.uniqueId.trim()) {
-        notificationManager.showNotification("Customer ID is required", "error");
+        notificationManager.error(
+          "Missing Info",
+          "Customer ID is required"
+        );
         return;
       }
 
       if (paymentInfo.method === "cash") {
         const amountPaid = parseFloat(paymentInfo.amountPaid);
-        if (isNaN(amountPaid) || amountPaid < total * 1.12) {
-          notificationManager.showNotification("Insufficient payment amount", "error");
+        if (isNaN(amountPaid) || amountPaid < total) {
+          notificationManager.error(
+            "Insufficient Payment",
+            `Amount paid must be at least ₱${total.toFixed(2)}`
+          );
           return;
         }
       }
 
       if ((paymentInfo.method === "gcash" || paymentInfo.method === "card") &&
           !paymentInfo.referenceNumber.trim()) {
-        notificationManager.showNotification("Reference number is required", "error");
+        notificationManager.error(
+          "Missing Info",
+          "Reference number is required"
+        );
         return;
       }
 
@@ -254,7 +426,77 @@ export default function POSKiosk() {
         }
       );
 
-      notificationManager.showNotification("Payment processed successfully!", "success");
+      // Save transaction to database
+      const transactionNumber = `TXN-${Date.now()}`;
+      await saveTransactionAPI({
+        transactionNumber,
+        customerInfo: {
+          id: customerInfo.uniqueId,
+          name: customerInfo.name,
+        },
+        items: cartItems,
+        subtotal: total,
+        taxAmount: 0,
+        discountAmount: 0,
+        totalAmount: total,
+        paymentMethod: paymentInfo.method,
+        paymentReference: paymentInfo.referenceNumber,
+        amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+        changeAmount: change,
+        cashierInfo: {
+          id: cashierId,
+          name: cashierName,
+        },
+        branchId,
+      });
+
+      // Handle receipt printing based on settings
+      try {
+        const receiptData = {
+          transactionNumber,
+          date: new Date(),
+          items: cartItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            subtotal: item.price * item.quantity,
+          })),
+          subtotal: total,
+          taxAmount: 0,
+          discountAmount: 0,
+          totalAmount: total,
+          paymentMethod: paymentInfo.method,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
+          changeAmount: change,
+          customerName: customerInfo.name,
+          cashierName: cashierName,
+        };
+
+        // Get printing settings from service
+        const printSettings = receiptPrintService.getSettings();
+
+        // Print receipt based on mode
+        if (printSettings.printingMode === "auto") {
+          // Auto-print directly without dialog
+          await receiptPrintService.printReceipt(receiptData, printSettings);
+          console.log("✓ Receipt auto-printed successfully");
+        } else {
+          // Manual print mode - notify user to print
+          console.log("Receipt ready - user can print manually if desired");
+          // Optionally store receipt for manual printing later
+        }
+      } catch (printError) {
+        console.warn("Receipt printing issue (transaction still successful):", printError);
+        // Don't stop the transaction if printing fails
+      }
+
+      notificationManager.success(
+        "Success",
+        "Payment processed successfully! Receipt printing..."
+      );
+
+      // Reload today's sales
+      loadTodaysSalesAndExpenses();
 
       // Reset form
       clearCart();
@@ -267,7 +509,10 @@ export default function POSKiosk() {
       setShowPaymentModal(false);
     } catch (error) {
       console.error("Payment error:", error);
-      notificationManager.showNotification("Payment failed. Please try again.", "error");
+      notificationManager.error(
+        "Payment Failed",
+        "Payment failed. Please try again."
+      );
     } finally {
       setIsProcessingPayment(false);
     }
@@ -305,18 +550,59 @@ export default function POSKiosk() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
-                <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
-                <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Today's Sales: ₱{(total * 1.12).toFixed(2)}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
+                <div className="hidden sm:flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
+                  <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Sales: ₱{todaysSales.toFixed(2)}</span>
+                </div>
+                {todayExpenses > 0 && (
+                  <>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm font-semibold text-red-600">Expenses: ₱{todayExpenses.toFixed(2)}</span>
+                    </div>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-semibold text-green-600">Net: ₱{(todaysSales - todayExpenses).toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
               </div>
               <Button
+                onClick={() => setShowExpenseModal(true)}
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 transition-all duration-200 px-6"
+              >
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Add Expense
+              </Button>
+              <Button
+                onClick={() => setShowCarWashModal(true)}
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 px-6"
+              >
+                <Droplet className="h-4 w-4 mr-2" />
+                Car Wash
+              </Button>
+              <Button
                 variant="outline"
-                onClick={() => setShowExitModal(true)}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6"
+                onClick={() => {
+                  if (!currentSessionId) {
+                    notificationManager.error(
+                      "Error",
+                      "No active POS session. Please open a session first."
+                    );
+                    return;
+                  }
+                  setShowClosingModal(true);
+                }}
+                disabled={!currentSessionId}
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!currentSessionId ? "No active POS session" : "Close the current POS session"}
               >
                 <X className="h-4 w-4 mr-2" />
-                Exit Kiosk
+                Close & Exit
               </Button>
             </div>
           </div>
@@ -657,31 +943,331 @@ export default function POSKiosk() {
         onPayment={handlePayment}
       />
 
-      {/* Exit Confirmation Modal */}
-      {showExitModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">Exit POS Kiosk</h2>
-              <p className="text-gray-600">Are you sure you want to exit the kiosk?</p>
+      {/* Car Wash Service Modal */}
+      {showCarWashModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-3xl my-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-xl">
+                  <Droplet className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Car Wash Services</h2>
+                  <p className="text-sm text-gray-600 mt-1">Choose a service and vehicle type</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCarWashModal(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
             </div>
-            <div className="flex space-x-3">
+
+            <Separator className="mb-6" />
+
+            {!selectedWashService ? (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                <p className="text-sm font-medium text-gray-600 mb-4">Select a wash service:</p>
+                {carWashServices.map((service) => (
+                  <div
+                    key={service.id}
+                    onClick={() => handleSelectWashService(service)}
+                    className="p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">{service.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <span className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{service.duration}</span>
+                          <span className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{service.category}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {service.features.slice(0, 3).map((feature, idx) => (
+                            <span key={idx} className="text-xs text-gray-600">• {feature}</span>
+                          ))}</div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="text-2xl font-bold text-orange-600">₱{service.basePrice}</p>
+                        <p className="text-xs text-gray-600 mt-1">Base price</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{selectedWashService.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{selectedWashService.description}</p>
+                    </div>
+                    <button
+                      onClick={() => handleSelectWashService(selectedWashService)}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-900 mb-3">Select Vehicle Type:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {vehicleTypes.map((vt) => {
+                      const isSelected = selectedVehicleType === vt.id;
+                      return (
+                        <button
+                          key={vt.id}
+                          onClick={() => handleVehicleTypeSelect(vt.id)}
+                          className={isSelected ? "p-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 transition-all duration-200 font-medium text-sm" : "p-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200 font-medium text-sm"}
+                        >
+                          {vt.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedVehicleType === "motorcycle" && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-3">Select Motorcycle Type:</p>
+                    <div className="space-y-2">
+                      {motorcycleSubtypes.map((st) => {
+                        const isSelected = selectedMotorcycleSubtype === st.id;
+                        return (
+                          <button
+                            key={st.id}
+                            onClick={() => handleMotorcycleSubtypeSelect(st.id)}
+                            className={isSelected ? "w-full p-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 transition-all duration-200 font-medium text-left text-sm" : "w-full p-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200 font-medium text-left text-sm"}
+                          >
+                            {st.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedVehicleType && (!selectedVehicleType.includes("motorcycle") || selectedMotorcycleSubtype) && (
+                  <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Final Price</p>
+                        <p className="text-sm font-medium text-gray-700 mt-1">
+                          {vehicleTypes.find((vt) => vt.id === selectedVehicleType)?.name}
+                          {selectedVehicleType === "motorcycle" && selectedMotorcycleSubtype ? ` - ${motorcycleSubtypes.find((st) => st.id === selectedMotorcycleSubtype)?.name}` : ""}
+                        </p>
+                      </div>
+                      <p className="text-3xl font-bold text-orange-600">₱{calculatedWashPrice.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex space-x-3 pt-4 border-t">
+                  <button
+                    onClick={() => {
+                      setSelectedWashService(null);
+                      setSelectedVehicleType("");
+                      setSelectedMotorcycleSubtype("");
+                      setCalculatedWashPrice(0);
+                    }}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleAddWashServiceToCart}
+                    disabled={!selectedVehicleType || (selectedVehicleType === "motorcycle" && !selectedMotorcycleSubtype)}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2 inline" />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Expense Modal */}
+      {showExpenseModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md my-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-xl">
+                  <AlertCircle className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Add Expense</h2>
+                  <p className="text-sm text-gray-600 mt-1">Record a business expense</p>
+                </div>
+              </div>
               <button
-                onClick={() => setShowExitModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                onClick={() => setShowExpenseModal(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                Cancel
+                <X className="h-6 w-6" />
               </button>
-              <button
-                onClick={() => navigate("/pos")}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Exit
-              </button>
+            </div>
+
+            <Separator className="mb-6" />
+
+            <div className="space-y-4">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select
+                  value={expenseForm.category}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="supplies">Supplies</option>
+                  <option value="utilities">Utilities</option>
+                  <option value="rent">Rent</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="fuel">Fuel</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <Input
+                  placeholder="e.g., Car wash detergent, Oil change..."
+                  value={expenseForm.description}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amount (₱)</label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={expenseForm.amount}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select
+                  value={expenseForm.paymentMethod}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, paymentMethod: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="card">Credit Card</option>
+                  <option value="gcash">GCash</option>
+                  <option value="bank">Bank Transfer</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                <Input
+                  placeholder="Additional notes..."
+                  value={expenseForm.notes}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-3 pt-4 border-t">
+                <button
+                  onClick={() => setShowExpenseModal(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!expenseForm.description.trim() || !expenseForm.amount) {
+                      notificationManager.error(
+                        "Missing Info",
+                        "Please fill in all required fields"
+                      );
+                      return;
+                    }
+
+                    saveExpenseAPI({
+                      posSessionId: currentSessionId || "temp",
+                      category: expenseForm.category,
+                      description: expenseForm.description,
+                      amount: parseFloat(expenseForm.amount),
+                      paymentMethod: expenseForm.paymentMethod,
+                      notes: expenseForm.notes,
+                      recordedByInfo: {
+                        id: cashierId,
+                        name: cashierName,
+                      },
+                    });
+
+                    notificationManager.success(
+                      "Success",
+                      `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
+                    );
+
+                    // Reset form
+                    setExpenseForm({
+                      category: "supplies",
+                      description: "",
+                      amount: "",
+                      paymentMethod: "cash",
+                      notes: "",
+                    });
+                    setShowExpenseModal(false);
+                    loadTodaysSalesAndExpenses();
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 font-medium transition-all duration-200"
+                >
+                  <AlertCircle className="h-4 w-4 mr-2 inline" />
+                  Save Expense
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* POS Opening Modal */}
+      <POSOpeningModal
+        isOpen={showOpeningModal}
+        onClose={() => setShowOpeningModal(false)}
+        onSessionOpened={(sessionId) => {
+          setCurrentSessionId(sessionId);
+          setSessionLoaded(true);
+          setShowOpeningModal(false);
+        }}
+        cashierInfo={{ id: cashierId, name: cashierName }}
+        branchId={branchId}
+      />
+
+      {/* POS Closing Modal */}
+      <POSClosingModal
+        isOpen={showClosingModal}
+        onClose={() => setShowClosingModal(false)}
+        onSessionClosed={() => {
+          setCurrentSessionId(null);
+          setSessionLoaded(false);
+          navigate("/admin-dashboard");
+        }}
+        sessionId={currentSessionId || ""}
+        openingBalance={openingBalance}
+      />
     </div>
   );
 }

@@ -1,795 +1,794 @@
-import express, { RequestHandler } from 'express';
-import { neon } from '@neondatabase/serverless';
+import express from "express";
+import { getDatabase } from "../database/connection";
+import {
+  posTransactions,
+  posTransactionItems,
+  posExpenses,
+  posSessions,
+} from "../database/schema";
+import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
+import { triggerPusherEvent } from "../services/pusherService.js";
 
 const router = express.Router();
 
-// Initialize Neon SQL client
-const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
-const sql = DATABASE_URL ? neon(DATABASE_URL) : null as any;
+// ============= HELPER FUNCTIONS =============
 
-// ============= POS CATEGORIES ENDPOINTS =============
-
-// Get all POS categories
-export const getPOSCategories: RequestHandler = async (req, res) => {
-  try {
-    const { isActive } = req.query;
-    
-    let query = `SELECT * FROM pos_categories WHERE 1=1`;
-    const params: any[] = [];
-
-    if (isActive !== undefined) {
-      query += ` AND is_active = $1`;
-      params.push(isActive === 'true');
-    }
-
-    query += ` ORDER BY sort_order ASC, name ASC`;
-
-    const categories = await sql(query, params);
-
-    res.json({
-      success: true,
-      categories: categories || []
-    });
-  } catch (error: any) {
-    console.error('Get POS categories error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS categories'
-    });
-  }
+// Round to 2 decimal places to prevent floating-point errors in financial calculations
+const roundToTwo = (num: number): number => {
+  return Math.round(num * 100) / 100;
 };
 
-// Create POS category
-export const createPOSCategory: RequestHandler = async (req, res) => {
+// ============= POS SESSION ROUTES =============
+
+// Open POS Session
+router.post("/sessions/open", async (req, res) => {
   try {
-    const { name, description, icon, color, sortOrder } = req.body;
+    const { cashierId, cashierName, branchId, openingBalance } = req.body;
 
-    const categoryId = `cat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const result = await sql`
-      INSERT INTO pos_categories (
-        id, name, description, icon, color, sort_order, created_at, updated_at
-      ) VALUES (
-        ${categoryId}, ${name}, ${description || null}, ${icon || null},
-        ${color || '#F97316'}, ${sortOrder || 0}, NOW(), NOW()
-      ) RETURNING *
-    `;
-
-    res.status(201).json({
-      success: true,
-      category: result[0],
-      message: 'POS category created successfully'
-    });
-  } catch (error: any) {
-    console.error('Create POS category error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create POS category'
-    });
-  }
-};
-
-// Update POS category
-export const updatePOSCategory: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateFields = req.body;
-
-    delete updateFields.id;
-    delete updateFields.createdAt;
-    updateFields.updatedAt = new Date();
-
-    const updateKeys = Object.keys(updateFields);
-    const updateValues = Object.values(updateFields);
-    
-    if (updateKeys.length === 0) {
+    if (!cashierId || !branchId || openingBalance === undefined) {
       return res.status(400).json({
-        success: false,
-        error: 'No fields to update'
+        error: "Missing required fields: cashierId, branchId, openingBalance",
       });
     }
 
-    const setClause = updateKeys.map((key, index) => 
-      `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${index + 2}`
-    ).join(', ');
-
-    const query = `
-      UPDATE pos_categories 
-      SET ${setClause}
-      WHERE id = $1 
-      RETURNING *
-    `;
-
-    const result = await sql(query, [id, ...updateValues]);
-
-    if (!result || result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'POS category not found'
-      });
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
     }
+
+    const sessionId = createId();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const session = await db.insert(posSessions).values({
+      id: sessionId,
+      status: "open",
+      sessionDate: today,
+      cashierId,
+      cashierName,
+      branchId,
+      openingBalance: openingBalance.toString(),
+    });
 
     res.json({
       success: true,
-      category: result[0],
-      message: 'POS category updated successfully'
+      sessionId,
+      message: "POS session opened successfully",
     });
-  } catch (error: any) {
-    console.error('Update POS category error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update POS category'
-    });
+  } catch (error) {
+    console.error("Error opening POS session:", error);
+    res.status(500).json({ error: "Failed to open POS session" });
   }
-};
+});
 
-// ============= POS PRODUCTS ENDPOINTS =============
-
-// Get all POS products
-export const getPOSProducts: RequestHandler = async (req, res) => {
+// Get Current POS Session
+router.get("/sessions/current/:cashierId", async (req, res) => {
   try {
-    const { categoryId, isActive, isService, vehicleType, search } = req.query;
-    
-    let query = `
-      SELECT p.*, c.name as category_name, c.color as category_color
-      FROM pos_products p
-      LEFT JOIN pos_categories c ON p.category_id = c.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (categoryId) {
-      query += ` AND p.category_id = $${paramIndex}`;
-      params.push(categoryId);
-      paramIndex++;
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
     }
 
-    if (isActive !== undefined) {
-      query += ` AND p.is_active = $${paramIndex}`;
-      params.push(isActive === 'true');
-      paramIndex++;
-    }
+    const { cashierId } = req.params;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (isService !== undefined) {
-      query += ` AND p.is_service = $${paramIndex}`;
-      params.push(isService === 'true');
-      paramIndex++;
-    }
-
-    if (vehicleType) {
-      query += ` AND p.vehicle_types @> $${paramIndex}`;
-      params.push(JSON.stringify([vehicleType]));
-      paramIndex++;
-    }
-
-    if (search) {
-      query += ` AND (LOWER(p.name) LIKE LOWER($${paramIndex}) OR LOWER(p.description) LIKE LOWER($${paramIndex + 1}) OR p.sku LIKE $${paramIndex + 2})`;
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-      paramIndex += 3;
-    }
-
-    query += ` ORDER BY p.sort_order ASC, p.name ASC`;
-
-    const products = await sql(query, params);
-
-    res.json({
-      success: true,
-      products: products || []
-    });
-  } catch (error: any) {
-    console.error('Get POS products error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS products'
-    });
-  }
-};
-
-// Get single POS product
-export const getPOSProductById: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const products = await sql`
-      SELECT p.*, c.name as category_name
-      FROM pos_products p
-      LEFT JOIN pos_categories c ON p.category_id = c.id
-      WHERE p.id = ${id}
-      LIMIT 1
-    `;
-
-    if (!products || products.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'POS product not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      product: products[0]
-    });
-  } catch (error: any) {
-    console.error('Get POS product error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS product'
-    });
-  }
-};
-
-// Create POS product
-export const createPOSProduct: RequestHandler = async (req, res) => {
-  try {
-    const {
-      name, description, categoryId, basePrice, carPrice, motorcyclePrice,
-      suvPrice, truckPrice, sku, barcode, unit, trackInventory, currentStock,
-      minStockLevel, isService, estimatedDuration, vehicleTypes, imageUrl,
-      color, availableBranches, tags, sortOrder
-    } = req.body;
-
-    const productId = `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const result = await sql`
-      INSERT INTO pos_products (
-        id, name, description, category_id, base_price, car_price, motorcycle_price,
-        suv_price, truck_price, sku, barcode, unit, track_inventory, current_stock,
-        min_stock_level, is_service, estimated_duration, vehicle_types, image_url,
-        color, available_branches, tags, sort_order, created_at, updated_at
-      ) VALUES (
-        ${productId}, ${name}, ${description || null}, ${categoryId || null},
-        ${basePrice}, ${carPrice || null}, ${motorcyclePrice || null},
-        ${suvPrice || null}, ${truckPrice || null}, ${sku || null},
-        ${barcode || null}, ${unit || 'piece'}, ${trackInventory || false},
-        ${currentStock || 0}, ${minStockLevel || 0}, ${isService || false},
-        ${estimatedDuration || null}, ${JSON.stringify(vehicleTypes || ['car'])},
-        ${imageUrl || null}, ${color || null}, ${JSON.stringify(availableBranches || [])},
-        ${JSON.stringify(tags || [])}, ${sortOrder || 0}, NOW(), NOW()
-      ) RETURNING *
-    `;
-
-    res.status(201).json({
-      success: true,
-      product: result[0],
-      message: 'POS product created successfully'
-    });
-  } catch (error: any) {
-    console.error('Create POS product error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create POS product'
-    });
-  }
-};
-
-// Update POS product
-export const updatePOSProduct: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateFields = req.body;
-
-    delete updateFields.id;
-    delete updateFields.createdAt;
-    updateFields.updatedAt = new Date();
-
-    // Convert arrays to JSON strings for database storage
-    if (updateFields.vehicleTypes) updateFields.vehicleTypes = JSON.stringify(updateFields.vehicleTypes);
-    if (updateFields.availableBranches) updateFields.availableBranches = JSON.stringify(updateFields.availableBranches);
-    if (updateFields.tags) updateFields.tags = JSON.stringify(updateFields.tags);
-
-    const updateKeys = Object.keys(updateFields);
-    const updateValues = Object.values(updateFields);
-    
-    if (updateKeys.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'No fields to update'
-      });
-    }
-
-    const setClause = updateKeys.map((key, index) => 
-      `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${index + 2}`
-    ).join(', ');
-
-    const query = `
-      UPDATE pos_products 
-      SET ${setClause}
-      WHERE id = $1 
-      RETURNING *
-    `;
-
-    const result = await sql(query, [id, ...updateValues]);
-
-    if (!result || result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'POS product not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      product: result[0],
-      message: 'POS product updated successfully'
-    });
-  } catch (error: any) {
-    console.error('Update POS product error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update POS product'
-    });
-  }
-};
-
-// Update product stock
-export const updateProductStock: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { quantity, type, reason, performedBy } = req.body;
-
-    if (!quantity || !type) {
-      return res.status(400).json({
-        success: false,
-        error: 'Quantity and type are required'
-      });
-    }
-
-    // Get current stock
-    const product = await sql`
-      SELECT current_stock, name FROM pos_products WHERE id = ${id} LIMIT 1
-    `;
-
-    if (!product || product.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Product not found'
-      });
-    }
-
-    const currentStock = product[0].current_stock || 0;
-    let newStock = currentStock;
-
-    // Calculate new stock based on type
-    if (type === 'in') {
-      newStock = currentStock + Math.abs(quantity);
-    } else if (type === 'out') {
-      newStock = Math.max(0, currentStock - Math.abs(quantity));
-    } else if (type === 'adjustment') {
-      newStock = Math.max(0, quantity);
-    }
-
-    // Update product stock
-    await sql`
-      UPDATE pos_products 
-      SET current_stock = ${newStock}, updated_at = NOW()
-      WHERE id = ${id}
-    `;
-
-    // Record stock movement
-    const movementId = `mov_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    await sql`
-      INSERT INTO stock_movements (
-        id, item_id, type, quantity, reason, performed_by, created_at
-      ) VALUES (
-        ${movementId}, ${id}, ${type}, ${quantity}, ${reason || null},
-        ${performedBy || null}, NOW()
+    const result = await db
+      .select()
+      .from(posSessions)
+      .where(
+        and(
+          eq(posSessions.cashierId, cashierId),
+          gte(posSessions.sessionDate, today),
+          eq(posSessions.status, "open")
+        )
       )
-    `;
+      .limit(1);
 
-    res.json({
-      success: true,
-      previousStock: currentStock,
-      newStock,
-      message: 'Product stock updated successfully'
-    });
-  } catch (error: any) {
-    console.error('Update product stock error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update product stock'
-    });
+    const session = result[0];
+    if (!session) {
+      return res.json({ session: null });
+    }
+
+    res.json({ session });
+  } catch (error) {
+    console.error("Error fetching POS session:", error);
+    res.status(500).json({ error: "Failed to fetch POS session" });
   }
-};
+});
 
-// ============= POS TRANSACTIONS ENDPOINTS =============
-
-// Get all transactions
-export const getPOSTransactions: RequestHandler = async (req, res) => {
+// Close POS Session with Reconciliation
+router.post("/sessions/close/:sessionId", async (req, res) => {
   try {
-    const { branchId, cashierId, status, type, startDate, endDate, limit = 50, offset = 0 } = req.query;
-    
-    let query = `SELECT * FROM pos_transactions WHERE 1=1`;
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (branchId) {
-      query += ` AND branch_id = $${paramIndex}`;
-      params.push(branchId);
-      paramIndex++;
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
     }
 
-    if (cashierId) {
-      query += ` AND cashier_id = $${paramIndex}`;
-      params.push(cashierId);
-      paramIndex++;
-    }
-
-    if (status) {
-      query += ` AND status = $${paramIndex}`;
-      params.push(status);
-      paramIndex++;
-    }
-
-    if (type) {
-      query += ` AND type = $${paramIndex}`;
-      params.push(type);
-      paramIndex++;
-    }
-
-    if (startDate) {
-      query += ` AND created_at >= $${paramIndex}`;
-      params.push(startDate);
-      paramIndex++;
-    }
-
-    if (endDate) {
-      query += ` AND created_at <= $${paramIndex}`;
-      params.push(endDate);
-      paramIndex++;
-    }
-
-    query += ` ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(parseInt(limit as string), parseInt(offset as string));
-
-    const transactions = await sql(query, params);
-
-    res.json({
-      success: true,
-      transactions: transactions || []
-    });
-  } catch (error: any) {
-    console.error('Get POS transactions error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS transactions'
-    });
-  }
-};
-
-// Get single transaction with items
-export const getPOSTransactionById: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Get transaction
-    const transactions = await sql`
-      SELECT * FROM pos_transactions WHERE id = ${id} LIMIT 1
-    `;
-
-    if (!transactions || transactions.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Transaction not found'
-      });
-    }
-
-    // Get transaction items
-    const items = await sql`
-      SELECT * FROM pos_transaction_items 
-      WHERE transaction_id = ${id}
-      ORDER BY created_at ASC
-    `;
-
-    res.json({
-      success: true,
-      transaction: {
-        ...transactions[0],
-        items: items || []
-      }
-    });
-  } catch (error: any) {
-    console.error('Get POS transaction error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS transaction'
-    });
-  }
-};
-
-// Create POS transaction
-export const createPOSTransaction: RequestHandler = async (req, res) => {
-  try {
+    const { sessionId } = req.params;
     const {
-      customerId, customerName, customerEmail, customerPhone, type,
-      branchId, cashierId, cashierName, items, subtotal, taxAmount,
-      discountAmount, totalAmount, paymentMethod, paymentReference,
-      amountPaid, changeAmount, notes, pointsEarned, pointsRedeemed
+      actualCash,
+      actualDigital,
+      remittanceNotes,
     } = req.body;
 
-    if (!items || items.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Transaction must have at least one item'
-      });
+    // Fetch session
+    const sessionResult = await db
+      .select()
+      .from(posSessions)
+      .where(eq(posSessions.id, sessionId))
+      .limit(1);
+
+    const session = sessionResult[0];
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
     }
 
-    // Generate transaction number
-    const timestamp = Date.now();
-    const transactionNumber = `TXN${timestamp}`;
-    const transactionId = `txn_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+    // Get all transactions for this session
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(
+        and(
+          gte(posTransactions.createdAt, session.openedAt || session.createdAt),
+          lte(posTransactions.createdAt, new Date())
+        )
+      );
 
-    // Create transaction
-    const transaction = await sql`
-      INSERT INTO pos_transactions (
-        id, transaction_number, customer_id, customer_name, customer_email,
-        customer_phone, type, status, branch_id, cashier_id, cashier_name,
-        subtotal, tax_amount, discount_amount, total_amount, payment_method,
-        payment_reference, amount_paid, change_amount, notes, points_earned,
-        points_redeemed, created_at, updated_at
-      ) VALUES (
-        ${transactionId}, ${transactionNumber}, ${customerId || null},
-        ${customerName || null}, ${customerEmail || null}, ${customerPhone || null},
-        ${type || 'sale'}, 'completed', ${branchId}, ${cashierId}, ${cashierName},
-        ${subtotal}, ${taxAmount || 0}, ${discountAmount || 0}, ${totalAmount},
-        ${paymentMethod}, ${paymentReference || null}, ${amountPaid},
-        ${changeAmount || 0}, ${notes || null}, ${pointsEarned || 0},
-        ${pointsRedeemed || 0}, NOW(), NOW()
-      ) RETURNING *
-    `;
+    // Calculate totals with proper rounding to prevent floating-point errors
+    let totalCashSales = 0;
+    let totalCardSales = 0;
+    let totalGcashSales = 0;
+    let totalBankSales = 0;
 
-    // Create transaction items
-    const transactionItems = [];
-    for (const item of items) {
-      const itemId = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const transactionItem = await sql`
-        INSERT INTO pos_transaction_items (
-          id, transaction_id, product_id, item_name, item_sku, item_category,
-          unit_price, quantity, subtotal, discount_amount, final_price,
-          vehicle_type, service_notes, created_at
-        ) VALUES (
-          ${itemId}, ${transactionId}, ${item.productId || null}, ${item.name},
-          ${item.sku || null}, ${item.category || null}, ${item.unitPrice},
-          ${item.quantity || 1}, ${item.subtotal}, ${item.discountAmount || 0},
-          ${item.finalPrice}, ${item.vehicleType || null}, ${item.serviceNotes || null},
-          NOW()
-        ) RETURNING *
-      `;
-
-      transactionItems.push(transactionItem[0]);
-
-      // Update product stock if it's a tracked inventory item
-      if (item.productId && item.trackInventory) {
-        await sql`
-          UPDATE pos_products 
-          SET current_stock = GREATEST(0, current_stock - ${item.quantity || 1})
-          WHERE id = ${item.productId} AND track_inventory = true
-        `;
-
-        // Record stock movement
-        const movementId = `mov_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        await sql`
-          INSERT INTO stock_movements (
-            id, item_id, type, quantity, reason, reference, performed_by, created_at
-          ) VALUES (
-            ${movementId}, ${item.productId}, 'out', ${item.quantity || 1},
-            'POS Sale', ${transactionNumber}, ${cashierId}, NOW()
-          )
-        `;
+    transactions.forEach((trans) => {
+      const amount = roundToTwo(parseFloat(trans.totalAmount.toString()));
+      switch (trans.paymentMethod) {
+        case "cash":
+          totalCashSales = roundToTwo(totalCashSales + amount);
+          break;
+        case "card":
+          totalCardSales = roundToTwo(totalCardSales + amount);
+          break;
+        case "gcash":
+          totalGcashSales = roundToTwo(totalGcashSales + amount);
+          break;
+        case "bank":
+          totalBankSales = roundToTwo(totalBankSales + amount);
+          break;
       }
-    }
-
-    // Award loyalty points if customer is registered
-    if (customerId && pointsEarned > 0) {
-      // Get current balance
-      const user = await sql`
-        SELECT loyalty_points FROM users WHERE id = ${customerId} LIMIT 1
-      `;
-
-      if (user && user.length > 0) {
-        const currentBalance = user[0].loyalty_points || 0;
-        const newBalance = currentBalance + pointsEarned;
-
-        // Update user points
-        await sql`
-          UPDATE users 
-          SET loyalty_points = ${newBalance}, updated_at = NOW()
-          WHERE id = ${customerId}
-        `;
-
-        // Record loyalty transaction
-        const loyaltyTxnId = `lt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        await sql`
-          INSERT INTO loyalty_transactions (
-            id, user_id, type, amount, description, reference_type, reference_id,
-            balance_before, balance_after, created_at
-          ) VALUES (
-            ${loyaltyTxnId}, ${customerId}, 'earned', ${pointsEarned},
-            'POS Purchase', 'pos_transaction', ${transactionId},
-            ${currentBalance}, ${newBalance}, NOW()
-          )
-        `;
-      }
-    }
-
-    res.status(201).json({
-      success: true,
-      transaction: {
-        ...transaction[0],
-        items: transactionItems
-      },
-      message: 'POS transaction created successfully'
     });
-  } catch (error: any) {
-    console.error('Create POS transaction error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create POS transaction'
-    });
-  }
-};
 
-// Refund transaction
-export const refundPOSTransaction: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reason, refundedBy, partialAmount } = req.body;
+    // Get total expenses
+    const expenses = await db
+      .select()
+      .from(posExpenses)
+      .where(eq(posExpenses.posSessionId, sessionId));
 
-    // Get original transaction
-    const transaction = await sql`
-      SELECT * FROM pos_transactions WHERE id = ${id} LIMIT 1
-    `;
+    const totalExpenses = roundToTwo(
+      expenses.reduce(
+        (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
+        0
+      )
+    );
 
-    if (!transaction || transaction.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Transaction not found'
-      });
-    }
+    // Calculate expected balances with proper rounding
+    const openingBalance = roundToTwo(parseFloat(session.openingBalance.toString()));
+    const expectedCash = roundToTwo(openingBalance + totalCashSales - totalExpenses);
+    const expectedDigital = roundToTwo(totalCardSales + totalGcashSales + totalBankSales);
 
-    if (transaction[0].status === 'refunded') {
-      return res.status(400).json({
-        success: false,
-        error: 'Transaction already refunded'
-      });
-    }
+    // Calculate variance with proper rounding
+    const actualCashAmount = roundToTwo(parseFloat(actualCash));
+    const actualDigitalAmount = roundToTwo(parseFloat(actualDigital));
+    const cashVariance = roundToTwo(actualCashAmount - expectedCash);
+    const digitalVariance = roundToTwo(actualDigitalAmount - expectedDigital);
+    const isBalanced = Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
-    const refundAmount = partialAmount || transaction[0].total_amount;
+    // Update session with properly rounded values
+    const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
 
-    // Update original transaction
-    await sql`
-      UPDATE pos_transactions 
-      SET status = 'refunded', refunded_at = NOW(), refund_reason = ${reason || null},
-          refunded_by = ${refundedBy || null}, updated_at = NOW()
-      WHERE id = ${id}
-    `;
-
-    // Create refund transaction
-    const refundId = `ref_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const refundNumber = `REF${Date.now()}`;
-
-    const refundTransaction = await sql`
-      INSERT INTO pos_transactions (
-        id, transaction_number, customer_id, customer_name, type, status,
-        branch_id, cashier_id, cashier_name, subtotal, total_amount,
-        payment_method, amount_paid, notes, created_at, updated_at
-      ) VALUES (
-        ${refundId}, ${refundNumber}, ${transaction[0].customer_id},
-        ${transaction[0].customer_name}, 'refund', 'completed',
-        ${transaction[0].branch_id}, ${refundedBy || transaction[0].cashier_id},
-        ${transaction[0].cashier_name}, ${-refundAmount}, ${-refundAmount},
-        ${transaction[0].payment_method}, ${-refundAmount}, ${reason || null},
-        NOW(), NOW()
-      ) RETURNING *
-    `;
+    await db
+      .update(posSessions)
+      .set({
+        status: "closed",
+        closedAt: new Date(),
+        closingBalance: closingBalance.toString(),
+        totalCashSales: totalCashSales.toString(),
+        totalCardSales: totalCardSales.toString(),
+        totalGcashSales: totalGcashSales.toString(),
+        totalBankSales: totalBankSales.toString(),
+        totalExpenses: totalExpenses.toString(),
+        expectedCash: expectedCash.toString(),
+        actualCash: actualCashAmount.toString(),
+        cashVariance: cashVariance.toString(),
+        expectedDigital: expectedDigital.toString(),
+        actualDigital: actualDigitalAmount.toString(),
+        digitalVariance: digitalVariance.toString(),
+        remittanceNotes,
+        isBalanced,
+      })
+      .where(eq(posSessions.id, sessionId));
 
     res.json({
       success: true,
-      originalTransaction: transaction[0],
-      refundTransaction: refundTransaction[0],
-      message: 'Transaction refunded successfully'
+      isBalanced,
+      cashVariance,
+      digitalVariance,
+      message: isBalanced ? "POS closed successfully and balanced!" : "POS closed with variance",
     });
   } catch (error: any) {
-    console.error('Refund POS transaction error:', error);
+    console.error("Error closing POS session:", error);
+    const errorMessage = error?.message || error?.toString() || "Unknown error";
     res.status(500).json({
-      success: false,
-      error: 'Failed to refund transaction'
+      error: "Failed to close POS session",
+      details: errorMessage
     });
   }
-};
+});
 
-// Get POS analytics
-export const getPOSAnalytics: RequestHandler = async (req, res) => {
+// ============= TRANSACTION ROUTES =============
+
+// Save Transaction
+router.post("/transactions", async (req, res) => {
   try {
-    const { branchId, startDate, endDate, period = '7' } = req.query;
-
-    let dateFilter = `created_at >= NOW() - INTERVAL '${period} days'`;
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (startDate && endDate) {
-      dateFilter = `created_at BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
-      params.push(startDate, endDate);
-      paramIndex += 2;
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
     }
 
-    let branchFilter = '';
-    if (branchId) {
-      branchFilter = ` AND branch_id = $${paramIndex}`;
-      params.push(branchId);
+    const {
+      transactionNumber,
+      customerInfo,
+      items,
+      subtotal,
+      taxAmount,
+      discountAmount,
+      totalAmount,
+      paymentMethod,
+      paymentReference,
+      amountPaid,
+      changeAmount,
+      cashierInfo,
+      branchId,
+    } = req.body;
+
+    if (!transactionNumber || !totalAmount || !paymentMethod) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
     }
 
-    // Sales summary
-    const salesSummary = await sql(`
-      SELECT 
-        COUNT(*) as total_transactions,
-        COUNT(CASE WHEN type = 'sale' THEN 1 END) as sales_count,
-        COUNT(CASE WHEN type = 'refund' THEN 1 END) as refunds_count,
-        SUM(CASE WHEN type = 'sale' THEN total_amount ELSE 0 END) as total_sales,
-        SUM(CASE WHEN type = 'refund' THEN total_amount ELSE 0 END) as total_refunds,
-        AVG(CASE WHEN type = 'sale' THEN total_amount END) as avg_transaction_value
-      FROM pos_transactions 
-      WHERE ${dateFilter}${branchFilter}
-    `, params);
+    // Insert main transaction
+    const transactionId = createId();
+    await db.insert(posTransactions).values({
+      id: transactionId,
+      transactionNumber,
+      customerId: customerInfo?.id,
+      customerName: customerInfo?.name,
+      customerEmail: customerInfo?.email,
+      customerPhone: customerInfo?.phone,
+      type: "sale",
+      status: "completed",
+      branchId: branchId || "default",
+      cashierId: cashierInfo?.id || "unknown",
+      cashierName: cashierInfo?.name || "Unknown",
+      subtotal: subtotal?.toString() || "0",
+      taxAmount: (taxAmount || 0).toString(),
+      discountAmount: (discountAmount || 0).toString(),
+      totalAmount: totalAmount.toString(),
+      paymentMethod,
+      paymentReference,
+      amountPaid: amountPaid?.toString() || totalAmount.toString(),
+      changeAmount: (changeAmount || 0).toString(),
+      receiptData: JSON.stringify({
+        items,
+        customerInfo,
+        timestamp: new Date(),
+      }),
+    });
 
-    // Top products
-    const topProducts = await sql(`
-      SELECT 
-        pti.item_name,
-        SUM(pti.quantity) as total_quantity,
-        SUM(pti.final_price) as total_revenue,
-        COUNT(DISTINCT pti.transaction_id) as transaction_count
-      FROM pos_transaction_items pti
-      JOIN pos_transactions pt ON pti.transaction_id = pt.id
-      WHERE pt.${dateFilter} AND pt.type = 'sale'${branchFilter}
-      GROUP BY pti.item_name
-      ORDER BY total_revenue DESC
-      LIMIT 10
-    `, params);
-
-    // Payment methods
-    const paymentMethods = await sql(`
-      SELECT 
-        payment_method,
-        COUNT(*) as transaction_count,
-        SUM(total_amount) as total_amount
-      FROM pos_transactions 
-      WHERE ${dateFilter} AND type = 'sale'${branchFilter}
-      GROUP BY payment_method
-      ORDER BY total_amount DESC
-    `, params);
-
-    // Daily sales (last 7 days)
-    const dailySales = await sql(`
-      SELECT 
-        DATE(created_at) as sale_date,
-        COUNT(*) as transaction_count,
-        SUM(total_amount) as daily_total
-      FROM pos_transactions 
-      WHERE ${dateFilter} AND type = 'sale'${branchFilter}
-      GROUP BY DATE(created_at)
-      ORDER BY sale_date DESC
-      LIMIT 7
-    `, params);
+    // Insert transaction items
+    if (items && items.length > 0) {
+      for (const item of items) {
+        await db.insert(posTransactionItems).values({
+          id: createId(),
+          transactionId,
+          productId: item.id,
+          itemName: item.name,
+          itemSku: item.sku,
+          itemCategory: item.category,
+          unitPrice: item.price.toString(),
+          quantity: item.quantity,
+          subtotal: (item.price * item.quantity).toString(),
+          finalPrice: (item.price * item.quantity).toString(),
+        });
+      }
+    }
 
     res.json({
       success: true,
-      analytics: {
-        summary: salesSummary[0] || {},
-        topProducts: topProducts || [],
-        paymentMethods: paymentMethods || [],
-        dailySales: dailySales || [],
-        period: period
-      }
+      transactionId,
+      message: "Transaction saved successfully",
     });
+
+    // Emit Pusher event for POS transaction
+    (async () => {
+      try {
+        const payload = {
+          transactionId,
+          transactionNumber,
+          totalAmount,
+          paymentMethod,
+          branchId,
+          cashierInfo,
+        };
+        // Broadcast to public and branch channels (also private versions)
+        await Promise.all([
+          triggerPusherEvent(['public-realtime', `branch-${branchId}`], 'pos.transaction.created', payload),
+          triggerPusherEvent([`private-public-realtime`, `private-branch-${branchId}`], 'pos.transaction.created', payload),
+        ]);
+      } catch (err) {
+        console.warn('Failed to emit pos.transaction.created:', err);
+      }
+    })();
+  } catch (error) {
+    console.error("Error saving transaction:", error);
+    res.status(500).json({ error: "Failed to save transaction" });
+  }
+});
+
+// Get Transactions by Date
+router.get("/transactions/:date", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { date } = req.params;
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(
+        and(
+          gte(posTransactions.createdAt, startDate),
+          lte(posTransactions.createdAt, endDate)
+        )
+      )
+      .orderBy(desc(posTransactions.createdAt));
+
+    res.json({ transactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// Get Transactions with Details
+router.get("/transactions/:date/detailed", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { date } = req.params;
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(
+        and(
+          gte(posTransactions.createdAt, startDate),
+          lte(posTransactions.createdAt, endDate)
+        )
+      )
+      .orderBy(desc(posTransactions.createdAt));
+
+    // Get items for each transaction
+    const transactionsWithItems = await Promise.all(
+      transactions.map(async (trans) => {
+        const items = await db
+          .select()
+          .from(posTransactionItems)
+          .where(eq(posTransactionItems.transactionId, trans.id));
+        return { ...trans, items };
+      })
+    );
+
+    res.json({ transactions: transactionsWithItems });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// ============= EXPENSE ROUTES =============
+
+// Save Expense
+router.post("/expenses", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const {
+      posSessionId,
+      category,
+      description,
+      amount,
+      paymentMethod,
+      notes,
+      recordedByInfo,
+    } = req.body;
+
+    if (!posSessionId || !category || !description || !amount) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const expenseId = createId();
+    await db.insert(posExpenses).values({
+      id: expenseId,
+      posSessionId,
+      category,
+      description,
+      amount: amount.toString(),
+      paymentMethod: paymentMethod || "cash",
+      notes,
+      recordedBy: recordedByInfo?.id || "unknown",
+      recordedByName: recordedByInfo?.name || "Unknown",
+    });
+
+    res.json({
+      success: true,
+      expenseId,
+      message: "Expense recorded successfully",
+    });
+  } catch (error) {
+    console.error("Error saving expense:", error);
+    res.status(500).json({ error: "Failed to save expense" });
+  }
+});
+
+// Get Expenses by Session
+router.get("/expenses/session/:sessionId", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { sessionId } = req.params;
+
+    const expenses = await db
+      .select()
+      .from(posExpenses)
+      .where(eq(posExpenses.posSessionId, sessionId))
+      .orderBy(desc(posExpenses.createdAt));
+
+    res.json({ expenses });
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    res.status(500).json({ error: "Failed to fetch expenses" });
+  }
+});
+
+// Delete Expense
+router.delete("/expenses/:expenseId", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { expenseId } = req.params;
+
+    await db.delete(posExpenses).where(eq(posExpenses.id, expenseId));
+
+    res.json({
+      success: true,
+      message: "Expense deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+    res.status(500).json({ error: "Failed to delete expense" });
+  }
+});
+
+// ============= DAILY REPORT ROUTES =============
+
+// Get Daily Sales Report
+router.get("/reports/daily/:date", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      console.error("❌ Database not initialized for daily report");
+      return res.status(500).json({
+        error: "Database not initialized",
+        date: req.params.date,
+        totalSales: 0,
+        totalCash: 0,
+        totalCard: 0,
+        totalGcash: 0,
+        totalBank: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+        expenseCount: 0,
+      });
+    }
+
+    const { date } = req.params;
+    console.log(`📊 Generating daily report for: ${date}`);
+
+    // Parse the date properly (format: YYYY-MM-DD)
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      console.error(`❌ Invalid date format: ${date}`);
+      return res.status(400).json({
+        error: "Invalid date format. Use YYYY-MM-DD",
+        date,
+      });
+    }
+
+    const startDate = new Date(dateObj);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(dateObj);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log(`⏰ Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
+    // Get transactions for the day
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(
+        and(
+          gte(posTransactions.createdAt, startDate),
+          lte(posTransactions.createdAt, endDate),
+          eq(posTransactions.status, "completed")
+        )
+      );
+
+    console.log(`✅ Found ${transactions.length} transactions`);
+
+    // Get expenses from pos_expenses table (not filtered by session date, but by transaction date)
+    const expenses = await db
+      .select()
+      .from(posExpenses)
+      .where(
+        and(
+          gte(posExpenses.createdAt, startDate),
+          lte(posExpenses.createdAt, endDate)
+        )
+      );
+
+    const totalExpenses = expenses.reduce(
+      (sum, exp) => sum + parseFloat(exp.amount.toString()),
+      0
+    );
+
+    console.log(`💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`);
+
+    // Calculate totals
+    const totalSales = transactions.reduce(
+      (sum, trans) => sum + parseFloat(trans.totalAmount.toString()),
+      0
+    );
+
+    const totalCash = transactions
+      .filter((t) => t.paymentMethod === "cash")
+      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+
+    const totalCard = transactions
+      .filter((t) => t.paymentMethod === "card")
+      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+
+    const totalGcash = transactions
+      .filter((t) => t.paymentMethod === "gcash")
+      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+
+    const totalBank = transactions
+      .filter((t) => t.paymentMethod === "bank")
+      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+
+    const result = {
+      date,
+      totalSales: parseFloat(totalSales.toFixed(2)),
+      totalCash: parseFloat(totalCash.toFixed(2)),
+      totalCard: parseFloat(totalCard.toFixed(2)),
+      totalGcash: parseFloat(totalGcash.toFixed(2)),
+      totalBank: parseFloat(totalBank.toFixed(2)),
+      totalExpenses: parseFloat(totalExpenses.toFixed(2)),
+      netIncome: parseFloat((totalSales - totalExpenses).toFixed(2)),
+      transactionCount: transactions.length,
+      expenseCount: expenses.length,
+    };
+
+    console.log(`📈 Daily Report Summary:`, result);
+    res.json(result);
   } catch (error: any) {
-    console.error('Get POS analytics error:', error);
+    console.error("❌ Error generating daily report:", error);
+    console.error("Error details:", error.message || error);
+    // Return empty report instead of error to prevent app crash
     res.status(500).json({
-      success: false,
-      error: 'Failed to fetch POS analytics'
+      error: "Failed to generate daily report",
+      details: error?.message || "Unknown error",
+      date: req.params.date,
+      totalSales: 0,
+      totalCash: 0,
+      totalCard: 0,
+      totalGcash: 0,
+      totalBank: 0,
+      totalExpenses: 0,
+      netIncome: 0,
+      transactionCount: 0,
+      expenseCount: 0,
     });
   }
-};
+});
+
+// ============= TRANSACTION QUERY ROUTES =============
+
+// Get all transactions (with optional filters)
+router.get("/transactions", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { startDate, endDate, limit = 100, offset = 0 } = req.query;
+
+    let query = db.select().from(posTransactions);
+
+    // Apply date filters if provided
+    if (startDate || endDate) {
+      const filters = [];
+      if (startDate) {
+        const start = new Date(startDate as string);
+        filters.push(gte(posTransactions.createdAt, start));
+      }
+      if (endDate) {
+        const end = new Date(endDate as string);
+        filters.push(lte(posTransactions.createdAt, end));
+      }
+      query = query.where(and(...filters));
+    }
+
+    // Order by newest first
+    query = query.orderBy(desc(posTransactions.createdAt));
+
+    // Apply pagination
+    const transactions = await query
+      .limit(parseInt(limit as string) || 100)
+      .offset(parseInt(offset as string) || 0);
+
+    // Get total count
+    const countResult = await db.select().from(posTransactions);
+    const totalCount = countResult.length;
+
+    res.json({
+      success: true,
+      transactions,
+      totalCount,
+      count: transactions.length,
+      limit: parseInt(limit as string) || 100,
+      offset: parseInt(offset as string) || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// Get transaction details with items
+router.get("/transactions/:transactionId", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { transactionId } = req.params;
+
+    const transaction = await db
+      .select()
+      .from(posTransactions)
+      .where(eq(posTransactions.id, transactionId))
+      .limit(1);
+
+    if (!transaction.length) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    const items = await db
+      .select()
+      .from(posTransactionItems)
+      .where(eq(posTransactionItems.transactionId, transactionId));
+
+    res.json({
+      success: true,
+      transaction: transaction[0],
+      items,
+    });
+  } catch (error) {
+    console.error("Error fetching transaction:", error);
+    res.status(500).json({ error: "Failed to fetch transaction" });
+  }
+});
+
+// Get transactions summary/statistics
+router.get("/transactions/stats/summary", async (req, res) => {
+  try {
+    const db = getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days as string));
+
+    const transactions = await db
+      .select()
+      .from(posTransactions)
+      .where(gte(posTransactions.createdAt, startDate))
+      .orderBy(desc(posTransactions.createdAt));
+
+    // Calculate statistics
+    const stats = {
+      totalTransactions: transactions.length,
+      totalRevenue: transactions.reduce((sum, t) => sum + parseFloat(t.totalAmount || "0"), 0),
+      totalTax: transactions.reduce((sum, t) => sum + parseFloat(t.taxAmount || "0"), 0),
+      totalDiscount: transactions.reduce((sum, t) => sum + parseFloat(t.discountAmount || "0"), 0),
+      paymentMethods: {} as Record<string, { count: number; amount: number }>,
+      averageTransaction: 0,
+      byStatus: {} as Record<string, number>,
+    };
+
+    // Group by payment method
+    transactions.forEach((t) => {
+      const method = t.paymentMethod || "cash";
+      if (!stats.paymentMethods[method]) {
+        stats.paymentMethods[method] = { count: 0, amount: 0 };
+      }
+      stats.paymentMethods[method].count++;
+      stats.paymentMethods[method].amount += parseFloat(t.totalAmount || "0");
+
+      // Count by status
+      const status = t.status || "completed";
+      stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
+    });
+
+    stats.averageTransaction = stats.totalTransactions > 0
+      ? stats.totalRevenue / stats.totalTransactions
+      : 0;
+
+    res.json({
+      success: true,
+      stats,
+      period: `${days} days`,
+      startDate: startDate.toISOString(),
+      endDate: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error fetching transaction stats:", error);
+    res.status(500).json({ error: "Failed to fetch transaction statistics" });
+  }
+});
 
 export default router;

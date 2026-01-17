@@ -6,6 +6,15 @@ import {
   sql,
 } from "../database/connection";
 import { migrate } from "../database/migrate";
+import { triggerPusherEvent } from "../services/pusherService.js"; // Fire events to Pusher
+
+const emitPusher = async (channels: string | string[], eventName: string, payload: any) => {
+  try {
+    await triggerPusherEvent(channels, eventName, payload);
+  } catch (e) {
+    console.warn('Pusher emit failed:', e);
+  }
+};
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
 let __NEON_DB_INITIALIZED__ = false;
@@ -73,13 +82,10 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
 // Test database connection
 export const testNeonConnection: RequestHandler = async (req, res) => {
   try {
-    console.log("🔍 Testing database connection...");
-
     // Check if database URL is configured
     const databaseUrl =
       process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
     if (!databaseUrl) {
-      console.log("❌ No database URL configured");
       return res.json({
         success: false,
         connected: false,
@@ -90,17 +96,14 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
       });
     }
 
-    console.log("✅ Database URL found, testing connection...");
     const isConnected = await testConnection();
-    console.log("🔗 Connection test result:", isConnected);
 
     let stats = null;
     if (isConnected) {
       try {
         stats = await neonDbService.getStats();
-        console.log("📊 Stats retrieved:", stats);
       } catch (statsError) {
-        console.warn("⚠️ Failed to get stats:", statsError);
+        // Silently fail - don't log
       }
     }
 
@@ -111,7 +114,6 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("❌ Database test error:", error);
     res.json({
       success: false,
       connected: false,
@@ -179,6 +181,23 @@ export const loginUser: RequestHandler = async (req, res) => {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
+    // Create a server side session token and store it in user_sessions
+    const crypto = await import('crypto');
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
+
+    try {
+      await neonDbService.createUserSession(
+        userWithoutPassword.id,
+        sessionToken,
+        expiresAt,
+        req.ip,
+        (req.headers['user-agent'] || '') as string,
+      );
+    } catch (sessionErr) {
+      console.warn('⚠️ Failed to create user session:', sessionErr);
+    }
+
     console.log("✅ Login successful", {
       email,
       role: userWithoutPassword.role,
@@ -187,6 +206,8 @@ export const loginUser: RequestHandler = async (req, res) => {
     const response = {
       success: true,
       user: userWithoutPassword,
+      sessionToken,
+      expiresAt: expiresAt.toISOString(),
       message: "Login successful",
     };
     console.log(
@@ -257,6 +278,28 @@ export const createBooking: RequestHandler = async (req, res) => {
       booking,
       message: "Booking created successfully",
     });
+
+    // Emit Pusher events for new booking (admin & user channels)
+    (async () => {
+      try {
+        const adminChannel = 'public-realtime';
+        const userChannel = booking.userId ? `user-customer-${booking.userId}` : null;
+        const payload = {
+          bookingId: booking.id,
+          booking,
+        };
+
+        if (userChannel) {
+          const privateUserChannel = `private-${userChannel}`;
+          await emitPusher([userChannel, privateUserChannel, adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+        } else {
+          await emitPusher([adminChannel, `private-${adminChannel}`], 'booking.created', payload);
+        }
+      } catch (err) {
+        console.warn('Failed to emit pusher booking.created:', err);
+      }
+    })();
+
   } catch (error) {
     console.error("Create booking error:", error);
     res.status(500).json({
@@ -337,6 +380,105 @@ export const getBookings: RequestHandler = async (req, res) => {
       success: false,
       error: "Failed to fetch bookings",
     });
+  }
+};
+
+// Logout endpoint: invalidates the current session token
+export const logoutUser: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(400).json({ success: false, error: 'Authorization Bearer token required' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    const session = await neonDbService.getSessionByToken(token);
+    if (!session) {
+      return res.status(400).json({ success: false, error: 'Session not found' });
+    }
+
+    await neonDbService.deactivateSession(token);
+
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ success: false, error: 'Failed to logout' });
+  }
+};
+
+// Revoke session(s) - admin only. Body may contain { sessionToken, sessionId, userId }
+export const revokeSession: RequestHandler = async (req, res) => {
+  try {
+    // Validate caller's session
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    }
+    const callerToken = authHeader.split(' ')[1];
+    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
+      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    }
+
+    const { sessionToken, sessionId, userId } = req.body as { sessionToken?: string; sessionId?: string; userId?: string };
+
+    if (sessionToken) {
+      await neonDbService.deactivateSession(sessionToken);
+      return res.json({ success: true, message: 'Session token revoked' });
+    }
+
+    if (sessionId) {
+      await neonDbService.deactivateSessionById(sessionId);
+      return res.json({ success: true, message: 'Session id revoked' });
+    }
+
+    if (userId) {
+      await neonDbService.deactivateSessionsByUserId(userId);
+      return res.json({ success: true, message: 'All sessions for user revoked' });
+    }
+
+    return res.status(400).json({ success: false, error: 'sessionToken or sessionId or userId required' });
+  } catch (error) {
+    console.error('Revoke session error:', error);
+    res.status(500).json({ success: false, error: 'Failed to revoke session' });
+  }
+};
+
+// Admin: list sessions (optional ?userId and ?activeOnly)
+export const getSessions: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = (req.headers['authorization'] || req.headers['Authorization']) as string | undefined;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).json({ success: false, error: 'Admin Authorization required' });
+    }
+    const callerToken = authHeader.split(' ')[1];
+    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    if (!callerSession) return res.status(403).json({ success: false, error: 'Invalid session' });
+    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    if (!callerUser || !['admin', 'superadmin', 'manager'].includes(callerUser.role)) {
+      return res.status(403).json({ success: false, error: 'Insufficient privileges' });
+    }
+
+    const { userId, activeOnly } = req.query as { userId?: string; activeOnly?: string };
+    const sessions = await neonDbService.getSessions({ userId, activeOnly: activeOnly === 'true' });
+
+    // Attach basic user info
+    const sessionsWithUser = await Promise.all(sessions.map(async (s: any) => {
+      const user = await neonDbService.getUserById(s.userId);
+      return {
+        ...s,
+        userEmail: user?.email || null,
+        userFullName: user?.fullName || null,
+        userRole: user?.role || null,
+      };
+    }));
+
+    res.json({ success: true, sessions: sessionsWithUser });
+  } catch (error) {
+    console.error('Get sessions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sessions' });
   }
 };
 
@@ -718,7 +860,8 @@ export const dismissAd: RequestHandler = async (req, res) => {
 // Database stats endpoint
 export const getDatabaseStats: RequestHandler = async (req, res) => {
   try {
-    const stats = await neonDbService.getStats();
+    const period = (req.query.period as string) || "monthly";
+    const stats = await neonDbService.getStats(period);
     res.json({
       success: true,
       stats,
@@ -1000,22 +1143,24 @@ export const createStaffUser: RequestHandler = async (req, res) => {
 
 // ============= NEW FEATURES API ENDPOINTS =============
 
+// Simple in-memory cache for branches to reduce DB load
+const BRANCHES_CACHE_TTL = Number(process.env.BRANCHES_CACHE_TTL_SECONDS || 60); // default 1 minute
+let branchesCache: { branches: any[]; expiresAt: number } | null = null;
+
 // Branches endpoints
 export const getBranches: RequestHandler = async (req, res) => {
   try {
-    console.log("🏪 Getting branches from database...");
+    const now = Date.now();
+    if (branchesCache && branchesCache.expiresAt > now) {
+      return res.json({ success: true, branches: branchesCache.branches, source: 'cache' });
+    }
+
     const branches = await neonDbService.getBranches();
-    console.log("✅ Branches retrieved:", branches.length, "branches found");
-    res.json({
-      success: true,
-      branches: branches || [],
-    });
+    branchesCache = { branches: branches || [], expiresAt: Date.now() + BRANCHES_CACHE_TTL * 1000 };
+    res.json({ success: true, branches: branches || [], source: 'db' });
   } catch (error) {
-    console.error("❌ Get branches error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch branches",
-    });
+    console.error('❌ Get branches error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch branches' });
   }
 };
 
@@ -1117,6 +1262,15 @@ export const createInventoryItem: RequestHandler = async (req, res) => {
       item,
       message: "Inventory item created successfully",
     });
+
+    // Emit pusher event
+    (async () => {
+      try {
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.created', { item });
+      } catch (err) {
+        console.warn('Failed to emit inventory.created:', err);
+      }
+    })();
   } catch (error) {
     console.error("Create inventory item error:", error);
     res.status(500).json({
@@ -1135,6 +1289,14 @@ export const updateInventoryItem: RequestHandler = async (req, res) => {
       item,
       message: "Inventory item updated successfully",
     });
+
+    (async () => {
+      try {
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.updated', { item });
+      } catch (err) {
+        console.warn('Failed to emit inventory.updated:', err);
+      }
+    })();
   } catch (error) {
     console.error("Update inventory item error:", error);
     res.status(500).json({
@@ -1152,6 +1314,14 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
       success: true,
       message: "Inventory item deleted successfully",
     });
+
+    (async () => {
+      try {
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'inventory.deleted', { id });
+      } catch (err) {
+        console.warn('Failed to emit inventory.deleted:', err);
+      }
+    })();
   } catch (error) {
     console.error("Delete inventory item error:", error);
     res.status(500).json({
@@ -1160,6 +1330,7 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
     });
   }
 };
+
 
 // Stock movements endpoints
 export const getStockMovements: RequestHandler = async (req, res) => {
@@ -1190,6 +1361,14 @@ export const createStockMovement: RequestHandler = async (req, res) => {
       movement,
       message: "Stock movement recorded successfully",
     });
+
+    (async () => {
+      try {
+        await emitPusher(['public-realtime', 'private-public-realtime'], 'stock.movement', { movement });
+      } catch (err) {
+        console.warn('Failed to emit stock.movement:', err);
+      }
+    })();
   } catch (error) {
     console.error("Create stock movement error:", error);
     res.status(500).json({
@@ -1601,6 +1780,103 @@ export const updateUserAddress: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to update address",
+    });
+  }
+};
+
+// === SUBSCRIPTIONS ===
+
+export const getSubscriptions: RequestHandler = async (req, res) => {
+  try {
+    const { status = "active", userId } = req.query;
+
+    console.log("📋 Fetching subscriptions...", { status, userId });
+
+    const subscriptions = await neonDbService.getSubscriptions({
+      status: status as string,
+      userId: userId as string,
+    });
+
+    console.log("✅ Subscriptions fetched:", subscriptions?.length || 0);
+
+    res.json({
+      success: true,
+      subscriptions: subscriptions || [],
+    });
+  } catch (error) {
+    console.error("Get subscriptions error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch subscriptions",
+      subscriptions: [],
+    });
+  }
+};
+
+export const createXenditSubscriptionPlan: RequestHandler = async (req, res) => {
+  try {
+    const {
+      subscriptionId,
+      customerId,
+      amount,
+      paymentMethod,
+      interval = "MONTHLY",
+      intervalCount = 1,
+    } = req.body;
+
+    console.log("🔧 Creating Xendit subscription plan...", {
+      subscriptionId,
+      amount,
+      paymentMethod,
+    });
+
+    // TODO: Integrate with Xendit subscription API
+    // This will create a recurring billing plan in Xendit
+
+    res.json({
+      success: true,
+      message: "Xendit plan setup initiated",
+      xenditPlanId: `plan_${Date.now()}`, // Placeholder
+    });
+  } catch (error) {
+    console.error("Create Xendit plan error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create Xendit subscription plan",
+    });
+  }
+};
+
+export const processSubscriptionRenewal: RequestHandler = async (req, res) => {
+  try {
+    const {
+      subscriptionId,
+      customerId,
+      amount,
+      totalWithFees,
+      platformFee,
+      paymentMethod,
+    } = req.body;
+
+    console.log("💳 Processing subscription renewal...", {
+      subscriptionId,
+      amount,
+      platformFee,
+      paymentMethod,
+    });
+
+    // TODO: Create Xendit invoice for renewal with fees passed to customer
+
+    res.json({
+      success: true,
+      message: "Renewal processed",
+      invoiceId: `inv_${Date.now()}`, // Placeholder
+    });
+  } catch (error) {
+    console.error("Process renewal error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to process subscription renewal",
     });
   }
 };

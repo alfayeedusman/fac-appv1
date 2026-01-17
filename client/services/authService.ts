@@ -80,6 +80,8 @@ class AuthService {
     localStorage.removeItem('userFullName');
     localStorage.removeItem('userLoggedInAt');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('sessionToken');
+    localStorage.removeItem('sessionExpiresAt');
   }
 
   async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: any; error?: string }> {
@@ -99,6 +101,15 @@ class AuthService {
 
         // Store complete user object for easy access
         localStorage.setItem('currentUser', JSON.stringify(result.user));
+
+        // Store server-issued session token (if provided) for authenticated requests
+        if ((result as any).sessionToken) {
+          localStorage.setItem('sessionToken', (result as any).sessionToken);
+        }
+
+        if ((result as any).expiresAt) {
+          localStorage.setItem('sessionExpiresAt', (result as any).expiresAt);
+        }
 
         toast({
           title: 'Login Successful',
@@ -169,6 +180,18 @@ class AuthService {
   }
 
   logout() {
+    // Call server to invalidate session token if present
+    const sessionToken = localStorage.getItem('sessionToken');
+    if (sessionToken) {
+      fetch('/api/neon/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`,
+        },
+      }).catch((err) => console.warn('Server logout failed:', err));
+    }
+
     this.clearSession();
 
     toast({
