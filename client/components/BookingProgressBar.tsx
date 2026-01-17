@@ -34,7 +34,7 @@ export default function BookingProgressBar({
           <span className="text-xs font-semibold text-foreground/70 uppercase tracking-wide">
             Step {currentStep} of {totalSteps}
           </span>
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-bold text-fac-orange-600 dark:text-fac-orange-400">
             {Math.round(progressPercentage)}%
           </span>
         </div>
@@ -42,7 +42,7 @@ export default function BookingProgressBar({
         {/* Main Progress Bar */}
         <div className="relative h-2 bg-muted rounded-full overflow-hidden shadow-sm">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 rounded-full transition-all duration-500 ease-out shadow-lg"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-fac-orange-500 via-fac-orange-400 to-fac-orange-600 rounded-full transition-all duration-500 ease-out shadow-lg"
             style={{ width: `${progressPercentage}%` }}
           >
             {/* Animated shimmer effect */}
@@ -82,7 +82,7 @@ export default function BookingProgressBar({
                     isCompleted
                       ? "bg-green-500 text-white shadow-lg shadow-green-500/50"
                       : isCurrent
-                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/30 scale-110"
+                        ? "bg-gradient-to-r from-fac-orange-500 to-fac-orange-400 text-white shadow-lg shadow-fac-orange-500/50 ring-2 ring-fac-orange-500/30 scale-110"
                         : "bg-muted text-muted-foreground border border-border/50"
                   }`}
                 >
@@ -117,8 +117,8 @@ export default function BookingProgressBar({
           </p>
         </div>
       ) : (
-        <div className="p-2 bg-blue-50/50 dark:bg-blue-950/30 rounded-lg border border-blue-200/30 dark:border-blue-800/30 text-center">
-          <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+        <div className="p-2 bg-fac-orange-50/50 dark:bg-fac-orange-950/30 rounded-lg border border-fac-orange-200/30 dark:border-fac-orange-800/30 text-center">
+          <p className="text-xs font-semibold text-fac-orange-700 dark:text-fac-orange-400">
             🚀 You're on track! Keep going.
           </p>
         </div>
