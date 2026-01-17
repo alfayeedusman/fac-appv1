@@ -144,6 +144,32 @@ export interface Ad {
   updatedAt: string;
 }
 
+// Safe timeout handler to prevent issues with AbortController
+const createSafeTimeoutAbort = (controller: AbortController, timeoutMs: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let isAborted = false;
+
+  timeoutId = setTimeout(() => {
+    if (!isAborted) {
+      try {
+        controller.abort();
+      } catch (e) {
+        console.warn("Error aborting request:", e);
+      }
+    }
+  }, timeoutMs);
+
+  return {
+    clearTimeout: () => {
+      isAborted = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    },
+  };
+};
+
 class NeonDatabaseClient {
   private baseUrl: string;
   private isConnected = false;
