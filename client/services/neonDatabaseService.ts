@@ -572,58 +572,63 @@ class NeonDatabaseClient {
       log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 10000);
+      const timeoutHandler = createSafeTimeoutAbort(ac, 10000);
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        signal: ac.signal,
-      });
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          signal: ac.signal,
+        });
 
-      clearTimeout(to);
-      const processed = await this.processLoginResponse(response);
+        timeoutHandler.clearTimeout();
+        const processed = await this.processLoginResponse(response);
 
-      // Update connection status on successful login
-      if (processed.success) {
-        this.isConnected = true;
-        return processed;
-      }
-
-      if (
-        processed.error?.toLowerCase().includes("cors") ||
-        processed.error?.toLowerCase().includes("network")
-      ) {
-        log("🔄 Retrying login via same-origin fallback...");
-        const ac2 = new AbortController();
-        const to2 = setTimeout(() => ac2.abort(), 10000);
-        try {
-          const resp2 = await fetch(`/api/neon/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-            signal: ac2.signal,
-          });
-          clearTimeout(to2);
-          const result = await this.processLoginResponse(resp2);
-          if (result.success) {
-            this.isConnected = true;
-          }
-          return result;
-        } catch (retryErr: any) {
-          clearTimeout(to2);
-          logError(
-            "❌ Retry login failed:",
-            retryErr?.message || retryErr,
-          );
-          return {
-            success: false,
-            error: "Login failed. Please try again.",
-          };
+        // Update connection status on successful login
+        if (processed.success) {
+          this.isConnected = true;
+          return processed;
         }
-      }
 
-      return processed;
+        if (
+          processed.error?.toLowerCase().includes("cors") ||
+          processed.error?.toLowerCase().includes("network")
+        ) {
+          log("🔄 Retrying login via same-origin fallback...");
+          const ac2 = new AbortController();
+          const timeoutHandler2 = createSafeTimeoutAbort(ac2, 10000);
+          try {
+            const resp2 = await fetch(`/api/neon/auth/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+              signal: ac2.signal,
+            });
+            timeoutHandler2.clearTimeout();
+            const result = await this.processLoginResponse(resp2);
+            if (result.success) {
+              this.isConnected = true;
+            }
+            return result;
+          } catch (retryErr: any) {
+            timeoutHandler2.clearTimeout();
+            logError(
+              "❌ Retry login failed:",
+              retryErr?.message || retryErr,
+            );
+            return {
+              success: false,
+              error: "Login failed. Please try again.",
+            };
+          }
+        }
+
+        return processed;
+      } catch (error: any) {
+        timeoutHandler.clearTimeout();
+        throw error;
+      }
     } catch (error: any) {
       logError("Database login failed:", error);
 
@@ -643,19 +648,24 @@ class NeonDatabaseClient {
         try {
           log("🔄 Network error, trying fallback login...");
           const ac4 = new AbortController();
-          const to4 = setTimeout(() => ac4.abort(), 10000);
-          const resp3 = await fetch(`/api/neon/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-            signal: ac4.signal,
-          });
-          clearTimeout(to4);
-          const result = await this.processLoginResponse(resp3);
-          if (result.success) {
-            this.isConnected = true;
+          const timeoutHandler4 = createSafeTimeoutAbort(ac4, 10000);
+          try {
+            const resp3 = await fetch(`/api/neon/auth/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+              signal: ac4.signal,
+            });
+            timeoutHandler4.clearTimeout();
+            const result = await this.processLoginResponse(resp3);
+            if (result.success) {
+              this.isConnected = true;
+            }
+            return result;
+          } catch (err) {
+            timeoutHandler4.clearTimeout();
+            throw err;
           }
-          return result;
         } catch (e3: any) {
           logError("❌ Fallback login also failed:", e3?.message || e3);
           return {
