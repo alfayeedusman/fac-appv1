@@ -114,36 +114,64 @@ export default function Login() {
         }, 1000);
       } else {
         // Login failed with specific error message
+        let description =
+          result.error ||
+          "Invalid email or password. Please check your credentials and try again.";
+
+        // Provide additional helpful context
+        if (
+          result.error?.includes("Invalid") ||
+          result.error?.includes("credentials")
+        ) {
+          description =
+            "Invalid email or password. Please check your credentials and try again.\n\nNeed help? Contact support at support@fayeedautocare.com";
+        } else if (result.error?.includes("disabled")) {
+          description =
+            "Your account has been disabled. Please contact support.";
+        } else if (
+          result.error?.includes("service") ||
+          result.error?.includes("503")
+        ) {
+          description =
+            "Service temporarily unavailable. Please try again in a few moments.";
+        }
+
         toast({
           title: "Login Failed",
-          description:
-            result.error ||
-            "Invalid email or password. Please check your credentials and try again.",
+          description,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error("Login error:", error);
 
+      let title = "Login Failed";
+      let description = "An unexpected error occurred. Please try again.";
+
       // Check if it's a network/connection error
       if (
         error.message?.includes("fetch") ||
         error.message?.includes("network") ||
-        error.message?.includes("connection")
+        error.message?.includes("connection") ||
+        error.name === "TypeError" // Network error
       ) {
-        toast({
-          title: "Connection Error",
-          description:
-            "Unable to connect to the server. Please check your internet connection and try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
+        title = "Connection Error";
+        description =
+          "Unable to connect to the server. Please check your internet connection and try again.";
+      } else if (error.message?.includes("timeout")) {
+        title = "Connection Timeout";
+        description = "The server took too long to respond. Please try again.";
+      } else if (error.message?.includes("CORS")) {
+        title = "Access Error";
+        description =
+          "Unable to connect to the authentication service. Please try again.";
       }
+
+      toast({
+        title,
+        description,
+        variant: "destructive",
+      });
     }
 
     setIsLoading(false);
