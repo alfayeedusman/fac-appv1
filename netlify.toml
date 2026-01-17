@@ -1,13 +1,16 @@
 [build]
-  # Install dependencies first, then build
-  command = "npm ci --legacy-peer-deps && npm run build"
+  # Robust build command with error handling
+  command = "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build && npm run build:server"
   functions = "netlify/functions"
   publish = "dist/spa"
+  base = "/"
 
 [build.environment]
   # Node version: ensure compatibility with TypeScript & modern ES modules
   NODE_VERSION = "22"
   NODE_ENV = "production"
+  # Build optimization flags
+  NPM_FLAGS = "--legacy-peer-deps --prefer-offline --no-audit"
   # Only VITE_ prefixed variables are safe for frontend bundling
   # Backend secrets (XENDIT_, PUSHER_, NEON_) must NOT be exposed to frontend
 
