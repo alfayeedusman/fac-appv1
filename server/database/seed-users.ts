@@ -1,6 +1,7 @@
 import { getDatabase } from "./connection.js";
 import * as schema from "./schema.js";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 export async function seedUsers() {
   const db = getDatabase();
