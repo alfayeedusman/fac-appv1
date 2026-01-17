@@ -63,6 +63,7 @@ NODE_ENV=production
 ```
 
 **⚠️ IMPORTANT - Security:**
+
 - Only `VITE_*` prefixed variables are exposed to the frontend
 - Backend secrets (XENDIT_SECRET_KEY, PUSHER_SECRET, NEON_DATABASE_URL) are safe - kept on server only
 - Never add backend secrets to your frontend code
@@ -72,6 +73,7 @@ NODE_ENV=production
 Your `netlify.toml` is already configured with:
 
 ✅ **Build Command**: `npm ci --legacy-peer-deps && npm run build`
+
 - Installs dependencies using npm ci (clean install)
 - Builds both client (Vite) and server
 
@@ -88,11 +90,13 @@ Your `netlify.toml` is already configured with:
 Before your first deploy:
 
 1. **Create Neon Project**:
+
    - Go to [console.neon.tech](https://console.neon.tech)
    - Create a new project
    - Get your connection string
 
 2. **Initialize Database Schema**:
+
    ```bash
    npm run build  # Builds the server migrations
    ```
@@ -105,19 +109,22 @@ Before your first deploy:
 ## Step 5: Deploy & Test
 
 1. **First Deploy**:
+
    - Netlify automatically deploys when you push to your main branch
    - Monitor build logs in Netlify Dashboard
 
 2. **Check Build Logs**:
+
    - Go to **Deployments** tab
    - Click on the latest deployment
    - View real-time build logs
 
 3. **Test API Endpoints**:
+
    ```bash
    # Health check
    curl https://your-site.netlify.app/.netlify/functions/api/health
-   
+
    # Test payment endpoint
    curl https://your-site.netlify.app/.netlify/functions/api/neon/payment/xendit/test
    ```
@@ -127,13 +134,15 @@ Before your first deploy:
 ### Build Fails with "command not found"
 
 **Solution**: The build command expects `npm ci` to install dependencies.
+
 - Check Node.js version (set to 22 in netlify.toml)
 - Verify package.json has no syntax errors
 - Clear Netlify cache: **Settings** → **Build & Deploy** → **Clear cache and retry**
 
 ### Database Connection Fails
 
-**Solution**: 
+**Solution**:
+
 - Verify `NEON_DATABASE_URL` in environment variables
 - Check that Neon project is active and not in sleep mode
 - Test locally: `npm run build && npm start`
@@ -141,6 +150,7 @@ Before your first deploy:
 ### Firebase/Xendit Not Working
 
 **Solution**:
+
 - Ensure `VITE_` prefixed variables are set for Firebase
 - Backend secrets should NOT have `VITE_` prefix
 - Check console errors in browser DevTools
@@ -148,6 +158,7 @@ Before your first deploy:
 ### API Routes Return 404
 
 **Solution**:
+
 - Verify `netlify.toml` redirects are correct
 - Check that `/api/*` routes go to `/.netlify/functions/api/:splat`
 - Rebuild: **Deployments** → **Trigger Deploy** → **Deploy site**
@@ -155,9 +166,9 @@ Before your first deploy:
 ## Environment Variables Checklist
 
 - [ ] `NEON_DATABASE_URL` set
-- [ ] Firebase variables set (VITE_FIREBASE_*)
-- [ ] Xendit keys set (XENDIT_*)
-- [ ] Pusher credentials set (PUSHER_*, VITE_PUSHER_*)
+- [ ] Firebase variables set (VITE*FIREBASE*\*)
+- [ ] Xendit keys set (XENDIT\_\*)
+- [ ] Pusher credentials set (PUSHER*\*, VITE_PUSHER*\*)
 - [ ] Mapbox token set (VITE_MAPBOX_TOKEN)
 - [ ] `NODE_ENV` set to production
 
@@ -180,6 +191,7 @@ curl http://localhost:8080/api/neon/test
 ## Production Best Practices
 
 1. **Always test locally first**
+
    ```bash
    npm run build && npm start
    ```
@@ -187,10 +199,12 @@ curl http://localhost:8080/api/neon/test
 2. **Use environment variables** - Never hardcode secrets
 
 3. **Monitor deployments**:
+
    - Enable email notifications in Netlify
    - Check build logs for warnings
 
 4. **Database backups**:
+
    - Enable Neon automated backups
    - Regular export of critical data
 

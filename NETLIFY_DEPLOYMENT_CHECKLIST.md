@@ -3,6 +3,7 @@
 ## ✅ What I Fixed
 
 1. **Updated netlify.toml** ✓
+
    - Added `npm ci --legacy-peer-deps` to install dependencies
    - Set Node.js version to 22
    - Configured external modules (express, cors, drizzle-orm, @neondatabase/serverless)
@@ -10,6 +11,7 @@
    - Security headers and cache control
 
 2. **Verified Dependencies** ✓
+
    - All required packages in package.json
    - serverless-http available for Netlify functions
    - Neon and Drizzle dependencies installed
@@ -22,6 +24,7 @@
 ## 🚀 Before Deploying to Netlify
 
 ### Step 1: Test Locally
+
 ```bash
 # Install dependencies
 npm install
@@ -37,6 +40,7 @@ curl http://localhost:8080/api/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -50,6 +54,7 @@ Expected response:
 ### Step 2: Set Environment Variables in Netlify
 
 Go to your Netlify site dashboard:
+
 1. **Site Settings** → **Build & Deploy** → **Environment**
 2. Add these variables:
 
@@ -90,6 +95,7 @@ NODE_ENV=production
 ### Step 3: Deploy
 
 Option A: Push to main branch (automatic)
+
 ```bash
 git add .
 git commit -m "fix: update netlify configuration for proper build"
@@ -97,6 +103,7 @@ git push origin main
 ```
 
 Option B: Manual deploy in Netlify Dashboard
+
 - Go to **Deployments**
 - Click **Deploy site** → **Deploy from Git**
 - Select your branch
@@ -117,16 +124,19 @@ Option B: Manual deploy in Netlify Dashboard
 After deploy completes, test:
 
 1. **Health Check**:
+
    ```
    https://your-site.netlify.app/.netlify/functions/api/health
    ```
 
 2. **Payment Test**:
+
    ```
    https://your-site.netlify.app/.netlify/functions/api/neon/payment/xendit/test
    ```
 
 3. **Frontend Access**:
+
    ```
    https://your-site.netlify.app/
    ```
@@ -155,24 +165,34 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ## 🐛 Common Issues & Fixes
 
 ### Issue: "exit code 127: command not found"
+
 **Fix**: `npm ci --legacy-peer-deps` installs dependencies
+
 - Netlify build environment now has this in the build command
 
 ### Issue: "Cannot find module 'serverless-http'"
+
 **Fix**: Already in package.json dependencies
+
 - Ensure npm ci runs before build
 
 ### Issue: Database connection fails
+
 **Fix**: Check NEON_DATABASE_URL in environment variables
+
 - Test locally first: `npm run build && npm start`
 
 ### Issue: API returns 404
+
 **Fix**: Verify netlify.toml redirects
+
 - `/api/*` should route to `/.netlify/functions/api/:splat`
 - Already configured in updated netlify.toml
 
 ### Issue: Build times out
+
 **Fix**: Clear Netlify cache
+
 - **Settings** → **Build & Deploy** → **Cache** → **Clear cache and retry**
 
 ## 📊 Expected Build Time
@@ -187,10 +207,12 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ## ✨ Post-Deployment
 
 1. **Monitor Logs**
+
    - Netlify Analytics
    - Check function execution logs
 
 2. **Set Up Alerts**
+
    - Failed builds
    - High function duration
    - Errors in logs
@@ -203,16 +225,20 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ## 🆘 Still Having Issues?
 
 1. **Check Netlify Logs**
+
    - Go to **Functions** tab
    - Look for deployment errors
 
 2. **Clear Cache**
+
    - Settings → Build & Deploy → Clear cache
 
 3. **Rebuild**
+
    - Deployments → Select deployment → Retry
 
 4. **Local Testing**
+
    ```bash
    npm install
    npm run build
@@ -227,6 +253,7 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ---
 
 **Changes Made**:
+
 - ✅ netlify.toml updated with proper build setup
 - ✅ Environment variables documented
 - ✅ Deployment checklist created
