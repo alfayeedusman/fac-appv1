@@ -1,8 +1,8 @@
 import express, { RequestHandler } from "express";
-import { getDatabase } from "../database/connection.js";
-import * as schema from "../database/schema.js";
+import { getDatabase } from "../database/connection";
+import * as schema from "../database/schema";
 import { eq } from "drizzle-orm";
-import { triggerPusherEvent } from "../services/pusherService.js";
+import { triggerPusherEvent } from "../services/pusherService";
 
 const router = express.Router();
 
