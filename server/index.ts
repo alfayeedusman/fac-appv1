@@ -79,7 +79,7 @@ export function createServer() {
   app.get("/api/health", async (req, res) => {
     try {
       // Actually test database connectivity
-      const { testConnection } = await import("./database/connection.js");
+      const { testConnection } = await import("./database/connection");
       const dbConnected = await testConnection();
 
       res.json({
