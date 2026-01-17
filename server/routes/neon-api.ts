@@ -269,19 +269,44 @@ export const registerUser: RequestHandler = async (req, res) => {
 // Booking endpoints
 export const createBooking: RequestHandler = async (req, res) => {
   try {
+    // Validate required fields
+    const { category, service, date, timeSlot, branch, fullName, mobile, email } = req.body;
+
+    const missingFields = [];
+    if (!category) missingFields.push("category");
+    if (!service) missingFields.push("service");
+    if (!date) missingFields.push("date");
+    if (!timeSlot) missingFields.push("timeSlot");
+    if (!branch) missingFields.push("branch");
+    if (!fullName) missingFields.push("fullName");
+    if (!mobile) missingFields.push("mobile");
+    if (!email) missingFields.push("email");
+
+    if (missingFields.length > 0) {
+      console.warn("🔐 Booking validation failed: missing fields", { missingFields });
+      return res.status(400).json({
+        success: false,
+        error: `Missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
     const booking = await neonDbService.createBooking(req.body);
 
     // Create notification for new booking
-    await neonDbService.createSystemNotification({
-      type: "new_booking",
-      title: "🎯 New Booking Received",
-      message: `New booking created: ${booking.service} on ${booking.date}`,
-      priority: "high",
-      targetRoles: ["admin", "superadmin", "manager"],
-      data: { bookingId: booking.id },
-      playSound: true,
-      soundType: "new_booking",
-    });
+    try {
+      await neonDbService.createSystemNotification({
+        type: "new_booking",
+        title: "🎯 New Booking Received",
+        message: `New booking created: ${booking.service} on ${booking.date}`,
+        priority: "high",
+        targetRoles: ["admin", "superadmin", "manager"],
+        data: { bookingId: booking.id },
+        playSound: true,
+        soundType: "new_booking",
+      });
+    } catch (notifyErr) {
+      console.warn('⚠️ Failed to create notification:', notifyErr);
+    }
 
     res.status(201).json({
       success: true,
@@ -289,7 +314,7 @@ export const createBooking: RequestHandler = async (req, res) => {
       message: "Booking created successfully",
     });
 
-    // Emit Pusher events for new booking (admin & user channels)
+    // Emit Pusher events for new booking (admin & user channels) - non-blocking
     (async () => {
       try {
         const adminChannel = 'public-realtime';
@@ -311,10 +336,25 @@ export const createBooking: RequestHandler = async (req, res) => {
     })();
 
   } catch (error) {
-    console.error("Create booking error:", error);
-    res.status(500).json({
+    console.error("Create booking error:", error instanceof Error ? error.message : error);
+
+    // Provide more specific error messages
+    let errorMessage = "Failed to create booking. Please try again.";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      if (error.message.includes("database") || error.message.includes("connection")) {
+        errorMessage = "Database connection error. Please try again later.";
+        statusCode = 503;
+      } else if (error.message.includes("validation")) {
+        errorMessage = error.message;
+        statusCode = 400;
+      }
+    }
+
+    res.status(statusCode).json({
       success: false,
-      error: "Failed to create booking",
+      error: errorMessage,
     });
   }
 };
