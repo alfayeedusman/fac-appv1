@@ -3,6 +3,7 @@
 ## ✅ What's Already Configured
 
 Your app is **already set up for Netlify**:
+
 - ✅ `netlify.toml` configured
 - ✅ Netlify Functions wrapper ready (`netlify/functions/api.ts`)
 - ✅ Frontend SPA configured (`dist/spa`)
@@ -30,18 +31,21 @@ After connecting your repo, go to:
 Add these variables:
 
 #### **Database Configuration**
+
 ```
 NEON_DATABASE_URL=postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 DATABASE_URL=postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 ```
 
 #### **Server Configuration**
+
 ```
 NODE_ENV=production
 PORT=8080
 ```
 
 #### **Firebase Configuration** (Client + Server)
+
 ```
 VITE_FIREBASE_API_KEY=AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
@@ -54,6 +58,7 @@ VITE_FIREBASE_FCM_KEY=BPZ7qJsAwjsYN03miKRrNbnPR2oU1y0wpHPmsHnz6Z9U12spAZi5L0ilwR
 ```
 
 #### **Xendit Payment Configuration**
+
 ```
 XENDIT_SECRET_KEY=xnd_development_DOtbVDk9E83dYEUgJGpiJT7RKmUZtrbLcEQRFKDu2qpJTMFHYi8I6PnwxB4g
 XENDIT_PUBLIC_KEY=xnd_public_development_0GsLabVLX_CfyXBlEErMSO7jjhbNI7ZcUhYKhS6zhwBugx8ZnYV6UGD9yCP1sg
@@ -61,11 +66,13 @@ XENDIT_WEBHOOK_TOKEN=Q1kEJVOuDw5BUkkPNpJEu3KjioqCPcF0Wj7jhr1dc1vZvL39
 ```
 
 #### **Mapbox Configuration**
+
 ```
 VITE_MAPBOX_TOKEN=pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg
 ```
 
 #### **Pusher Configuration**
+
 ```
 PUSHER_KEY=bce5ef8f7770b2fea49d
 PUSHER_SECRET=3ae85fd35d9f8eb46586
@@ -76,6 +83,7 @@ VITE_PUSHER_CLUSTER=ap1
 ```
 
 #### **Frontend URL** (Important!)
+
 ```
 VITE_API_BASE_URL=https://your-netlify-site.netlify.app/api
 FRONTEND_URL=https://your-netlify-site.netlify.app
@@ -158,24 +166,28 @@ FRONTEND TIER:
 ## 🧪 Testing Your Deployment
 
 ### **Test 1: Check Site is Live**
+
 ```bash
 curl https://your-site.netlify.app
 # Should return HTML (frontend)
 ```
 
 ### **Test 2: Check API is Responding**
+
 ```bash
 curl https://your-site.netlify.app/api/health
 # Should return: {"status":"healthy",...}
 ```
 
 ### **Test 3: Check Database Connection**
+
 ```bash
 curl https://your-site.netlify.app/api/neon/test
 # Should return: {"success":true,"connected":true,...}
 ```
 
 ### **Test 4: Test Login**
+
 1. Go to `https://your-site.netlify.app/login`
 2. Enter credentials:
    - Email: `superadmin@fayeedautocare.com`
@@ -183,6 +195,7 @@ curl https://your-site.netlify.app/api/neon/test
 3. Should redirect to admin dashboard
 
 ### **Test 5: Check Admin Dashboard**
+
 1. Go to `https://your-site.netlify.app/admin-dashboard`
 2. Should show stats and menu items
 
@@ -193,16 +206,19 @@ curl https://your-site.netlify.app/api/neon/test
 ### **Issue: "API not responding" or 404 errors**
 
 **Check 1:** Verify environment variables are set
+
 ```
 Netlify → Site settings → Build & deploy → Environment
 ```
 
 **Check 2:** Check build logs
+
 ```
 Netlify → Deploys → Click latest deploy → View deploy log
 ```
 
 **Check 3:** Check function logs
+
 ```
 Netlify → Functions → View logs in real-time
 ```
@@ -210,6 +226,7 @@ Netlify → Functions → View logs in real-time
 ### **Issue: Login not working**
 
 **Check:**
+
 1. Is `NEON_DATABASE_URL` set? (without it, DB connection fails)
 2. Is `NODE_ENV=production`?
 3. Check function logs for database errors
@@ -217,6 +234,7 @@ Netlify → Functions → View logs in real-time
 ### **Issue: "CORS" or "Cannot find module" errors**
 
 **Solution:**
+
 ```bash
 # Clear Netlify cache and rebuild
 1. Netlify → Deploys → Trigger deploy → Clear cache and deploy
@@ -225,6 +243,7 @@ Netlify → Functions → View logs in real-time
 ### **Issue: Frontend shows "Cannot connect to API"**
 
 **Check:**
+
 1. Is `VITE_API_BASE_URL` set to your Netlify domain?
 2. Are API routes being called correctly?
 3. Check browser console for CORS errors
