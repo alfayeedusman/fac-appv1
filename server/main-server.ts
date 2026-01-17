@@ -14,6 +14,7 @@ import notificationsApiRoutes from "./routes/notifications-api.js";
 import imagesApiRoutes from "./routes/images-api.js";
 import cmsApiRoutes from "./routes/cms-api.js";
 import { seedBranches } from "./database/seed-branches.js";
+import { seedUsers } from "./database/seed-users.js";
 import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
