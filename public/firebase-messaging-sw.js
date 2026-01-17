@@ -2,101 +2,90 @@
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js');
 
-// Firebase configuration for facapp project
-const firebaseConfig = {
-  apiKey: "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM",
-  authDomain: "facapp-dbdc1.firebaseapp.com",
-  projectId: "facapp-dbdc1",
-  storageBucket: "facapp-dbdc1.firebasestorage.app",
-  messagingSenderId: "964995288467",
-  appId: "1:964995288467:web:a933dcdc046b3f17422c66"
-};
+// Note: Firebase is initialized in the main app (client/services/firebaseService.ts)
+// This service worker doesn't need its own Firebase initialization as it receives
+// messages from the main app's Firebase instance
 
-// Initialize Firebase with error handling
-try {
-  firebase.initializeApp(firebaseConfig);
-  console.log('✅ Firebase initialized in service worker');
-} catch (error) {
-  console.error('❌ Failed to initialize Firebase in service worker:', error);
-}
-
-// Get messaging instance with error handling
+// Initialize Firebase with error handling (if needed for compatibility)
 let messaging = null;
 try {
+  // Try to get messaging instance if Firebase was pre-initialized
   messaging = firebase.messaging();
   console.log('✅ Firebase messaging initialized in service worker');
 } catch (error) {
-  console.error('❌ Failed to initialize Firebase messaging in service worker:', error);
+  console.warn('⚠️ Firebase not available in service worker scope - this is normal');
 }
 
 // Handle background messages
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] Received background message:', payload);
+if (messaging) {
+  messaging.onBackgroundMessage(function(payload) {
+    console.log('[firebase-messaging-sw.js] Received background message:', payload);
 
-  // Extract notification info
-  const notificationTitle = payload.notification?.title || 'New Notification';
-  const notificationOptions = {
-    body: payload.notification?.body || '',
-    icon: payload.notification?.icon || '/favicon.ico',
-    badge: '/favicon.ico',
-    tag: payload.data?.tag || 'default',
-    data: payload.data,
-    requireInteraction: true,
-    actions: [
-      {
-        action: 'view',
-        title: 'View',
-        icon: '/favicon.ico'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ]
-  };
+    // Extract notification info
+    const notificationTitle = payload.notification?.title || 'New Notification';
+    const notificationOptions = {
+      body: payload.notification?.body || '',
+      icon: payload.notification?.icon || '/favicon.ico',
+      badge: '/favicon.ico',
+      tag: payload.data?.tag || 'default',
+      data: payload.data,
+      requireInteraction: true,
+      actions: [
+        {
+          action: 'view',
+          title: 'View',
+          icon: '/favicon.ico'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ]
+    };
 
-  // Handle different notification types
-  if (payload.data?.type === 'achievement_unlocked') {
-    notificationOptions.icon = '🏆';
-    notificationOptions.actions = [
-      {
-        action: 'view_achievements',
-        title: 'View Achievements'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ];
-  } else if (payload.data?.type === 'booking_update') {
-    notificationOptions.icon = '📅';
-    notificationOptions.actions = [
-      {
-        action: 'view_booking',
-        title: 'View Booking'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ];
-  } else if (payload.data?.type === 'loyalty_update') {
-    notificationOptions.icon = '🎯';
-    notificationOptions.actions = [
-      {
-        action: 'view_loyalty',
-        title: 'View Points'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ];
-  }
+    // Handle different notification types
+    if (payload.data?.type === 'achievement_unlocked') {
+      notificationOptions.icon = '🏆';
+      notificationOptions.actions = [
+        {
+          action: 'view_achievements',
+          title: 'View Achievements'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ];
+    } else if (payload.data?.type === 'booking_update') {
+      notificationOptions.icon = '📅';
+      notificationOptions.actions = [
+        {
+          action: 'view_booking',
+          title: 'View Booking'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ];
+    } else if (payload.data?.type === 'loyalty_update') {
+      notificationOptions.icon = '🎯';
+      notificationOptions.actions = [
+        {
+          action: 'view_loyalty',
+          title: 'View Points'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ];
+    }
 
-  // Show notification
-  return self.registration.showNotification(notificationTitle, notificationOptions);
-});
+    // Show notification
+    return self.registration.showNotification(notificationTitle, notificationOptions);
+  });
+}
 
 // Handle notification click events
 self.addEventListener('notificationclick', function(event) {
