@@ -48,13 +48,26 @@ class NeonDatabaseService {
   async getUserByEmail(email: string): Promise<User | null> {
     if (!this.db) throw new Error("Database not connected");
 
+    // Try exact match first for performance
     const [user] = await this.db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, email))
       .limit(1);
 
-    return user || null;
+    if (user) return user;
+
+    // If no exact match, try case-insensitive search (fallback)
+    const lowercaseEmail = email.toLowerCase();
+    const result = await this.db
+      .select()
+      .from(schema.users);
+
+    const caseInsensitiveUser = result.find(
+      (u) => u.email.toLowerCase() === lowercaseEmail,
+    );
+
+    return caseInsensitiveUser || null;
   }
 
   async getUserById(id: string): Promise<User | null> {
