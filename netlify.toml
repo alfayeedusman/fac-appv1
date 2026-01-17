@@ -9,24 +9,6 @@
   # Node version: LTS for maximum Netlify compatibility
   NODE_VERSION = "20"
   NODE_ENV = "production"
-  # Database connection - set in Netlify UI or via netlify-cli
-  # NEON_DATABASE_URL = "postgresql://..."
-  # DATABASE_URL = "postgresql://..."
-
-  # Firebase - set in Netlify UI or via netlify-cli
-  # VITE_FIREBASE_PROJECT_ID = "..."
-  # FIREBASE_PROJECT_ID = "..."
-
-  # Xendit - set in Netlify UI or via netlify-cli
-  # XENDIT_SECRET_KEY = "..."
-  # XENDIT_PUBLIC_KEY = "..."
-
-  # Pusher - set in Netlify UI or via netlify-cli
-  # PUSHER_APP_ID = "..."
-  # PUSHER_KEY = "..."
-
-  # Mapbox - set in Netlify UI or via netlify-cli
-  # VITE_MAPBOX_TOKEN = "..."
 
 [context.production]
   environment = { NODE_ENV = "production" }
