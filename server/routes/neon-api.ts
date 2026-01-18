@@ -311,6 +311,41 @@ export const registerUser: RequestHandler = async (req, res) => {
 };
 
 // Booking endpoints
+
+// Get slot availability for a specific date, time, and branch
+export const getSlotAvailability: RequestHandler = async (req, res) => {
+  try {
+    const { date, timeSlot, branch } = req.query;
+
+    if (!date || !timeSlot || !branch) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: date, timeSlot, branch",
+      });
+    }
+
+    const availability = await neonDbService.getSlotAvailability(
+      String(date),
+      String(timeSlot),
+      String(branch),
+    );
+
+    res.json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("❌ Error checking slot availability:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to check slot availability",
+    });
+  }
+};
+
 export const createBooking: RequestHandler = async (req, res) => {
   try {
     // Validate required fields
