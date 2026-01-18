@@ -1290,8 +1290,21 @@ export default function StepperBooking({
         );
 
         if (!paymentInitiated) {
-          // Payment initiation failed, show error
-          throw new Error("Failed to initiate payment. Please try again.");
+          // Payment initiation failed, but booking was created
+          // Show a message to the user about what happened
+          notificationManager.error(
+            "Payment Initiation Failed",
+            `Your booking (${createdBooking.id}) was created successfully, but we couldn't open the payment gateway. Please try again or contact support.`,
+            { autoClose: 5000 },
+          );
+          toast({
+            title: "Payment Setup Error",
+            description:
+              "Your booking was created but payment couldn't be initiated. Please contact support with booking ID: " +
+              createdBooking.id,
+            variant: "destructive",
+          });
+          return;
         }
 
         // Modal will be shown and receipt will display after payment success
