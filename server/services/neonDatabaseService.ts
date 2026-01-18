@@ -48,7 +48,9 @@ class NeonDatabaseService {
   async getUserByEmail(email: string): Promise<User | null> {
     if (!this.db) {
       console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
-      throw new Error("Database not connected. Please check your NEON_DATABASE_URL environment variable.");
+      throw new Error(
+        "Database not connected. Please check your NEON_DATABASE_URL environment variable.",
+      );
     }
 
     try {
