@@ -142,6 +142,7 @@ async function refreshPaymentMethodsCache() {
 
 // List payment methods supported by Xendit (frontend helper - dynamic with caching)
 export const listPaymentMethods: RequestHandler = async (req, res) => {
+  res.setHeader("Content-Type", "application/json");
   try {
     const forceRefresh = req.query.refresh === "true";
 
@@ -166,7 +167,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
         { id: "gcash", label: "GCash (e-wallet)" },
         { id: "paymaya", label: "PayMaya (e-wallet)" },
         { id: "bank_transfer", label: "Bank Transfer" },
-        { id: "offline", label: "Pay at Counter (Cash)" },
+        { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
       ];
       paymentMethodsCache = {
         methods: fallback,
