@@ -1030,19 +1030,8 @@ export default function StepperBooking({
           );
         } catch (_) {}
 
-        // Show Xendit checkout modal (in-app)
-        setXenditCheckoutData({
-          invoiceUrl: invoiceData.invoice_url,
-          invoiceId: invoiceData.invoice_id,
-          bookingId: bookingId,
-        });
-        setShowXenditCheckout(true);
-
-        toast({
-          title: "Payment Modal Opened",
-          description: "Complete your payment below",
-        });
-
+        // Redirect to Xendit payment gateway
+        xenditService.openInvoice(invoiceData.invoice_url);
         return true;
       } else {
         throw new Error("Failed to create payment invoice");
