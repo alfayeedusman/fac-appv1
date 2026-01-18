@@ -141,13 +141,23 @@ export default function XenditCheckoutModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-auto bg-gray-50 rounded-lg border border-gray-200">
-            <iframe
-              src={invoiceUrl}
-              className="w-full h-full border-0"
-              title="Xendit Payment Checkout"
-            />
-          </div>
+          {invoiceUrl ? (
+            <div className="flex-1 overflow-auto bg-gray-50 rounded-lg border border-gray-200">
+              <iframe
+                src={invoiceUrl}
+                className="w-full h-full border-0"
+                title="Xendit Payment Checkout"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-center">
+                <p className="text-red-600 font-semibold mb-2">Invoice URL Not Available</p>
+                <p className="text-sm text-gray-600">Please try closing this and creating a new booking.</p>
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
