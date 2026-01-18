@@ -218,6 +218,7 @@ export async function runMigrations() {
         branch VARCHAR(255) NOT NULL,
         service_location TEXT,
         estimated_duration INTEGER,
+        bay_number INTEGER,
         base_price DECIMAL(10,2) NOT NULL,
         total_price DECIMAL(10,2) NOT NULL,
         currency VARCHAR(10) NOT NULL DEFAULT 'PHP',
