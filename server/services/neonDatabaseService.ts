@@ -253,11 +253,32 @@ class NeonDatabaseService {
 
     const confirmationCode = `FAC-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(-3).toUpperCase()}`;
 
+    // Assign a bay number for carwash services at branch locations
+    let bayNumber: number | null = null;
+    if (
+      bookingData.category === "carwash" &&
+      bookingData.serviceType === "branch"
+    ) {
+      bayNumber = await this.assignRandomBay(
+        bookingData.date,
+        bookingData.timeSlot,
+        bookingData.branch,
+      );
+
+      // If no bay is available, throw an error
+      if (bayNumber === null) {
+        throw new Error(
+          "No available bays for the selected time slot. Please choose a different time.",
+        );
+      }
+    }
+
     const [booking] = await this.db
       .insert(schema.bookings)
       .values({
         ...bookingData,
         confirmationCode,
+        bayNumber, // Include bay assignment for carwash bookings
       })
       .returning();
 
