@@ -2404,6 +2404,23 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     Record<string, any>
   >({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [garageSettings, setGarageSettings] = useState<any>(null);
+
+  // Fetch garage settings (Manila timezone and hours)
+  useEffect(() => {
+    const fetchGarageSettings = async () => {
+      try {
+        const result = await neonDbClient.getGarageSettings();
+        if (result.success && result.data) {
+          setGarageSettings(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch garage settings:", error);
+      }
+    };
+
+    fetchGarageSettings();
+  }, []);
 
   // Fetch slot availability for all slots when date or branch changes
   useEffect(() => {
