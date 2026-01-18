@@ -52,18 +52,37 @@ export default function XenditCheckoutModal({
       }
 
       try {
-        const res = await fetch(
-          `/api/neon/payment/xendit/invoice-status/${invoiceId}`,
-        );
+        // Build the API URL
+        const apiUrl = `/api/neon/payment/xendit/invoice-status/${invoiceId}`;
+        console.log(`📍 Checking payment status at: ${apiUrl}`);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+        const res = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const data = await res.json();
+          console.log(`✅ Payment status response:`, data);
+
           const status = (
             data.status ||
             data.invoice?.status ||
             ""
           ).toUpperCase();
 
+          console.log(`📊 Invoice status: ${status}`);
+
           if (status === "PAID" || status === "SETTLED") {
+            console.log("✅ Payment successful!");
             setIsCheckingStatus(false);
             setPaymentStatus("success");
             clearInterval(pollInterval);
@@ -79,6 +98,7 @@ export default function XenditCheckoutModal({
             }, 2000);
             return;
           } else if (status === "EXPIRED" || status === "FAILED") {
+            console.log("❌ Payment failed or expired");
             clearInterval(pollInterval);
             setIsCheckingStatus(false);
             setPaymentStatus("failed");
@@ -93,9 +113,24 @@ export default function XenditCheckoutModal({
             }
             return;
           }
+        } else {
+          // Handle non-ok responses
+          console.warn(`⚠️ API returned status ${res.status}`);
+          if (res.status === 404) {
+            console.error("Invoice not found - may not be created yet");
+          } else if (res.status === 500) {
+            console.error("Server error - API may be down");
+          } else {
+            const errorText = await res.text().catch(() => "No error details");
+            console.error(`API Error: ${res.status} - ${errorText}`);
+          }
         }
-      } catch (error) {
-        console.error("Error checking payment status:", error);
+      } catch (error: any) {
+        if (error?.name === "AbortError") {
+          console.warn("⏱️ Request timeout - continuing to retry");
+        } else {
+          console.error("❌ Error checking payment status:", error?.message || error);
+        }
       }
 
       setPollCount((prev) => prev + 1);
