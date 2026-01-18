@@ -184,6 +184,7 @@ export default function XenditCheckoutModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[95vh] p-0 border-0 shadow-2xl">
+        <DialogTitle className="sr-only">Secure Payment - Xendit Checkout</DialogTitle>
         <div className="flex flex-col h-full">
           {/* Header - Minimal and clean */}
           <div className="px-8 py-6 border-b bg-gradient-to-r from-fac-orange-50 to-orange-50">
