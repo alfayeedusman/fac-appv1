@@ -297,18 +297,42 @@ export default function BookingReceiptModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              onClick={downloadReceipt}
-              className="flex-1 bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download as Image
-            </Button>
-            <Button onClick={shareReceipt} variant="outline" className="flex-1">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
+          <div className="flex flex-col gap-3">
+            {/* For online payments, show Pay Now button */}
+            {bookingData.paymentMethod === "online" && onPaymentClick && (
+              <Button
+                onClick={handlePaymentClick}
+                disabled={isProcessing}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold w-full"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Pay Now with FACPay
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Download and Share buttons */}
+            <div className="flex gap-3">
+              <Button
+                onClick={downloadReceipt}
+                className="flex-1 bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Receipt
+              </Button>
+              <Button onClick={shareReceipt} variant="outline" className="flex-1">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            </div>
           </div>
 
           {/* Info Message */}
