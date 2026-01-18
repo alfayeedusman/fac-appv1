@@ -2478,45 +2478,15 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   // Get all slots for the selected date
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
-  // Filter out past time slots if date is today (using Manila timezone)
+  // Show all slots for the selected date within operating hours
+  // All slots are available for booking unless marked unavailable by admin or full capacity
   const availableSlots = useMemo(() => {
     if (!bookingData?.date) return [];
 
-    // If garage settings not loaded yet, return all slots
-    if (!garageSettings) {
-      return allSlots;
-    }
-
-    // Check if selected date is today using Manila date
-    const isToday = bookingData.date === garageSettings.currentDate;
-
-    if (!isToday) {
-      return allSlots;
-    }
-
-    // Filter out past times for today using Manila time
-    const currentHour = garageSettings.currentHour;
-    const currentMinute = garageSettings.currentMinute;
-
-    return allSlots.filter((slot) => {
-      // Parse time slot (e.g., "9:00 AM" or "2:30 PM")
-      const [time, period] = slot.split(" ");
-      const [hours, minutes] = time.split(":").map(Number);
-
-      let slotHour = hours;
-      if (period === "PM" && hours !== 12) {
-        slotHour = hours + 12;
-      } else if (period === "AM" && hours === 12) {
-        slotHour = 0;
-      }
-
-      // Check if slot time is in the future (using Manila time)
-      if (slotHour > currentHour) return true;
-      if (slotHour === currentHour && minutes > currentMinute) return true;
-
-      return false;
-    });
-  }, [bookingData?.date, allSlots, garageSettings]);
+    // Always return all generated time slots for the selected date
+    // The backend will determine actual availability based on bookings
+    return allSlots;
+  }, [bookingData?.date, allSlots]);
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
