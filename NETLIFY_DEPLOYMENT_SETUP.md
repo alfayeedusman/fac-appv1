@@ -90,7 +90,6 @@ Your `netlify.toml` is already configured with:
 Before your first deploy:
 
 1. **Create Neon Project**:
-
    - Go to [console.neon.tech](https://console.neon.tech)
    - Create a new project
    - Get your connection string
@@ -109,12 +108,10 @@ Before your first deploy:
 ## Step 5: Deploy & Test
 
 1. **First Deploy**:
-
    - Netlify automatically deploys when you push to your main branch
    - Monitor build logs in Netlify Dashboard
 
 2. **Check Build Logs**:
-
    - Go to **Deployments** tab
    - Click on the latest deployment
    - View real-time build logs
@@ -199,12 +196,10 @@ curl http://localhost:8080/api/neon/test
 2. **Use environment variables** - Never hardcode secrets
 
 3. **Monitor deployments**:
-
    - Enable email notifications in Netlify
    - Check build logs for warnings
 
 4. **Database backups**:
-
    - Enable Neon automated backups
    - Regular export of critical data
 
