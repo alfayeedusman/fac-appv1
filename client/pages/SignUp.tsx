@@ -225,9 +225,11 @@ export default function SignUp() {
         carUnit: formData.carUnit,
         carPlateNumber: formData.carPlateNumber,
         carType: formData.carType,
+        subscriptionPackage: formData.packageToAvail || "regular",
       };
 
       console.log("📤 Sending registration request for:", payload.email);
+      console.log("📦 Selected subscription package:", formData.packageToAvail);
       const result = await authService.register(payload);
       console.log("📥 Registration response:", result);
 

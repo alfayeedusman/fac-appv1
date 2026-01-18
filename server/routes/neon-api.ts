@@ -128,6 +128,77 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
   }
 };
 
+// Diagnostic endpoint for troubleshooting live server
+export const diagnoseDatabase: RequestHandler = async (req, res) => {
+  try {
+    const databaseUrl =
+      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+
+    // Check environment
+    const checks = {
+      hasDatabaseUrl: !!databaseUrl,
+      databaseUrlConfigured: !!databaseUrl ? "✅ Yes" : "❌ No",
+      environment: process.env.NODE_ENV || "development",
+      hasUsers: false,
+      usersCount: 0,
+      superadminExists: false,
+      tablesExist: false,
+    };
+
+    if (!databaseUrl) {
+      return res.json({
+        success: false,
+        error: "Database URL not configured",
+        checks,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Test connection
+    const isConnected = await testConnection();
+
+    if (!isConnected) {
+      return res.json({
+        success: false,
+        error: "Database connection failed",
+        checks,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Check if users table exists and get user counts
+    try {
+      const allUsers = await neonDbService.getAllUsers();
+      checks.tablesExist = true;
+      checks.hasUsers = allUsers.length > 0;
+      checks.usersCount = allUsers.length;
+      checks.superadminExists = allUsers.some(
+        (u) => u.email === "superadmin@fayeedautocare.com",
+      );
+    } catch (userError) {
+      checks.tablesExist = false;
+    }
+
+    res.json({
+      success: isConnected,
+      connected: isConnected,
+      checks,
+      nextSteps: !checks.tablesExist
+        ? "Run migrations: POST /api/neon/init"
+        : !checks.superadminExists
+          ? "Seed users: POST /api/neon/init"
+          : "Database ready!",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error instanceof Error ? error.message : "Diagnostic failed",
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
 // User authentication endpoints
 export const loginUser: RequestHandler = async (req, res) => {
   // Ensure JSON response headers
@@ -281,6 +352,12 @@ export const loginUser: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const userData = req.body;
+    const { subscriptionPackage } = userData;
+
+    console.log("📝 User registration initiated:", {
+      email: userData.email,
+      subscriptionPackage,
+    });
 
     // Check if user already exists
     const existingUser = await neonDbService.getUserByEmail(userData.email);
@@ -291,14 +368,43 @@ export const registerUser: RequestHandler = async (req, res) => {
       });
     }
 
-    const user = await neonDbService.createUser(userData);
+    // Create user (excluding subscriptionPackage from user data)
+    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } =
+      userData;
+    const user = await neonDbService.createUser(userDataWithoutPackage);
+
+    console.log("✅ User created:", user.id);
+
+    // Create subscription if a package was selected
+    let subscription = null;
+    if (subscriptionPackage && subscriptionPackage !== "regular") {
+      try {
+        console.log(
+          "📦 Creating subscription for package:",
+          subscriptionPackage,
+        );
+        subscription = await neonDbService.createSubscription({
+          userId: user.id,
+          packageId: subscriptionPackage,
+          status: "pending",
+          finalPrice: getPackagePrice(subscriptionPackage),
+          paymentMethod: "registration",
+          autoRenew: true,
+        });
+        console.log("✅ Subscription created:", subscription.id);
+      } catch (subError) {
+        console.warn("⚠️ Failed to create subscription:", subError);
+        // Continue - subscription creation failure should not block registration
+      }
+    }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     res.status(201).json({
       success: true,
       user: userWithoutPassword,
+      subscription: subscription || null,
       message: "User registered successfully",
     });
   } catch (error) {
@@ -309,6 +415,17 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Helper function to get package price
+function getPackagePrice(packageId: string): number {
+  const prices: Record<string, number> = {
+    regular: 0,
+    classic: 500,
+    "vip-silver": 1500,
+    "vip-gold": 3000,
+  };
+  return prices[packageId] || 0;
+}
 
 // Booking endpoints
 

@@ -499,6 +499,53 @@ class NeonDatabaseService {
     }
   }
 
+  async createSubscription(subscriptionData: {
+    userId: string;
+    packageId: string;
+    status?: string;
+    startDate?: Date;
+    endDate?: Date;
+    finalPrice: number;
+    paymentMethod?: string;
+    autoRenew?: boolean;
+  }): Promise<any> {
+    if (!this.db) throw new Error("Database not connected");
+
+    try {
+      const startDate = subscriptionData.startDate || new Date();
+
+      // Calculate end date (30 days from start if not provided)
+      const endDate =
+        subscriptionData.endDate ||
+        new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const [subscription] = await this.db
+        .insert(schema.packageSubscriptions)
+        .values({
+          id: createId(),
+          userId: subscriptionData.userId,
+          packageId: subscriptionData.packageId,
+          status: subscriptionData.status || "pending",
+          startDate,
+          endDate,
+          autoRenew: subscriptionData.autoRenew !== false,
+          originalPrice: subscriptionData.finalPrice,
+          discountApplied: 0,
+          finalPrice: subscriptionData.finalPrice,
+          usageCount: 0,
+          paymentMethod: subscriptionData.paymentMethod || "registration",
+          paymentStatus: "pending",
+        })
+        .returning();
+
+      console.log("✅ Subscription created:", subscription.id);
+      return subscription;
+    } catch (error) {
+      console.error("❌ Error creating subscription:", error);
+      throw error;
+    }
+  }
+
   // === NOTIFICATIONS ===
 
   async createSystemNotification(

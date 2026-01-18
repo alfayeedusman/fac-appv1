@@ -1,5 +1,5 @@
-import { neonDbClient } from './neonDatabaseService';
-import { toast } from '@/hooks/use-toast';
+import { neonDbClient } from "./neonDatabaseService";
+import { toast } from "@/hooks/use-toast";
 
 export interface LoginCredentials {
   email: string;
@@ -13,10 +13,18 @@ export interface RegisterData {
   contactNumber: string;
   address: string;
   branchLocation: string;
-  role?: 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew';
+  role?:
+    | "user"
+    | "admin"
+    | "superadmin"
+    | "cashier"
+    | "inventory_manager"
+    | "manager"
+    | "crew";
   carUnit?: string;
   carPlateNumber?: string;
   carType?: string;
+  subscriptionPackage?: string;
 }
 
 class AuthService {
@@ -30,21 +38,22 @@ class AuthService {
 
   private checkAuthStatus() {
     try {
-      const userEmail = localStorage.getItem('userEmail');
-      const userRole = localStorage.getItem('userRole');
-      const userId = localStorage.getItem('userId');
-      const currentUserStr = localStorage.getItem('currentUser');
-      const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+      const userEmail = localStorage.getItem("userEmail");
+      const userRole = localStorage.getItem("userRole");
+      const userId = localStorage.getItem("userId");
+      const currentUserStr = localStorage.getItem("currentUser");
+      const userLoggedInAt = localStorage.getItem("userLoggedInAt");
 
       if (userEmail && userRole && userId && currentUserStr) {
         // Check if session is not too old (24 hours)
         if (userLoggedInAt) {
           const loginTime = new Date(userLoggedInAt);
           const now = new Date();
-          const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+          const hoursSinceLogin =
+            (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
 
           if (hoursSinceLogin > 24) {
-            console.log('Session expired (>24 hours), clearing session');
+            console.log("Session expired (>24 hours), clearing session");
             this.clearSession();
             return;
           }
@@ -54,17 +63,17 @@ class AuthService {
         this.currentUser = JSON.parse(currentUserStr);
         this.isLoggedIn = true;
 
-        console.log('Session restored:', {
+        console.log("Session restored:", {
           email: userEmail,
           role: userRole,
-          loginTime: userLoggedInAt
+          loginTime: userLoggedInAt,
         });
       } else {
         // Clear incomplete session data
         this.clearSession();
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error("Error checking auth status:", error);
       this.clearSession();
     }
   }
@@ -74,45 +83,50 @@ class AuthService {
     this.currentUser = null;
 
     // Clear all session-related localStorage items
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userFullName');
-    localStorage.removeItem('userLoggedInAt');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('sessionToken');
-    localStorage.removeItem('sessionExpiresAt');
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userLoggedInAt");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("sessionToken");
+    localStorage.removeItem("sessionExpiresAt");
   }
 
-  async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: any; error?: string }> {
+  async login(
+    credentials: LoginCredentials,
+  ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
-      const result = await neonDbClient.login(credentials.email, credentials.password);
+      const result = await neonDbClient.login(
+        credentials.email,
+        credentials.password,
+      );
 
       if (result.success && result.user) {
         this.isLoggedIn = true;
         this.currentUser = result.user;
 
         // Store session in localStorage for persistence
-        localStorage.setItem('userEmail', result.user.email);
-        localStorage.setItem('userRole', result.user.role);
-        localStorage.setItem('userId', result.user.id);
-        localStorage.setItem('userFullName', result.user.fullName || '');
-        localStorage.setItem('userLoggedInAt', new Date().toISOString());
+        localStorage.setItem("userEmail", result.user.email);
+        localStorage.setItem("userRole", result.user.role);
+        localStorage.setItem("userId", result.user.id);
+        localStorage.setItem("userFullName", result.user.fullName || "");
+        localStorage.setItem("userLoggedInAt", new Date().toISOString());
 
         // Store complete user object for easy access
-        localStorage.setItem('currentUser', JSON.stringify(result.user));
+        localStorage.setItem("currentUser", JSON.stringify(result.user));
 
         // Store server-issued session token (if provided) for authenticated requests
         if ((result as any).sessionToken) {
-          localStorage.setItem('sessionToken', (result as any).sessionToken);
+          localStorage.setItem("sessionToken", (result as any).sessionToken);
         }
 
         if ((result as any).expiresAt) {
-          localStorage.setItem('sessionExpiresAt', (result as any).expiresAt);
+          localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
         }
 
         toast({
-          title: 'Login Successful',
+          title: "Login Successful",
           description: `Welcome back, ${result.user.fullName}!`,
         });
       } else {
@@ -120,9 +134,9 @@ class AuthService {
         this.clearSession();
 
         toast({
-          title: 'Login Failed',
-          description: result.error || 'Invalid credentials',
-          variant: 'destructive',
+          title: "Login Failed",
+          description: result.error || "Invalid credentials",
+          variant: "destructive",
         });
       }
 
@@ -131,49 +145,53 @@ class AuthService {
       // Clear session on error
       this.clearSession();
 
-      const errorMessage = 'Login failed. Please ensure you are connected to the database.';
+      const errorMessage =
+        "Login failed. Please ensure you are connected to the database.";
       toast({
-        title: 'Connection Error',
+        title: "Connection Error",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
       return { success: false, error: errorMessage };
     }
   }
 
-  async register(userData: RegisterData): Promise<{ success: boolean; user?: any; error?: string }> {
+  async register(
+    userData: RegisterData,
+  ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
       const registrationData = {
         ...userData,
-        role: userData.role || 'user',
+        role: userData.role || "user",
         isActive: true,
         emailVerified: false,
         loyaltyPoints: 0,
-        subscriptionStatus: 'free' as const,
+        subscriptionStatus: "free" as const,
       };
 
       const result = await neonDbClient.register(registrationData);
-      
+
       if (result.success) {
         toast({
-          title: 'Registration Successful',
-          description: 'Your account has been created successfully!',
+          title: "Registration Successful",
+          description: "Your account has been created successfully!",
         });
       } else {
         toast({
-          title: 'Registration Failed',
-          description: result.error || 'Registration failed',
-          variant: 'destructive',
+          title: "Registration Failed",
+          description: result.error || "Registration failed",
+          variant: "destructive",
         });
       }
-      
+
       return result;
     } catch (error) {
-      const errorMessage = 'Registration failed. Please ensure you are connected to the database.';
+      const errorMessage =
+        "Registration failed. Please ensure you are connected to the database.";
       toast({
-        title: 'Connection Error',
+        title: "Connection Error",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
       return { success: false, error: errorMessage };
     }
@@ -181,22 +199,22 @@ class AuthService {
 
   logout() {
     // Call server to invalidate session token if present
-    const sessionToken = localStorage.getItem('sessionToken');
+    const sessionToken = localStorage.getItem("sessionToken");
     if (sessionToken) {
-      fetch('/api/neon/auth/logout', {
-        method: 'POST',
+      fetch("/api/neon/auth/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken}`,
         },
-      }).catch((err) => console.warn('Server logout failed:', err));
+      }).catch((err) => console.warn("Server logout failed:", err));
     }
 
     this.clearSession();
 
     toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
     });
   }
 
@@ -221,14 +239,14 @@ class AuthService {
       const result = await neonDbClient.testConnection();
       return result.connected;
     } catch (error) {
-      console.error('Database connection check failed:', error);
+      console.error("Database connection check failed:", error);
       return false;
     }
   }
 
   // Session validation methods
   validateSession(): boolean {
-    const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+    const userLoggedInAt = localStorage.getItem("userLoggedInAt");
 
     if (!this.isLoggedIn || !this.currentUser || !userLoggedInAt) {
       return false;
@@ -237,10 +255,11 @@ class AuthService {
     // Check if session is not too old (24 hours)
     const loginTime = new Date(userLoggedInAt);
     const now = new Date();
-    const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+    const hoursSinceLogin =
+      (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
 
     if (hoursSinceLogin > 24) {
-      console.log('Session validation failed: session expired');
+      console.log("Session validation failed: session expired");
       this.clearSession();
       return false;
     }
@@ -250,12 +269,16 @@ class AuthService {
 
   refreshSession(): void {
     if (this.isLoggedIn && this.currentUser) {
-      localStorage.setItem('userLoggedInAt', new Date().toISOString());
+      localStorage.setItem("userLoggedInAt", new Date().toISOString());
     }
   }
 
-  getSessionInfo(): { loginTime?: string; isValid: boolean; hoursRemaining?: number } {
-    const userLoggedInAt = localStorage.getItem('userLoggedInAt');
+  getSessionInfo(): {
+    loginTime?: string;
+    isValid: boolean;
+    hoursRemaining?: number;
+  } {
+    const userLoggedInAt = localStorage.getItem("userLoggedInAt");
 
     if (!userLoggedInAt || !this.isLoggedIn) {
       return { isValid: false };
@@ -263,13 +286,14 @@ class AuthService {
 
     const loginTime = new Date(userLoggedInAt);
     const now = new Date();
-    const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+    const hoursSinceLogin =
+      (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
     const hoursRemaining = Math.max(0, 24 - hoursSinceLogin);
 
     return {
       loginTime: userLoggedInAt,
       isValid: hoursSinceLogin <= 24,
-      hoursRemaining
+      hoursRemaining,
     };
   }
 
@@ -277,9 +301,9 @@ class AuthService {
   requireValidSession(): boolean {
     if (!this.validateSession()) {
       toast({
-        title: 'Session Invalid',
-        description: 'Your session has expired. Please log in again.',
-        variant: 'destructive',
+        title: "Session Invalid",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
       });
       return false;
     }
