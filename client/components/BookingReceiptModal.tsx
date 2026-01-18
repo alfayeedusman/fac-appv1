@@ -15,10 +15,8 @@ import {
   Clock,
   Car,
   MapPin,
-  CreditCard,
   Receipt,
   Share2,
-  Loader2,
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { useState } from "react";
