@@ -388,6 +388,7 @@ export default function StepperBooking({
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const receiptObjectUrlRef = useRef<string | null>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
