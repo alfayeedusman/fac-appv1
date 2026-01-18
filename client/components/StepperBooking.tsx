@@ -617,6 +617,15 @@ export default function StepperBooking({
     return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
 
+  // Auto-scroll to top when step changes
+  useEffect(() => {
+    if (contentContainerRef.current) {
+      contentContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    // Also scroll window to top for mobile
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
+
   // Memoize progress calculation to prevent unnecessary re-renders
   const progressPercentage = useMemo(() => {
     const filledFields = Object.values(bookingData).filter(
