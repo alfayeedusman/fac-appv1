@@ -134,6 +134,7 @@ export function createServer() {
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
+  app.get("/api/neon/bookings/availability", neonApiRoutes.getSlotAvailability);
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints
