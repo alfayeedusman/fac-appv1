@@ -2106,7 +2106,6 @@ const PackageStep = ({
                         return 0;
                       };
                       const price = getPrice();
-                      updateBookingData("basePrice", price);
                       return price.toLocaleString();
                     })()}
                   </p>
