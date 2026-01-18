@@ -404,7 +404,7 @@ export default function Settings() {
         <div className="text-center mb-8">
           <p className="text-xs text-gray-400 font-medium">FAC App v2.1.0</p>
           <p className="text-xs text-gray-400 font-medium">
-            © 2024 Fayeed Auto Care
+            © 2026 Fayeed Auto Care
           </p>
         </div>
       </div>

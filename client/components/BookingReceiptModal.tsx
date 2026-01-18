@@ -275,7 +275,7 @@ export default function BookingReceiptModal({
                 For inquiries, contact us at support@fayeedautocare.com
               </p>
               <p className="mt-2 font-semibold">
-                © 2025 Fayeed Auto Care. All rights reserved.
+                © 2026 Fayeed Auto Care. All rights reserved.
               </p>
             </div>
           </div>

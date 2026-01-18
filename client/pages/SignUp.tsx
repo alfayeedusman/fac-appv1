@@ -377,7 +377,7 @@ export default function SignUp() {
             <h2 className="text-xl font-black text-foreground">
               Join{" "}
               <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                FAC 2025
+                FAC 2026
               </span>
             </h2>
             <p className="text-muted-foreground font-medium">

@@ -351,7 +351,7 @@ export default function Welcome() {
       {/* Footer */}
       <div className="text-center py-4 px-6">
         <p className="text-xs text-muted-foreground">
-          © 2025 Fayeed Auto Care
+          © 2026 Fayeed Auto Care
         </p>
       </div>
     </div>
