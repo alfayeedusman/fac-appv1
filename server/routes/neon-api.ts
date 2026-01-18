@@ -128,6 +128,76 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
   }
 };
 
+// Diagnostic endpoint for troubleshooting live server
+export const diagnoseDatabase: RequestHandler = async (req, res) => {
+  try {
+    const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+
+    // Check environment
+    const checks = {
+      hasDatabaseUrl: !!databaseUrl,
+      databaseUrlConfigured: !!databaseUrl ? "✅ Yes" : "❌ No",
+      environment: process.env.NODE_ENV || "development",
+      hasUsers: false,
+      usersCount: 0,
+      superadminExists: false,
+      tablesExist: false,
+    };
+
+    if (!databaseUrl) {
+      return res.json({
+        success: false,
+        error: "Database URL not configured",
+        checks,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Test connection
+    const isConnected = await testConnection();
+
+    if (!isConnected) {
+      return res.json({
+        success: false,
+        error: "Database connection failed",
+        checks,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Check if users table exists and get user counts
+    try {
+      const allUsers = await neonDbService.getAllUsers();
+      checks.tablesExist = true;
+      checks.hasUsers = allUsers.length > 0;
+      checks.usersCount = allUsers.length;
+      checks.superadminExists = allUsers.some(
+        (u) => u.email === "superadmin@fayeedautocare.com"
+      );
+    } catch (userError) {
+      checks.tablesExist = false;
+    }
+
+    res.json({
+      success: isConnected,
+      connected: isConnected,
+      checks,
+      nextSteps: !checks.tablesExist
+        ? "Run migrations: POST /api/neon/init"
+        : !checks.superadminExists
+          ? "Seed users: POST /api/neon/init"
+          : "Database ready!",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error instanceof Error ? error.message : "Diagnostic failed",
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
 // User authentication endpoints
 export const loginUser: RequestHandler = async (req, res) => {
   // Ensure JSON response headers
