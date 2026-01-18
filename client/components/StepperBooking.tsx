@@ -1531,11 +1531,10 @@ export default function StepperBooking({
           {/* Sidebar (desktop only) */}
           <div
             className={`
-            hidden lg:block lg:sticky top-0 left-0 h-screen w-80 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-10 lg:shadow-none
-            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
+            hidden lg:block lg:sticky top-0 left-0 h-screen w-80 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-10 flex-shrink-0
           `}
           >
-            <div className="p-4 md:p-6 h-full overflow-y-auto">
+            <div className="p-4 md:p-6 h-full overflow-y-auto overflow-x-hidden">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg md:text-xl font-black text-foreground">
                   Booking Summary
