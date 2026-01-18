@@ -35,10 +35,12 @@ export default function XenditCheckoutModal({
 }: XenditCheckoutModalProps) {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [pollCount, setPollCount] = useState(0);
+  const [networkErrors, setNetworkErrors] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState<
     "pending" | "success" | "failed" | null
   >(null);
   const maxPolls = 240;
+  const maxNetworkErrors = 5; // Stop polling after 5 consecutive network errors
 
   useEffect(() => {
     if (!isOpen || !invoiceId) return;
