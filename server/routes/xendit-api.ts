@@ -413,6 +413,67 @@ export const chargeCard: RequestHandler = async (req, res) => {
   }
 };
 
+// Handle offline payment (Pay at Counter/Branch)
+export const confirmOfflinePayment: RequestHandler = async (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  try {
+    const { bookingId, paymentMethod, amount } = req.body;
+
+    if (!bookingId || !paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing bookingId or paymentMethod",
+      });
+    }
+
+    const db = getDb();
+    if (!db) {
+      return res.status(503).json({
+        success: false,
+        error: "Database connection failed",
+      });
+    }
+
+    // Update booking with offline payment info
+    const [booking] = await db
+      .update(schema.bookings)
+      .set({
+        paymentStatus: "pending_offline",
+        paymentMethod: paymentMethod,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.bookings.id, bookingId))
+      .returning();
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: "Booking not found",
+      });
+    }
+
+    console.log("✅ Offline payment confirmed for booking:", bookingId);
+
+    res.json({
+      success: true,
+      message: "Offline payment confirmed. Please pay at branch.",
+      booking: {
+        id: booking.id,
+        confirmationCode: booking.confirmationCode,
+        totalPrice: booking.totalPrice,
+        paymentStatus: booking.paymentStatus,
+        paymentMethod: booking.paymentMethod,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Confirm offline payment error:", error?.message || error);
+    res.status(500).json({
+      success: false,
+      error: error?.message || "Internal server error",
+    });
+  }
+};
+
 // Webhook handler for Xendit callbacks
 export const handleWebhook: RequestHandler = async (req, res) => {
   const startTime = Date.now();
