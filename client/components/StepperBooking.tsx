@@ -2482,6 +2482,36 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   // Get all slots for the selected date
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
+  // Helper function to parse slot time string and convert to 24-hour format
+  // Must be defined BEFORE availableSlots useMemo that calls it
+  const parseSlotTime = (slotStr: string): { hour: number; minute: number } => {
+    try {
+      // Handle formats like "1:00 PM", "01:00 PM", "8:00 AM", "13:00"
+      const match = slotStr.match(/(\d{1,2}):(\d{2})\s?(AM|PM)?/i);
+      if (match) {
+        let hour = parseInt(match[1], 10);
+        const minute = parseInt(match[2], 10);
+        const period = match[3]?.toUpperCase();
+
+        // Convert to 24-hour format if AM/PM is present
+        if (period) {
+          if (period === 'PM' && hour !== 12) {
+            hour += 12;
+          } else if (period === 'AM' && hour === 12) {
+            hour = 0;
+          }
+        }
+
+        return { hour, minute };
+      }
+      console.warn(`⚠️ Could not parse slot time: ${slotStr}`);
+      return { hour: 0, minute: 0 };
+    } catch (error) {
+      console.error("Error parsing slot time:", error);
+      return { hour: 0, minute: 0 };
+    }
+  };
+
   // Show all slots for the selected date within operating hours
   // For today, filter out past times. For future dates, show all slots.
   const availableSlots = useMemo(() => {
@@ -2523,35 +2553,6 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
       return allSlots;
     }
   }, [bookingData?.date, allSlots, garageSettings]);
-
-  // Helper function to parse slot time string and convert to 24-hour format
-  const parseSlotTime = (slotStr: string): { hour: number; minute: number } => {
-    try {
-      // Handle formats like "1:00 PM", "01:00 PM", "8:00 AM", "13:00"
-      const match = slotStr.match(/(\d{1,2}):(\d{2})\s?(AM|PM)?/i);
-      if (match) {
-        let hour = parseInt(match[1], 10);
-        const minute = parseInt(match[2], 10);
-        const period = match[3]?.toUpperCase();
-
-        // Convert to 24-hour format if AM/PM is present
-        if (period) {
-          if (period === 'PM' && hour !== 12) {
-            hour += 12;
-          } else if (period === 'AM' && hour === 12) {
-            hour = 0;
-          }
-        }
-
-        return { hour, minute };
-      }
-      console.warn(`⚠️ Could not parse slot time: ${slotStr}`);
-      return { hour: 0, minute: 0 };
-    } catch (error) {
-      console.error("Error parsing slot time:", error);
-      return { hour: 0, minute: 0 };
-    }
-  };
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
