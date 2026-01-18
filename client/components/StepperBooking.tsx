@@ -2383,6 +2383,64 @@ const UnitStep = ({
 };
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
+  const [slotAvailabilityCache, setSlotAvailabilityCache] = useState<
+    Record<string, any>
+  >({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+
+  // Fetch slot availability for all slots when date or branch changes
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!bookingData?.date || !bookingData?.branch) {
+        setSlotAvailabilityCache({});
+        return;
+      }
+
+      setLoadingAvailability(true);
+      try {
+        const slots = getTimeSlots(bookingData.date);
+        const availability: Record<string, any> = {};
+
+        // Fetch availability for each slot in parallel
+        const promises = slots.map((slot) =>
+          neonDbClient
+            .getSlotAvailability(bookingData.date, slot, bookingData.branch)
+            .then((result) => {
+              if (result.success && result.data) {
+                availability[slot] = result.data;
+              } else {
+                // Fallback to default if API fails
+                availability[slot] = {
+                  isAvailable: true,
+                  currentBookings: 0,
+                  maxCapacity: 5,
+                  availableBays: [1, 2, 3, 4, 5],
+                };
+              }
+            })
+            .catch(() => {
+              // On error, assume available
+              availability[slot] = {
+                isAvailable: true,
+                currentBookings: 0,
+                maxCapacity: 5,
+                availableBays: [1, 2, 3, 4, 5],
+              };
+            }),
+        );
+
+        await Promise.all(promises);
+        setSlotAvailabilityCache(availability);
+      } catch (error) {
+        console.error("Failed to fetch slot availability:", error);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    fetchAvailability();
+  }, [bookingData?.date, bookingData?.branch]);
+
   // Get all slots for the selected date
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
