@@ -619,11 +619,28 @@ export default function StepperBooking({
 
   // Auto-scroll to top when step changes
   useEffect(() => {
-    if (contentContainerRef.current) {
-      contentContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    // Also scroll window to top for mobile
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Small delay to ensure DOM has updated
+    const scrollTimer = setTimeout(() => {
+      if (contentContainerRef.current) {
+        contentContainerRef.current.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+      // Scroll window to top for desktop/mobile
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      // Also scroll the sidebar if on mobile
+      const sidebar = document.querySelector(".booking-sidebar");
+      if (sidebar) {
+        (sidebar as HTMLElement).scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 100);
+
+    return () => clearTimeout(scrollTimer);
   }, [currentStep]);
 
   // Memoize progress calculation to prevent unnecessary re-renders
