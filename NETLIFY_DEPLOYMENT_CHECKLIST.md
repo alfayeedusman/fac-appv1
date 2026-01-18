@@ -63,7 +63,7 @@ Go to your Netlify site dashboard:
 NEON_DATABASE_URL=postgresql://...
 
 # Firebase (Required)
-VITE_FIREBASE_API_KEY=AIza...
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_WEB_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=facapp-dbdc1
 VITE_FIREBASE_STORAGE_BUCKET=facapp-dbdc1.firebasestorage.app
