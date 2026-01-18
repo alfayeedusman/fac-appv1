@@ -2478,24 +2478,25 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   // Get all slots for the selected date
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
-  // Filter out past time slots if date is today
+  // Filter out past time slots if date is today (using Manila timezone)
   const availableSlots = useMemo(() => {
     if (!bookingData?.date) return [];
 
-    const selectedDate = new Date(bookingData.date);
-    const today = new Date();
+    // If garage settings not loaded yet, return all slots
+    if (!garageSettings) {
+      return allSlots;
+    }
 
-    // Check if selected date is today
-    const isToday = selectedDate.toDateString() === today.toDateString();
+    // Check if selected date is today using Manila date
+    const isToday = bookingData.date === garageSettings.currentDate;
 
     if (!isToday) {
       return allSlots;
     }
 
-    // Filter out past times for today
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinute = currentTime.getMinutes();
+    // Filter out past times for today using Manila time
+    const currentHour = garageSettings.currentHour;
+    const currentMinute = garageSettings.currentMinute;
 
     return allSlots.filter((slot) => {
       // Parse time slot (e.g., "9:00 AM" or "2:30 PM")
@@ -2509,13 +2510,13 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         slotHour = 0;
       }
 
-      // Check if slot time is in the future
+      // Check if slot time is in the future (using Manila time)
       if (slotHour > currentHour) return true;
       if (slotHour === currentHour && minutes > currentMinute) return true;
 
       return false;
     });
-  }, [bookingData?.date, allSlots]);
+  }, [bookingData?.date, allSlots, garageSettings]);
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
