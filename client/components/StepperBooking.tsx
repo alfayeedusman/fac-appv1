@@ -3361,50 +3361,62 @@ const PaymentStep = ({
 
       {bookingData.paymentMethod === "online" &&
         adminConfig.paymentMethods.online.enabled && (
-          <div className="p-4 rounded-xl bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 border-2 border-fac-orange-200">
-            <div className="flex items-start space-x-3">
-              <div className="bg-fac-orange-500 rounded-full p-2">
-                <CreditCard className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-fac-orange-900 dark:text-fac-orange-100 mb-3">
-                  🔒 Secure Payment with FACPay
-                </h4>
-                <div className="space-y-2 text-sm text-fac-orange-800 dark:text-fac-orange-200">
-                  <div className="flex items-start">
-                    <span className="text-lg mr-2">✓</span>
-                    <span>
-                      Payment modal opens securely within the app (no external redirects)
-                    </span>
+          <div className="space-y-4">
+            {/* Payment info card - professional and spacious */}
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/30 border-2 border-fac-orange-200 dark:border-fac-orange-700">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-fac-orange-500 to-orange-600 rounded-full p-3 flex-shrink-0">
+                  <CreditCard className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-lg text-fac-orange-900 dark:text-fac-orange-100 mb-3">
+                    🔒 Secure Payment Processing
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Pay securely in the app (no redirects)
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Multiple payment options available
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        256-bit SSL encryption powered by Xendit
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Instant receipt after payment
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-start">
-                    <span className="text-lg mr-2">✓</span>
-                    <span>
-                      Multiple payment methods: Credit/Debit Cards, GCash, PayMaya
-                    </span>
-                  </div>
-                  <div className="flex items-start">
-                    <span className="text-lg mr-2">✓</span>
-                    <span>256-bit SSL encryption powered by Xendit</span>
-                  </div>
-                  <div className="flex items-start">
-                    <span className="text-lg mr-2">✓</span>
-                    <span>Get receipt instantly after payment</span>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-fac-orange-200">
-                    <p className="font-bold text-lg">
-                      Total Amount: ₱{bookingData.totalPrice.toLocaleString()}
+
+                  {/* Total amount - prominent */}
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-fac-orange-200 dark:border-fac-orange-700">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Amount to Pay
+                    </p>
+                    <p className="text-3xl font-black text-fac-orange-600 dark:text-fac-orange-400">
+                      ₱{bookingData.totalPrice.toLocaleString()}
                     </p>
                   </div>
                 </div>
-
-                {/* Dynamically load available payment channels from server */}
-                <PaymentMethodsSelection
-                  bookingData={bookingData}
-                  updateBookingData={updateBookingData}
-                />
               </div>
             </div>
+
+            {/* Payment channel selection */}
+            <PaymentMethodsSelection
+              bookingData={bookingData}
+              updateBookingData={updateBookingData}
+            />
           </div>
         )}
 
