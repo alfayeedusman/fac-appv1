@@ -46,7 +46,6 @@ interface BookingReceiptModalProps {
     customerPhone: string;
     bookingId?: string;
   };
-  onPaymentClick?: () => Promise<void>;
 }
 
 export default function BookingReceiptModal({
