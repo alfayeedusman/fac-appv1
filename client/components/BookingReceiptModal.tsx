@@ -18,8 +18,10 @@ import {
   CreditCard,
   Receipt,
   Share2,
+  Loader2,
 } from "lucide-react";
 import html2canvas from "html2canvas";
+import { useState } from "react";
 
 interface BookingReceiptModalProps {
   isOpen: boolean;
@@ -42,15 +44,29 @@ interface BookingReceiptModalProps {
     customerName: string;
     customerEmail: string;
     customerPhone: string;
+    bookingId?: string;
   };
+  onPaymentClick?: () => Promise<void>;
 }
 
 export default function BookingReceiptModal({
   isOpen,
   onClose,
   bookingData,
+  onPaymentClick,
 }: BookingReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handlePaymentClick = async () => {
+    if (!onPaymentClick) return;
+    setIsProcessing(true);
+    try {
+      await onPaymentClick();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const downloadReceipt = async () => {
     if (!receiptRef.current) return;
