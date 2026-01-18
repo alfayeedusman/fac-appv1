@@ -399,12 +399,6 @@ export default function StepperBooking({
   const [showSidebar, setShowSidebar] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [completedBooking, setCompletedBooking] = useState<any>(null);
-  const [showXenditCheckout, setShowXenditCheckout] = useState(false);
-  const [xenditCheckoutData, setXenditCheckoutData] = useState<{
-    invoiceUrl: string;
-    invoiceId: string;
-    bookingId: string;
-  } | null>(null);
 
   const [bookingData, setBookingData] = useState<BookingData>({
     category: "",
