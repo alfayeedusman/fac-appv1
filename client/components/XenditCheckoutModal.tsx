@@ -6,7 +6,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, X, ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Loader2,
+  X,
+  ExternalLink,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  CreditCard,
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface XenditCheckoutModalProps {
@@ -30,6 +39,9 @@ export default function XenditCheckoutModal({
 }: XenditCheckoutModalProps) {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [pollCount, setPollCount] = useState(0);
+  const [paymentStatus, setPaymentStatus] = useState<
+    "pending" | "success" | "failed" | null
+  >(null);
   const maxPolls = 240; // Check for 20 minutes (240 * 5 seconds)
 
   // Check payment status periodically
