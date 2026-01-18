@@ -17,17 +17,24 @@ export function initializeDatabase() {
     const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
     if (!databaseUrl) {
-      console.warn('No database URL found. Using fallback mode.');
+      console.error('❌ CRITICAL: No database URL found in environment variables');
+      console.error('   Expected: NEON_DATABASE_URL or DATABASE_URL');
+      console.error('   Available env vars:', Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('NEON')));
       return null;
     }
 
+    console.log('🔄 Initializing database connection...');
     sql = neon(databaseUrl);
     db = drizzle(sql, { schema });
 
-    console.log('✅ Neon database connection initialized');
+    console.log('✅ Neon database connection initialized successfully');
     return db;
   } catch (error) {
     console.error('❌ Failed to initialize database connection:', error);
+    if (error instanceof Error) {
+      console.error('   Error message:', error.message);
+      console.error('   Stack:', error.stack);
+    }
     return null;
   }
 }
