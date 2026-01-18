@@ -630,7 +630,6 @@ export default function StepperBooking({
   // Auto-scroll to top ONLY when advancing to next step (not on back navigation)
   useEffect(() => {
     if (!isNavigatingFromNextRef.current) {
-      isNavigatingFromNextRef.current = false;
       return;
     }
 
