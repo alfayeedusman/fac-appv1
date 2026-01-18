@@ -73,6 +73,7 @@ export default function XenditCheckoutModal({
           if (status === "PAID" || status === "SETTLED") {
             console.log("✅ Payment successful!");
             setIsCheckingStatus(false);
+            setPaymentStatus("success");
             clearInterval(pollInterval);
 
             // Show success toast
@@ -89,12 +90,13 @@ export default function XenditCheckoutModal({
             // Close modal after delay to show success message
             setTimeout(() => {
               onClose();
-            }, 1500);
+            }, 2000);
             return;
           } else if (status === "EXPIRED" || status === "FAILED") {
             console.log("❌ Payment failed or expired");
             clearInterval(pollInterval);
             setIsCheckingStatus(false);
+            setPaymentStatus("failed");
 
             toast({
               title: "Payment Failed",
