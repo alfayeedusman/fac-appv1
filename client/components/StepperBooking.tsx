@@ -2485,10 +2485,17 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   // Show all slots for the selected date within operating hours
   // All slots are available for booking unless marked unavailable by admin or full capacity
   const availableSlots = useMemo(() => {
-    if (!bookingData?.date) return [];
+    if (!bookingData?.date) {
+      console.log("🕐 No date selected yet");
+      return [];
+    }
 
     // Always return all generated time slots for the selected date
     // The backend will determine actual availability based on bookings
+    console.log(`🕐 Showing ${allSlots.length} slots for date ${bookingData.date}:`, allSlots);
+    if (allSlots.length === 0) {
+      console.warn(`⚠️ No time slots generated for date ${bookingData.date}`);
+    }
     return allSlots;
   }, [bookingData?.date, allSlots]);
   const homeServiceConfig = adminConfig?.homeService || {};
