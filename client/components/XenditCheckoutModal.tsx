@@ -166,7 +166,7 @@ export default function XenditCheckoutModal({
     pollInterval = setInterval(checkPaymentStatus, 5000);
 
     return () => clearInterval(pollInterval);
-  }, [isOpen, invoiceId, pollCount, maxPolls, onPaymentSuccess, onPaymentFailed, onClose]);
+  }, [isOpen, invoiceId, pollCount, maxPolls, networkErrors, maxNetworkErrors, onPaymentSuccess, onPaymentFailed, onClose]);
 
   useEffect(() => {
     if (isOpen) {
