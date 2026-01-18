@@ -627,29 +627,18 @@ export default function StepperBooking({
     return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
 
-  // Auto-scroll to top ONLY when advancing to next step (not on back navigation)
+  // Focus management on step change for accessibility
   useEffect(() => {
-    if (!isNavigatingFromNextRef.current) {
-      return;
-    }
-
-    // Small delay to ensure DOM has updated
-    const scrollTimer = setTimeout(() => {
-      if (contentContainerRef.current) {
-        contentContainerRef.current.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
+    // Focus on the step content when it changes for keyboard accessibility
+    const focusTimer = setTimeout(() => {
+      const stepContent = document.querySelector('[data-step-content]');
+      if (stepContent) {
+        // Set focus to the step content for keyboard users
+        (stepContent as HTMLElement).focus();
       }
-      // Scroll window to top for desktop/mobile
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }, 50);
+    }, 100);
 
-    isNavigatingFromNextRef.current = false;
-    return () => clearTimeout(scrollTimer);
+    return () => clearTimeout(focusTimer);
   }, [currentStep]);
 
   // Memoize progress calculation to prevent unnecessary re-renders
