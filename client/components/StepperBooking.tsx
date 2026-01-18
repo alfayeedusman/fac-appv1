@@ -1560,19 +1560,6 @@ export default function StepperBooking({
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      {/* Xendit Checkout Modal */}
-      {xenditCheckoutData && (
-        <XenditCheckoutModal
-          isOpen={showXenditCheckout}
-          onClose={() => setShowXenditCheckout(false)}
-          invoiceUrl={xenditCheckoutData.invoiceUrl}
-          invoiceId={xenditCheckoutData.invoiceId}
-          bookingId={xenditCheckoutData.bookingId}
-          onPaymentSuccess={handleXenditPaymentSuccess}
-          onPaymentFailed={handleXenditPaymentFailed}
-        />
-      )}
-
       {/* Booking Receipt Modal */}
       {completedBooking && (
         <Suspense
