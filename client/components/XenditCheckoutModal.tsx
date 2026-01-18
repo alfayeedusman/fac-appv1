@@ -54,22 +54,28 @@ export default function XenditCheckoutModal({
       }
 
       try {
-        // Build the API URL
-        const apiUrl = `/api/neon/payment/xendit/invoice-status/${invoiceId}`;
+        // Build the API URL - use full URL to ensure proper routing
+        const baseUrl = window.location.origin;
+        const apiUrl = `${baseUrl}/api/neon/payment/xendit/invoice-status/${encodeURIComponent(invoiceId)}`;
         console.log(`📍 Checking payment status at: ${apiUrl}`);
+        console.log(`🔗 Full URL: ${apiUrl}`);
+        console.log(`🆔 Invoice ID: ${invoiceId}`);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
         const res = await fetch(apiUrl, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
+          credentials: "include", // Include cookies if needed
           signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
+        console.log(`📡 Response status: ${res.status} ${res.statusText}`);
 
         if (res.ok) {
           const data = await res.json();
