@@ -1,7 +1,7 @@
 [build]
   # Build command: install dependencies and build both client and server
   # Using --legacy-peer-deps to avoid dependency conflicts
-  command = "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build"
+  command = "npm ci --legacy-peer-deps --include=dev --prefer-offline --no-audit && npm run build"
   functions = "netlify/functions"
   publish = "dist/spa"
   base = "/"
@@ -9,6 +9,11 @@
 [build.environment]
   # Node version: LTS for maximum Netlify compatibility
   NODE_VERSION = "20"
+  # Ensure devDependencies (vite, typescript, etc.) are installed during build.
+  # Netlify sets NODE_ENV=production during builds, which can cause npm to omit dev deps unless overridden.
+  NPM_CONFIG_PRODUCTION = "false"
+  # Helps prevent build-time out-of-memory crashes during Vite bundling on CI.
+  NODE_OPTIONS = "--max_old_space_size=4096"
   NODE_ENV = "production"
 
 [context.production]
