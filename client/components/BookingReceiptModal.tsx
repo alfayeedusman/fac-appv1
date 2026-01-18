@@ -354,9 +354,15 @@ export default function BookingReceiptModal({
             </p>
           </div>
 
-          <Button onClick={onClose} variant="outline" className="w-full">
-            Close
-          </Button>
+          {bookingData.paymentMethod === "online" ? (
+            <Button onClick={onClose} variant="outline" className="w-full">
+              {isProcessing ? "Processing..." : "Continue Shopping"}
+            </Button>
+          ) : (
+            <Button onClick={onClose} variant="outline" className="w-full">
+              Close
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
