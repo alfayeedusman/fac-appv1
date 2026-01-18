@@ -17,6 +17,7 @@ export interface RegisterData {
   carUnit?: string;
   carPlateNumber?: string;
   carType?: string;
+  subscriptionPackage?: string;
 }
 
 class AuthService {
