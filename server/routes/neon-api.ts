@@ -349,11 +349,34 @@ export const getSlotAvailability: RequestHandler = async (req, res) => {
 // Get garage settings and current time in Manila timezone
 export const getGarageSettings: RequestHandler = async (req, res) => {
   try {
-    // Get current time in Manila timezone (UTC+8)
-    const manilaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-    const manilaHour = manilaTime.getHours();
-    const manilaMinute = manilaTime.getMinutes();
-    const manilaDate = manilaTime.toISOString().split('T')[0];
+    // Get current time in Manila timezone (UTC+8) using Intl API
+    const now = new Date();
+
+    // Use Intl.DateTimeFormat to properly extract Manila timezone values
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(now);
+    const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+    const manilaHour = parseInt(partMap.hour, 10);
+    const manilaMinute = parseInt(partMap.minute, 10);
+    const manilaDate = `${partMap.year}-${partMap.month}-${partMap.day}`;
+
+    console.log('🕐 Manila time details:', {
+      hour: manilaHour,
+      minute: manilaMinute,
+      date: manilaDate,
+      utcTime: now.toISOString(),
+    });
 
     // Garage hours: 8:00 AM to 8:00 PM
     const garageOpenTime = 8; // 8:00 AM
@@ -364,7 +387,7 @@ export const getGarageSettings: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       data: {
-        currentTime: manilaTime.toISOString(),
+        currentTime: now.toISOString(),
         currentHour: manilaHour,
         currentMinute: manilaMinute,
         currentDate: manilaDate,
