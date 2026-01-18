@@ -944,14 +944,14 @@ export class BookingDatabase {
     maxCapacity: number;
   } {
     const bookings = this.getBranchBookings(branch, date);
-    const currentBookings = bookings.filter(booking => 
-      booking.timeSlot === timeSlot && 
+    const currentBookings = bookings.filter(booking =>
+      booking.timeSlot === timeSlot &&
       ['pending', 'confirmed', 'in_progress'].includes(booking.status)
     ).length;
-    
-    // This would come from branch configuration in a real system
-    const maxCapacity = 2; // Default capacity per slot
-    
+
+    // Updated to 5 bays per slot (carwash bay system)
+    const maxCapacity = 5;
+
     return {
       isAvailable: currentBookings < maxCapacity,
       currentBookings,
