@@ -119,6 +119,7 @@ export default function XenditCheckoutModal({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-md border-0 bg-transparent shadow-none">
+          <DialogTitle className="sr-only">Payment Successful</DialogTitle>
           <div className="text-center space-y-4 py-12">
             <div className="flex justify-center mb-4">
               <div className="bg-green-100 rounded-full p-4 animate-bounce">
