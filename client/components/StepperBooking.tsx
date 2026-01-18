@@ -3258,17 +3258,28 @@ const PaymentStep = ({
         )}
       </div>
 
-      <div className="space-y-4">
+      {/* Payment Methods Grid - Professional card layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {adminConfig.paymentMethods.branch.enabled && (
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
               bookingData.paymentMethod === "branch"
-                ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50"
-                : "border-border hover:border-fac-orange-300"
+                ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
             }`}
             onClick={() => updateBookingData("paymentMethod", "branch")}
           >
-            <h3 className="font-bold text-foreground">
+            <div className="flex items-start justify-between mb-3">
+              <div className="bg-blue-100 dark:bg-blue-900/50 rounded-lg p-3">
+                <span className="text-2xl">🏪</span>
+              </div>
+              {bookingData.paymentMethod === "branch" && (
+                <div className="bg-fac-orange-500 rounded-full p-1">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+              )}
+            </div>
+            <h3 className="font-bold text-lg text-foreground mb-1">
               {adminConfig.paymentMethods.branch.name}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -3279,26 +3290,39 @@ const PaymentStep = ({
 
         {adminConfig.paymentMethods.online.enabled && (
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
               bookingData.paymentMethod === "online"
-                ? "border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950"
-                : "border-border hover:border-fac-orange-300"
+                ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
             }`}
             onClick={() => updateBookingData("paymentMethod", "online")}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-foreground flex items-center">
-                  <CreditCard className="h-5 w-5 mr-2 text-fac-orange-500" />
-                  FACPay - Online Payment
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Secure payment via Xendit (Cards, GCash, PayMaya)
-                </p>
+            <div className="flex items-start justify-between mb-3">
+              <div className="bg-gradient-to-br from-fac-orange-100 to-orange-100 dark:from-fac-orange-900/50 dark:to-orange-900/50 rounded-lg p-3">
+                <CreditCard className="h-6 w-6 text-fac-orange-600" />
               </div>
               {bookingData.paymentMethod === "online" && (
-                <CheckCircle className="h-6 w-6 text-fac-orange-500" />
+                <div className="bg-fac-orange-500 rounded-full p-1">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
               )}
+            </div>
+            <h3 className="font-bold text-lg text-foreground mb-1 flex items-center">
+              FACPay
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Secure online payment
+            </p>
+            <div className="flex gap-1 flex-wrap">
+              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+                💳 Cards
+              </Badge>
+              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+                📱 GCash
+              </Badge>
+              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+                💰 PayMaya
+              </Badge>
             </div>
           </div>
         )}
@@ -3308,14 +3332,24 @@ const PaymentStep = ({
           adminConfig.paymentMethods.onsite &&
           adminConfig.paymentMethods.onsite.enabled && (
             <div
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg md:col-span-2 ${
                 bookingData.paymentMethod === "onsite"
-                  ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50"
-                  : "border-border hover:border-fac-orange-300"
+                  ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                  : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
               }`}
               onClick={() => updateBookingData("paymentMethod", "onsite")}
             >
-              <h3 className="font-bold text-foreground">
+              <div className="flex items-start justify-between mb-3">
+                <div className="bg-amber-100 dark:bg-amber-900/50 rounded-lg p-3">
+                  <span className="text-2xl">🚗</span>
+                </div>
+                {bookingData.paymentMethod === "onsite" && (
+                  <div className="bg-fac-orange-500 rounded-full p-1">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </div>
+              <h3 className="font-bold text-lg text-foreground mb-1">
                 {adminConfig.paymentMethods.onsite.name}
               </h3>
               <p className="text-sm text-muted-foreground">
