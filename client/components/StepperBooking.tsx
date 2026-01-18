@@ -1240,23 +1240,6 @@ export default function StepperBooking({
         }
       }
 
-      // Trigger Xendit payment if online payment method is selected
-      if (bookingData.paymentMethod === "online") {
-        const paymentSuccess = await handleXenditPayment(
-          createdBooking.id,
-          bookingData.totalPrice,
-        );
-        if (!paymentSuccess) {
-          // Payment initialization failed, but booking is created
-          toast({
-            title: "Booking Created",
-            description:
-              "Booking created but payment initialization failed. Please contact support.",
-            variant: "default",
-          });
-        }
-      }
-
       // Store completed booking data for receipt
       setCompletedBooking({
         id: createdBooking.id,
@@ -1279,12 +1262,11 @@ export default function StepperBooking({
         customerName: bookingData.fullName,
         customerEmail: bookingData.email,
         customerPhone: bookingData.mobile,
+        bookingId: createdBooking.id, // Add bookingId for payment redirection
       });
 
-      // Show receipt modal only for non-online payments; for online we show it on success page after gateway confirmation
-      if (bookingData.paymentMethod !== "online") {
-        setShowReceiptModal(true);
-      }
+      // Show receipt modal for all payment methods (both online and offline)
+      setShowReceiptModal(true);
 
       notificationManager.success(
         "Booking Confirmed! 🎉",
