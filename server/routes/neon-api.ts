@@ -281,6 +281,12 @@ export const loginUser: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const userData = req.body;
+    const { subscriptionPackage } = userData;
+
+    console.log("📝 User registration initiated:", {
+      email: userData.email,
+      subscriptionPackage,
+    });
 
     // Check if user already exists
     const existingUser = await neonDbService.getUserByEmail(userData.email);
@@ -291,7 +297,31 @@ export const registerUser: RequestHandler = async (req, res) => {
       });
     }
 
-    const user = await neonDbService.createUser(userData);
+    // Create user (excluding subscriptionPackage from user data)
+    const { subscriptionPackage: _, ...userDataWithoutPackage } = userData;
+    const user = await neonDbService.createUser(userDataWithoutPackage);
+
+    console.log("✅ User created:", user.id);
+
+    // Create subscription if a package was selected
+    let subscription = null;
+    if (subscriptionPackage && subscriptionPackage !== "regular") {
+      try {
+        console.log("📦 Creating subscription for package:", subscriptionPackage);
+        subscription = await neonDbService.createSubscription({
+          userId: user.id,
+          packageId: subscriptionPackage,
+          status: "pending",
+          finalPrice: getPackagePrice(subscriptionPackage),
+          paymentMethod: "registration",
+          autoRenew: true,
+        });
+        console.log("✅ Subscription created:", subscription.id);
+      } catch (subError) {
+        console.warn("⚠️ Failed to create subscription:", subError);
+        // Continue - subscription creation failure should not block registration
+      }
+    }
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
@@ -299,6 +329,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       user: userWithoutPassword,
+      subscription: subscription || null,
       message: "User registered successfully",
     });
   } catch (error) {
@@ -309,6 +340,17 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Helper function to get package price
+function getPackagePrice(packageId: string): number {
+  const prices: Record<string, number> = {
+    "regular": 0,
+    "classic": 500,
+    "vip-silver": 1500,
+    "vip-gold": 3000,
+  };
+  return prices[packageId] || 0;
+}
 
 // Booking endpoints
 
