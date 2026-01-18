@@ -338,9 +338,19 @@ export default function BookingReceiptModal({
           {/* Info Message */}
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>📱 Save this receipt!</strong> Screenshot or download this
-              confirmation as proof of your booking. You'll receive a
-              confirmation email shortly.
+              {bookingData.paymentMethod === "online" ? (
+                <>
+                  <strong>💳 Payment Required!</strong> Your booking is confirmed.
+                  Click "Pay Now with FACPay" to complete the payment. You'll
+                  receive a confirmation email once payment is successful.
+                </>
+              ) : (
+                <>
+                  <strong>📱 Save this receipt!</strong> Screenshot or download
+                  this confirmation as proof of your booking. You'll receive a
+                  confirmation email shortly.
+                </>
+              )}
             </p>
           </div>
 
