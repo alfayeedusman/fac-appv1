@@ -187,6 +187,10 @@ export function createServer() {
   app.get("/api/neon/payment/xendit/test", (req, res) => {
     res.json({ success: true, message: "Xendit routes are working!" });
   });
+
+  // Explicitly handle OPTIONS for CORS preflight on all xendit endpoints
+  app.options("/api/neon/payment/xendit/*", cors());
+
   app.post(
     "/api/neon/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,

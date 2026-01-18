@@ -28,6 +28,8 @@ export default function BookingSuccess() {
 
     const payload = JSON.parse(payloadStr);
     let attempts = 0;
+    const maxAttempts = 120; // 6 minutes timeout (120 attempts * 3 seconds)
+
     const poll = async () => {
       try {
         const res = await fetch(
@@ -40,11 +42,14 @@ export default function BookingSuccess() {
             data.invoice?.status ||
             ""
           ).toUpperCase();
+
+          console.log(`💳 Payment Status: ${status}`);
+
           if (status === "PAID" || status === "SETTLED") {
+            console.log("✅ Payment confirmed! Showing receipt...");
             setReceiptData({
               id: payload.bookingId,
-              confirmationCode:
-                payload.bookingData?.confirmationCode || payload.bookingId,
+              confirmationCode: payload.confirmationCode || payload.bookingId,
               service: payload.bookingData?.service || "Service",
               category: payload.bookingData?.category,
               date: payload.bookingData?.date,
@@ -60,22 +65,30 @@ export default function BookingSuccess() {
               customerName: payload.bookingData?.fullName || "Customer",
               customerEmail: payload.bookingData?.email || "",
               customerPhone: payload.bookingData?.mobile || "",
+              bookingId: payload.bookingId,
             });
             setShowReceipt(true);
             setChecking(false);
             return;
           }
           if (status === "EXPIRED" || status === "FAILED") {
+            console.log("❌ Payment failed or expired");
             setChecking(false);
             navigate(`/booking-failed?bookingId=${payload.bookingId}`);
             return;
           }
+        } else {
+          console.warn(`API returned status: ${res.status}`);
         }
-      } catch (_) {}
+      } catch (error) {
+        console.warn("Error polling payment status:", error);
+      }
+
       attempts += 1;
-      if (attempts < 40) {
+      if (attempts < maxAttempts) {
         setTimeout(poll, 3000);
       } else {
+        console.log("⏱️ Poll timeout reached");
         setChecking(false);
       }
     };

@@ -439,6 +439,9 @@ export default function StepperBooking({
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [userData, setUserData] = useState<any>(null);
 
+  // Debounce protection for navigation buttons
+  const navigationDebounceRef = useRef(false);
+
   // Cleanup object URLs when component unmounts
   useEffect(() => {
     return () => {
@@ -623,30 +626,18 @@ export default function StepperBooking({
     return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
 
-  // Auto-scroll to top when step changes
+  // Focus management on step change for accessibility
   useEffect(() => {
-    // Small delay to ensure DOM has updated
-    const scrollTimer = setTimeout(() => {
-      if (contentContainerRef.current) {
-        contentContainerRef.current.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-      }
-      // Scroll window to top for desktop/mobile
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-
-      // Also scroll the sidebar if on mobile
-      const sidebar = document.querySelector(".booking-sidebar");
-      if (sidebar) {
-        (sidebar as HTMLElement).scrollTo({ top: 0, behavior: "smooth" });
+    // Focus on the step content when it changes for keyboard accessibility
+    const focusTimer = setTimeout(() => {
+      const stepContent = document.querySelector("[data-step-content]");
+      if (stepContent) {
+        // Set focus to the step content for keyboard users
+        (stepContent as HTMLElement).focus();
       }
     }, 100);
 
-    return () => clearTimeout(scrollTimer);
+    return () => clearTimeout(focusTimer);
   }, [currentStep]);
 
   // Memoize progress calculation to prevent unnecessary re-renders
@@ -787,6 +778,13 @@ export default function StepperBooking({
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
+    // Debounce: prevent rapid clicks
+    if (navigationDebounceRef.current) return;
+    navigationDebounceRef.current = true;
+    setTimeout(() => {
+      navigationDebounceRef.current = false;
+    }, 300);
+
     if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
       return;
@@ -863,6 +861,13 @@ export default function StepperBooking({
   };
 
   const prevStep = () => {
+    // Debounce: prevent rapid clicks
+    if (navigationDebounceRef.current) return;
+    navigationDebounceRef.current = true;
+    setTimeout(() => {
+      navigationDebounceRef.current = false;
+    }, 300);
+
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -969,7 +974,11 @@ export default function StepperBooking({
     });
   };
 
-  const handleXenditPayment = async (bookingId: string, amount: number) => {
+  const handleXenditPayment = async (
+    bookingId: string,
+    amount: number,
+    confirmationCode: string,
+  ) => {
     try {
       const customerName = isGuest
         ? bookingData.fullName
@@ -995,6 +1004,7 @@ export default function StepperBooking({
           const payload = {
             bookingId,
             invoiceId: invoiceData.invoice_id,
+            confirmationCode: confirmationCode,
             bookingData: {
               fullName: bookingData.fullName,
               email: customerEmail,
@@ -1020,16 +1030,8 @@ export default function StepperBooking({
           );
         } catch (_) {}
 
-        // Redirect to Xendit payment page (same tab)
-        toast({
-          title: "Redirecting to Payment",
-          description:
-            "You will be redirected to FACPay to complete your payment",
-        });
-        setTimeout(() => {
-          xenditService.openInvoice(invoiceData.invoice_url);
-        }, 800);
-
+        // Redirect to Xendit payment gateway
+        xenditService.openInvoice(invoiceData.invoice_url);
         return true;
       } else {
         throw new Error("Failed to create payment invoice");
@@ -1104,10 +1106,13 @@ export default function StepperBooking({
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
 
-      const bookingPayload: Omit<
-        Booking,
-        "id" | "createdAt" | "updatedAt" | "confirmationCode"
-      > = {
+      const bookingPayload: any = {
+        // Customer info - required by API validation
+        fullName: bookingData.fullName,
+        mobile: bookingData.mobile,
+        email: bookingData.email,
+
+        // User/Guest info
         userId: isGuest ? undefined : userId || undefined,
         guestInfo: isGuest
           ? {
@@ -1122,7 +1127,7 @@ export default function StepperBooking({
 
         // Service Details
         category: bookingData.category as any,
-        service: bookingData.service,
+        service: bookingData.service || bookingData.category, // Use category as service if no specific service selected (for auto_detailing, graphene_coating)
         serviceType: bookingData.serviceType as "branch" | "home", // 'branch' or 'home'
 
         // Vehicle Details
@@ -1232,24 +1237,39 @@ export default function StepperBooking({
         }
       }
 
-      // Trigger Xendit payment if online payment method is selected
+      // For online payments: Redirect to Xendit payment gateway
       if (bookingData.paymentMethod === "online") {
-        const paymentSuccess = await handleXenditPayment(
+        // Initiate Xendit payment with redirect
+        const paymentInitiated = await handleXenditPayment(
           createdBooking.id,
           bookingData.totalPrice,
+          createdBooking.confirmationCode,
         );
-        if (!paymentSuccess) {
-          // Payment initialization failed, but booking is created
+
+        if (!paymentInitiated) {
+          // Payment initiation failed, but booking was created
+          // Show a message to the user about what happened
+          notificationManager.error(
+            "Payment Initiation Failed",
+            `Your booking (${createdBooking.id}) was created successfully, but we couldn't open the payment gateway. Please try again or contact support.`,
+            { autoClose: 5000 },
+          );
           toast({
-            title: "Booking Created",
+            title: "Payment Setup Error",
             description:
-              "Booking created but payment initialization failed. Please contact support.",
-            variant: "default",
+              "Your booking was created but payment couldn't be initiated. Please contact support with booking ID: " +
+              createdBooking.id,
+            variant: "destructive",
           });
+          return;
         }
+
+        // User will be redirected to Xendit payment gateway
+        // After payment completion, Xendit will redirect back to /booking-success
+        return;
       }
 
-      // Store completed booking data for receipt
+      // For offline payments: Store booking and show receipt modal
       setCompletedBooking({
         id: createdBooking.id,
         confirmationCode: createdBooking.confirmationCode,
@@ -1271,12 +1291,11 @@ export default function StepperBooking({
         customerName: bookingData.fullName,
         customerEmail: bookingData.email,
         customerPhone: bookingData.mobile,
+        bookingId: createdBooking.id,
       });
 
-      // Show receipt modal only for non-online payments; for online we show it on success page after gateway confirmation
-      if (bookingData.paymentMethod !== "online") {
-        setShowReceiptModal(true);
-      }
+      // Show receipt modal only for offline payments
+      setShowReceiptModal(true);
 
       notificationManager.success(
         "Booking Confirmed! 🎉",
@@ -1696,7 +1715,9 @@ export default function StepperBooking({
               <div className="w-full max-w-4xl">
                 <div className="w-full overflow-hidden pb-4 md:pb-6">
                   <div
-                    className="w-full transition-all duration-500 ease-out"
+                    data-step-content
+                    tabIndex={-1}
+                    className="w-full transition-all duration-500 ease-out focus:outline-none"
                     style={{
                       opacity: 1,
                       animation: `slideIn 0.4s ease-out`,
@@ -3153,17 +3174,28 @@ const PaymentStep = ({
         )}
       </div>
 
-      <div className="space-y-4">
+      {/* Payment Methods Grid - Professional card layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {adminConfig.paymentMethods.branch.enabled && (
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
               bookingData.paymentMethod === "branch"
-                ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50"
-                : "border-border hover:border-fac-orange-300"
+                ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
             }`}
             onClick={() => updateBookingData("paymentMethod", "branch")}
           >
-            <h3 className="font-bold text-foreground">
+            <div className="flex items-start justify-between mb-3">
+              <div className="bg-blue-100 dark:bg-blue-900/50 rounded-lg p-3">
+                <span className="text-2xl">🏪</span>
+              </div>
+              {bookingData.paymentMethod === "branch" && (
+                <div className="bg-fac-orange-500 rounded-full p-1">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+              )}
+            </div>
+            <h3 className="font-bold text-lg text-foreground mb-1">
               {adminConfig.paymentMethods.branch.name}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -3174,26 +3206,48 @@ const PaymentStep = ({
 
         {adminConfig.paymentMethods.online.enabled && (
           <div
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+            className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
               bookingData.paymentMethod === "online"
-                ? "border-fac-orange-500 bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950"
-                : "border-border hover:border-fac-orange-300"
+                ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
             }`}
             onClick={() => updateBookingData("paymentMethod", "online")}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-foreground flex items-center">
-                  <CreditCard className="h-5 w-5 mr-2 text-fac-orange-500" />
-                  FACPay - Online Payment
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Secure payment via Xendit (Cards, GCash, PayMaya)
-                </p>
+            <div className="flex items-start justify-between mb-3">
+              <div className="bg-gradient-to-br from-fac-orange-100 to-orange-100 dark:from-fac-orange-900/50 dark:to-orange-900/50 rounded-lg p-3">
+                <CreditCard className="h-6 w-6 text-fac-orange-600" />
               </div>
               {bookingData.paymentMethod === "online" && (
-                <CheckCircle className="h-6 w-6 text-fac-orange-500" />
+                <div className="bg-fac-orange-500 rounded-full p-1">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
               )}
+            </div>
+            <h3 className="font-bold text-lg text-foreground mb-1 flex items-center">
+              FACPay
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Secure online payment
+            </p>
+            <div className="flex gap-1 flex-wrap">
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
+                💳 Cards
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
+                📱 GCash
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
+                💰 PayMaya
+              </Badge>
             </div>
           </div>
         )}
@@ -3203,14 +3257,24 @@ const PaymentStep = ({
           adminConfig.paymentMethods.onsite &&
           adminConfig.paymentMethods.onsite.enabled && (
             <div
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg md:col-span-2 ${
                 bookingData.paymentMethod === "onsite"
-                  ? "border-fac-orange-500 bg-fac-orange-50/50 dark:bg-fac-orange-950/50"
-                  : "border-border hover:border-fac-orange-300"
+                  ? "border-fac-orange-500 bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 shadow-lg"
+                  : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-fac-orange-300 hover:shadow-md"
               }`}
               onClick={() => updateBookingData("paymentMethod", "onsite")}
             >
-              <h3 className="font-bold text-foreground">
+              <div className="flex items-start justify-between mb-3">
+                <div className="bg-amber-100 dark:bg-amber-900/50 rounded-lg p-3">
+                  <span className="text-2xl">🚗</span>
+                </div>
+                {bookingData.paymentMethod === "onsite" && (
+                  <div className="bg-fac-orange-500 rounded-full p-1">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </div>
+              <h3 className="font-bold text-lg text-foreground mb-1">
                 {adminConfig.paymentMethods.onsite.name}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -3222,37 +3286,62 @@ const PaymentStep = ({
 
       {bookingData.paymentMethod === "online" &&
         adminConfig.paymentMethods.online.enabled && (
-          <div className="p-4 rounded-xl bg-gradient-to-r from-fac-orange-50 to-orange-50 dark:from-fac-orange-950 dark:to-orange-950 border-2 border-fac-orange-200">
-            <div className="flex items-start space-x-3">
-              <div className="bg-fac-orange-500 rounded-full p-2">
-                <CreditCard className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-fac-orange-900 dark:text-fac-orange-100 mb-2">
-                  FACPay Payment Gateway
-                </h4>
-                <div className="space-y-2 text-sm text-fac-orange-800 dark:text-fac-orange-200">
-                  <p>
-                    ✓ You will be redirected to FACPay to complete your payment
-                  </p>
-                  <p>
-                    ✓ Accept multiple payment methods (Cards, GCash, PayMaya)
-                  </p>
-                  <p>✓ Secure payment powered by Xendit</p>
-                  <div className="mt-3 pt-3 border-t border-fac-orange-200">
-                    <p className="font-semibold">
-                      Total Amount: ₱{bookingData.totalPrice.toLocaleString()}
+          <div className="space-y-4">
+            {/* Payment info card - professional and spacious */}
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-fac-orange-50 to-orange-50 dark:from-fac-orange-950/50 dark:to-orange-950/30 border-2 border-fac-orange-200 dark:border-fac-orange-700">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-fac-orange-500 to-orange-600 rounded-full p-3 flex-shrink-0">
+                  <CreditCard className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-lg text-fac-orange-900 dark:text-fac-orange-100 mb-3">
+                    🔒 Secure Payment Processing
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Pay securely in the app (no redirects)
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Multiple payment options available
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        256-bit SSL encryption powered by Xendit
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-fac-orange-800 dark:text-fac-orange-200">
+                        Instant receipt after payment
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Total amount - prominent */}
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-fac-orange-200 dark:border-fac-orange-700">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Amount to Pay
+                    </p>
+                    <p className="text-3xl font-black text-fac-orange-600 dark:text-fac-orange-400">
+                      ₱{bookingData.totalPrice.toLocaleString()}
                     </p>
                   </div>
                 </div>
-
-                {/* Dynamically load available payment channels from server */}
-                <PaymentMethodsSelection
-                  bookingData={bookingData}
-                  updateBookingData={updateBookingData}
-                />
               </div>
             </div>
+
+            {/* Payment channel selection */}
+            <PaymentMethodsSelection
+              bookingData={bookingData}
+              updateBookingData={updateBookingData}
+            />
           </div>
         )}
 

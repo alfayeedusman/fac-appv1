@@ -15,11 +15,12 @@ import {
   Clock,
   Car,
   MapPin,
-  CreditCard,
   Receipt,
   Share2,
+  CreditCard,
 } from "lucide-react";
 import html2canvas from "html2canvas";
+import { useState } from "react";
 
 interface BookingReceiptModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ interface BookingReceiptModalProps {
     customerName: string;
     customerEmail: string;
     customerPhone: string;
+    bookingId?: string;
   };
 }
 
@@ -275,7 +277,7 @@ export default function BookingReceiptModal({
                 For inquiries, contact us at support@fayeedautocare.com
               </p>
               <p className="mt-2 font-semibold">
-                © 2025 Fayeed Auto Care. All rights reserved.
+                © 2026 Fayeed Auto Care. All rights reserved.
               </p>
             </div>
           </div>
@@ -287,7 +289,7 @@ export default function BookingReceiptModal({
               className="flex-1 bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 text-white"
             >
               <Download className="h-4 w-4 mr-2" />
-              Download as Image
+              Download Receipt
             </Button>
             <Button onClick={shareReceipt} variant="outline" className="flex-1">
               <Share2 className="h-4 w-4 mr-2" />
@@ -296,11 +298,12 @@ export default function BookingReceiptModal({
           </div>
 
           {/* Info Message */}
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
+            <p className="text-sm text-green-800 dark:text-green-200">
               <strong>📱 Save this receipt!</strong> Screenshot or download this
               confirmation as proof of your booking. You'll receive a
-              confirmation email shortly.
+              confirmation email shortly. Your booking is confirmed and ready
+              for your scheduled date and time.
             </p>
           </div>
 

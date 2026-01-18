@@ -156,7 +156,7 @@ const defaultHomepageContent = {
     companyName: "Fayeed Auto Care",
     tagline: "Zamboanga's First Smart Carwash & Auto Detailing Service",
     poweredBy: "Fdigitals",
-    copyright: "© 2025 Fayeed Auto Care",
+    copyright: "© 2026 Fayeed Auto Care",
   },
   themeSettings: {
     primaryColor: "#ff6b1f",

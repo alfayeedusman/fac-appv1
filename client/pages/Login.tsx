@@ -393,7 +393,7 @@ export default function Login() {
         <div className="text-center py-8 px-6 relative z-10">
           <div className="glass rounded-2xl p-4 max-w-sm mx-auto animate-fade-in-up animate-delay-600">
             <p className="text-xs text-muted-foreground font-medium">
-              © 2025 Fayeed Auto Care
+              © 2026 Fayeed Auto Care
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Powered by{" "}
