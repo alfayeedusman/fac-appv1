@@ -627,8 +627,13 @@ export default function StepperBooking({
     return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
 
-  // Auto-scroll to top when step changes
+  // Auto-scroll to top ONLY when advancing to next step (not on back navigation)
   useEffect(() => {
+    if (!isNavigatingFromNextRef.current) {
+      isNavigatingFromNextRef.current = false;
+      return;
+    }
+
     // Small delay to ensure DOM has updated
     const scrollTimer = setTimeout(() => {
       if (contentContainerRef.current) {
@@ -642,14 +647,9 @@ export default function StepperBooking({
         top: 0,
         behavior: "smooth",
       });
+    }, 50);
 
-      // Also scroll the sidebar if on mobile
-      const sidebar = document.querySelector(".booking-sidebar");
-      if (sidebar) {
-        (sidebar as HTMLElement).scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }, 100);
-
+    isNavigatingFromNextRef.current = false;
     return () => clearTimeout(scrollTimer);
   }, [currentStep]);
 
