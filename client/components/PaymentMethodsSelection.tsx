@@ -84,10 +84,10 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
     if (isOfflineMethod(method)) {
       const confirmation = await Swal.fire({
         title: `Confirm ${method.label}`,
-        html: `You selected <strong>${method.label}</strong>.<br/>You will pay <strong>₱${(bookingData.totalPrice || 0).toLocaleString()}</strong> according to this offline payment method. Continue?`,
+        html: `You selected <strong>${method.label}</strong>.<br/>You will pay <strong>₱${(bookingData.totalPrice || 0).toLocaleString()}</strong> when you arrive at the branch.<br/><br/>Your booking will be marked as "Pending Payment".`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Yes, select this',
+        confirmButtonText: 'Yes, confirm',
         cancelButtonText: 'Cancel',
         confirmButtonColor: '#f97316',
       });
@@ -97,7 +97,37 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
         return;
       }
 
-      toast({ title: 'Offline method selected', description: `${method.label} selected. You will pay offline.`, variant: 'default' });
+      // Call backend to confirm offline payment
+      try {
+        const confirmRes = await fetch('/api/neon/payment/xendit/confirm-offline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: bookingData.id,
+            paymentMethod: methodId,
+            amount: bookingData.totalPrice,
+          }),
+        });
+
+        const confirmData = await confirmRes.json();
+        if (!confirmRes.ok || !confirmData.success) {
+          throw new Error(confirmData.error || 'Failed to confirm offline payment');
+        }
+
+        toast({
+          title: 'Payment confirmed',
+          description: `${method.label} confirmed. Your booking reference: ${confirmData.booking.confirmationCode}`,
+          variant: 'default'
+        });
+      } catch (err: any) {
+        warn('Error confirming offline payment', err);
+        toast({
+          title: 'Error',
+          description: err.message || 'Failed to confirm payment',
+          variant: 'destructive'
+        });
+        return;
+      }
     }
 
     setSelected(methodId);
