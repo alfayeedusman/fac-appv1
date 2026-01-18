@@ -21,12 +21,12 @@ export default function Welcome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const [showSplash, setShowSplash] = useState(false);
-  
+
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
-        if (email) {
+    if (email) {
       setUserEmail(email);
     }
 
@@ -43,8 +43,6 @@ export default function Welcome() {
   const handleSplashComplete = () => {
     setShowSplash(false);
   };
-
-  
 
   if (showSplash) {
     const userName = userEmail.split("@")[0];
@@ -346,13 +344,9 @@ export default function Welcome() {
         </div>
       </div>
 
-      
-
       {/* Footer */}
       <div className="text-center py-4 px-6">
-        <p className="text-xs text-muted-foreground">
-          © 2026 Fayeed Auto Care
-        </p>
+        <p className="text-xs text-muted-foreground">© 2026 Fayeed Auto Care</p>
       </div>
     </div>
   );

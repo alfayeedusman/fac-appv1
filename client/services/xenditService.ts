@@ -1,7 +1,7 @@
 // Xendit Payment Service
 // Documentation: https://developers.xendit.co/api-reference/
 
-import { log, info, warn, error as logError } from '@/utils/logger';
+import { log, info, warn, error as logError } from "@/utils/logger";
 
 declare global {
   interface Window {
@@ -98,12 +98,18 @@ class XenditService {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Failed to parse error response" }));
-        logError("❌ Xendit API error (Status: " + response.status + "):", errorData);
-        console.error("Full error response:", JSON.stringify(errorData, null, 2));
+        logError(
+          "❌ Xendit API error (Status: " + response.status + "):",
+          errorData,
+        );
+        console.error(
+          "Full error response:",
+          JSON.stringify(errorData, null, 2),
+        );
         throw new Error(
           errorData.error ||
-          errorData.message ||
-          `Failed to create invoice (Status: ${response.status})`
+            errorData.message ||
+            `Failed to create invoice (Status: ${response.status})`,
         );
       }
 

@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -69,7 +65,7 @@ export default function XenditCheckoutModal({
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "Accept": "application/json",
+              Accept: "application/json",
             },
             credentials: "same-origin",
             signal: controller.signal,
@@ -85,7 +81,7 @@ export default function XenditCheckoutModal({
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "Accept": "application/json",
+              Accept: "application/json",
             },
             credentials: "include",
             signal: controller.signal,
@@ -131,8 +127,7 @@ export default function XenditCheckoutModal({
             setPaymentStatus("failed");
             toast({
               title: "Payment Failed",
-              description:
-                "Your payment was not processed. Please try again.",
+              description: "Your payment was not processed. Please try again.",
               variant: "destructive",
             });
             if (onPaymentFailed) {
@@ -159,12 +154,12 @@ export default function XenditCheckoutModal({
 
         if (error?.name === "AbortError") {
           console.warn(
-            `⏱️ Request timeout after 15s - continuing to retry (${newErrorCount}/${maxNetworkErrors})`
+            `⏱️ Request timeout after 15s - continuing to retry (${newErrorCount}/${maxNetworkErrors})`,
           );
         } else {
           const errorMsg = error?.message || String(error);
           console.error(
-            `❌ Error checking payment status (${newErrorCount}/${maxNetworkErrors}): ${errorMsg}`
+            `❌ Error checking payment status (${newErrorCount}/${maxNetworkErrors}): ${errorMsg}`,
           );
           console.error("Error details:", {
             name: error?.name,
@@ -177,7 +172,7 @@ export default function XenditCheckoutModal({
         // Stop polling after too many network errors
         if (newErrorCount >= maxNetworkErrors) {
           console.error(
-            `⛔ Stopped polling after ${newErrorCount} consecutive network errors. Giving up.`
+            `⛔ Stopped polling after ${newErrorCount} consecutive network errors. Giving up.`,
           );
           clearInterval(pollInterval);
           setIsCheckingStatus(false);
@@ -201,7 +196,17 @@ export default function XenditCheckoutModal({
     pollInterval = setInterval(checkPaymentStatus, 5000);
 
     return () => clearInterval(pollInterval);
-  }, [isOpen, invoiceId, pollCount, maxPolls, networkErrors, maxNetworkErrors, onPaymentSuccess, onPaymentFailed, onClose]);
+  }, [
+    isOpen,
+    invoiceId,
+    pollCount,
+    maxPolls,
+    networkErrors,
+    maxNetworkErrors,
+    onPaymentSuccess,
+    onPaymentFailed,
+    onClose,
+  ]);
 
   useEffect(() => {
     if (isOpen) {
@@ -222,13 +227,17 @@ export default function XenditCheckoutModal({
                 <CheckCircle className="h-12 w-12 text-green-600" />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-green-600">Payment Successful!</h2>
+            <h2 className="text-3xl font-bold text-green-600">
+              Payment Successful!
+            </h2>
             <p className="text-gray-600 text-lg">
               Your booking has been confirmed
             </p>
             <div className="bg-green-50 rounded-lg p-4 mt-6">
               <p className="text-sm text-gray-600">Booking ID</p>
-              <p className="text-xl font-bold text-gray-900 font-mono">{bookingId}</p>
+              <p className="text-xl font-bold text-gray-900 font-mono">
+                {bookingId}
+              </p>
             </div>
             <p className="text-sm text-gray-500 pt-4">
               Preparing your receipt...
@@ -253,7 +262,8 @@ export default function XenditCheckoutModal({
             </div>
             <h2 className="text-2xl font-bold text-red-600">Payment Failed</h2>
             <p className="text-gray-600">
-              We couldn't process your payment. Please try again with a different payment method.
+              We couldn't process your payment. Please try again with a
+              different payment method.
             </p>
             <div className="space-y-3 pt-4">
               <Button
@@ -266,7 +276,11 @@ export default function XenditCheckoutModal({
               >
                 Try Again
               </Button>
-              <Button onClick={onClose} variant="outline" className="w-full h-12 text-base">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="w-full h-12 text-base"
+              >
                 Go Back
               </Button>
             </div>
@@ -280,14 +294,20 @@ export default function XenditCheckoutModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[95vh] p-0 border-0 shadow-2xl">
-        <DialogTitle className="sr-only">Secure Payment - Xendit Checkout</DialogTitle>
+        <DialogTitle className="sr-only">
+          Secure Payment - Xendit Checkout
+        </DialogTitle>
         <div className="flex flex-col h-full">
           {/* Header - Minimal and clean */}
           <div className="px-8 py-6 border-b bg-gradient-to-r from-fac-orange-50 to-orange-50">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Secure Payment</h2>
-                <p className="text-gray-500 mt-1">Complete your booking payment</p>
+                <h2 className="text-3xl font-bold text-gray-900">
+                  Secure Payment
+                </h2>
+                <p className="text-gray-500 mt-1">
+                  Complete your booking payment
+                </p>
               </div>
               <Button
                 variant="ghost"
@@ -302,11 +322,17 @@ export default function XenditCheckoutModal({
             {/* Booking info bar */}
             <div className="flex items-center justify-between bg-white rounded-lg px-4 py-3 border">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Booking ID</p>
-                <p className="text-lg font-bold font-mono text-gray-900">{bookingId}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Booking ID
+                </p>
+                <p className="text-lg font-bold font-mono text-gray-900">
+                  {bookingId}
+                </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Status</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Status
+                </p>
                 <p className="text-lg font-bold text-blue-600 flex items-center justify-end gap-1">
                   <span className="inline-block h-2 w-2 bg-blue-600 rounded-full animate-pulse"></span>
                   Processing
@@ -327,7 +353,7 @@ export default function XenditCheckoutModal({
                     title="Secure Payment Checkout"
                     sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
                   />
-                  
+
                   {/* Verifying overlay - subtle */}
                   {isCheckingStatus && (
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
@@ -361,7 +387,8 @@ export default function XenditCheckoutModal({
                     Unable to Load Payment Page
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    There was an issue loading the payment gateway. Please try opening it in a new tab.
+                    There was an issue loading the payment gateway. Please try
+                    opening it in a new tab.
                   </p>
                   {invoiceUrl && (
                     <Button

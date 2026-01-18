@@ -302,8 +302,8 @@ export default function BookingReceiptModal({
             <p className="text-sm text-green-800 dark:text-green-200">
               <strong>📱 Save this receipt!</strong> Screenshot or download this
               confirmation as proof of your booking. You'll receive a
-              confirmation email shortly. Your booking is confirmed and ready for
-              your scheduled date and time.
+              confirmation email shortly. Your booking is confirmed and ready
+              for your scheduled date and time.
             </p>
           </div>
 

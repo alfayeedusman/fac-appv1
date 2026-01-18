@@ -93,7 +93,9 @@ export default function SignUp() {
     return phoneRegex.test(phone.replace(/\s/g, ""));
   };
 
-  const validateStep = (step: number): { isValid: boolean; errors: { [key: string]: string } } => {
+  const validateStep = (
+    step: number,
+  ): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
     if (step === 1) {
@@ -176,26 +178,35 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🚀 Registration form submitted');
+    console.log("🚀 Registration form submitted");
 
     const step1Result = validateStep(1);
     const step2Result = validateStep(2);
     const step3Result = validateStep(3);
 
-    console.log('✅ Validation results:', {
+    console.log("✅ Validation results:", {
       step1: step1Result.isValid,
       step2: step2Result.isValid,
-      step3: step3Result.isValid
+      step3: step3Result.isValid,
     });
 
     if (!step1Result.isValid || !step2Result.isValid || !step3Result.isValid) {
-      const allErrors = { ...step1Result.errors, ...step2Result.errors, ...step3Result.errors };
-      console.error('❌ Validation failed:', JSON.stringify(allErrors, null, 2));
-      const errorMessages = Object.values(allErrors).filter(Boolean).join(', ');
+      const allErrors = {
+        ...step1Result.errors,
+        ...step2Result.errors,
+        ...step3Result.errors,
+      };
+      console.error(
+        "❌ Validation failed:",
+        JSON.stringify(allErrors, null, 2),
+      );
+      const errorMessages = Object.values(allErrors).filter(Boolean).join(", ");
       toast({
-        title: 'Please Complete All Fields',
-        description: errorMessages || 'Fill in all required fields correctly before submitting.',
-        variant: 'destructive',
+        title: "Please Complete All Fields",
+        description:
+          errorMessages ||
+          "Fill in all required fields correctly before submitting.",
+        variant: "destructive",
       });
       return;
     }
@@ -209,38 +220,41 @@ export default function SignUp() {
         fullName: formData.fullName,
         contactNumber: formData.contactNumber,
         address: formData.address,
-        branchLocation: formData.branchLocation || 'Tumaga',
-        role: 'user' as const,
+        branchLocation: formData.branchLocation || "Tumaga",
+        role: "user" as const,
         carUnit: formData.carUnit,
         carPlateNumber: formData.carPlateNumber,
         carType: formData.carType,
       };
 
-      console.log('📤 Sending registration request for:', payload.email);
+      console.log("📤 Sending registration request for:", payload.email);
       const result = await authService.register(payload);
-      console.log('📥 Registration response:', result);
+      console.log("📥 Registration response:", result);
 
       if (result.success) {
-        console.log('✅ Registration successful!');
+        console.log("✅ Registration successful!");
         toast({
-          title: 'Welcome to FAC! 🎉',
-          description: 'Your account has been created successfully. You can now book car wash services!'
+          title: "Welcome to FAC! 🎉",
+          description:
+            "Your account has been created successfully. You can now book car wash services!",
         });
         setShowSuccessModal(true);
       } else {
-        console.error('❌ Registration failed:', result.error);
+        console.error("❌ Registration failed:", result.error);
         toast({
-          title: 'Registration Failed',
-          description: result.error || 'Please check your details and try again.',
-          variant: 'destructive'
+          title: "Registration Failed",
+          description:
+            result.error || "Please check your details and try again.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('��� Registration error:', error);
+      console.error("��� Registration error:", error);
       toast({
-        title: 'Connection Error',
-        description: 'Unable to connect to server. Please check your internet connection and try again.',
-        variant: 'destructive'
+        title: "Connection Error",
+        description:
+          "Unable to connect to server. Please check your internet connection and try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -311,17 +325,25 @@ export default function SignUp() {
   ];
 
   const nextStep = () => {
-    console.log(`🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`);
+    console.log(
+      `🔄 Attempting to move from step ${currentStep} to ${currentStep + 1}`,
+    );
     const validationResult = validateStep(currentStep);
     console.log(`✅ Step ${currentStep} validation:`, validationResult.isValid);
 
     if (!validationResult.isValid) {
-      console.error(`❌ Step ${currentStep} validation failed:`, JSON.stringify(validationResult.errors, null, 2));
-      const errorMessages = Object.values(validationResult.errors).filter(Boolean).join(', ');
+      console.error(
+        `❌ Step ${currentStep} validation failed:`,
+        JSON.stringify(validationResult.errors, null, 2),
+      );
+      const errorMessages = Object.values(validationResult.errors)
+        .filter(Boolean)
+        .join(", ");
       toast({
-        title: 'Please Complete This Step',
-        description: errorMessages || 'Fill in all required fields before continuing.',
-        variant: 'destructive',
+        title: "Please Complete This Step",
+        description:
+          errorMessages || "Fill in all required fields before continuing.",
+        variant: "destructive",
       });
       return;
     }
@@ -340,7 +362,8 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">{/* Removed StickyHeader - using custom navigation */}
+    <div className="min-h-screen bg-background theme-transition relative overflow-hidden">
+      {/* Removed StickyHeader - using custom navigation */}
 
       {/* Futuristic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -49,8 +49,7 @@ export default function BookingSuccess() {
             console.log("✅ Payment confirmed! Showing receipt...");
             setReceiptData({
               id: payload.bookingId,
-              confirmationCode:
-                payload.confirmationCode || payload.bookingId,
+              confirmationCode: payload.confirmationCode || payload.bookingId,
               service: payload.bookingData?.service || "Service",
               category: payload.bookingData?.category,
               date: payload.bookingData?.date,

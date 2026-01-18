@@ -630,7 +630,7 @@ export default function StepperBooking({
   useEffect(() => {
     // Focus on the step content when it changes for keyboard accessibility
     const focusTimer = setTimeout(() => {
-      const stepContent = document.querySelector('[data-step-content]');
+      const stepContent = document.querySelector("[data-step-content]");
       if (stepContent) {
         // Set focus to the step content for keyboard users
         (stepContent as HTMLElement).focus();
@@ -3230,13 +3230,22 @@ const PaymentStep = ({
               Secure online payment
             </p>
             <div className="flex gap-1 flex-wrap">
-              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
                 💳 Cards
               </Badge>
-              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
                 📱 GCash
               </Badge>
-              <Badge variant="secondary" className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0">
+              <Badge
+                variant="secondary"
+                className="text-xs bg-fac-orange-100 dark:bg-fac-orange-900 text-fac-orange-700 dark:text-fac-orange-300 border-0"
+              >
                 💰 PayMaya
               </Badge>
             </div>

@@ -1,15 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, CreditCard, Smartphone, Building2, Loader2 } from "lucide-react";
+import {
+  CheckCircle,
+  CreditCard,
+  Smartphone,
+  Building2,
+  Loader2,
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { log, warn } from "@/utils/logger";
 
-const PAYMENT_METHOD_ICONS: Record<string, { icon: string; bg: string; title: string }> = {
-  card: { icon: "💳", bg: "from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50", title: "Credit/Debit Card" },
-  gcash: { icon: "📱", bg: "from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50", title: "GCash" },
-  paymaya: { icon: "💳", bg: "from-red-100 to-red-50 dark:from-red-900/50 dark:to-red-950/50", title: "PayMaya" },
-  bank_transfer: { icon: "🏦", bg: "from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-950/50", title: "Bank Transfer" },
-  offline: { icon: "💰", bg: "from-amber-100 to-amber-50 dark:from-amber-900/50 dark:to-amber-950/50", title: "Cash Payment" },
+const PAYMENT_METHOD_ICONS: Record<
+  string,
+  { icon: string; bg: string; title: string }
+> = {
+  card: {
+    icon: "💳",
+    bg: "from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50",
+    title: "Credit/Debit Card",
+  },
+  gcash: {
+    icon: "📱",
+    bg: "from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50",
+    title: "GCash",
+  },
+  paymaya: {
+    icon: "💳",
+    bg: "from-red-100 to-red-50 dark:from-red-900/50 dark:to-red-950/50",
+    title: "PayMaya",
+  },
+  bank_transfer: {
+    icon: "🏦",
+    bg: "from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-950/50",
+    title: "Bank Transfer",
+  },
+  offline: {
+    icon: "💰",
+    bg: "from-amber-100 to-amber-50 dark:from-amber-900/50 dark:to-amber-950/50",
+    title: "Cash Payment",
+  },
 };
 
 export default function PaymentMethodsSelection({
@@ -102,7 +131,9 @@ export default function PaymentMethodsSelection({
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 text-fac-orange-500 animate-spin" />
-        <span className="ml-2 text-sm text-gray-600">Loading payment methods...</span>
+        <span className="ml-2 text-sm text-gray-600">
+          Loading payment methods...
+        </span>
       </div>
     );
   }
