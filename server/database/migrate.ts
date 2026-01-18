@@ -997,12 +997,27 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification ON notification_deliveries(notification_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_user ON notification_deliveries(user_id);`;
 
-    // Add bayNumber column to bookings table if it doesn't exist (for carwash bay management)
+    // Add missing columns to bookings table (for carwash bay management and service type)
     await sql`
       ALTER TABLE bookings
       ADD COLUMN IF NOT EXISTS bay_number INTEGER;
     `;
     console.log("✅ Bay management column added to bookings table");
+
+    // Add service_type column if missing (critical for booking flow)
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS service_type VARCHAR(20) NOT NULL DEFAULT 'branch';
+      `;
+      console.log("✅ service_type column added to bookings table");
+    } catch (error: any) {
+      if (error.message?.includes("column already exists")) {
+        console.log("✅ service_type column already exists");
+      } else {
+        console.warn("⚠️ Could not add service_type column:", error.message);
+      }
+    }
 
     // ============= CMS CONTENT MANAGEMENT SYSTEM =============
 
