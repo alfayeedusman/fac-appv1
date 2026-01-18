@@ -786,7 +786,6 @@ export default function StepperBooking({
     }, 300);
 
     if (canProceed() && currentStep < 7) {
-      isNavigatingFromNextRef.current = true;
       setCurrentStep(currentStep + 1);
       return;
     }
