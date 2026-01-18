@@ -1237,34 +1237,9 @@ export default function StepperBooking({
         }
       }
 
-      // For online payments: Show Xendit checkout modal (in-app payment)
+      // For online payments: Redirect to Xendit payment gateway
       if (bookingData.paymentMethod === "online") {
-        // Store booking data for receipt display after payment
-        setCompletedBooking({
-          id: createdBooking.id,
-          confirmationCode: createdBooking.confirmationCode,
-          service:
-            SERVICE_CATEGORIES[
-              bookingData.category as keyof typeof SERVICE_CATEGORIES
-            ].name,
-          category: bookingData.category,
-          date: bookingData.date,
-          timeSlot: bookingData.timeSlot,
-          branch: bookingData.branch,
-          serviceType: bookingData.serviceType,
-          unitType: bookingData.unitType,
-          unitSize: bookingData.unitSize,
-          plateNumber: bookingData.plateNo,
-          vehicleModel: bookingData.carModel,
-          totalPrice: bookingData.totalPrice,
-          paymentMethod: bookingData.paymentMethod,
-          customerName: bookingData.fullName,
-          customerEmail: bookingData.email,
-          customerPhone: bookingData.mobile,
-          bookingId: createdBooking.id,
-        });
-
-        // Initiate Xendit payment modal with confirmation code
+        // Initiate Xendit payment with redirect
         const paymentInitiated = await handleXenditPayment(
           createdBooking.id,
           bookingData.totalPrice,
@@ -1289,7 +1264,8 @@ export default function StepperBooking({
           return;
         }
 
-        // Modal will be shown and receipt will display after payment success
+        // User will be redirected to Xendit payment gateway
+        // After payment completion, Xendit will redirect back to /booking-success
         return;
       }
 
