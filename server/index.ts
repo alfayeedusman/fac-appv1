@@ -117,6 +117,7 @@ export function createServer() {
   // Neon Database API Routes
   app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
   app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
+  app.get("/api/neon/diagnose", neonApiRoutes.diagnoseDatabase);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
