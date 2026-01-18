@@ -368,7 +368,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     }
 
     // Create user (excluding subscriptionPackage from user data)
-    const { subscriptionPackage: _, ...userDataWithoutPackage } = userData;
+    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } = userData;
     const user = await neonDbService.createUser(userDataWithoutPackage);
 
     console.log("✅ User created:", user.id);
@@ -394,7 +394,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     res.status(201).json({
       success: true,
