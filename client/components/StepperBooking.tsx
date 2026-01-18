@@ -1704,7 +1704,9 @@ export default function StepperBooking({
               <div className="w-full max-w-4xl">
                 <div className="w-full overflow-hidden pb-4 md:pb-6">
                   <div
-                    className="w-full transition-all duration-500 ease-out"
+                    data-step-content
+                    tabIndex={-1}
+                    className="w-full transition-all duration-500 ease-out focus:outline-none"
                     style={{
                       opacity: 1,
                       animation: `slideIn 0.4s ease-out`,
