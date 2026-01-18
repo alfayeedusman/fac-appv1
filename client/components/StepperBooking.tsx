@@ -1037,15 +1037,18 @@ export default function StepperBooking({
           );
         } catch (_) {}
 
-        // Redirect to Xendit payment page (same tab)
-        toast({
-          title: "Redirecting to Payment",
-          description:
-            "You will be redirected to FACPay to complete your payment",
+        // Show Xendit checkout modal (in-app)
+        setXenditCheckoutData({
+          invoiceUrl: invoiceData.invoice_url,
+          invoiceId: invoiceData.invoice_id,
+          bookingId: bookingId,
         });
-        setTimeout(() => {
-          xenditService.openInvoice(invoiceData.invoice_url);
-        }, 800);
+        setShowXenditCheckout(true);
+
+        toast({
+          title: "Payment Modal Opened",
+          description: "Complete your payment below",
+        });
 
         return true;
       } else {
