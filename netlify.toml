@@ -19,6 +19,32 @@
   # Firebase Web API keys are expected to be public in the built frontend bundle.
   SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM"
 
+# Environment variables - REQUIRED TO BE SET IN NETLIFY DASHBOARD
+# Go to: Site Settings → Build & Deploy → Environment
+# Add all variables below with their values
+#
+# Required variables:
+# - NEON_DATABASE_URL: PostgreSQL connection string from Neon
+# - DATABASE_URL: (same as NEON_DATABASE_URL)
+# - VITE_FIREBASE_API_KEY: Firebase API key
+# - VITE_FIREBASE_AUTH_DOMAIN: Firebase auth domain
+# - VITE_FIREBASE_PROJECT_ID: Firebase project ID
+# - VITE_FIREBASE_STORAGE_BUCKET: Firebase storage bucket
+# - VITE_FIREBASE_MESSAGING_SENDER_ID: Firebase messaging sender ID
+# - VITE_FIREBASE_APP_ID: Firebase app ID
+# - VITE_FIREBASE_MEASUREMENT_ID: Firebase measurement ID
+# - VITE_MAPBOX_TOKEN: Mapbox API token
+# - VITE_PUSHER_KEY: Pusher public key
+# - VITE_PUSHER_CLUSTER: Pusher cluster (e.g., "ap1")
+# - PUSHER_KEY: Pusher key (backend)
+# - PUSHER_SECRET: Pusher secret (backend)
+# - PUSHER_APP_ID: Pusher app ID (backend)
+# - PUSHER_CLUSTER: Pusher cluster (backend)
+# - XENDIT_SECRET_KEY: Xendit secret key (backend)
+# - XENDIT_PUBLIC_KEY: Xendit public key
+# - XENDIT_WEBHOOK_TOKEN: Xendit webhook token
+# - VITE_FIREBASE_FCM_KEY: Firebase FCM public key
+
 [context.production]
   environment = { NODE_ENV = "production" }
 
