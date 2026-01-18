@@ -98,8 +98,13 @@ class XenditService {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Failed to parse error response" }));
-        logError("❌ Xendit API error:", errorData);
-        throw new Error(errorData.error || "Failed to create invoice");
+        logError("❌ Xendit API error (Status: " + response.status + "):", errorData);
+        console.error("Full error response:", JSON.stringify(errorData, null, 2));
+        throw new Error(
+          errorData.error ||
+          errorData.message ||
+          `Failed to create invoice (Status: ${response.status})`
+        );
       }
 
       const data = await response.json();
