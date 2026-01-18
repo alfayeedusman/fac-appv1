@@ -54,25 +54,43 @@ export default function XenditCheckoutModal({
       }
 
       try {
-        // Build the API URL - use full URL to ensure proper routing
-        const baseUrl = window.location.origin;
-        const apiUrl = `${baseUrl}/api/neon/payment/xendit/invoice-status/${encodeURIComponent(invoiceId)}`;
-        console.log(`📍 Checking payment status at: ${apiUrl}`);
-        console.log(`🔗 Full URL: ${apiUrl}`);
+        // Try with relative URL first (simpler, usually works)
+        let apiUrl = `/api/neon/payment/xendit/invoice-status/${encodeURIComponent(invoiceId)}`;
+        console.log(`📍 Attempting to check payment status...`);
         console.log(`🆔 Invoice ID: ${invoiceId}`);
+        console.log(`🔗 API URL: ${apiUrl}`);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-        const res = await fetch(apiUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          credentials: "include", // Include cookies if needed
-          signal: controller.signal,
-        });
+        let res;
+        try {
+          res = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            credentials: "same-origin",
+            signal: controller.signal,
+          });
+        } catch (fetchError) {
+          // If relative URL fails, try with full URL as fallback
+          console.warn("Relative URL failed, trying full URL...", fetchError);
+          const baseUrl = window.location.origin;
+          apiUrl = `${baseUrl}/api/neon/payment/xendit/invoice-status/${encodeURIComponent(invoiceId)}`;
+          console.log(`🔗 Fallback API URL: ${apiUrl}`);
+
+          res = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            credentials: "include",
+            signal: controller.signal,
+          });
+        }
 
         clearTimeout(timeoutId);
         console.log(`📡 Response status: ${res.status} ${res.statusText}`);
