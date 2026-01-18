@@ -2483,21 +2483,75 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
   // Show all slots for the selected date within operating hours
-  // All slots are available for booking unless marked unavailable by admin or full capacity
+  // For today, filter out past times. For future dates, show all slots.
   const availableSlots = useMemo(() => {
     if (!bookingData?.date) {
       console.log("🕐 No date selected yet");
       return [];
     }
 
-    // Always return all generated time slots for the selected date
-    // The backend will determine actual availability based on bookings
-    console.log(`🕐 Showing ${allSlots.length} slots for date ${bookingData.date}:`, allSlots);
-    if (allSlots.length === 0) {
-      console.warn(`⚠️ No time slots generated for date ${bookingData.date}`);
+    // If garage settings not loaded yet, show all slots
+    if (!garageSettings) {
+      console.log("🕐 Garage settings not yet loaded, showing all slots");
+      return allSlots;
     }
-    return allSlots;
-  }, [bookingData?.date, allSlots]);
+
+    // Check if selected date is today (in Manila timezone)
+    const isToday = bookingData.date === garageSettings.currentDate;
+    console.log(`🕐 Selected date: ${bookingData.date}, Today: ${garageSettings.currentDate}, Is Today: ${isToday}`);
+
+    if (isToday) {
+      // Filter out past slots for today
+      const currentTime = garageSettings.currentHour * 60 + garageSettings.currentMinute; // Convert to minutes
+      const filteredSlots = allSlots.filter((slot: string) => {
+        // Parse slot time (e.g., "1:00 PM" or "13:00")
+        const slotTime = parseSlotTime(slot);
+        const slotMinutes = slotTime.hour * 60 + slotTime.minute;
+        const isPastTime = slotMinutes <= currentTime;
+
+        if (isPastTime) {
+          console.log(`⏭️  Hiding past slot: ${slot} (slot: ${slotMinutes}min >= current: ${currentTime}min)`);
+        }
+        return !isPastTime;
+      });
+
+      console.log(`🕐 Today: Showing ${filteredSlots.length} future slots out of ${allSlots.length} total:`, filteredSlots);
+      return filteredSlots;
+    } else {
+      // For future dates, show all slots
+      console.log(`🕐 Future date: Showing all ${allSlots.length} slots for ${bookingData.date}:`, allSlots);
+      return allSlots;
+    }
+  }, [bookingData?.date, allSlots, garageSettings]);
+
+  // Helper function to parse slot time string and convert to 24-hour format
+  const parseSlotTime = (slotStr: string): { hour: number; minute: number } => {
+    try {
+      // Handle formats like "1:00 PM", "01:00 PM", "8:00 AM", "13:00"
+      const match = slotStr.match(/(\d{1,2}):(\d{2})\s?(AM|PM)?/i);
+      if (match) {
+        let hour = parseInt(match[1], 10);
+        const minute = parseInt(match[2], 10);
+        const period = match[3]?.toUpperCase();
+
+        // Convert to 24-hour format if AM/PM is present
+        if (period) {
+          if (period === 'PM' && hour !== 12) {
+            hour += 12;
+          } else if (period === 'AM' && hour === 12) {
+            hour = 0;
+          }
+        }
+
+        return { hour, minute };
+      }
+      console.warn(`⚠️ Could not parse slot time: ${slotStr}`);
+      return { hour: 0, minute: 0 };
+    } catch (error) {
+      console.error("Error parsing slot time:", error);
+      return { hour: 0, minute: 0 };
+    }
+  };
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
