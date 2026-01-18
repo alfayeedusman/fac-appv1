@@ -1130,7 +1130,7 @@ export default function StepperBooking({
 
         // Service Details
         category: bookingData.category as any,
-        service: bookingData.service,
+        service: bookingData.service || bookingData.category, // Use category as service if no specific service selected (for auto_detailing, graphene_coating)
         serviceType: bookingData.serviceType as "branch" | "home", // 'branch' or 'home'
 
         // Vehicle Details
