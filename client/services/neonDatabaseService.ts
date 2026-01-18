@@ -905,6 +905,62 @@ class NeonDatabaseClient {
     }
   }
 
+  async getGarageSettings(): Promise<{
+    success: boolean;
+    data?: {
+      currentTime: string;
+      currentHour: number;
+      currentMinute: number;
+      currentDate: string;
+      garageOpenTime: number;
+      garageCloseTime: number;
+      isGarageOpen: boolean;
+      timezone: string;
+    };
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/bookings/garage-settings`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        return {
+          success: false,
+          error: data?.error || `HTTP ${response.status}`,
+        };
+      }
+
+      return data;
+    } catch (error) {
+      // Fallback to same-origin
+      try {
+        const response = await fetch(
+          `/api/neon/bookings/garage-settings`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+
+        const data = await response.json();
+        return data;
+      } catch (fallbackError) {
+        console.error("Garage settings fetch failed:", fallbackError);
+        return {
+          success: false,
+          error: "Unable to fetch garage settings",
+        };
+      }
+    }
+  }
+
   async getBookings(params?: {
     userId?: string;
     status?: string;
