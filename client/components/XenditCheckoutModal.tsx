@@ -306,6 +306,11 @@ export default function XenditCheckoutModal({
                         <p className="text-sm text-gray-600 mt-2">
                           Please wait while we process your payment...
                         </p>
+                        {networkErrors > 0 && (
+                          <p className="text-xs text-orange-600 mt-4">
+                            Network attempt {networkErrors}/{maxNetworkErrors}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
