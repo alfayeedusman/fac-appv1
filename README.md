@@ -175,6 +175,15 @@ docker-compose up -d
 open http://localhost:3000
 ```
 
+Before running deploy scripts, create your environment file:
+- Copy `.env.example` → `.env` and fill in the values
+
+### ⚡ One-click deploy scripts
+
+- **Netlify**: `npm run deploy:netlify` (or `bash deploy-to-netlify.sh`)
+- **Ubuntu/VPS (Docker)**: `npm run deploy:vps` (or `bash deploy.sh deploy`)
+- **Wrapper**: `npm run deploy:one-click -- netlify` or `npm run deploy:one-click -- vps`
+
 **That's it!** 🎉 Your development environment is ready.
 
 ### 🌐 **Access Points**
