@@ -514,6 +514,15 @@ class NeonDatabaseClient {
           message = "Server error. Please try again shortly.";
         else if (status === 0)
           message = "Network error. Please check your connection.";
+
+        // Log detailed error info for debugging
+        logError("❌ Login failed with status", {
+          status,
+          serverError: json.error,
+          debugInfo: json.debug,
+          serverMsg: typeof json.error === "string" ? json.error : "",
+        });
+
         // Prefer server-provided public message if available
         const serverMsg = typeof json.error === "string" ? json.error : "";
         const finalMsg =
@@ -574,6 +583,7 @@ class NeonDatabaseClient {
       const timeoutHandler = createSafeTimeoutAbort(ac, 10000);
 
       try {
+        log("🔎 Sending login request to:", url);
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -582,6 +592,7 @@ class NeonDatabaseClient {
         });
 
         timeoutHandler.clearTimeout();
+        log("📝 Login response received with status:", response.status);
         const processed = await this.processLoginResponse(response);
 
         // Update connection status on successful login
@@ -594,7 +605,9 @@ class NeonDatabaseClient {
           processed.error?.toLowerCase().includes("cors") ||
           processed.error?.toLowerCase().includes("network")
         ) {
-          log("🔄 Retrying login via same-origin fallback...");
+          logError(
+            "🔄 CORS/Network error detected, retrying via same-origin fallback...",
+          );
           const ac2 = new AbortController();
           const timeoutHandler2 = createSafeTimeoutAbort(ac2, 10000);
           try {
@@ -605,6 +618,10 @@ class NeonDatabaseClient {
               signal: ac2.signal,
             });
             timeoutHandler2.clearTimeout();
+            log(
+              "📝 Fallback login response received with status:",
+              resp2.status,
+            );
             const result = await this.processLoginResponse(resp2);
             if (result.success) {
               this.isConnected = true;
