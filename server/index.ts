@@ -215,6 +215,9 @@ export function createServer() {
   app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
   app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
 
+  // Admin invite (protected by ADMIN_INVITE_SECRET header: x-admin-invite-secret)
+  app.post("/api/neon/admin/invite", adminInviteRoutes.createAdminInvite);
+
   // ============= CREW MANAGEMENT API =============
   app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
   app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
