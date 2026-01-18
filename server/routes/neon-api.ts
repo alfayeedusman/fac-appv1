@@ -131,7 +131,8 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
 // Diagnostic endpoint for troubleshooting live server
 export const diagnoseDatabase: RequestHandler = async (req, res) => {
   try {
-    const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+    const databaseUrl =
+      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
     // Check environment
     const checks = {
@@ -172,7 +173,7 @@ export const diagnoseDatabase: RequestHandler = async (req, res) => {
       checks.hasUsers = allUsers.length > 0;
       checks.usersCount = allUsers.length;
       checks.superadminExists = allUsers.some(
-        (u) => u.email === "superadmin@fayeedautocare.com"
+        (u) => u.email === "superadmin@fayeedautocare.com",
       );
     } catch (userError) {
       checks.tablesExist = false;
@@ -368,7 +369,8 @@ export const registerUser: RequestHandler = async (req, res) => {
     }
 
     // Create user (excluding subscriptionPackage from user data)
-    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } = userData;
+    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } =
+      userData;
     const user = await neonDbService.createUser(userDataWithoutPackage);
 
     console.log("✅ User created:", user.id);
@@ -377,7 +379,10 @@ export const registerUser: RequestHandler = async (req, res) => {
     let subscription = null;
     if (subscriptionPackage && subscriptionPackage !== "regular") {
       try {
-        console.log("📦 Creating subscription for package:", subscriptionPackage);
+        console.log(
+          "📦 Creating subscription for package:",
+          subscriptionPackage,
+        );
         subscription = await neonDbService.createSubscription({
           userId: user.id,
           packageId: subscriptionPackage,
@@ -414,8 +419,8 @@ export const registerUser: RequestHandler = async (req, res) => {
 // Helper function to get package price
 function getPackagePrice(packageId: string): number {
   const prices: Record<string, number> = {
-    "regular": 0,
-    "classic": 500,
+    regular: 0,
+    classic: 500,
     "vip-silver": 1500,
     "vip-gold": 3000,
   };

@@ -515,7 +515,9 @@ class NeonDatabaseService {
       const startDate = subscriptionData.startDate || new Date();
 
       // Calculate end date (30 days from start if not provided)
-      const endDate = subscriptionData.endDate || new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const endDate =
+        subscriptionData.endDate ||
+        new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
       const [subscription] = await this.db
         .insert(schema.packageSubscriptions)
