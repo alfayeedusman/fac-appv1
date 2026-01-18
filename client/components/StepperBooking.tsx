@@ -1247,10 +1247,11 @@ export default function StepperBooking({
 
       // For online payments: Redirect to Xendit immediately (no receipt modal)
       if (bookingData.paymentMethod === "online") {
-        // Initiate Xendit payment
+        // Initiate Xendit payment with confirmation code
         const paymentInitiated = await handleXenditPayment(
           createdBooking.id,
           bookingData.totalPrice,
+          createdBooking.confirmationCode,
         );
 
         if (!paymentInitiated) {
