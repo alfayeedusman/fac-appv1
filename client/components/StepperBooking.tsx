@@ -1255,9 +1255,34 @@ export default function StepperBooking({
         }
       }
 
-      // For online payments: Redirect to Xendit immediately (no receipt modal)
+      // For online payments: Show Xendit checkout modal (in-app payment)
       if (bookingData.paymentMethod === "online") {
-        // Initiate Xendit payment with confirmation code
+        // Store booking data for receipt display after payment
+        setCompletedBooking({
+          id: createdBooking.id,
+          confirmationCode: createdBooking.confirmationCode,
+          service:
+            SERVICE_CATEGORIES[
+              bookingData.category as keyof typeof SERVICE_CATEGORIES
+            ].name,
+          category: bookingData.category,
+          date: bookingData.date,
+          timeSlot: bookingData.timeSlot,
+          branch: bookingData.branch,
+          serviceType: bookingData.serviceType,
+          unitType: bookingData.unitType,
+          unitSize: bookingData.unitSize,
+          plateNumber: bookingData.plateNo,
+          vehicleModel: bookingData.carModel,
+          totalPrice: bookingData.totalPrice,
+          paymentMethod: bookingData.paymentMethod,
+          customerName: bookingData.fullName,
+          customerEmail: bookingData.email,
+          customerPhone: bookingData.mobile,
+          bookingId: createdBooking.id,
+        });
+
+        // Initiate Xendit payment modal with confirmation code
         const paymentInitiated = await handleXenditPayment(
           createdBooking.id,
           bookingData.totalPrice,
@@ -1269,8 +1294,7 @@ export default function StepperBooking({
           throw new Error("Failed to initiate payment. Please try again.");
         }
 
-        // Payment redirect will happen in handleXenditPayment
-        // No need to show receipt here
+        // Modal will be shown and receipt will display after payment success
         return;
       }
 
