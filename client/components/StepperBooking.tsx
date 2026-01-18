@@ -1469,35 +1469,6 @@ export default function StepperBooking({
     }
   };
 
-  const handleXenditPaymentSuccess = async (invoiceData: any) => {
-    // Payment was successful! Update booking status and show receipt
-    if (completedBooking) {
-      // Store the updated booking with payment confirmed
-      setCompletedBooking({
-        ...completedBooking,
-        paymentStatus: "completed",
-      });
-
-      // Show receipt modal to display the booking confirmation
-      setShowReceiptModal(true);
-
-      notificationManager.success(
-        "Payment Confirmed! 🎉",
-        `Your payment has been processed. Your booking is confirmed!\n\nBooking ID: ${completedBooking.id}`,
-        { autoClose: 3000 },
-      );
-    }
-  };
-
-  const handleXenditPaymentFailed = () => {
-    // Payment failed - show error
-    toast({
-      title: "Payment Failed",
-      description: "Your payment was not processed. Please try again.",
-      variant: "destructive",
-    });
-  };
-
   const handleCloseReceipt = () => {
     setShowReceiptModal(false);
 
