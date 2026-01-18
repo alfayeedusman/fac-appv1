@@ -74,6 +74,7 @@ export default function XenditCheckoutModal({
         if (res.ok) {
           const data = await res.json();
           console.log(`✅ Payment status response:`, data);
+          setNetworkErrors(0); // Reset error counter on success
 
           const status = (
             data.status ||
@@ -128,10 +129,33 @@ export default function XenditCheckoutModal({
           }
         }
       } catch (error: any) {
+        // Track network errors
+        const newErrorCount = networkErrors + 1;
+        setNetworkErrors(newErrorCount);
+
         if (error?.name === "AbortError") {
           console.warn("⏱️ Request timeout - continuing to retry");
         } else {
-          console.error("❌ Error checking payment status:", error?.message || error);
+          console.error(
+            `❌ Error checking payment status (${newErrorCount}/${maxNetworkErrors}):`,
+            error?.message || error
+          );
+        }
+
+        // Stop polling after too many network errors
+        if (newErrorCount >= maxNetworkErrors) {
+          console.error(
+            `⛔ Stopped polling after ${newErrorCount} consecutive network errors`
+          );
+          clearInterval(pollInterval);
+          setIsCheckingStatus(false);
+          toast({
+            title: "Connection Issue",
+            description:
+              "Unable to verify payment. Please check your internet connection or try opening in a new tab.",
+            variant: "destructive",
+          });
+          return;
         }
       }
 
