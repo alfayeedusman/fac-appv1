@@ -3333,19 +3333,32 @@ const PaymentStep = ({
                 <CreditCard className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-fac-orange-900 dark:text-fac-orange-100 mb-2">
-                  FACPay Payment Gateway
+                <h4 className="font-bold text-fac-orange-900 dark:text-fac-orange-100 mb-3">
+                  🔒 Secure Payment with FACPay
                 </h4>
                 <div className="space-y-2 text-sm text-fac-orange-800 dark:text-fac-orange-200">
-                  <p>
-                    ✓ You will be redirected to FACPay to complete your payment
-                  </p>
-                  <p>
-                    ✓ Accept multiple payment methods (Cards, GCash, PayMaya)
-                  </p>
-                  <p>✓ Secure payment powered by Xendit</p>
+                  <div className="flex items-start">
+                    <span className="text-lg mr-2">✓</span>
+                    <span>
+                      Payment modal opens securely within the app (no external redirects)
+                    </span>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="text-lg mr-2">✓</span>
+                    <span>
+                      Multiple payment methods: Credit/Debit Cards, GCash, PayMaya
+                    </span>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="text-lg mr-2">✓</span>
+                    <span>256-bit SSL encryption powered by Xendit</span>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="text-lg mr-2">✓</span>
+                    <span>Get receipt instantly after payment</span>
+                  </div>
                   <div className="mt-3 pt-3 border-t border-fac-orange-200">
-                    <p className="font-semibold">
+                    <p className="font-bold text-lg">
                       Total Amount: ₱{bookingData.totalPrice.toLocaleString()}
                     </p>
                   </div>
