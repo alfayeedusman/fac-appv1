@@ -211,6 +211,8 @@ export const loginUser: RequestHandler = async (req, res) => {
       passwordLength: typeof password === "string" ? password.length : 0,
       contentType: req.headers["content-type"],
       time: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV,
+      dbConnected: !!neonDbService["db"],
     });
 
     if (!email || !password) {
@@ -226,6 +228,7 @@ export const loginUser: RequestHandler = async (req, res) => {
 
     let user;
     try {
+      console.log("🔐 Attempting to fetch user from database...");
       user = await neonDbService.getUserByEmail(email);
       if (user) {
         console.log("✅ User found in database", {
@@ -241,13 +244,16 @@ export const loginUser: RequestHandler = async (req, res) => {
         console.warn("🔐 User not found in database", { email });
       }
     } catch (dbErr) {
+      const errorMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
       console.error("🔐 Database error fetching user:", {
-        error: dbErr instanceof Error ? dbErr.message : String(dbErr),
+        error: errorMsg,
         email,
+        stack: dbErr instanceof Error ? dbErr.stack : undefined,
       });
       return res.status(503).json({
         success: false,
-        error: "Service temporarily unavailable. Please try again later.",
+        error: "Database connection failed. Please try again later.",
+        debug: process.env.NODE_ENV === "development" ? errorMsg : undefined,
       });
     }
 
@@ -268,19 +274,23 @@ export const loginUser: RequestHandler = async (req, res) => {
 
     let isValidPassword = false;
     try {
+      console.log("🔐 Starting password verification...");
       isValidPassword = await neonDbService.verifyPassword(email, password);
       console.log("🔐 Password verification result", {
         email,
         isValid: isValidPassword,
       });
     } catch (pwErr) {
+      const errorMsg = pwErr instanceof Error ? pwErr.message : String(pwErr);
       console.error("🔐 Password verification error:", {
-        error: pwErr instanceof Error ? pwErr.message : String(pwErr),
+        error: errorMsg,
         email,
+        stack: pwErr instanceof Error ? pwErr.stack : undefined,
       });
       return res.status(500).json({
         success: false,
         error: "Authentication service error. Please try again.",
+        debug: process.env.NODE_ENV === "development" ? errorMsg : undefined,
       });
     }
 
@@ -341,7 +351,10 @@ export const loginUser: RequestHandler = async (req, res) => {
     };
     return res.json(response);
   } catch (error: any) {
-    console.error("❌ Login error:", error?.message || error);
+    console.error("❌ Login error:", {
+      message: error?.message || error,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       success: false,
       error: error?.message || "Internal server error",
