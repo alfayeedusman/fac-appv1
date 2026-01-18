@@ -372,9 +372,13 @@ const UNIT_TYPES = {
 const getTimeSlots = (date: string) => {
   try {
     if (!date) return [];
-    const dayOfWeek = new Date(date)
-      .toLocaleDateString("en-us", { weekday: "long" })
-      .toLowerCase();
+    // Parse date string (YYYY-MM-DD) without timezone interpretation
+    // Add T00:00:00 and Z to explicitly set UTC, then use the date as-is
+    const [year, month, day] = date.split('-').map(Number);
+    // Create date in local timezone by specifying components
+    const d = new Date(year, month - 1, day);
+    const dayOfWeek = d.toLocaleDateString("en-us", { weekday: "long" }).toLowerCase();
+    console.log(`📅 Date: ${date}, Day: ${dayOfWeek}`);
     return generateTimeSlots(dayOfWeek);
   } catch (error) {
     console.error("Error generating time slots:", error);
