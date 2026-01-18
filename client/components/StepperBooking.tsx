@@ -2767,7 +2767,8 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                 {availableSlots.map((slot) => {
                   const slotInfo =
-                    bookingData?.date && bookingData?.branch
+                    slotAvailabilityCache[slot] ||
+                    (bookingData?.date && bookingData?.branch
                       ? getSlotAvailability(
                           bookingData.date,
                           slot,
@@ -2776,9 +2777,14 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                       : {
                           isAvailable: true,
                           currentBookings: 0,
-                          maxCapacity: 2,
-                        };
+                          maxCapacity: 5,
+                          availableBays: [1, 2, 3, 4, 5],
+                        });
                   const isAvailable = slotInfo.isAvailable;
+                  const baysAvailable =
+                    slotInfo.availableBays?.length ||
+                    slotInfo.maxCapacity - slotInfo.currentBookings;
+
                   return (
                     <Button
                       key={slot}
@@ -2788,19 +2794,23 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                       onClick={() =>
                         isAvailable && updateBookingData("timeSlot", slot)
                       }
-                      disabled={!isAvailable}
+                      disabled={!isAvailable || loadingAvailability}
                       className={`h-auto py-3 ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="text-center">
                         <div className="font-medium">{slot}</div>
-                        {!isAvailable ? (
-                          <span className="block text-xs text-red-500">
-                            Full
+                        {loadingAvailability ? (
+                          <span className="block text-xs text-muted-foreground">
+                            Loading...
                           </span>
-                        ) : slotInfo.currentBookings > 0 ? (
-                          <span className="block text-xs text-orange-500">
-                            {slotInfo.currentBookings}/{slotInfo.maxCapacity}{" "}
-                            booked
+                        ) : !isAvailable ? (
+                          <span className="block text-xs text-red-500 font-medium">
+                            Full (All Bays)
+                          </span>
+                        ) : baysAvailable > 0 ? (
+                          <span className="block text-xs text-green-500 font-medium">
+                            {baysAvailable} bay{baysAvailable > 1 ? "s" : ""}{" "}
+                            left
                           </span>
                         ) : (
                           <span className="block text-xs text-green-500">
