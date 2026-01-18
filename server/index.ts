@@ -195,6 +195,7 @@ export function createServer() {
     xenditApiRoutes.createSubscriptionInvoice,
   );
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
+  app.post("/api/neon/payment/xendit/confirm-offline", xenditApiRoutes.confirmOfflinePayment);
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
   app.get(
     "/api/neon/payment/xendit/invoice-status/:id",
