@@ -346,6 +346,43 @@ export const getSlotAvailability: RequestHandler = async (req, res) => {
   }
 };
 
+// Get garage settings and current time in Manila timezone
+export const getGarageSettings: RequestHandler = async (req, res) => {
+  try {
+    // Get current time in Manila timezone (UTC+8)
+    const manilaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+    const manilaHour = manilaTime.getHours();
+    const manilaMinute = manilaTime.getMinutes();
+    const manilaDate = manilaTime.toISOString().split('T')[0];
+
+    // Garage hours: 8:00 AM to 8:00 PM
+    const garageOpenTime = 8; // 8:00 AM
+    const garageCloseTime = 20; // 8:00 PM
+
+    const isGarageOpen = manilaHour >= garageOpenTime && manilaHour < garageCloseTime;
+
+    res.json({
+      success: true,
+      data: {
+        currentTime: manilaTime.toISOString(),
+        currentHour: manilaHour,
+        currentMinute: manilaMinute,
+        currentDate: manilaDate,
+        garageOpenTime,
+        garageCloseTime,
+        isGarageOpen,
+        timezone: 'Asia/Manila',
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error getting garage settings:", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get garage settings",
+    });
+  }
+};
+
 export const createBooking: RequestHandler = async (req, res) => {
   try {
     // Validate required fields
