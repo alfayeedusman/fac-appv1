@@ -2,19 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Loader2,
   X,
   ExternalLink,
   CheckCircle,
   AlertCircle,
-  Clock,
-  CreditCard,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -42,9 +37,8 @@ export default function XenditCheckoutModal({
   const [paymentStatus, setPaymentStatus] = useState<
     "pending" | "success" | "failed" | null
   >(null);
-  const maxPolls = 240; // Check for 20 minutes (240 * 5 seconds)
+  const maxPolls = 240;
 
-  // Check payment status periodically
   useEffect(() => {
     if (!isOpen || !invoiceId) return;
 
@@ -68,43 +62,31 @@ export default function XenditCheckoutModal({
             ""
           ).toUpperCase();
 
-          console.log(`📊 Xendit status check ${pollCount + 1}: ${status}`);
-
           if (status === "PAID" || status === "SETTLED") {
-            console.log("✅ Payment successful!");
             setIsCheckingStatus(false);
             setPaymentStatus("success");
             clearInterval(pollInterval);
-
-            // Show success toast
             toast({
               title: "Payment Successful! ✅",
               description: "Processing your booking confirmation...",
             });
-
-            // Notify parent component
             if (onPaymentSuccess) {
               onPaymentSuccess(data);
             }
-
-            // Close modal after delay to show success message
             setTimeout(() => {
               onClose();
             }, 2000);
             return;
           } else if (status === "EXPIRED" || status === "FAILED") {
-            console.log("❌ Payment failed or expired");
             clearInterval(pollInterval);
             setIsCheckingStatus(false);
             setPaymentStatus("failed");
-
             toast({
               title: "Payment Failed",
               description:
                 "Your payment was not processed. Please try again.",
               variant: "destructive",
             });
-
             if (onPaymentFailed) {
               onPaymentFailed();
             }
@@ -115,18 +97,15 @@ export default function XenditCheckoutModal({
         console.error("Error checking payment status:", error);
       }
 
-      // Continue polling
       setPollCount((prev) => prev + 1);
     };
 
-    // Start polling immediately and then every 5 seconds
     checkPaymentStatus();
     pollInterval = setInterval(checkPaymentStatus, 5000);
 
     return () => clearInterval(pollInterval);
   }, [isOpen, invoiceId, pollCount, maxPolls, onPaymentSuccess, onPaymentFailed, onClose]);
 
-  // Reset polling when modal opens
   useEffect(() => {
     if (isOpen) {
       setPollCount(0);
@@ -134,154 +113,173 @@ export default function XenditCheckoutModal({
     }
   }, [isOpen]);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[95vh] overflow-hidden flex flex-col p-0">
-        {/* Header */}
-        <DialogHeader className="bg-gradient-to-r from-fac-orange-500 to-orange-600 text-white p-6 flex flex-row items-center justify-between">
-          <div>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <div className="bg-white/20 rounded-full p-3">
-                <CreditCard className="h-6 w-6" />
+  // Success state - full screen confirmation
+  if (paymentStatus === "success") {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md border-0 bg-transparent shadow-none">
+          <div className="text-center space-y-4 py-12">
+            <div className="flex justify-center mb-4">
+              <div className="bg-green-100 rounded-full p-4 animate-bounce">
+                <CheckCircle className="h-12 w-12 text-green-600" />
               </div>
-              Complete Payment
-            </DialogTitle>
-            <p className="text-sm text-orange-100 mt-2">
-              Booking ID: <span className="font-mono font-bold">{bookingId}</span>
+            </div>
+            <h2 className="text-3xl font-bold text-green-600">Payment Successful!</h2>
+            <p className="text-gray-600 text-lg">
+              Your booking has been confirmed
+            </p>
+            <div className="bg-green-50 rounded-lg p-4 mt-6">
+              <p className="text-sm text-gray-600">Booking ID</p>
+              <p className="text-xl font-bold text-gray-900 font-mono">{bookingId}</p>
+            </div>
+            <p className="text-sm text-gray-500 pt-4">
+              Preparing your receipt...
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            disabled={isCheckingStatus}
-            className="h-10 w-10 rounded-full text-white hover:bg-white/20"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-        {/* Content */}
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {/* Status Indicator */}
-          {(isCheckingStatus || paymentStatus) && (
-            <div className="px-6 pt-4">
-              {paymentStatus === "success" ? (
-                <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg flex items-center gap-3">
-                  <div className="bg-green-100 rounded-full p-2">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-green-900">
-                      Payment Successful! ✅
-                    </p>
-                    <p className="text-sm text-green-700">
-                      Generating your booking receipt...
-                    </p>
-                  </div>
-                </div>
-              ) : paymentStatus === "failed" ? (
-                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg flex items-center gap-3">
-                  <div className="bg-red-100 rounded-full p-2">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-red-900">
-                      Payment Failed ❌
-                    </p>
-                    <p className="text-sm text-red-700">
-                      Please try again or contact support
-                    </p>
-                  </div>
-                </div>
-              ) : isCheckingStatus ? (
-                <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg flex items-center gap-3">
-                  <div className="bg-blue-100 rounded-full p-2 animate-spin">
-                    <Clock className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-blue-900">
-                      Verifying Payment...
-                    </p>
-                    <p className="text-sm text-blue-700">
-                      Please wait while we process your payment
-                    </p>
-                  </div>
-                </div>
-              ) : null}
+  // Error state
+  if (paymentStatus === "failed") {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <div className="text-center space-y-4 py-8">
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-100 rounded-full p-4">
+                <AlertCircle className="h-12 w-12 text-red-600" />
+              </div>
             </div>
-          )}
+            <h2 className="text-2xl font-bold text-red-600">Payment Failed</h2>
+            <p className="text-gray-600">
+              We couldn't process your payment. Please try again with a different payment method.
+            </p>
+            <div className="space-y-3 pt-4">
+              <Button
+                onClick={() => {
+                  setPaymentStatus(null);
+                  setPollCount(0);
+                  onPaymentFailed?.();
+                }}
+                className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white h-12 text-base"
+              >
+                Try Again
+              </Button>
+              <Button onClick={onClose} variant="outline" className="w-full h-12 text-base">
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-          {/* Payment Iframe or Error State */}
-          {paymentStatus === null && (
-            <>
-              {invoiceUrl ? (
-                <div className="flex-1 overflow-auto bg-gray-50 border-t border-gray-200 m-6 rounded-lg shadow-sm">
+  // Main payment modal - professional spacious layout
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-5xl max-h-[95vh] p-0 border-0 shadow-2xl">
+        <div className="flex flex-col h-full">
+          {/* Header - Minimal and clean */}
+          <div className="px-8 py-6 border-b bg-gradient-to-r from-fac-orange-50 to-orange-50">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Secure Payment</h2>
+                <p className="text-gray-500 mt-1">Complete your booking payment</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                disabled={isCheckingStatus}
+                className="h-10 w-10 rounded-full text-gray-600 hover:bg-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            {/* Booking info bar */}
+            <div className="flex items-center justify-between bg-white rounded-lg px-4 py-3 border">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Booking ID</p>
+                <p className="text-lg font-bold font-mono text-gray-900">{bookingId}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Status</p>
+                <p className="text-lg font-bold text-blue-600 flex items-center justify-end gap-1">
+                  <span className="inline-block h-2 w-2 bg-blue-600 rounded-full animate-pulse"></span>
+                  Processing
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Main content - Payment form gets all the space */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {invoiceUrl ? (
+              <>
+                {/* Payment iframe - prominent and spacious */}
+                <div className="flex-1 relative bg-white">
                   <iframe
                     src={invoiceUrl}
                     className="w-full h-full border-0"
-                    title="Xendit Payment Checkout"
+                    title="Secure Payment Checkout"
                     sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
                   />
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center m-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <div className="text-center px-4">
-                    <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
-                    <p className="text-red-600 font-semibold mb-1">
-                      Payment Page Unavailable
-                    </p>
-                    <p className="text-sm text-gray-600 mb-4">
-                      We couldn't load the payment page. Please try opening it in a
-                      new tab or contact support.
-                    </p>
-                    {invoiceUrl && (
-                      <Button
-                        onClick={() => window.open(invoiceUrl, "_blank")}
-                        className="bg-fac-orange-500 hover:bg-fac-orange-600"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Open Payment in New Tab
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Instructions Card */}
-              <div className="px-6 pb-6">
-                <Card className="border-l-4 border-l-fac-orange-500 bg-gradient-to-r from-orange-50 to-amber-50">
-                  <CardContent className="p-4">
-                    <div className="flex gap-3">
-                      <div className="bg-fac-orange-100 rounded-full p-2 flex-shrink-0">
-                        <CreditCard className="h-5 w-5 text-fac-orange-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 mb-1">
-                          How to Pay
-                        </h4>
-                        <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-                          <li>Choose your preferred payment method below</li>
-                          <li>Fill in your payment details securely</li>
-                          <li>Complete the transaction</li>
-                          <li>We'll verify and show your booking receipt</li>
-                        </ol>
+                  
+                  {/* Verifying overlay - subtle */}
+                  {isCheckingStatus && (
+                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                      <div className="bg-white rounded-xl p-8 shadow-2xl text-center">
+                        <div className="flex justify-center mb-4">
+                          <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+                        </div>
+                        <p className="text-lg font-semibold text-gray-900">
+                          Verifying Payment
+                        </p>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Please wait while we process your payment...
+                        </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gray-50 p-8">
+                <div className="text-center max-w-md">
+                  <div className="bg-red-100 rounded-full p-4 inline-block mb-4">
+                    <AlertCircle className="h-8 w-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Unable to Load Payment Page
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    There was an issue loading the payment gateway. Please try opening it in a new tab.
+                  </p>
+                  {invoiceUrl && (
+                    <Button
+                      onClick={() => window.open(invoiceUrl, "_blank")}
+                      className="bg-fac-orange-500 hover:bg-fac-orange-600 text-white h-12"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open Payment Page
+                    </Button>
+                  )}
+                </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
 
-          {/* Footer Actions */}
-          {paymentStatus === null && (
-            <div className="px-6 pb-6 border-t bg-gray-50 flex gap-3">
+          {/* Footer - Clean action bar */}
+          {!isCheckingStatus && paymentStatus === null && (
+            <div className="px-8 py-4 border-t bg-gray-50 flex gap-3 justify-end">
               {invoiceUrl && (
                 <Button
                   onClick={() => window.open(invoiceUrl, "_blank")}
                   variant="outline"
-                  className="flex-1 border-fac-orange-300 hover:bg-fac-orange-50"
+                  className="h-11"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open in New Tab
@@ -290,48 +288,10 @@ export default function XenditCheckoutModal({
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="flex-1"
+                className="h-11"
                 disabled={isCheckingStatus}
               >
-                {isCheckingStatus ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Close"
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Success/Failure Actions */}
-          {paymentStatus === "success" && (
-            <div className="px-6 pb-6 border-t bg-green-50">
-              <Button
-                onClick={onClose}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                View Receipt & Booking Details
-              </Button>
-            </div>
-          )}
-
-          {paymentStatus === "failed" && (
-            <div className="px-6 pb-6 border-t bg-red-50 space-y-2">
-              <Button
-                onClick={() => {
-                  setPaymentStatus(null);
-                  setPollCount(0);
-                  onPaymentFailed?.();
-                }}
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-              >
-                Try Another Payment Method
-              </Button>
-              <Button onClick={onClose} variant="outline" className="w-full">
-                Contact Support
+                Close
               </Button>
             </div>
           )}
