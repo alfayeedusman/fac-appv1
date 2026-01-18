@@ -441,7 +441,6 @@ export default function StepperBooking({
 
   // Debounce protection for navigation buttons
   const navigationDebounceRef = useRef(false);
-  const isNavigatingFromNextRef = useRef(false);
 
   // Cleanup object URLs when component unmounts
   useEffect(() => {
