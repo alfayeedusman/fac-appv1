@@ -974,7 +974,11 @@ export default function StepperBooking({
     });
   };
 
-  const handleXenditPayment = async (bookingId: string, amount: number) => {
+  const handleXenditPayment = async (
+    bookingId: string,
+    amount: number,
+    confirmationCode: string,
+  ) => {
     try {
       const customerName = isGuest
         ? bookingData.fullName
@@ -1000,6 +1004,7 @@ export default function StepperBooking({
           const payload = {
             bookingId,
             invoiceId: invoiceData.invoice_id,
+            confirmationCode: confirmationCode,
             bookingData: {
               fullName: bookingData.fullName,
               email: customerEmail,
