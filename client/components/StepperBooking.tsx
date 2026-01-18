@@ -1533,17 +1533,6 @@ export default function StepperBooking({
             isOpen={showReceiptModal}
             onClose={handleCloseReceipt}
             bookingData={completedBooking}
-            onPaymentClick={
-              completedBooking.paymentMethod === "online"
-                ? async () => {
-                    // Trigger payment when user clicks "Pay Now" button
-                    await handleXenditPayment(
-                      completedBooking.id,
-                      completedBooking.totalPrice,
-                    );
-                  }
-                : undefined
-            }
           />
         </Suspense>
       )}
