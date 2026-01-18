@@ -270,7 +270,7 @@ const DEFAULT_CONFIG: AdminConfig = {
         slotDuration: 60,
       },
       sunday: {
-        enabled: false,
+        enabled: true,
         startTime: "08:00",
         endTime: "20:00",
         slotDuration: 60,
