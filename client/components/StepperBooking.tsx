@@ -1109,10 +1109,13 @@ export default function StepperBooking({
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
 
-      const bookingPayload: Omit<
-        Booking,
-        "id" | "createdAt" | "updatedAt" | "confirmationCode"
-      > = {
+      const bookingPayload: any = {
+        // Customer info - required by API validation
+        fullName: bookingData.fullName,
+        mobile: bookingData.mobile,
+        email: bookingData.email,
+
+        // User/Guest info
         userId: isGuest ? undefined : userId || undefined,
         guestInfo: isGuest
           ? {
