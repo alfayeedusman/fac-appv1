@@ -997,6 +997,13 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification ON notification_deliveries(notification_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_user ON notification_deliveries(user_id);`;
 
+    // Add bayNumber column to bookings table if it doesn't exist (for carwash bay management)
+    await sql`
+      ALTER TABLE bookings
+      ADD COLUMN IF NOT EXISTS bay_number INTEGER;
+    `;
+    console.log("✅ Bay management column added to bookings table");
+
     // ============= CMS CONTENT MANAGEMENT SYSTEM =============
 
     console.log("🎨 Creating CMS tables...");
