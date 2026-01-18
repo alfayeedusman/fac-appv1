@@ -33,7 +33,7 @@ Add these variables (get values from your `.env` file):
 NEON_DATABASE_URL=postgresql://...
 
 # Firebase Configuration (safe for frontend)
-VITE_FIREBASE_API_KEY=AIza...
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_WEB_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=facapp-dbdc1
 VITE_FIREBASE_STORAGE_BUCKET=facapp-dbdc1.firebasestorage.app
