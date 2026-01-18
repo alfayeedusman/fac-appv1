@@ -514,6 +514,15 @@ class NeonDatabaseClient {
           message = "Server error. Please try again shortly.";
         else if (status === 0)
           message = "Network error. Please check your connection.";
+
+        // Log detailed error info for debugging
+        logError("❌ Login failed with status", {
+          status,
+          serverError: json.error,
+          debugInfo: json.debug,
+          serverMsg: typeof json.error === "string" ? json.error : "",
+        });
+
         // Prefer server-provided public message if available
         const serverMsg = typeof json.error === "string" ? json.error : "";
         const finalMsg =
