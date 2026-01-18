@@ -46,26 +46,38 @@ class NeonDatabaseService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    if (!this.db) throw new Error("Database not connected");
+    if (!this.db) {
+      console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
+      throw new Error("Database not connected. Please check your NEON_DATABASE_URL environment variable.");
+    }
 
-    // Try exact match first for performance
-    const [user] = await this.db
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.email, email))
-      .limit(1);
+    try {
+      // Try exact match first for performance
+      const [user] = await this.db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, email))
+        .limit(1);
 
-    if (user) return user;
+      if (user) return user;
 
-    // If no exact match, try case-insensitive search (fallback)
-    const lowercaseEmail = email.toLowerCase();
-    const result = await this.db.select().from(schema.users);
+      // If no exact match, try case-insensitive search (fallback)
+      const lowercaseEmail = email.toLowerCase();
+      const result = await this.db.select().from(schema.users);
 
-    const caseInsensitiveUser = result.find(
-      (u) => u.email.toLowerCase() === lowercaseEmail,
-    );
+      const caseInsensitiveUser = result.find(
+        (u) => u.email.toLowerCase() === lowercaseEmail,
+      );
 
-    return caseInsensitiveUser || null;
+      return caseInsensitiveUser || null;
+    } catch (error) {
+      console.error("❌ Error fetching user from database", {
+        email,
+        error: error instanceof Error ? error.message : String(error),
+        dbConnected: !!this.db,
+      });
+      throw error;
+    }
   }
 
   async getUserById(id: string): Promise<User | null> {
