@@ -1240,7 +1240,25 @@ export default function StepperBooking({
         }
       }
 
-      // Store completed booking data for receipt
+      // For online payments: Redirect to Xendit immediately (no receipt modal)
+      if (bookingData.paymentMethod === "online") {
+        // Initiate Xendit payment
+        const paymentInitiated = await handleXenditPayment(
+          createdBooking.id,
+          bookingData.totalPrice,
+        );
+
+        if (!paymentInitiated) {
+          // Payment initiation failed, show error
+          throw new Error("Failed to initiate payment. Please try again.");
+        }
+
+        // Payment redirect will happen in handleXenditPayment
+        // No need to show receipt here
+        return;
+      }
+
+      // For offline payments: Store booking and show receipt modal
       setCompletedBooking({
         id: createdBooking.id,
         confirmationCode: createdBooking.confirmationCode,
@@ -1262,10 +1280,10 @@ export default function StepperBooking({
         customerName: bookingData.fullName,
         customerEmail: bookingData.email,
         customerPhone: bookingData.mobile,
-        bookingId: createdBooking.id, // Add bookingId for payment redirection
+        bookingId: createdBooking.id,
       });
 
-      // Show receipt modal for all payment methods (both online and offline)
+      // Show receipt modal only for offline payments
       setShowReceiptModal(true);
 
       notificationManager.success(
