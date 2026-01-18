@@ -572,6 +572,41 @@ export default function AdminBookingSettings() {
 
               {/* Scheduling Tab */}
               <TabsContent value="scheduling" className="space-y-6">
+                {/* Garage Hours Summary */}
+                <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border-blue-200 dark:border-blue-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                      Garage Operating Hours (Asia/Manila)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Opening Time</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {config.scheduling.workingHours.monday?.startTime || '08:00'} AM
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Closing Time</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {config.scheduling.workingHours.monday?.endTime === '20:00' ? '8:00 PM' : config.scheduling.workingHours.monday?.endTime}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Bays Per Slot</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {config.scheduling.capacityPerSlot} bays
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-4">
+                      ℹ️ Bookings are available until all {config.scheduling.capacityPerSlot} bays are full for each time slot. Times shown in Asia/Manila timezone.
+                    </p>
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -582,8 +617,8 @@ export default function AdminBookingSettings() {
                   <CardContent className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-base font-semibold">Capacity Per Time Slot</Label>
-                        <p className="text-sm text-muted-foreground mb-3">Maximum bookings per time slot</p>
+                        <Label className="text-base font-semibold">Capacity Per Time Slot (Bays)</Label>
+                        <p className="text-sm text-muted-foreground mb-3">Maximum bays available per time slot (currently set to 5 for carwash)</p>
                         <Input
                           type="number"
                           min="1"
@@ -595,13 +630,13 @@ export default function AdminBookingSettings() {
                       </div>
                       <div>
                         <Label className="text-base font-semibold">Lead Time (Hours)</Label>
-                        <p className="text-sm text-muted-foreground mb-3">Minimum hours in advance to book</p>
+                        <p className="text-sm text-muted-foreground mb-3">Minimum hours in advance to book (0 = immediate booking available)</p>
                         <Input
                           type="number"
-                          min="1"
+                          min="0"
                           max="48"
                           value={config.scheduling.leadTime}
-                          onChange={(e) => updateScheduling({ leadTime: parseInt(e.target.value) || 2 })}
+                          onChange={(e) => updateScheduling({ leadTime: parseInt(e.target.value) || 0 })}
                           className="w-32"
                         />
                       </div>
