@@ -791,7 +791,15 @@ export default function StepperBooking({
   const canProceed = () => validateStep(currentStep);
 
   const nextStep = () => {
+    // Debounce: prevent rapid clicks
+    if (navigationDebounceRef.current) return;
+    navigationDebounceRef.current = true;
+    setTimeout(() => {
+      navigationDebounceRef.current = false;
+    }, 300);
+
     if (canProceed() && currentStep < 7) {
+      isNavigatingFromNextRef.current = true;
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -867,7 +875,15 @@ export default function StepperBooking({
   };
 
   const prevStep = () => {
+    // Debounce: prevent rapid clicks
+    if (navigationDebounceRef.current) return;
+    navigationDebounceRef.current = true;
+    setTimeout(() => {
+      navigationDebounceRef.current = false;
+    }, 300);
+
     if (currentStep > 1) {
+      isNavigatingFromNextRef.current = false;
       setCurrentStep(currentStep - 1);
     }
   };
