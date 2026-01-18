@@ -15,6 +15,7 @@ import notificationsApiRoutes from "./routes/notifications-api";
 import realtimeApiRoutes from "./routes/realtime-api";
 import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
+import * as adminInviteRoutes from "./routes/admin-invite";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 
@@ -133,6 +134,11 @@ export function createServer() {
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
+  app.get("/api/neon/bookings/availability", neonApiRoutes.getSlotAvailability);
+  app.get(
+    "/api/neon/bookings/garage-settings",
+    neonApiRoutes.getGarageSettings,
+  );
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints
@@ -194,6 +200,10 @@ export function createServer() {
     xenditApiRoutes.createSubscriptionInvoice,
   );
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
+  app.post(
+    "/api/neon/payment/xendit/confirm-offline",
+    xenditApiRoutes.confirmOfflinePayment,
+  );
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
   app.get(
     "/api/neon/payment/xendit/invoice-status/:id",
@@ -213,6 +223,9 @@ export function createServer() {
   app.get("/api/neon/customers", neonApiRoutes.getCustomers);
   app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
   app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
+
+  // Admin invite (protected by ADMIN_INVITE_SECRET header: x-admin-invite-secret)
+  app.post("/api/neon/admin/invite", adminInviteRoutes.createAdminInvite);
 
   // ============= CREW MANAGEMENT API =============
   app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);

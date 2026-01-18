@@ -372,9 +372,15 @@ const UNIT_TYPES = {
 const getTimeSlots = (date: string) => {
   try {
     if (!date) return [];
-    const dayOfWeek = new Date(date)
+    // Parse date string (YYYY-MM-DD) without timezone interpretation
+    // Add T00:00:00 and Z to explicitly set UTC, then use the date as-is
+    const [year, month, day] = date.split("-").map(Number);
+    // Create date in local timezone by specifying components
+    const d = new Date(year, month - 1, day);
+    const dayOfWeek = d
       .toLocaleDateString("en-us", { weekday: "long" })
       .toLowerCase();
+    console.log(`📅 Date: ${date}, Day: ${dayOfWeek}`);
     return generateTimeSlots(dayOfWeek);
   } catch (error) {
     console.error("Error generating time slots:", error);
@@ -388,6 +394,7 @@ export default function StepperBooking({
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const receiptObjectUrlRef = useRef<string | null>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
@@ -615,6 +622,32 @@ export default function StepperBooking({
 
     return () => clearTimeout(timeoutId);
   }, [basePrice, totalPrice]);
+
+  // Auto-scroll to top when step changes
+  useEffect(() => {
+    // Small delay to ensure DOM has updated
+    const scrollTimer = setTimeout(() => {
+      if (contentContainerRef.current) {
+        contentContainerRef.current.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+      // Scroll window to top for desktop/mobile
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      // Also scroll the sidebar if on mobile
+      const sidebar = document.querySelector(".booking-sidebar");
+      if (sidebar) {
+        (sidebar as HTMLElement).scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 100);
+
+    return () => clearTimeout(scrollTimer);
+  }, [currentStep]);
 
   // Memoize progress calculation to prevent unnecessary re-renders
   const progressPercentage = useMemo(() => {
@@ -1521,11 +1554,10 @@ export default function StepperBooking({
           {/* Sidebar (desktop only) */}
           <div
             className={`
-            hidden lg:block lg:sticky top-0 left-0 h-screen w-80 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-10 lg:shadow-none
-            lg:top-0 lg:h-auto lg:min-h-screen lg:max-h-screen
+            hidden lg:block lg:sticky top-0 left-0 h-screen w-80 lg:w-80 xl:w-96 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl border-r border-border/50 z-10 flex-shrink-0
           `}
           >
-            <div className="p-4 md:p-6 h-full overflow-y-auto">
+            <div className="p-4 md:p-6 h-full overflow-y-auto overflow-x-hidden">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg md:text-xl font-black text-foreground">
                   Booking Summary
@@ -1548,7 +1580,10 @@ export default function StepperBooking({
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-44 md:pb-8">
+            <div
+              ref={contentContainerRef}
+              className="p-3 sm:p-4 md:p-6 lg:p-8 pb-44 md:pb-8 h-screen overflow-y-auto"
+            >
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
@@ -2106,7 +2141,6 @@ const PackageStep = ({
                         return 0;
                       };
                       const price = getPrice();
-                      updateBookingData("basePrice", price);
                       return price.toLocaleString();
                     })()}
                   </p>
@@ -2375,47 +2409,166 @@ const UnitStep = ({
 };
 
 const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
+  const [slotAvailabilityCache, setSlotAvailabilityCache] = useState<
+    Record<string, any>
+  >({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [garageSettings, setGarageSettings] = useState<any>(null);
+
+  // Fetch garage settings (Manila timezone and hours)
+  useEffect(() => {
+    const fetchGarageSettings = async () => {
+      try {
+        const result = await neonDbClient.getGarageSettings();
+        if (result.success && result.data) {
+          setGarageSettings(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch garage settings:", error);
+      }
+    };
+
+    fetchGarageSettings();
+  }, []);
+
+  // Fetch slot availability for all slots when date or branch changes
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!bookingData?.date || !bookingData?.branch) {
+        setSlotAvailabilityCache({});
+        return;
+      }
+
+      setLoadingAvailability(true);
+      try {
+        const slots = getTimeSlots(bookingData.date);
+        const availability: Record<string, any> = {};
+
+        // Fetch availability for each slot in parallel
+        const promises = slots.map((slot) =>
+          neonDbClient
+            .getSlotAvailability(bookingData.date, slot, bookingData.branch)
+            .then((result) => {
+              if (result.success && result.data) {
+                availability[slot] = result.data;
+              } else {
+                // Fallback to default if API fails
+                availability[slot] = {
+                  isAvailable: true,
+                  currentBookings: 0,
+                  maxCapacity: 5,
+                  availableBays: [1, 2, 3, 4, 5],
+                };
+              }
+            })
+            .catch(() => {
+              // On error, assume available
+              availability[slot] = {
+                isAvailable: true,
+                currentBookings: 0,
+                maxCapacity: 5,
+                availableBays: [1, 2, 3, 4, 5],
+              };
+            }),
+        );
+
+        await Promise.all(promises);
+        setSlotAvailabilityCache(availability);
+      } catch (error) {
+        console.error("Failed to fetch slot availability:", error);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    fetchAvailability();
+  }, [bookingData?.date, bookingData?.branch]);
+
   // Get all slots for the selected date
   const allSlots = bookingData?.date ? getTimeSlots(bookingData.date) : [];
 
-  // Filter out past time slots if date is today
+  // Helper function to parse slot time string and convert to 24-hour format
+  // Must be defined BEFORE availableSlots useMemo that calls it
+  const parseSlotTime = (slotStr: string): { hour: number; minute: number } => {
+    try {
+      // Handle formats like "1:00 PM", "01:00 PM", "8:00 AM", "13:00"
+      const match = slotStr.match(/(\d{1,2}):(\d{2})\s?(AM|PM)?/i);
+      if (match) {
+        let hour = parseInt(match[1], 10);
+        const minute = parseInt(match[2], 10);
+        const period = match[3]?.toUpperCase();
+
+        // Convert to 24-hour format if AM/PM is present
+        if (period) {
+          if (period === "PM" && hour !== 12) {
+            hour += 12;
+          } else if (period === "AM" && hour === 12) {
+            hour = 0;
+          }
+        }
+
+        return { hour, minute };
+      }
+      console.warn(`⚠️ Could not parse slot time: ${slotStr}`);
+      return { hour: 0, minute: 0 };
+    } catch (error) {
+      console.error("Error parsing slot time:", error);
+      return { hour: 0, minute: 0 };
+    }
+  };
+
+  // Show all slots for the selected date within operating hours
+  // For today, filter out past times. For future dates, show all slots.
   const availableSlots = useMemo(() => {
-    if (!bookingData?.date) return [];
+    if (!bookingData?.date) {
+      console.log("🕐 No date selected yet");
+      return [];
+    }
 
-    const selectedDate = new Date(bookingData.date);
-    const today = new Date();
-
-    // Check if selected date is today
-    const isToday = selectedDate.toDateString() === today.toDateString();
-
-    if (!isToday) {
+    // If garage settings not loaded yet, show all slots
+    if (!garageSettings) {
+      console.log("🕐 Garage settings not yet loaded, showing all slots");
       return allSlots;
     }
 
-    // Filter out past times for today
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinute = currentTime.getMinutes();
+    // Check if selected date is today (in Manila timezone)
+    const isToday = bookingData.date === garageSettings.currentDate;
+    console.log(
+      `🕐 Selected date: ${bookingData.date}, Today: ${garageSettings.currentDate}, Is Today: ${isToday}`,
+    );
 
-    return allSlots.filter((slot) => {
-      // Parse time slot (e.g., "9:00 AM" or "2:30 PM")
-      const [time, period] = slot.split(" ");
-      const [hours, minutes] = time.split(":").map(Number);
+    if (isToday) {
+      // Filter out past slots for today
+      const currentTime =
+        garageSettings.currentHour * 60 + garageSettings.currentMinute; // Convert to minutes
+      const filteredSlots = allSlots.filter((slot: string) => {
+        // Parse slot time (e.g., "1:00 PM" or "13:00")
+        const slotTime = parseSlotTime(slot);
+        const slotMinutes = slotTime.hour * 60 + slotTime.minute;
+        const isPastTime = slotMinutes <= currentTime;
 
-      let slotHour = hours;
-      if (period === "PM" && hours !== 12) {
-        slotHour = hours + 12;
-      } else if (period === "AM" && hours === 12) {
-        slotHour = 0;
-      }
+        if (isPastTime) {
+          console.log(
+            `⏭️  Hiding past slot: ${slot} (slot: ${slotMinutes}min >= current: ${currentTime}min)`,
+          );
+        }
+        return !isPastTime;
+      });
 
-      // Check if slot time is in the future
-      if (slotHour > currentHour) return true;
-      if (slotHour === currentHour && minutes > currentMinute) return true;
-
-      return false;
-    });
-  }, [bookingData?.date, allSlots]);
+      console.log(
+        `🕐 Today: Showing ${filteredSlots.length} future slots out of ${allSlots.length} total:`,
+        filteredSlots,
+      );
+      return filteredSlots;
+    } else {
+      // For future dates, show all slots
+      console.log(
+        `🕐 Future date: Showing all ${allSlots.length} slots for ${bookingData.date}:`,
+        allSlots,
+      );
+      return allSlots;
+    }
+  }, [bookingData?.date, allSlots, garageSettings]);
   const homeServiceConfig = adminConfig?.homeService || {};
 
   // Load branches from backend and allow admin to add branches
@@ -2701,7 +2854,8 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                 {availableSlots.map((slot) => {
                   const slotInfo =
-                    bookingData?.date && bookingData?.branch
+                    slotAvailabilityCache[slot] ||
+                    (bookingData?.date && bookingData?.branch
                       ? getSlotAvailability(
                           bookingData.date,
                           slot,
@@ -2710,9 +2864,14 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                       : {
                           isAvailable: true,
                           currentBookings: 0,
-                          maxCapacity: 2,
-                        };
+                          maxCapacity: 5,
+                          availableBays: [1, 2, 3, 4, 5],
+                        });
                   const isAvailable = slotInfo.isAvailable;
+                  const baysAvailable =
+                    slotInfo.availableBays?.length ||
+                    slotInfo.maxCapacity - slotInfo.currentBookings;
+
                   return (
                     <Button
                       key={slot}
@@ -2722,19 +2881,23 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                       onClick={() =>
                         isAvailable && updateBookingData("timeSlot", slot)
                       }
-                      disabled={!isAvailable}
+                      disabled={!isAvailable || loadingAvailability}
                       className={`h-auto py-3 ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="text-center">
                         <div className="font-medium">{slot}</div>
-                        {!isAvailable ? (
-                          <span className="block text-xs text-red-500">
-                            Full
+                        {loadingAvailability ? (
+                          <span className="block text-xs text-muted-foreground">
+                            Loading...
                           </span>
-                        ) : slotInfo.currentBookings > 0 ? (
-                          <span className="block text-xs text-orange-500">
-                            {slotInfo.currentBookings}/{slotInfo.maxCapacity}{" "}
-                            booked
+                        ) : !isAvailable ? (
+                          <span className="block text-xs text-red-500 font-medium">
+                            Full (All Bays)
+                          </span>
+                        ) : baysAvailable > 0 ? (
+                          <span className="block text-xs text-green-500 font-medium">
+                            {baysAvailable} bay{baysAvailable > 1 ? "s" : ""}{" "}
+                            left
                           </span>
                         ) : (
                           <span className="block text-xs text-green-500">
@@ -2749,9 +2912,8 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
               {availableSlots.length === 0 && (
                 <div className="mt-3 p-4 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                   <p className="text-sm text-red-700 dark:text-red-300 font-medium">
-                    {bookingData.date === new Date().toISOString().split("T")[0]
-                      ? "⏰ All time slots for today have passed. Please select a future date or try again tomorrow."
-                      : "No available slots for this date. Please select another date."}
+                    ⚠️ No slots available for the selected date. The garage may
+                    be closed on this day. Please select another date.
                   </p>
                 </div>
               )}

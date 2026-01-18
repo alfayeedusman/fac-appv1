@@ -253,11 +253,32 @@ class NeonDatabaseService {
 
     const confirmationCode = `FAC-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(-3).toUpperCase()}`;
 
+    // Assign a bay number for carwash services at branch locations
+    let bayNumber: number | null = null;
+    if (
+      bookingData.category === "carwash" &&
+      bookingData.serviceType === "branch"
+    ) {
+      bayNumber = await this.assignRandomBay(
+        bookingData.date,
+        bookingData.timeSlot,
+        bookingData.branch,
+      );
+
+      // If no bay is available, throw an error
+      if (bayNumber === null) {
+        throw new Error(
+          "No available bays for the selected time slot. Please choose a different time.",
+        );
+      }
+    }
+
     const [booking] = await this.db
       .insert(schema.bookings)
       .values({
         ...bookingData,
         confirmationCode,
+        bayNumber, // Include bay assignment for carwash bookings
       })
       .returning();
 
@@ -346,6 +367,85 @@ class NeonDatabaseService {
         ),
       )
       .orderBy(desc(schema.bookings.createdAt));
+  }
+
+  // === CARWASH BAY MANAGEMENT ===
+
+  async getSlotAvailability(
+    date: string,
+    timeSlot: string,
+    branch: string,
+  ): Promise<{
+    isAvailable: boolean;
+    currentBookings: number;
+    maxCapacity: number;
+    availableBays: number[];
+  }> {
+    if (!this.db) throw new Error("Database not connected");
+
+    const MAX_BAYS_PER_SLOT = 5; // Maximum 5 bays per time slot
+
+    // Get all bookings for this date, time slot, and branch that are in active statuses
+    const bookings = await this.db
+      .select()
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.date, date),
+          eq(schema.bookings.timeSlot, timeSlot),
+          eq(schema.bookings.branch, branch),
+          // Only count bookings that are pending, confirmed, or in_progress
+          or(
+            eq(schema.bookings.status, "pending"),
+            eq(schema.bookings.status, "confirmed"),
+            eq(schema.bookings.status, "in_progress"),
+          ),
+        ),
+      );
+
+    const currentBookings = bookings.length;
+
+    // Find which bays are already occupied
+    const occupiedBays = new Set(
+      bookings
+        .filter(
+          (b: Booking) => b.bayNumber !== null && b.bayNumber !== undefined,
+        )
+        .map((b: Booking) => b.bayNumber),
+    );
+
+    // Find available bays
+    const availableBays: number[] = [];
+    for (let bay = 1; bay <= MAX_BAYS_PER_SLOT; bay++) {
+      if (!occupiedBays.has(bay)) {
+        availableBays.push(bay);
+      }
+    }
+
+    return {
+      isAvailable: currentBookings < MAX_BAYS_PER_SLOT,
+      currentBookings,
+      maxCapacity: MAX_BAYS_PER_SLOT,
+      availableBays,
+    };
+  }
+
+  async assignRandomBay(
+    date: string,
+    timeSlot: string,
+    branch: string,
+  ): Promise<number | null> {
+    const availability = await this.getSlotAvailability(date, timeSlot, branch);
+
+    if (availability.availableBays.length === 0) {
+      return null; // No available bays
+    }
+
+    // Randomly select from available bays
+    const randomIndex = Math.floor(
+      Math.random() * availability.availableBays.length,
+    );
+    return availability.availableBays[randomIndex];
   }
 
   // === SUBSCRIPTIONS ===

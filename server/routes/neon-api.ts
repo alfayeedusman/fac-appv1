@@ -311,6 +311,105 @@ export const registerUser: RequestHandler = async (req, res) => {
 };
 
 // Booking endpoints
+
+// Get slot availability for a specific date, time, and branch
+export const getSlotAvailability: RequestHandler = async (req, res) => {
+  try {
+    const { date, timeSlot, branch } = req.query;
+
+    if (!date || !timeSlot || !branch) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: date, timeSlot, branch",
+      });
+    }
+
+    const availability = await neonDbService.getSlotAvailability(
+      String(date),
+      String(timeSlot),
+      String(branch),
+    );
+
+    res.json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("❌ Error checking slot availability:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to check slot availability",
+    });
+  }
+};
+
+// Get garage settings and current time in Manila timezone
+export const getGarageSettings: RequestHandler = async (req, res) => {
+  try {
+    // Get current time in Manila timezone (UTC+8) using Intl API
+    const now = new Date();
+
+    // Use Intl.DateTimeFormat to properly extract Manila timezone values
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(now);
+    const partMap = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+
+    const manilaHour = parseInt(partMap.hour, 10);
+    const manilaMinute = parseInt(partMap.minute, 10);
+    const manilaDate = `${partMap.year}-${partMap.month}-${partMap.day}`;
+
+    console.log("🕐 Manila time details:", {
+      hour: manilaHour,
+      minute: manilaMinute,
+      date: manilaDate,
+      utcTime: now.toISOString(),
+    });
+
+    // Garage hours: 8:00 AM to 8:00 PM
+    const garageOpenTime = 8; // 8:00 AM
+    const garageCloseTime = 20; // 8:00 PM
+
+    const isGarageOpen =
+      manilaHour >= garageOpenTime && manilaHour < garageCloseTime;
+
+    res.json({
+      success: true,
+      data: {
+        currentTime: now.toISOString(),
+        currentHour: manilaHour,
+        currentMinute: manilaMinute,
+        currentDate: manilaDate,
+        garageOpenTime,
+        garageCloseTime,
+        isGarageOpen,
+        timezone: "Asia/Manila",
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error getting garage settings:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to get garage settings",
+    });
+  }
+};
+
 export const createBooking: RequestHandler = async (req, res) => {
   try {
     // Validate required fields
