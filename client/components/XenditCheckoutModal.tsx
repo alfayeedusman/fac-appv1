@@ -342,14 +342,15 @@ export default function XenditCheckoutModal({
             )}
           </div>
 
-          {/* Footer - Clean action bar */}
-          {!isCheckingStatus && paymentStatus === null && (
+          {/* Footer - Clean action bar - always accessible */}
+          {paymentStatus === null && (
             <div className="px-8 py-4 border-t bg-gray-50 flex gap-3 justify-end">
               {invoiceUrl && (
                 <Button
                   onClick={() => window.open(invoiceUrl, "_blank")}
                   variant="outline"
                   className="h-11"
+                  title="Open payment in a new tab"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open in New Tab
@@ -359,7 +360,7 @@ export default function XenditCheckoutModal({
                 onClick={onClose}
                 variant="outline"
                 className="h-11"
-                disabled={isCheckingStatus}
+                title="Close this modal"
               >
                 Close
               </Button>
