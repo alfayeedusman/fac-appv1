@@ -197,6 +197,9 @@ export const bookings = pgTable("bookings", {
   serviceLocation: text("service_location"),
   estimatedDuration: integer("estimated_duration"),
 
+  // Bay Assignment (for carwash services)
+  bayNumber: integer("bay_number"), // 1-5 for carwash bays
+
   // Pricing
   basePrice: decimal("base_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
