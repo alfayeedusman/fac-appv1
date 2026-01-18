@@ -439,6 +439,10 @@ export default function StepperBooking({
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [userData, setUserData] = useState<any>(null);
 
+  // Debounce protection for navigation buttons
+  const navigationDebounceRef = useRef(false);
+  const isNavigatingFromNextRef = useRef(false);
+
   // Cleanup object URLs when component unmounts
   useEffect(() => {
     return () => {
