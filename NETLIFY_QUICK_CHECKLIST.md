@@ -25,7 +25,7 @@ Go to **Site Settings** → **Build & Deploy** → **Environment**
 ### Frontend Variables (VITE\_\*)
 
 - [ ] `VITE_MAPBOX_TOKEN` = `pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg`
-- [ ] `VITE_FIREBASE_API_KEY` = `AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM`
+- [ ] `VITE_FIREBASE_API_KEY` = `<YOUR_FIREBASE_WEB_API_KEY>`
 - [ ] `VITE_FIREBASE_AUTH_DOMAIN` = `facapp-dbdc1.firebaseapp.com`
 - [ ] `VITE_FIREBASE_PROJECT_ID` = `facapp-dbdc1`
 - [ ] `VITE_FIREBASE_STORAGE_BUCKET` = `facapp-dbdc1.firebasestorage.app`

@@ -77,7 +77,7 @@ const apiKey = process.env.XENDIT_SECRET_KEY; // ✅ Safe on server
 ```typescript
 // public/firebase-messaging-sw.js
 const firebaseConfig = {
-  apiKey: "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM", // ❌ Exposed!
+  apiKey: "<YOUR_FIREBASE_WEB_API_KEY>", // ❌ Exposed!
 };
 ```
 

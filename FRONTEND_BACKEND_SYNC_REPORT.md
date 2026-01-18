@@ -301,7 +301,7 @@ Resets form
 ```env
 NEON_DATABASE_URL=postgresql://neondb_owner:***@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-VITE_FIREBASE_API_KEY=AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_WEB_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=facapp-dbdc1
 VITE_FIREBASE_STORAGE_BUCKET=facapp-dbdc1.firebasestorage.app
