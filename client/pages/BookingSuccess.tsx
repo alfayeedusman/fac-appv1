@@ -44,7 +44,7 @@ export default function BookingSuccess() {
             setReceiptData({
               id: payload.bookingId,
               confirmationCode:
-                payload.bookingData?.confirmationCode || payload.bookingId,
+                payload.confirmationCode || payload.bookingId,
               service: payload.bookingData?.service || "Service",
               category: payload.bookingData?.category,
               date: payload.bookingData?.date,
