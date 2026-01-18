@@ -25,7 +25,10 @@
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "setup:netlify": "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build",
-    "setup:netlify:clean": "rm -rf node_modules dist && npm run setup:netlify"
+    "setup:netlify:clean": "rm -rf node_modules dist && npm run setup:netlify",
+    "deploy:netlify": "bash deploy-to-netlify.sh",
+    "deploy:vps": "bash deploy.sh deploy",
+    "deploy:one-click": "bash scripts/one-click-deploy.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

@@ -3,7 +3,6 @@
 ## ✅ What I Fixed
 
 1. **Updated netlify.toml** ✓
-
    - Added `npm ci --legacy-peer-deps` to install dependencies
    - Set Node.js version to 22
    - Configured external modules (express, cors, drizzle-orm, @neondatabase/serverless)
@@ -11,7 +10,6 @@
    - Security headers and cache control
 
 2. **Verified Dependencies** ✓
-
    - All required packages in package.json
    - serverless-http available for Netlify functions
    - Neon and Drizzle dependencies installed
@@ -63,7 +61,7 @@ Go to your Netlify site dashboard:
 NEON_DATABASE_URL=postgresql://...
 
 # Firebase (Required)
-VITE_FIREBASE_API_KEY=AIza...
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_WEB_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=facapp-dbdc1
 VITE_FIREBASE_STORAGE_BUCKET=facapp-dbdc1.firebasestorage.app
@@ -207,12 +205,10 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ## ✨ Post-Deployment
 
 1. **Monitor Logs**
-
    - Netlify Analytics
    - Check function execution logs
 
 2. **Set Up Alerts**
-
    - Failed builds
    - High function duration
    - Errors in logs
@@ -225,16 +221,13 @@ Deploy to Netlify Edge (CDN for spa, Functions for API)
 ## 🆘 Still Having Issues?
 
 1. **Check Netlify Logs**
-
    - Go to **Functions** tab
    - Look for deployment errors
 
 2. **Clear Cache**
-
    - Settings → Build & Deploy → Clear cache
 
 3. **Rebuild**
-
    - Deployments → Select deployment → Retry
 
 4. **Local Testing**

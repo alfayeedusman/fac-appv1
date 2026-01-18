@@ -62,10 +62,16 @@ else
     exit 1
 fi
 
-# Step 3: Type checking
-print_header "Step 3: Type Checking"
-print_info "Running TypeScript type checking..."
-npm run typecheck 2>&1 | grep -E "(error|warning|✓)" || print_success "Type checking passed"
+# Step 3: Type checking (optional)
+print_header "Step 3: Type Checking (Optional)"
+print_info "Set SKIP_TYPECHECK=1 to skip (matches Netlify default build behavior)."
+
+if [ "${SKIP_TYPECHECK:-0}" = "1" ]; then
+    print_warning "Skipping typecheck"
+else
+    print_info "Running TypeScript type checking..."
+    npm run typecheck 2>&1 | grep -E "(error|warning|✓)" || print_success "Type checking passed"
+fi
 
 # Step 4: Build
 print_header "Step 4: Building Application"

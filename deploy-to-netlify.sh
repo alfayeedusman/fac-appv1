@@ -71,14 +71,18 @@ npm install --legacy-peer-deps --prefer-offline --no-audit
 
 echo -e "${GREEN}✅ Dependencies installed!${NC}"
 
-# Step 4: Run Type Check
+# Step 4: Run Type Check (optional)
 echo ""
-echo "🔍 Step 4: Running TypeScript checks..."
+echo "🔍 Step 4: TypeScript checks (optional)..."
 echo "================================================"
 
-npm run typecheck
-
-echo -e "${GREEN}✅ TypeScript checks passed!${NC}"
+echo "Set SKIP_TYPECHECK=1 to skip (matches Netlify default build behavior)."
+if [ "${SKIP_TYPECHECK:-0}" = "1" ]; then
+    echo -e "${YELLOW}⚠️  Skipping typecheck${NC}"
+else
+    npm run typecheck
+    echo -e "${GREEN}✅ TypeScript checks passed!${NC}"
+fi
 
 # Step 5: Build the Project
 echo ""

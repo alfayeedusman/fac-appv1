@@ -77,7 +77,7 @@ const apiKey = process.env.XENDIT_SECRET_KEY; // ✅ Safe on server
 ```typescript
 // public/firebase-messaging-sw.js
 const firebaseConfig = {
-  apiKey: "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM", // ❌ Exposed!
+  apiKey: "<YOUR_FIREBASE_WEB_API_KEY>", // ❌ Exposed!
 };
 ```
 
@@ -129,12 +129,10 @@ const XENDIT_SECRET = process.env.XENDIT_SECRET_KEY; // ✅ Safe here
 ### Netlify Secrets
 
 1. **Set environment variables** in Netlify Dashboard:
-
    - Go to: Site Settings → Build & Deploy → Environment
    - Add all `VITE_*` and server variables here
 
 2. **Secure Sensitive Variables**:
-
    - Mark backend secrets as "Protected" (Netlify Pro feature)
    - Never expose in logs or build artifacts
 
@@ -161,13 +159,11 @@ const XENDIT_SECRET = process.env.XENDIT_SECRET_KEY; // ✅ Safe here
 ## If Secrets Are Exposed
 
 1. **Immediate Action**:
-
    - Regenerate all exposed keys/tokens
    - Rotate credentials in the relevant services
    - Force redeploy after cleanup
 
 2. **Cleanup**:
-
    - Remove hardcoded secrets from code
    - Commit cleanup to repository
    - Force push if already committed (only if not public yet)

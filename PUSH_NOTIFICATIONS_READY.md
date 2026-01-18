@@ -5,7 +5,7 @@
 Your Firebase push notifications are **FULLY CONFIGURED** and ready to use:
 
 - **✅ Firebase Project**: `facapp-dbdc1` connected
-- **✅ Web API Key**: `AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM` 
+- **✅ Web API Key**: `<YOUR_FIREBASE_WEB_API_KEY>`
 - **✅ App ID**: `1:964995288467:web:a933dcdc046b3f17422c66`
 - **✅ VAPID Key**: `BPZ7qJsAwjsYN03miKRrNbnPR2oU1y0wpHPmsHnz6Z9U12spAZi5L0ilwRFNVhpXknVOSmmcnFmLMIlpV4PgzeA`
 - **✅ Service Worker**: Updated with real configuration
@@ -22,12 +22,14 @@ Your Firebase push notifications are **FULLY CONFIGURED** and ready to use:
 ## 📱 How It Works
 
 ### Frontend (Client-Side) ✅ READY
+
 - Users can enable/disable notifications
 - Real-time token registration with Firebase
 - Background and foreground message handling
 - Permission management with helpful instructions
 
 ### Backend (Server-Side) ⚠️ MOCK MODE
+
 - Currently using **mock delivery** (for development)
 - All notification types are tracked in database
 - Real delivery will work once Firebase Admin SDK is configured

@@ -15,6 +15,9 @@
   # Helps prevent build-time out-of-memory crashes during Vite bundling on CI.
   NODE_OPTIONS = "--max_old_space_size=4096"
   NODE_ENV = "production"
+  # Netlify secret scanner can mistake Firebase Web API keys (AIza...) as secrets.
+  # Firebase Web API keys are expected to be public in the built frontend bundle.
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM"
 
 [context.production]
   environment = { NODE_ENV = "production" }

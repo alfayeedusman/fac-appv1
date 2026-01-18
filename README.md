@@ -37,11 +37,13 @@ A comprehensive full-stack application built with **React**, **Node.js**, **MySQ
 Fayeed Auto Care is a modern, full-featured car care management platform that streamlines the entire customer journey from booking to service completion. Built with microservices architecture and mobile-first design principles.
 
 ### 🎨 **Live Demo**
+
 - **Production**: [https://fayeedautocare.com](https://fayeedautocare.com)
 - **Admin Panel**: [https://admin.fayeedautocare.com](https://admin.fayeedautocare.com)
 - **API Docs**: [https://api.fayeedautocare.com/docs](https://api.fayeedautocare.com/docs)
 
 ### 📊 **Project Stats**
+
 - **Lines of Code**: 50,000+
 - **Database Tables**: 15+
 - **API Endpoints**: 80+
@@ -53,6 +55,7 @@ Fayeed Auto Care is a modern, full-featured car care management platform that st
 ## ✨ Features
 
 ### 🎯 **Customer Features**
+
 - ✅ **User Authentication** - Email/SMS OTP, Social login, Biometric auth
 - ✅ **Vehicle Management** - Multi-vehicle support, service history
 - ✅ **QR Code Check-in** - Contactless branch check-ins
@@ -64,6 +67,7 @@ Fayeed Auto Care is a modern, full-featured car care management platform that st
 - ✅ **Real-time Tracking** - Service progress notifications
 
 ### 🔧 **Admin Features**
+
 - ✅ **Advanced Dashboard** - Analytics, KPIs, real-time metrics
 - ✅ **Service Management** - Pricing, scheduling, staff allocation
 - ✅ **Branch Management** - Multi-location support
@@ -74,6 +78,7 @@ Fayeed Auto Care is a modern, full-featured car care management platform that st
 - ✅ **Marketing Tools** - Campaigns, vouchers, promotions
 
 ### 📱 **Technical Features**
+
 - ✅ **Cross-platform** - React web + Flutter mobile apps
 - ✅ **Real-time Database** - MySQL with optimized queries
 - ✅ **Microservices** - Scalable API architecture
@@ -145,16 +150,16 @@ graph TB
 
 ### 🔧 **Tech Stack**
 
-| Layer | Technology | Version | Purpose |
-|-------|------------|---------|---------|
-| **Frontend** | React + TypeScript | 18.x | Web application |
-| **Mobile** | Flutter + Dart | 3.16+ | iOS/Android apps |
-| **Backend** | Node.js + Express | 18.x | API server |
-| **Database** | MySQL | 8.0+ | Primary database |
-| **Cache** | Redis | 7.x | Caching & sessions |
-| **Proxy** | Nginx | 1.20+ | Load balancing |
-| **Container** | Docker | 20.x | Containerization |
-| **CI/CD** | GitHub Actions | - | Automation |
+| Layer         | Technology         | Version | Purpose            |
+| ------------- | ------------------ | ------- | ------------------ |
+| **Frontend**  | React + TypeScript | 18.x    | Web application    |
+| **Mobile**    | Flutter + Dart     | 3.16+   | iOS/Android apps   |
+| **Backend**   | Node.js + Express  | 18.x    | API server         |
+| **Database**  | MySQL              | 8.0+    | Primary database   |
+| **Cache**     | Redis              | 7.x     | Caching & sessions |
+| **Proxy**     | Nginx              | 1.20+   | Load balancing     |
+| **Container** | Docker             | 20.x    | Containerization   |
+| **CI/CD**     | GitHub Actions     | -       | Automation         |
 
 ---
 
@@ -175,9 +180,20 @@ docker-compose up -d
 open http://localhost:3000
 ```
 
+Before running deploy scripts, create your environment file:
+
+- Copy `.env.example` → `.env` and fill in the values
+
+### ⚡ One-click deploy scripts
+
+- **Netlify**: `npm run deploy:netlify` (or `bash deploy-to-netlify.sh`)
+- **Ubuntu/VPS (Docker)**: `npm run deploy:vps` (or `bash deploy.sh deploy`)
+- **Wrapper**: `npm run deploy:one-click -- netlify` or `npm run deploy:one-click -- vps`
+
 **That's it!** 🎉 Your development environment is ready.
 
 ### 🌐 **Access Points**
+
 - **Main App**: http://localhost:3000
 - **Admin Panel**: http://localhost:3000/admin
 - **API Documentation**: http://localhost:3000/api/docs
@@ -190,21 +206,22 @@ open http://localhost:3000
 
 ### 📋 **System Requirements**
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| **OS** | Linux/macOS/Windows | Ubuntu 20.04+ |
-| **Node.js** | 18.0+ | 20.0+ |
-| **NPM** | 9.0+ | 10.0+ |
-| **MySQL** | 8.0+ | 8.0.35+ |
-| **Docker** | 20.0+ | 24.0+ |
-| **RAM** | 4GB | 8GB+ |
-| **Storage** | 10GB | 50GB+ |
+| Component   | Minimum             | Recommended   |
+| ----------- | ------------------- | ------------- |
+| **OS**      | Linux/macOS/Windows | Ubuntu 20.04+ |
+| **Node.js** | 18.0+               | 20.0+         |
+| **NPM**     | 9.0+                | 10.0+         |
+| **MySQL**   | 8.0+                | 8.0.35+       |
+| **Docker**  | 20.0+               | 24.0+         |
+| **RAM**     | 4GB                 | 8GB+          |
+| **Storage** | 10GB                | 50GB+         |
 
 ### 🛠️ **Step-by-Step Installation**
 
 #### **1. Prerequisites Installation**
 
 **macOS:**
+
 ```bash
 # Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -214,6 +231,7 @@ brew install node@20 mysql@8.0 docker redis git
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
@@ -234,6 +252,7 @@ sudo apt install git redis-server
 ```
 
 **Windows:**
+
 ```bash
 # Install using Chocolatey (run as Administrator)
 choco install nodejs.install mysql docker-desktop git redis-64
@@ -339,6 +358,7 @@ BACKUP_STORAGE_PATH=./backups
 #### **4. Database Setup**
 
 **Option A: Docker (Recommended)**
+
 ```bash
 # Start MySQL with Docker
 docker-compose up -d mysql
@@ -351,6 +371,7 @@ npm run db:setup
 ```
 
 **Option B: Local MySQL**
+
 ```bash
 # Start MySQL service
 sudo systemctl start mysql  # Linux
@@ -401,6 +422,7 @@ The system uses a hierarchical configuration system:
 ### 📧 **Email Configuration**
 
 **Gmail Setup:**
+
 ```bash
 # 1. Enable 2-Factor Authentication
 # 2. Generate App Password:
@@ -409,6 +431,7 @@ The system uses a hierarchical configuration system:
 ```
 
 **Custom SMTP:**
+
 ```env
 EMAIL_HOST=mail.yourdomain.com
 EMAIL_PORT=587
@@ -420,6 +443,7 @@ EMAIL_SECURE=true
 ### 💰 **Payment Gateway Setup**
 
 **Stripe Configuration:**
+
 ```bash
 # 1. Create Stripe account at https://stripe.com
 # 2. Get API keys from Dashboard → Developers → API Keys
@@ -432,6 +456,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 **PayPal Configuration:**
+
 ```bash
 # 1. Create PayPal developer account
 # 2. Create new app at https://developer.paypal.com
@@ -444,6 +469,7 @@ PAYPAL_MODE=sandbox  # or 'live' for production
 ### 🗺️ **Maps Integration**
 
 **Google Maps Setup:**
+
 ```bash
 # 1. Go to Google Cloud Console
 # 2. Enable Maps JavaScript API, Places API, Geocoding API
@@ -533,6 +559,7 @@ npm run db:health
 ### 📈 **Performance Optimization**
 
 **Indexes:**
+
 ```sql
 -- Automatically created indexes for optimal performance
 CREATE INDEX idx_users_email ON users(email);
@@ -541,6 +568,7 @@ CREATE INDEX idx_payments_status ON payments(status, created_at);
 ```
 
 **Connection Pooling:**
+
 ```javascript
 // Optimized connection pool settings
 const pool = mysql.createPool({
@@ -548,7 +576,7 @@ const pool = mysql.createPool({
   queueLimit: 50,
   acquireTimeout: 60000,
   timeout: 60000,
-  reconnect: true
+  reconnect: true,
 });
 ```
 
@@ -559,6 +587,7 @@ const pool = mysql.createPool({
 ### 📋 **API Overview**
 
 The REST API follows OpenAPI 3.0 specification and provides:
+
 - **80+ endpoints** for comprehensive functionality
 - **JWT authentication** with refresh tokens
 - **Rate limiting** for security
@@ -567,6 +596,7 @@ The REST API follows OpenAPI 3.0 specification and provides:
 - **Filtering and sorting** capabilities
 
 ### 🔗 **Base URLs**
+
 - **Development**: `http://localhost:3000/api`
 - **Staging**: `https://staging-api.fayeedautocare.com`
 - **Production**: `https://api.fayeedautocare.com`
@@ -600,6 +630,7 @@ Authorization: Bearer jwt_token_here
 ### 📚 **Core Endpoints**
 
 #### **Authentication**
+
 ```bash
 POST   /api/auth/register         # User registration
 POST   /api/auth/login            # User login
@@ -611,6 +642,7 @@ POST   /api/auth/verify-email     # Email verification
 ```
 
 #### **User Management**
+
 ```bash
 GET    /api/users/profile         # Get current user profile
 PUT    /api/users/profile         # Update user profile
@@ -621,6 +653,7 @@ DELETE /api/users/vehicles/:id    # Delete vehicle
 ```
 
 #### **Booking System**
+
 ```bash
 GET    /api/bookings              # Get user bookings
 POST   /api/bookings              # Create new booking
@@ -631,6 +664,7 @@ POST   /api/bookings/:id/checkin  # Check-in for service
 ```
 
 #### **Services & Branches**
+
 ```bash
 GET    /api/services              # Get available services
 GET    /api/services/:id          # Get service details
@@ -640,6 +674,7 @@ GET    /api/branches/:id/availability  # Check availability
 ```
 
 #### **Payment System**
+
 ```bash
 GET    /api/payments              # Get payment history
 POST   /api/payments              # Process payment
@@ -650,6 +685,7 @@ POST   /api/payment-methods       # Save payment method
 ```
 
 #### **Membership & Loyalty**
+
 ```bash
 GET    /api/memberships           # Get available plans
 POST   /api/memberships/subscribe # Subscribe to plan
@@ -661,6 +697,7 @@ POST   /api/vouchers/:id/redeem   # Redeem voucher
 ### 📊 **API Response Format**
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -675,6 +712,7 @@ POST   /api/vouchers/:id/redeem   # Redeem voucher
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -758,6 +796,7 @@ flutter build web                   # Web
 #### **App Store Deployment**
 
 **Android (Google Play):**
+
 ```bash
 # Build signed APK
 flutter build appbundle --release
@@ -767,6 +806,7 @@ flutter build appbundle --release
 ```
 
 **iOS (App Store):**
+
 ```bash
 # Build iOS app
 flutter build ios --release
@@ -884,6 +924,7 @@ open coverage/lcov-report/index.html
 ```
 
 Current test coverage:
+
 - **Unit Tests**: 95%
 - **Integration Tests**: 90%
 - **API Tests**: 100%
@@ -892,6 +933,7 @@ Current test coverage:
 ### 🤖 **Continuous Integration**
 
 GitHub Actions automatically runs tests on:
+
 - Every push to main branch
 - Every pull request
 - Nightly builds
@@ -1071,6 +1113,7 @@ curl http://localhost:3000/api/performance
 ### 🔔 **Alerting**
 
 Configure alerts for:
+
 - Application downtime
 - High error rates
 - Performance degradation
@@ -1080,6 +1123,7 @@ Configure alerts for:
 ### 📊 **Dashboard**
 
 Access monitoring dashboard at:
+
 - **Development**: http://localhost:3000/admin/monitoring
 - **Production**: https://admin.fayeedautocare.com/monitoring
 
@@ -1192,6 +1236,7 @@ We welcome contributions from the community! Here's how to get started:
 ### 🐛 **Bug Reports**
 
 When reporting bugs, please include:
+
 - Operating system and version
 - Node.js and npm versions
 - Steps to reproduce the issue
@@ -1201,6 +1246,7 @@ When reporting bugs, please include:
 ### 💡 **Feature Requests**
 
 For feature requests, please provide:
+
 - Clear description of the feature
 - Use case and business value
 - Proposed implementation approach
@@ -1253,6 +1299,7 @@ Your Fayeed Auto Care system is now ready for development and production use wit
 ✅ **Monitoring & alerting**
 
 **Next Steps:**
+
 1. Configure your production environment
 2. Set up monitoring and alerting
 3. Deploy to your hosting platform
@@ -1263,4 +1310,4 @@ Your Fayeed Auto Care system is now ready for development and production use wit
 
 **Made with ❤️ by the Fayeed Auto Care team**
 
-*Transform your car care business with modern technology!*
+_Transform your car care business with modern technology!_

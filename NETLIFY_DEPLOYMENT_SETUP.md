@@ -33,7 +33,7 @@ Add these variables (get values from your `.env` file):
 NEON_DATABASE_URL=postgresql://...
 
 # Firebase Configuration (safe for frontend)
-VITE_FIREBASE_API_KEY=AIza...
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_WEB_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=facapp-dbdc1.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=facapp-dbdc1
 VITE_FIREBASE_STORAGE_BUCKET=facapp-dbdc1.firebasestorage.app
@@ -90,7 +90,6 @@ Your `netlify.toml` is already configured with:
 Before your first deploy:
 
 1. **Create Neon Project**:
-
    - Go to [console.neon.tech](https://console.neon.tech)
    - Create a new project
    - Get your connection string
@@ -109,12 +108,10 @@ Before your first deploy:
 ## Step 5: Deploy & Test
 
 1. **First Deploy**:
-
    - Netlify automatically deploys when you push to your main branch
    - Monitor build logs in Netlify Dashboard
 
 2. **Check Build Logs**:
-
    - Go to **Deployments** tab
    - Click on the latest deployment
    - View real-time build logs
@@ -199,12 +196,10 @@ curl http://localhost:8080/api/neon/test
 2. **Use environment variables** - Never hardcode secrets
 
 3. **Monitor deployments**:
-
    - Enable email notifications in Netlify
    - Check build logs for warnings
 
 4. **Database backups**:
-
    - Enable Neon automated backups
    - Regular export of critical data
 
