@@ -26,7 +26,9 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     const { email, fullName, role, branchLocation } = req.body;
 
     if (!email || !fullName) {
-      return res.status(400).json({ success: false, error: "Missing email or fullName" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing email or fullName" });
     }
 
     // Restrict roles that can be assigned by this endpoint
@@ -50,7 +52,9 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     // Check if user already exists
     const existing = await neonDbService.getUserByEmail(email);
     if (existing) {
-      return res.status(409).json({ success: false, error: "User already exists" });
+      return res
+        .status(409)
+        .json({ success: false, error: "User already exists" });
     }
 
     // Generate a strong random password and create user
@@ -79,6 +83,8 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     });
   } catch (error: any) {
     console.error("admin-invite error:", error?.message || error);
-    return res.status(500).json({ success: false, error: error?.message || "Internal error" });
+    return res
+      .status(500)
+      .json({ success: false, error: error?.message || "Internal error" });
   }
 };

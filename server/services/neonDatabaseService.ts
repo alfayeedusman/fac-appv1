@@ -408,7 +408,9 @@ class NeonDatabaseService {
     // Find which bays are already occupied
     const occupiedBays = new Set(
       bookings
-        .filter((b: Booking) => b.bayNumber !== null && b.bayNumber !== undefined)
+        .filter(
+          (b: Booking) => b.bayNumber !== null && b.bayNumber !== undefined,
+        )
         .map((b: Booking) => b.bayNumber),
     );
 

@@ -135,7 +135,10 @@ export function createServer() {
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
   app.get("/api/neon/bookings", neonApiRoutes.getBookings);
   app.get("/api/neon/bookings/availability", neonApiRoutes.getSlotAvailability);
-  app.get("/api/neon/bookings/garage-settings", neonApiRoutes.getGarageSettings);
+  app.get(
+    "/api/neon/bookings/garage-settings",
+    neonApiRoutes.getGarageSettings,
+  );
   app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints
@@ -197,7 +200,10 @@ export function createServer() {
     xenditApiRoutes.createSubscriptionInvoice,
   );
   app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
-  app.post("/api/neon/payment/xendit/confirm-offline", xenditApiRoutes.confirmOfflinePayment);
+  app.post(
+    "/api/neon/payment/xendit/confirm-offline",
+    xenditApiRoutes.confirmOfflinePayment,
+  );
   app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
   app.get(
     "/api/neon/payment/xendit/invoice-status/:id",

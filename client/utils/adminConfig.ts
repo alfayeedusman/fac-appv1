@@ -458,15 +458,24 @@ export class AdminConfigManager {
     const normalizedDay = dayOfWeek.toLowerCase();
     const dayConfig = config.scheduling.workingHours[normalizedDay];
 
-    console.log(`📅 generateTimeSlots - Day: ${normalizedDay}, Config found:`, !!dayConfig, dayConfig);
+    console.log(
+      `📅 generateTimeSlots - Day: ${normalizedDay}, Config found:`,
+      !!dayConfig,
+      dayConfig,
+    );
 
     if (!dayConfig) {
-      console.warn(`⚠️ No config for day: ${normalizedDay}. Available days:`, Object.keys(config.scheduling.workingHours));
+      console.warn(
+        `⚠️ No config for day: ${normalizedDay}. Available days:`,
+        Object.keys(config.scheduling.workingHours),
+      );
       return [];
     }
 
     if (!dayConfig.enabled) {
-      console.log(`ℹ️ Day ${normalizedDay} is disabled (enabled: ${dayConfig.enabled})`);
+      console.log(
+        `ℹ️ Day ${normalizedDay} is disabled (enabled: ${dayConfig.enabled})`,
+      );
       return [];
     }
 
@@ -477,7 +486,9 @@ export class AdminConfigManager {
     const startTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;
 
-    console.log(`⏰ Generating slots from ${dayConfig.startTime} to ${dayConfig.endTime} (${startTime}-${endTime}min) with ${dayConfig.slotDuration}min intervals`);
+    console.log(
+      `⏰ Generating slots from ${dayConfig.startTime} to ${dayConfig.endTime} (${startTime}-${endTime}min) with ${dayConfig.slotDuration}min intervals`,
+    );
 
     for (let time = startTime; time < endTime; time += dayConfig.slotDuration) {
       const hours = Math.floor(time / 60);

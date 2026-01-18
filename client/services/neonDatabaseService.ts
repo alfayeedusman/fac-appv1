@@ -920,13 +920,10 @@ class NeonDatabaseClient {
     error?: string;
   }> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/bookings/garage-settings`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const response = await fetch(`${this.baseUrl}/bookings/garage-settings`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
       const data = await response.json();
 
@@ -941,13 +938,10 @@ class NeonDatabaseClient {
     } catch (error) {
       // Fallback to same-origin
       try {
-        const response = await fetch(
-          `/api/neon/bookings/garage-settings`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        const response = await fetch(`/api/neon/bookings/garage-settings`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
         const data = await response.json();
         return data;

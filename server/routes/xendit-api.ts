@@ -208,11 +208,23 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
             : data.available_payment_methods || data.payment_methods || [];
 
           const methods = (list || []).map((m: any) => {
-            const id = (m.code || m.id || m.payment_method || m.type || m.name || "")
+            const id = (
+              m.code ||
+              m.id ||
+              m.payment_method ||
+              m.type ||
+              m.name ||
+              ""
+            )
               .toString()
               .toLowerCase();
             const label =
-              m.name || m.display_name || m.label || m.payment_method || m.id || id;
+              m.name ||
+              m.display_name ||
+              m.label ||
+              m.payment_method ||
+              m.id ||
+              id;
             return { id, label };
           });
 
@@ -244,7 +256,9 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
       { id: "bank_transfer", label: "Bank Transfer" },
       { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
     ];
-    res.status(200).json({ success: true, methods: fallback, source: "fallback_error" });
+    res
+      .status(200)
+      .json({ success: true, methods: fallback, source: "fallback_error" });
   }
 };
 

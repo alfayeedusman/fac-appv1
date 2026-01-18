@@ -374,10 +374,12 @@ const getTimeSlots = (date: string) => {
     if (!date) return [];
     // Parse date string (YYYY-MM-DD) without timezone interpretation
     // Add T00:00:00 and Z to explicitly set UTC, then use the date as-is
-    const [year, month, day] = date.split('-').map(Number);
+    const [year, month, day] = date.split("-").map(Number);
     // Create date in local timezone by specifying components
     const d = new Date(year, month - 1, day);
-    const dayOfWeek = d.toLocaleDateString("en-us", { weekday: "long" }).toLowerCase();
+    const dayOfWeek = d
+      .toLocaleDateString("en-us", { weekday: "long" })
+      .toLowerCase();
     console.log(`📅 Date: ${date}, Day: ${dayOfWeek}`);
     return generateTimeSlots(dayOfWeek);
   } catch (error) {
@@ -1578,7 +1580,10 @@ export default function StepperBooking({
 
           {/* Main Content */}
           <div className="flex-1 lg:ml-0 min-w-0">
-            <div ref={contentContainerRef} className="p-3 sm:p-4 md:p-6 lg:p-8 pb-44 md:pb-8 h-screen overflow-y-auto">
+            <div
+              ref={contentContainerRef}
+              className="p-3 sm:p-4 md:p-6 lg:p-8 pb-44 md:pb-8 h-screen overflow-y-auto"
+            >
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
                 <Button
@@ -2495,9 +2500,9 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
 
         // Convert to 24-hour format if AM/PM is present
         if (period) {
-          if (period === 'PM' && hour !== 12) {
+          if (period === "PM" && hour !== 12) {
             hour += 12;
-          } else if (period === 'AM' && hour === 12) {
+          } else if (period === "AM" && hour === 12) {
             hour = 0;
           }
         }
@@ -2528,11 +2533,14 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
 
     // Check if selected date is today (in Manila timezone)
     const isToday = bookingData.date === garageSettings.currentDate;
-    console.log(`🕐 Selected date: ${bookingData.date}, Today: ${garageSettings.currentDate}, Is Today: ${isToday}`);
+    console.log(
+      `🕐 Selected date: ${bookingData.date}, Today: ${garageSettings.currentDate}, Is Today: ${isToday}`,
+    );
 
     if (isToday) {
       // Filter out past slots for today
-      const currentTime = garageSettings.currentHour * 60 + garageSettings.currentMinute; // Convert to minutes
+      const currentTime =
+        garageSettings.currentHour * 60 + garageSettings.currentMinute; // Convert to minutes
       const filteredSlots = allSlots.filter((slot: string) => {
         // Parse slot time (e.g., "1:00 PM" or "13:00")
         const slotTime = parseSlotTime(slot);
@@ -2540,16 +2548,24 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         const isPastTime = slotMinutes <= currentTime;
 
         if (isPastTime) {
-          console.log(`⏭️  Hiding past slot: ${slot} (slot: ${slotMinutes}min >= current: ${currentTime}min)`);
+          console.log(
+            `⏭️  Hiding past slot: ${slot} (slot: ${slotMinutes}min >= current: ${currentTime}min)`,
+          );
         }
         return !isPastTime;
       });
 
-      console.log(`🕐 Today: Showing ${filteredSlots.length} future slots out of ${allSlots.length} total:`, filteredSlots);
+      console.log(
+        `🕐 Today: Showing ${filteredSlots.length} future slots out of ${allSlots.length} total:`,
+        filteredSlots,
+      );
       return filteredSlots;
     } else {
       // For future dates, show all slots
-      console.log(`🕐 Future date: Showing all ${allSlots.length} slots for ${bookingData.date}:`, allSlots);
+      console.log(
+        `🕐 Future date: Showing all ${allSlots.length} slots for ${bookingData.date}:`,
+        allSlots,
+      );
       return allSlots;
     }
   }, [bookingData?.date, allSlots, garageSettings]);
@@ -2896,7 +2912,8 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
               {availableSlots.length === 0 && (
                 <div className="mt-3 p-4 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                   <p className="text-sm text-red-700 dark:text-red-300 font-medium">
-                    ⚠️ No slots available for the selected date. The garage may be closed on this day. Please select another date.
+                    ⚠️ No slots available for the selected date. The garage may
+                    be closed on this day. Please select another date.
                   </p>
                 </div>
               )}

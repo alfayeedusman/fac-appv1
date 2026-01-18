@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import Swal from 'sweetalert2';
-import { log, warn } from '@/utils/logger';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import Swal from "sweetalert2";
+import { log, warn } from "@/utils/logger";
 
-export default function PaymentMethodsSelection({ bookingData, updateBookingData }: any) {
+export default function PaymentMethodsSelection({
+  bookingData,
+  updateBookingData,
+}: any) {
   const [methods, setMethods] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<string | null>(bookingData.paymentMethodDetail || null);
+  const [selected, setSelected] = useState<string | null>(
+    bookingData.paymentMethodDetail || null,
+  );
 
   useEffect(() => {
-    const cacheKey = 'xendit_methods_cache_v1';
+    const cacheKey = "xendit_methods_cache_v1";
     const cacheTtlMs = 1000 * 60 * 5; // 5 minutes
 
     const load = async () => {
@@ -22,7 +27,11 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
           const cached = localStorage.getItem(cacheKey);
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (parsed?.ts && Date.now() - parsed.ts < cacheTtlMs && Array.isArray(parsed.methods)) {
+            if (
+              parsed?.ts &&
+              Date.now() - parsed.ts < cacheTtlMs &&
+              Array.isArray(parsed.methods)
+            ) {
               setMethods(parsed.methods);
               setLoading(false);
               return;
@@ -30,7 +39,7 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
           }
         } catch (e) {
           // ignore cache parse errors
-          log('xendit cache parse error', e);
+          log("xendit cache parse error", e);
         }
 
         const resp = await fetch(`/api/neon/payment/xendit/methods`);
@@ -38,29 +47,38 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
         if (resp.ok && json.success) {
           setMethods(json.methods || []);
           try {
-            localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), methods: json.methods || [] }));
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ ts: Date.now(), methods: json.methods || [] }),
+            );
           } catch (e) {
             // ignore storage errors
-            log('Failed to cache xendit methods', e);
+            log("Failed to cache xendit methods", e);
           }
         } else {
-          warn('Failed to load payment methods', json);
-          toast({ title: 'Warning', description: 'Could not load payment methods. Showing defaults.' });
+          warn("Failed to load payment methods", json);
+          toast({
+            title: "Warning",
+            description: "Could not load payment methods. Showing defaults.",
+          });
           setMethods([
-            { id: 'card', label: 'Credit / Debit Card' },
-            { id: 'gcash', label: 'GCash (e-wallet)' },
-            { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-            { id: 'bank_transfer', label: 'Bank Transfer' },
+            { id: "card", label: "Credit / Debit Card" },
+            { id: "gcash", label: "GCash (e-wallet)" },
+            { id: "paymaya", label: "PayMaya (e-wallet)" },
+            { id: "bank_transfer", label: "Bank Transfer" },
           ]);
         }
       } catch (err) {
-        warn('Error fetching payment methods', err);
-        toast({ title: 'Warning', description: 'Could not fetch payment methods.' });
+        warn("Error fetching payment methods", err);
+        toast({
+          title: "Warning",
+          description: "Could not fetch payment methods.",
+        });
         setMethods([
-          { id: 'card', label: 'Credit / Debit Card' },
-          { id: 'gcash', label: 'GCash (e-wallet)' },
-          { id: 'paymaya', label: 'PayMaya (e-wallet)' },
-          { id: 'bank_transfer', label: 'Bank Transfer' },
+          { id: "card", label: "Credit / Debit Card" },
+          { id: "gcash", label: "GCash (e-wallet)" },
+          { id: "paymaya", label: "PayMaya (e-wallet)" },
+          { id: "bank_transfer", label: "Bank Transfer" },
         ]);
       } finally {
         setLoading(false);
@@ -71,25 +89,34 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
 
   const isOfflineMethod = (method: any) => {
     if (!method) return false;
-    const offlineIds = ['offline', 'bank_transfer', 'cash', 'pay_at_counter', 'onsite'];
+    const offlineIds = [
+      "offline",
+      "bank_transfer",
+      "cash",
+      "pay_at_counter",
+      "onsite",
+    ];
     if (offlineIds.includes(method.id)) return true;
-    const label = (method.label || '').toLowerCase();
+    const label = (method.label || "").toLowerCase();
     return /bank|cash|counter|on-?site/.test(label);
   };
 
   const choose = async (methodId: string) => {
-    const method = methods.find((m) => m.id === methodId) || { id: methodId, label: methodId };
+    const method = methods.find((m) => m.id === methodId) || {
+      id: methodId,
+      label: methodId,
+    };
 
     // If the selected method is an offline / pay-at-counter type, confirm immediately with the user
     if (isOfflineMethod(method)) {
       const confirmation = await Swal.fire({
         title: `Confirm ${method.label}`,
         html: `You selected <strong>${method.label}</strong>.<br/>You will pay <strong>₱${(bookingData.totalPrice || 0).toLocaleString()}</strong> when you arrive at the branch.<br/><br/>Your booking will be marked as "Pending Payment".`,
-        icon: 'question',
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Yes, confirm',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#f97316',
+        confirmButtonText: "Yes, confirm",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#f97316",
       });
 
       if (!confirmation.isConfirmed) {
@@ -99,39 +126,44 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
 
       // Call backend to confirm offline payment
       try {
-        const confirmRes = await fetch('/api/neon/payment/xendit/confirm-offline', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            bookingId: bookingData.id,
-            paymentMethod: methodId,
-            amount: bookingData.totalPrice,
-          }),
-        });
+        const confirmRes = await fetch(
+          "/api/neon/payment/xendit/confirm-offline",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingId: bookingData.id,
+              paymentMethod: methodId,
+              amount: bookingData.totalPrice,
+            }),
+          },
+        );
 
         const confirmData = await confirmRes.json();
         if (!confirmRes.ok || !confirmData.success) {
-          throw new Error(confirmData.error || 'Failed to confirm offline payment');
+          throw new Error(
+            confirmData.error || "Failed to confirm offline payment",
+          );
         }
 
         toast({
-          title: 'Payment confirmed',
+          title: "Payment confirmed",
           description: `${method.label} confirmed. Your booking reference: ${confirmData.booking.confirmationCode}`,
-          variant: 'default'
+          variant: "default",
         });
       } catch (err: any) {
-        warn('Error confirming offline payment', err);
+        warn("Error confirming offline payment", err);
         toast({
-          title: 'Error',
-          description: err.message || 'Failed to confirm payment',
-          variant: 'destructive'
+          title: "Error",
+          description: err.message || "Failed to confirm payment",
+          variant: "destructive",
         });
         return;
       }
     }
 
     setSelected(methodId);
-    updateBookingData('paymentMethodDetail', methodId);
+    updateBookingData("paymentMethodDetail", methodId);
   };
 
   return (
@@ -143,12 +175,14 @@ export default function PaymentMethodsSelection({ bookingData, updateBookingData
           <Button
             key={m.id}
             onClick={() => choose(m.id)}
-            variant={selected === m.id ? 'default' : 'outline'}
+            variant={selected === m.id ? "default" : "outline"}
             className="text-sm h-10"
             aria-pressed={selected === m.id}
           >
             <div className="flex items-center justify-center gap-2">
-              {selected === m.id && <CheckCircle className="h-4 w-4 text-green-500" />}
+              {selected === m.id && (
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              )}
               <span>{m.label}</span>
             </div>
           </Button>

@@ -353,25 +353,25 @@ export const getGarageSettings: RequestHandler = async (req, res) => {
     const now = new Date();
 
     // Use Intl.DateTimeFormat to properly extract Manila timezone values
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Asia/Manila',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
       hour12: false,
     });
 
     const parts = formatter.formatToParts(now);
-    const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+    const partMap = Object.fromEntries(parts.map((p) => [p.type, p.value]));
 
     const manilaHour = parseInt(partMap.hour, 10);
     const manilaMinute = parseInt(partMap.minute, 10);
     const manilaDate = `${partMap.year}-${partMap.month}-${partMap.day}`;
 
-    console.log('🕐 Manila time details:', {
+    console.log("🕐 Manila time details:", {
       hour: manilaHour,
       minute: manilaMinute,
       date: manilaDate,
@@ -382,7 +382,8 @@ export const getGarageSettings: RequestHandler = async (req, res) => {
     const garageOpenTime = 8; // 8:00 AM
     const garageCloseTime = 20; // 8:00 PM
 
-    const isGarageOpen = manilaHour >= garageOpenTime && manilaHour < garageCloseTime;
+    const isGarageOpen =
+      manilaHour >= garageOpenTime && manilaHour < garageCloseTime;
 
     res.json({
       success: true,
@@ -394,14 +395,17 @@ export const getGarageSettings: RequestHandler = async (req, res) => {
         garageOpenTime,
         garageCloseTime,
         isGarageOpen,
-        timezone: 'Asia/Manila',
+        timezone: "Asia/Manila",
       },
     });
   } catch (error) {
     console.error("❌ Error getting garage settings:", error);
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get garage settings",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to get garage settings",
     });
   }
 };
