@@ -106,15 +106,25 @@ class XenditPaymentService {
     try {
       log("💳 Creating subscription renewal invoice...", request);
 
-      const currentUrl = window.location.origin;
+      // Use absolute URL with protocol to ensure Xendit redirects work correctly
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      const baseUrl = `${protocol}//${host}`;
+
+      // Log redirect URLs for debugging
+      const successUrl = `${baseUrl}/subscription-renewal-success?subscriptionId=${request.subscriptionId}`;
+      const failureUrl = `${baseUrl}/subscription-renewal-failed?subscriptionId=${request.subscriptionId}`;
+
+      log("🔗 Subscription Redirect URLs:", { successUrl, failureUrl });
+
       const payload = {
         subscriptionId: request.subscriptionId,
         amount: request.amount,
         customerEmail: request.customerEmail,
         customerName: request.customerName,
         description: request.description,
-        success_redirect_url: `${currentUrl}/subscription-renewal-success?subscriptionId=${request.subscriptionId}`,
-        failure_redirect_url: `${currentUrl}/subscription-renewal-failed?subscriptionId=${request.subscriptionId}`,
+        success_redirect_url: successUrl,
+        failure_redirect_url: failureUrl,
       };
 
       const response = await fetch(`${this.baseUrl}/create-subscription-invoice`, {
