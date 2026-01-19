@@ -54,7 +54,17 @@ class XenditPaymentService {
     try {
       log("💳 Creating booking payment invoice...", request);
 
-      const currentUrl = window.location.origin;
+      // Use absolute URL with protocol to ensure Xendit redirects work correctly
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      const baseUrl = `${protocol}//${host}`;
+
+      // Log redirect URLs for debugging
+      const successUrl = `${baseUrl}/booking-success?bookingId=${request.bookingId}`;
+      const failureUrl = `${baseUrl}/booking-failed?bookingId=${request.bookingId}`;
+
+      log("🔗 Redirect URLs:", { successUrl, failureUrl });
+
       const payload: XenditInvoiceRequest = {
         external_id: `BOOKING_${request.bookingId}`,
         amount: request.amount,
@@ -64,8 +74,8 @@ class XenditPaymentService {
           given_names: request.customerName,
           email: request.customerEmail,
         },
-        success_redirect_url: `${currentUrl}/booking-success?bookingId=${request.bookingId}`,
-        failure_redirect_url: `${currentUrl}/booking-failed?bookingId=${request.bookingId}`,
+        success_redirect_url: successUrl,
+        failure_redirect_url: failureUrl,
       };
 
       const response = await fetch(`${this.baseUrl}/create-invoice`, {
