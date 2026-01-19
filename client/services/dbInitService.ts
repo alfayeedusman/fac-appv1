@@ -46,7 +46,8 @@ async function performInitialization(): Promise<boolean> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.error || `Database initialization failed with status ${response.status}`,
+        errorData.error ||
+          `Database initialization failed with status ${response.status}`,
       );
     }
 
@@ -57,7 +58,9 @@ async function performInitialization(): Promise<boolean> {
       isInitialized = true;
       return true;
     } else {
-      throw new Error(data.error || "Database initialization returned success:false");
+      throw new Error(
+        data.error || "Database initialization returned success:false",
+      );
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

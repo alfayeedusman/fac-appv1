@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, Loader } from "lucide-react";
-import { testDatabaseConnection, getDatabaseDiagnostics } from "@/services/dbInitService";
+import {
+  testDatabaseConnection,
+  getDatabaseDiagnostics,
+} from "@/services/dbInitService";
 
 interface StatusItem {
   name: string;
@@ -41,7 +44,8 @@ export default function SystemDiagnostics() {
           newStatuses.push({
             name: "Database Diagnostics",
             status: diagnostics.success ? "healthy" : "warning",
-            message: diagnostics.checks?.databaseUrlConfigured || "Not configured",
+            message:
+              diagnostics.checks?.databaseUrlConfigured || "Not configured",
             details: diagnostics.checks,
           });
         }
@@ -65,14 +69,18 @@ export default function SystemDiagnostics() {
         }
 
         // Check authentication
-        const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+        const isAuthenticated =
+          localStorage.getItem("isAuthenticated") === "true";
         newStatuses.push({
           name: "Authentication",
           status: isAuthenticated ? "healthy" : "warning",
-          message: isAuthenticated ? "✅ User is logged in" : "⚠️ No active session",
+          message: isAuthenticated
+            ? "✅ User is logged in"
+            : "⚠️ No active session",
         });
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        const errorMsg =
+          error instanceof Error ? error.message : "Unknown error";
         newStatuses.push({
           name: "System Diagnostics",
           status: "error",
@@ -103,7 +111,10 @@ export default function SystemDiagnostics() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       healthy: "default",
       warning: "secondary",
       error: "destructive",
@@ -117,7 +128,9 @@ export default function SystemDiagnostics() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">System Diagnostics</h1>
-          <p className="text-muted-foreground">Check the status of all system components</p>
+          <p className="text-muted-foreground">
+            Check the status of all system components
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -128,8 +141,12 @@ export default function SystemDiagnostics() {
                   <div className="flex items-start gap-4 flex-1">
                     {getStatusIcon(status.status)}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground mb-1">{status.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{status.message}</p>
+                      <h3 className="font-semibold text-foreground mb-1">
+                        {status.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {status.message}
+                      </p>
                       {status.details && (
                         <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-48 mb-2">
                           {JSON.stringify(status.details, null, 2)}
@@ -137,7 +154,9 @@ export default function SystemDiagnostics() {
                       )}
                     </div>
                   </div>
-                  <Badge variant={getStatusBadge(status.status)}>{status.status}</Badge>
+                  <Badge variant={getStatusBadge(status.status)}>
+                    {status.status}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -160,7 +179,9 @@ export default function SystemDiagnostics() {
         {isLoading && (
           <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-center">
             <Loader className="h-5 w-5 animate-spin inline-block mr-2" />
-            <span className="text-blue-900 dark:text-blue-100">Running diagnostics...</span>
+            <span className="text-blue-900 dark:text-blue-100">
+              Running diagnostics...
+            </span>
           </div>
         )}
       </div>
