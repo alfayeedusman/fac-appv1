@@ -15,6 +15,7 @@ import imagesApiRoutes from "./routes/images-api";
 import cmsApiRoutes from "./routes/cms-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
+import { migrate } from "./database/migrate";
 import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -206,9 +207,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
     console.log(`🏠 Home: http://localhost:${PORT}/`);
 
-    // Seed branch and user data after server startup
+    // Initialize database and seed data on server startup
     setTimeout(async () => {
       try {
+        console.log("🔄 Initializing database and running migrations...");
+        await migrate();
+        console.log(
+          "✅ Database initialization and migrations completed successfully",
+        );
+
         console.log("🏪 Auto-seeding branch data...");
         await seedBranches();
         console.log("✅ Branch seeding completed successfully");
@@ -217,8 +224,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         await seedUsers();
         console.log("✅ User seeding completed successfully");
       } catch (error) {
-        console.log("⚠️ Seeding failed:", error);
+        console.error("❌ Initialization failed:", error);
+        console.log(
+          "⚠️ Server is running but database may not be properly initialized",
+        );
       }
-    }, 3000);
+    }, 1000);
   });
 }

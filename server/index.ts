@@ -262,9 +262,15 @@ export function createServer() {
   app.get("/api/neon/inventory/analytics", neonApiRoutes.getInventoryAnalytics);
   app.get("/api/neon/inventory/low-stock", neonApiRoutes.getLowStockItems);
 
-  // Auto-seed data on server startup
+  // Initialize database and seed data on server startup
   setTimeout(async () => {
     try {
+      console.log("🔄 Initializing database and running migrations...");
+      await import("./database/migrate").then((m) => m.migrate());
+      console.log(
+        "✅ Database initialization and migrations completed successfully",
+      );
+
       console.log("🏪 Auto-seeding branch data...");
       await seedBranches();
       console.log("✅ Branch seeding completed successfully");
@@ -273,9 +279,12 @@ export function createServer() {
       await seedUsers();
       console.log("✅ User seeding completed successfully");
     } catch (error) {
-      console.log("⚠️ Seeding failed:", error);
+      console.error("❌ Initialization failed:", error);
+      console.log(
+        "⚠️ Server is running but database may not be properly initialized",
+      );
     }
-  }, 2000);
+  }, 1000);
 
   return app;
 }

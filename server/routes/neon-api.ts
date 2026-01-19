@@ -552,6 +552,8 @@ export const createBooking: RequestHandler = async (req, res) => {
       fullName,
       mobile,
       email,
+      basePrice,
+      totalPrice,
     } = req.body;
 
     const missingFields = [];
@@ -563,6 +565,10 @@ export const createBooking: RequestHandler = async (req, res) => {
     if (!fullName) missingFields.push("fullName");
     if (!mobile) missingFields.push("mobile");
     if (!email) missingFields.push("email");
+    if (basePrice === undefined || basePrice === null)
+      missingFields.push("basePrice");
+    if (totalPrice === undefined || totalPrice === null)
+      missingFields.push("totalPrice");
 
     if (missingFields.length > 0) {
       console.warn("🔐 Booking validation failed: missing fields", {
@@ -571,6 +577,42 @@ export const createBooking: RequestHandler = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: `Missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    // Validate price fields are numbers
+    if (typeof basePrice !== "number" || typeof totalPrice !== "number") {
+      return res.status(400).json({
+        success: false,
+        error: "basePrice and totalPrice must be valid numbers",
+      });
+    }
+
+    // Validate prices are non-negative
+    if (basePrice < 0 || totalPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Prices must be non-negative",
+      });
+    }
+
+    // Check slot availability before creating booking
+    console.log("🔍 Checking slot availability for:", {
+      date,
+      timeSlot,
+      branch,
+    });
+    const availability = await neonDbService.getSlotAvailability(
+      date,
+      timeSlot,
+      branch,
+    );
+
+    if (!availability.isAvailable) {
+      console.warn("❌ Booking slot not available", { date, timeSlot, branch });
+      return res.status(409).json({
+        success: false,
+        error: `No availability for ${timeSlot} on ${date} at ${branch}. Please select another time slot.`,
       });
     }
 

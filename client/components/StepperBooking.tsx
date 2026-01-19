@@ -982,10 +982,20 @@ export default function StepperBooking({
     try {
       const customerName = isGuest
         ? bookingData.fullName
-        : localStorage.getItem("userFullName") || "Customer";
+        : localStorage.getItem("userFullName") ||
+          bookingData.fullName ||
+          "Customer";
+      // Always use the email from booking data as fallback to ensure it's never empty
       const customerEmail = isGuest
         ? bookingData.email
-        : localStorage.getItem("userEmail") || "";
+        : localStorage.getItem("userEmail") || bookingData.email || "";
+
+      // Validate email before proceeding
+      if (!customerEmail || !customerEmail.includes("@")) {
+        throw new Error(
+          "Valid customer email is required for payment processing",
+        );
+      }
 
       const invoiceData = await xenditService.createInvoice({
         amount: amount,
