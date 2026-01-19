@@ -70,10 +70,22 @@ app.get("*", (req, res) => {
   res.sendFile(indexPath);
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`🚀 Fusion Starter server running on port ${port}`);
   console.log(`📱 Frontend: http://localhost:${port}`);
   console.log(`🔧 API: http://localhost:${port}/api`);
+
+  // Initialize database on startup
+  setTimeout(async () => {
+    try {
+      console.log("🔄 Initializing database and running migrations...");
+      await migrate();
+      console.log("✅ Database initialization and migrations completed successfully");
+    } catch (error) {
+      console.error("❌ Database initialization failed:", error);
+      console.log("⚠️ Server is running but database may not be properly initialized");
+    }
+  }, 500);
 });
 
 // Graceful shutdown
