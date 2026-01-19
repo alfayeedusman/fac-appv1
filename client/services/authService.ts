@@ -1,5 +1,6 @@
 import { neonDbClient } from "./neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
+import { initializeDatabase } from "./dbInitService";
 
 export interface LoginCredentials {
   email: string;
