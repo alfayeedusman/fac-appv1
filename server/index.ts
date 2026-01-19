@@ -77,6 +77,11 @@ export function createServer() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
+  // ============= CRITICAL: DATABASE INITIALIZATION =============
+  // Ensure database is initialized before ANY API request
+  // This runs automatically on first request to any /api endpoint
+  app.use("/api", ensureDatabaseInitialized);
+
   // Health check
   app.get("/api/health", async (req, res) => {
     try {
