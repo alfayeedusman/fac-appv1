@@ -61,6 +61,7 @@ import QuickSuperAdminLogin from "./components/QuickSuperAdminLogin";
 import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
+import SystemDiagnostics from "./pages/SystemDiagnostics";
 import { neonDbClient } from "./services/neonDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
 import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
@@ -410,6 +411,14 @@ const AppComponent = () => {
                         <DiagnosticsPage />
                       </ErrorBoundary>
                     </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/system-diagnostics"
+                  element={
+                    <ErrorBoundary>
+                      <SystemDiagnostics />
+                    </ErrorBoundary>
                   }
                 />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

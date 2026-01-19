@@ -1,5 +1,6 @@
 import { neonDbClient } from "./neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
+import { initializeDatabase } from "./dbInitService";
 
 export interface LoginCredentials {
   email: string;
@@ -97,6 +98,11 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
+      // Ensure database is initialized before attempting login
+      console.log("🔐 Login initiated - ensuring database is ready...");
+      await initializeDatabase();
+      console.log("✅ Database ready, proceeding with login");
+
       const result = await neonDbClient.login(
         credentials.email,
         credentials.password,
@@ -160,6 +166,11 @@ class AuthService {
     userData: RegisterData,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
+      // Ensure database is initialized before attempting registration
+      console.log("📝 Registration initiated - ensuring database is ready...");
+      await initializeDatabase();
+      console.log("✅ Database ready, proceeding with registration");
+
       const registrationData = {
         ...userData,
         role: userData.role || "user",

@@ -18,6 +18,7 @@ import posApiRoutes from "./routes/pos-api";
 import * as adminInviteRoutes from "./routes/admin-invite";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
+import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +76,11 @@ export function createServer() {
   app.use(cors(corsOptions));
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
+
+  // ============= CRITICAL: DATABASE INITIALIZATION =============
+  // Ensure database is initialized before ANY API request
+  // This runs automatically on first request to any /api endpoint
+  app.use("/api", ensureDatabaseInitialized);
 
   // Health check
   app.get("/api/health", async (req, res) => {
