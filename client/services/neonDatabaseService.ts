@@ -149,7 +149,7 @@ const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ) => {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let timeoutId: number | null = null;
   let isAborted = false;
 
   timeoutId = setTimeout(() => {
@@ -271,7 +271,7 @@ class NeonDatabaseClient {
   }> {
     const tryFetch = async (url: string, timeoutMs = 8000) => {
       const ac = new AbortController();
-      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      let timeoutId: number | null = null;
       let isResolved = false;
 
       try {
