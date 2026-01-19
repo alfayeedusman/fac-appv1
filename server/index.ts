@@ -18,6 +18,7 @@ import posApiRoutes from "./routes/pos-api";
 import * as adminInviteRoutes from "./routes/admin-invite";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
+import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
