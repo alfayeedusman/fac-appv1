@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { createServer } from "./index";
 import * as express from "express";
 import fs from "fs";
+import { migrate } from "./database/migrate";
 
 const app = createServer();
 const port = process.env.PORT || 3000;
