@@ -565,8 +565,10 @@ export const createBooking: RequestHandler = async (req, res) => {
     if (!fullName) missingFields.push("fullName");
     if (!mobile) missingFields.push("mobile");
     if (!email) missingFields.push("email");
-    if (basePrice === undefined || basePrice === null) missingFields.push("basePrice");
-    if (totalPrice === undefined || totalPrice === null) missingFields.push("totalPrice");
+    if (basePrice === undefined || basePrice === null)
+      missingFields.push("basePrice");
+    if (totalPrice === undefined || totalPrice === null)
+      missingFields.push("totalPrice");
 
     if (missingFields.length > 0) {
       console.warn("🔐 Booking validation failed: missing fields", {
@@ -595,8 +597,16 @@ export const createBooking: RequestHandler = async (req, res) => {
     }
 
     // Check slot availability before creating booking
-    console.log("🔍 Checking slot availability for:", { date, timeSlot, branch });
-    const availability = await neonDbService.getSlotAvailability(date, timeSlot, branch);
+    console.log("🔍 Checking slot availability for:", {
+      date,
+      timeSlot,
+      branch,
+    });
+    const availability = await neonDbService.getSlotAvailability(
+      date,
+      timeSlot,
+      branch,
+    );
 
     if (!availability.isAvailable) {
       console.warn("❌ Booking slot not available", { date, timeSlot, branch });

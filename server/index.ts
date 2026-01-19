@@ -267,7 +267,9 @@ export function createServer() {
     try {
       console.log("🔄 Initializing database and running migrations...");
       await import("./database/migrate").then((m) => m.migrate());
-      console.log("✅ Database initialization and migrations completed successfully");
+      console.log(
+        "✅ Database initialization and migrations completed successfully",
+      );
 
       console.log("🏪 Auto-seeding branch data...");
       await seedBranches();
@@ -278,7 +280,9 @@ export function createServer() {
       console.log("✅ User seeding completed successfully");
     } catch (error) {
       console.error("❌ Initialization failed:", error);
-      console.log("⚠️ Server is running but database may not be properly initialized");
+      console.log(
+        "⚠️ Server is running but database may not be properly initialized",
+      );
     }
   }, 1000);
 
