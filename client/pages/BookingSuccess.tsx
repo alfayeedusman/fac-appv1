@@ -17,11 +17,19 @@ export default function BookingSuccess() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Log for debugging payment redirects
+    console.log("🎉 Booking Success Page Loaded", {
+      bookingId: searchParams.get("bookingId"),
+      url: window.location.href,
+      referrer: document.referrer,
+    });
+
     // Poll invoice status until paid/settled, then show receipt
     const payloadStr = localStorage.getItem("fac_last_booking");
     const invoiceId = localStorage.getItem("fac_last_invoice_id");
 
     if (!payloadStr || !invoiceId) {
+      console.warn("⚠️ No booking or invoice ID in localStorage");
       setChecking(false);
       return;
     }
