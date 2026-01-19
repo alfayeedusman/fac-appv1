@@ -98,6 +98,11 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
+      // Ensure database is initialized before attempting login
+      console.log("🔐 Login initiated - ensuring database is ready...");
+      await initializeDatabase();
+      console.log("✅ Database ready, proceeding with login");
+
       const result = await neonDbClient.login(
         credentials.email,
         credentials.password,
