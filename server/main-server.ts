@@ -15,6 +15,7 @@ import imagesApiRoutes from "./routes/images-api";
 import cmsApiRoutes from "./routes/cms-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
+import { migrate } from "./database/migrate";
 import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
