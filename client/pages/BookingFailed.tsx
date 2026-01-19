@@ -13,6 +13,15 @@ export default function BookingFailed() {
   const [countdown, setCountdown] = useState(15);
 
   useEffect(() => {
+    // Log for debugging payment redirects
+    console.log("❌ Booking Failed Page Loaded", {
+      bookingId: searchParams.get("bookingId"),
+      url: window.location.href,
+      referrer: document.referrer,
+    });
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
