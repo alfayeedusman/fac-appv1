@@ -3,11 +3,13 @@
 ## Phase 1: Pre-Deployment (DO THIS FIRST)
 
 ### Repository Setup
+
 - [ ] Push all code changes to GitHub main branch
 - [ ] TypeScript errors fixed (✅ Already done)
 - [ ] No build warnings or errors locally
 
 ### Netlify Site Connection
+
 - [ ] Netlify account created (https://app.netlify.com)
 - [ ] GitHub repository connected
 - [ ] Automatic deployments enabled
@@ -25,10 +27,12 @@
 Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment**
 
 **Database** (2 variables)
+
 - [ ] `NEON_DATABASE_URL`
 - [ ] `DATABASE_URL`
 
 **Firebase** (8 variables)
+
 - [ ] `VITE_FIREBASE_API_KEY`
 - [ ] `VITE_FIREBASE_AUTH_DOMAIN`
 - [ ] `VITE_FIREBASE_PROJECT_ID`
@@ -39,9 +43,11 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 - [ ] `VITE_FIREBASE_FCM_KEY`
 
 **Mapbox** (1 variable)
+
 - [ ] `VITE_MAPBOX_TOKEN`
 
 **Pusher** (5 variables)
+
 - [ ] `VITE_PUSHER_KEY`
 - [ ] `VITE_PUSHER_CLUSTER`
 - [ ] `PUSHER_KEY`
@@ -50,6 +56,7 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 - [ ] `PUSHER_CLUSTER`
 
 **Xendit** (3 variables)
+
 - [ ] `XENDIT_SECRET_KEY`
 - [ ] `XENDIT_PUBLIC_KEY`
 - [ ] `XENDIT_WEBHOOK_TOKEN`
@@ -61,17 +68,20 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 ## Phase 3: First Deployment
 
 ### Trigger Deployment
+
 - [ ] Go to **Deploys** tab
 - [ ] Click **Trigger deploy → Deploy site**
 - [ ] Wait for build to complete (5-10 minutes)
 
 ### Monitor Build
+
 - [ ] Check **Build log** for errors
 - [ ] Verify no TypeScript errors
 - [ ] Verify database migrations ran
 - [ ] Check functions built successfully
 
 ### Deploy Success Indicators
+
 - [ ] Build status shows ✅ (green)
 - [ ] Netlify URL is accessible
 - [ ] No "Deploy failed" messages
@@ -81,10 +91,12 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 ## Phase 4: Post-Deployment Testing
 
 ### API Health
+
 - [ ] `/api/health` returns 200 with status "healthy"
 - [ ] Database connection shows "connected"
 
 ### Authentication
+
 - [ ] Login page loads
 - [ ] Can login with superadmin credentials
   - Email: `superadmin@fayeedautocare.com`
@@ -93,6 +105,7 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 - [ ] Logout works
 
 ### Core Features
+
 - [ ] Home page loads correctly
 - [ ] Browse services works
 - [ ] View branches/locations works
@@ -100,6 +113,7 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 - [ ] Registered user booking works
 
 ### Booking System
+
 - [ ] Can select service and date
 - [ ] Availability check works
 - [ ] Time slots load correctly
@@ -107,17 +121,20 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 - [ ] Confirmation code generated
 
 ### Payments
+
 - [ ] Xendit payment page loads
 - [ ] Payment methods display
 - [ ] Payment processing works (test mode)
 - [ ] Booking confirmed after payment
 
 ### Real-time Features
+
 - [ ] Notifications appear (if enabled)
 - [ ] Live updates work (if enabled)
 - [ ] No WebSocket errors in console
 
 ### Admin Panel
+
 - [ ] Admin login works
 - [ ] Dashboard loads
 - [ ] Can view bookings
@@ -129,18 +146,21 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 ## Phase 5: Performance Verification
 
 ### Frontend Performance
+
 - [ ] Page loads in < 3 seconds
 - [ ] Images load correctly
 - [ ] Maps load properly
 - [ ] No console errors
 
 ### Backend Performance
+
 - [ ] API responses < 500ms
 - [ ] Database queries respond quickly
 - [ ] No timeout errors
 - [ ] Function cold starts acceptable
 
 ### Monitoring
+
 - [ ] Check Netlify Analytics
 - [ ] Monitor function invocations
 - [ ] Check error rates (should be 0)
@@ -150,17 +170,20 @@ Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment*
 ## Phase 6: Final Verification
 
 ### Remove Old Deployments
+
 - [ ] Fly.dev URLs no longer used
 - [ ] DNS points to Netlify domain
 - [ ] Custom domain configured (if applicable)
 
 ### Documentation
+
 - [ ] Deployment guide saved
 - [ ] Environment variables documented
 - [ ] Troubleshooting guide available
 - [ ] Team members informed
 
 ### Security
+
 - [ ] HTTPS enabled (automatic on Netlify)
 - [ ] No sensitive data in logs
 - [ ] Environment variables secure
@@ -246,4 +269,4 @@ No more manual branch creation or PR process needed!
 **Last Updated**: January 19, 2026  
 **Status**: Ready for Production  
 **Database**: Neon PostgreSQL  
-**Hosting**: Netlify (Serverless Functions)  
+**Hosting**: Netlify (Serverless Functions)

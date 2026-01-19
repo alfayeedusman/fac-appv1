@@ -42,7 +42,7 @@ Your system is transitioning from **Fly.dev** to **Netlify** with **Neon Databas
 3. Add all 18 variables (see `NETLIFY_ENV_SETUP.md` for exact values):
    - NEON_DATABASE_URL
    - DATABASE_URL
-   - All VITE_* variables
+   - All VITE\_\* variables
    - All Pusher, Xendit, and Firebase variables
 4. Click: **Save**
 5. Go to: **Deploys → Trigger deploy → Deploy site**
@@ -56,19 +56,23 @@ Wait for build to complete... ⏳
 Once the build is green (✅):
 
 **Test 1: Health Check**
+
 ```bash
 curl https://your-netlify-domain.netlify.app/api/health
 ```
+
 You should see: `"status":"healthy"` and `"neon":"connected"`
 
 **Test 2: Login**
 Go to: `https://your-netlify-domain.netlify.app/login`
 
 Login with:
+
 - Email: `superadmin@fayeedautocare.com`
 - Password: `SuperAdmin2024!`
 
 **Test 3: Browse the App**
+
 - Home page
 - Browse services
 - Create a booking
@@ -105,37 +109,41 @@ After migration, deployments are **automatic and simple**:
 
 ## ⚡ Key Differences from Fly.dev
 
-| Aspect | Fly.dev | Netlify |
-|--------|---------|---------|
-| Build time | Slower | ⚡ Faster (2-3 min) |
-| Scaling | Manual | Auto (serverless) |
-| Deployment | Manual push | Auto on git push |
-| Cost | Higher | Lower (pay per invocation) |
-| Performance | Good | Excellent (global CDN) |
-| Uptime | 99% | 99.9%+ |
-| Database | Separate | Neon (cloud) |
+| Aspect      | Fly.dev     | Netlify                    |
+| ----------- | ----------- | -------------------------- |
+| Build time  | Slower      | ⚡ Faster (2-3 min)        |
+| Scaling     | Manual      | Auto (serverless)          |
+| Deployment  | Manual push | Auto on git push           |
+| Cost        | Higher      | Lower (pay per invocation) |
+| Performance | Good        | Excellent (global CDN)     |
+| Uptime      | 99%         | 99.9%+                     |
+| Database    | Separate    | Neon (cloud)               |
 
 ---
 
 ## 🆘 Troubleshooting
 
 ### Build Fails
+
 → Check **Deploys → Latest build log**
 → Look for error messages
 → Verify all env vars are set (no typos!)
 → Redeploy
 
 ### Login Doesn't Work
+
 → Test: `curl https://your-site.netlify.app/api/health`
 → Check all Firebase and Neon variables
 → Check browser console (F12) for errors
 
 ### Database Connection Fails
+
 → Verify NEON_DATABASE_URL is correct
 → Check Neon console (https://console.neon.tech)
 → Ensure IP whitelist is correct
 
 ### Still on Fly.dev
+
 → Update DNS to point to Netlify domain
 → Or use Netlify's temporary .netlify.app domain
 → Clear browser cache
@@ -191,10 +199,12 @@ Database
 ## 📞 Need Help?
 
 **Before deployment:**
+
 - Review `NETLIFY_DEPLOYMENT_CHECKLIST.md`
 - Check all env vars are correct
 
 **After deployment:**
+
 - Check build logs in Netlify dashboard
 - Monitor function invocations
 - Test API endpoints with curl
@@ -217,6 +227,7 @@ Database
 **Your deployment is ready!**
 
 ### To Get Started:
+
 1. Go to: https://app.netlify.com
 2. Click: **New site from Git**
 3. Connect your GitHub repo
@@ -231,6 +242,6 @@ Database
 
 **🎯 Current Status**: Configuration Complete ✅  
 **⏳ Next**: Deploy to Netlify  
-**🔄 Future**: Direct push to main, automatic deploys  
+**🔄 Future**: Direct push to main, automatic deploys
 
 **Good luck! You've got this! 🚀**

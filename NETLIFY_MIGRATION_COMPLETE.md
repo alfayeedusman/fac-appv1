@@ -9,24 +9,28 @@
 ## 📋 What's Been Done
 
 ### ✅ Backend Setup (Netlify Functions)
+
 - Express server wrapped in `serverless-http`
 - Located: `netlify/functions/api.ts`
 - Handles all `/api/*` routes via Netlify Functions
 - No changes needed - fully functional
 
 ### ✅ Frontend Setup
+
 - React SPA with Vite build
 - Output directory: `dist/spa`
 - Automatic on every deployment
 - No changes needed
 
 ### ✅ Database Setup
+
 - **Neon PostgreSQL** (cloud-hosted, no infrastructure changes needed)
 - Connection string: `postgresql://...@neon.tech`
 - All migrations included
 - No downtime required
 
 ### ✅ Build Configuration
+
 - `netlify.toml` - properly configured
 - Build command: `npm run build`
 - Functions: `netlify/functions`
@@ -39,12 +43,14 @@
 Go to: **Netlify Dashboard → Site Settings → Build & Deploy → Environment**
 
 ### Database
+
 ```
 NEON_DATABASE_URL = postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 DATABASE_URL = postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 ```
 
 ### Firebase
+
 ```
 VITE_FIREBASE_API_KEY = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM
 VITE_FIREBASE_AUTH_DOMAIN = facapp-dbdc1.firebaseapp.com
@@ -57,11 +63,13 @@ VITE_FIREBASE_FCM_KEY = BPZ7qJsAwjsYN03miKRrNbnPR2oU1y0wpHPmsHnz6Z9U12spAZi5L0il
 ```
 
 ### Mapbox
+
 ```
 VITE_MAPBOX_TOKEN = pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg
 ```
 
 ### Pusher (Real-time)
+
 ```
 VITE_PUSHER_KEY = bce5ef8f7770b2fea49d
 VITE_PUSHER_CLUSTER = ap1
@@ -72,6 +80,7 @@ PUSHER_CLUSTER = ap1
 ```
 
 ### Xendit (Payments)
+
 ```
 XENDIT_SECRET_KEY = xnd_development_DOtbVDk9E83dYEUgJGpiJT7RKmUZtrbLcEQRFKDu2qpJTMFHYi8I6PnwxB4g
 XENDIT_PUBLIC_KEY = xnd_public_development_0GsLabVLX_CfyXBlEErMSO7jjhbNI7ZcUhYKhS6zhwBugx8ZnYV6UGD9yCP1sg
@@ -79,6 +88,7 @@ XENDIT_WEBHOOK_TOKEN = Q1kEJVOuDw5BUkkPNpJEu3KjioqCPcF0Wj7jhr1dc1vZvL39
 ```
 
 ### Build Environment
+
 ```
 NODE_VERSION = 20
 NPM_CONFIG_PRODUCTION = false
@@ -105,11 +115,13 @@ NODE_OPTIONS = --max_old_space_size=4096
 ## 🧪 Testing After Deployment
 
 ### 1. Health Check
+
 ```bash
 curl https://your-netlify-domain.netlify.app/api/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -121,6 +133,7 @@ Expected response:
 ```
 
 ### 2. Login Test
+
 ```bash
 curl -X POST https://your-netlify-domain.netlify.app/api/neon/auth/login \
   -H "Content-Type: application/json" \
@@ -131,6 +144,7 @@ curl -X POST https://your-netlify-domain.netlify.app/api/neon/auth/login \
 ```
 
 ### 3. Booking Availability
+
 ```bash
 curl https://your-netlify-domain.netlify.app/api/neon/bookings/availability?date=2026-01-20&timeSlot=09:00&branch=tumaga
 ```
@@ -153,7 +167,9 @@ curl https://your-netlify-domain.netlify.app/api/neon/bookings/availability?date
 ## 🚨 Troubleshooting
 
 ### Issue: 404 on API calls
+
 **Solution**: Check netlify.toml redirects are in place
+
 ```toml
 [[redirects]]
   from = "/api/*"
@@ -163,14 +179,18 @@ curl https://your-netlify-domain.netlify.app/api/neon/bookings/availability?date
 ```
 
 ### Issue: Environment variables not found
-**Solution**: 
+
+**Solution**:
+
 1. Go to Netlify dashboard
 2. Site Settings → Build & Deploy → Environment
 3. Verify all variables are set
 4. Redeploy
 
 ### Issue: Database connection timeout
+
 **Solution**:
+
 1. Verify NEON_DATABASE_URL is correct
 2. Check Neon database is running
 3. Verify IP whitelist allows Netlify
@@ -205,6 +225,7 @@ project-root/
 ## 🛑 Removed: Fly.dev Configuration
 
 These files are NO LONGER NEEDED (Netlify handles everything):
+
 - ❌ `Dockerfile` - Netlify uses Node.js 20 by default
 - ❌ `docker-compose.yml` - Not needed
 - ❌ `docker-compose.phpmyadmin.yml` - Not needed

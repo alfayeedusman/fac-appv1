@@ -16,6 +16,7 @@
 Copy and paste each variable name and value below:
 
 ### Database Connection (REQUIRED)
+
 ```
 NEON_DATABASE_URL
 postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
@@ -27,6 +28,7 @@ postgresql://neondb_owner:npg_DX9H0KGFzuiZ@ep-green-glitter-aefe3h65-pooler.c-2.
 ```
 
 ### Firebase (REQUIRED)
+
 ```
 VITE_FIREBASE_API_KEY
 AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0LwkkM
@@ -68,12 +70,14 @@ BPZ7qJsAwjsYN03miKRrNbnPR2oU1y0wpHPmsHnz6Z9U12spAZi5L0ilwRFNVhpXknVOSmmcnFmLMIlp
 ```
 
 ### Mapbox Maps (REQUIRED)
+
 ```
 VITE_MAPBOX_TOKEN
 pk.eyJ1IjoiZGV2eWVlZCIsImEiOiJjbWV4c2RyZ2kxMnJzMmxvb3RiajZmbG81In0.42VNp3is3gk2jVwxoNAqzg
 ```
 
 ### Pusher Real-time (REQUIRED)
+
 ```
 VITE_PUSHER_KEY
 bce5ef8f7770b2fea49d
@@ -105,6 +109,7 @@ ap1
 ```
 
 ### Xendit Payment (REQUIRED)
+
 ```
 XENDIT_SECRET_KEY
 xnd_development_DOtbVDk9E83dYEUgJGpiJT7RKmUZtrbLcEQRFKDu2qpJTMFHYi8I6PnwxB4g
@@ -149,11 +154,13 @@ NODE_OPTIONS = --max_old_space_size=4096
 After deployment, test with:
 
 ### Health Check
+
 ```bash
 curl https://your-site.netlify.app/api/health
 ```
 
 ### Login
+
 ```bash
 curl -X POST https://your-site.netlify.app/api/neon/auth/login \
   -H "Content-Type: application/json" \
