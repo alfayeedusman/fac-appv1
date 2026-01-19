@@ -413,6 +413,14 @@ const AppComponent = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/system-diagnostics"
+                  element={
+                    <ErrorBoundary>
+                      <SystemDiagnostics />
+                    </ErrorBoundary>
+                  }
+                />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
