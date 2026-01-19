@@ -1,6 +1,6 @@
 // Xendit payment service for client-side payment handling
 import { toast } from "@/hooks/use-toast";
-import { log, info, warn, error as logError } from '@/utils/logger';
+import { log, info, warn, error as logError } from "@/utils/logger";
 
 export interface XenditInvoiceRequest {
   external_id: string;
@@ -50,7 +50,9 @@ class XenditPaymentService {
   /**
    * Create a booking payment invoice
    */
-  async createBookingInvoice(request: BookingPaymentRequest): Promise<XenditInvoiceResponse> {
+  async createBookingInvoice(
+    request: BookingPaymentRequest,
+  ): Promise<XenditInvoiceResponse> {
     try {
       log("💳 Creating booking payment invoice...", request);
 
@@ -89,7 +91,10 @@ class XenditPaymentService {
 
       if (!response.ok || !result.success) {
         logError("❌ Failed to create booking invoice:", result.error);
-        return { success: false, error: result.error || "Failed to create invoice" };
+        return {
+          success: false,
+          error: result.error || "Failed to create invoice",
+        };
       }
 
       return result;
@@ -102,7 +107,9 @@ class XenditPaymentService {
   /**
    * Create a subscription renewal invoice
    */
-  async createSubscriptionInvoice(request: SubscriptionPaymentRequest): Promise<XenditInvoiceResponse> {
+  async createSubscriptionInvoice(
+    request: SubscriptionPaymentRequest,
+  ): Promise<XenditInvoiceResponse> {
     try {
       log("💳 Creating subscription renewal invoice...", request);
 
@@ -127,18 +134,24 @@ class XenditPaymentService {
         failure_redirect_url: failureUrl,
       };
 
-      const response = await fetch(`${this.baseUrl}/create-subscription-invoice`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/create-subscription-invoice`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
 
       const result = await response.json();
       log("📋 Subscription invoice response:", result);
 
       if (!response.ok || !result.success) {
         logError("❌ Failed to create subscription invoice:", result.error);
-        return { success: false, error: result.error || "Failed to create invoice" };
+        return {
+          success: false,
+          error: result.error || "Failed to create invoice",
+        };
       }
 
       return result;
@@ -151,7 +164,11 @@ class XenditPaymentService {
   /**
    * Open payment popup for invoice
    */
-  openPaymentPopup(invoiceUrl: string, onSuccess?: () => void, onFail?: () => void): Window | null {
+  openPaymentPopup(
+    invoiceUrl: string,
+    onSuccess?: () => void,
+    onFail?: () => void,
+  ): Window | null {
     try {
       log("🔗 Opening payment popup...", invoiceUrl);
 
@@ -194,7 +211,9 @@ class XenditPaymentService {
     bookingId: string,
   ): Promise<{ success: boolean; paymentStatus?: string; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/booking-status/${bookingId}`);
+      const response = await fetch(
+        `${this.baseUrl}/booking-status/${bookingId}`,
+      );
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -210,7 +229,9 @@ class XenditPaymentService {
     subscriptionId: string,
   ): Promise<{ success: boolean; status?: string; error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/subscription-status/${subscriptionId}`);
+      const response = await fetch(
+        `${this.baseUrl}/subscription-status/${subscriptionId}`,
+      );
       const result = await response.json();
       return result;
     } catch (error: any) {
