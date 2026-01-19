@@ -166,6 +166,11 @@ class AuthService {
     userData: RegisterData,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
+      // Ensure database is initialized before attempting registration
+      console.log("📝 Registration initiated - ensuring database is ready...");
+      await initializeDatabase();
+      console.log("✅ Database ready, proceeding with registration");
+
       const registrationData = {
         ...userData,
         role: userData.role || "user",
