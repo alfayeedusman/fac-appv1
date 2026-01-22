@@ -85,16 +85,6 @@
   to = "/index.html"
   status = 200
 
-[[redirects]]
-  from = "/booking-success?*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/booking-failed?*"
-  to = "/index.html"
-  status = 200
-
 # SPA Catch-all Redirect (MUST come after specific redirects)
 [[redirects]]
   from = "/*"
