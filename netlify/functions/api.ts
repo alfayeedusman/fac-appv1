@@ -36,7 +36,7 @@ async function initializeHandler() {
     }
   }
 
-  return handler;
+  return cachedHandler;
 }
 
 /**
