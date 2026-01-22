@@ -6,6 +6,8 @@ import { migrate } from "../database/migrate";
 let dbInitialized = false;
 let dbInitializing = false;
 let lastInitError: Error | null = null;
+let lastInitAttempt = 0;
+const RETRY_DELAY = 5000; // 5 seconds between retries
 
 /**
  * Ensures database is initialized before processing any request
