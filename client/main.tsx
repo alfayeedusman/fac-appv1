@@ -422,6 +422,16 @@ const AppComponent = () => {
                     </ErrorBoundary>
                   }
                 />
+                <Route
+                  path="/init-database"
+                  element={
+                    <ErrorBoundary>
+                      <div className="min-h-screen bg-background p-4">
+                        <DatabaseInitializer />
+                      </div>
+                    </ErrorBoundary>
+                  }
+                />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
