@@ -459,6 +459,7 @@ export default function BookingHub() {
                       setSearchTerm("");
                       setStatusFilter("all");
                       setTypeFilter("all");
+                      setBranchFilter("all");
                     }}
                     className="w-full"
                   >
