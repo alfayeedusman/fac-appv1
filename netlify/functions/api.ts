@@ -1,5 +1,8 @@
 import serverless from "serverless-http";
+import { createServer } from "../../server/index";
 
-import { createServer } from "../../server";
+// Create the Express app once
+const app = createServer();
 
-export const handler = serverless(createServer());
+// Wrap it with serverless-http for Netlify
+export const handler = serverless(app);
