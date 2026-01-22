@@ -1510,11 +1510,14 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/neon/branches/${branchId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/neon/branches/${branchId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
       const result = await response.json();
       return result;
     } catch (error) {
@@ -1527,15 +1530,20 @@ class NeonDatabaseClient {
     }
   }
 
-  async deleteBranch(branchId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteBranch(
+    branchId: string,
+  ): Promise<{ success: boolean; error?: string }> {
     if (!this.isConnected) {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/neon/branches/${branchId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetch(
+        `${this.baseUrl}/neon/branches/${branchId}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
       const result = await response.json();
       return result;
     } catch (error) {

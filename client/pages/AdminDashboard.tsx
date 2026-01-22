@@ -67,7 +67,9 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
 import ErrorBoundary from "@/components/ErrorBoundary";
-const AnalyticsCharts = React.lazy(() => import('@/components/AnalyticsCharts'));
+const AnalyticsCharts = React.lazy(
+  () => import("@/components/AnalyticsCharts"),
+);
 import BranchManagement from "@/components/BranchManagement";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDistanceToNow } from "date-fns";
@@ -174,7 +176,9 @@ export default function AdminDashboard() {
   const [timeFilter, setTimeFilter] = useState<
     "daily" | "weekly" | "monthly" | "yearly"
   >("monthly");
-  const [bookingTypeFilter, setBookingTypeFilter] = useState<"all" | "walkin" | "booking">("all");
+  const [bookingTypeFilter, setBookingTypeFilter] = useState<
+    "all" | "walkin" | "booking"
+  >("all");
 
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 0,
@@ -298,10 +302,10 @@ export default function AdminDashboard() {
   const loadRealStats = async (period: string = timeFilter) => {
     try {
       setStatsLoading(true);
-      console.log('📊 Loading real stats for period:', period);
+      console.log("📊 Loading real stats for period:", period);
 
       const result = await neonDbClient.getStats(period);
-      console.log('📈 Stats result:', result);
+      console.log("📈 Stats result:", result);
 
       if (result.success && result.stats) {
         const newStats = {
@@ -318,10 +322,13 @@ export default function AdminDashboard() {
           monthlyGrowth: result.stats.monthlyGrowth || 0,
           topPackage: "VIP Gold Ultimate", // This could be calculated from most popular package
         };
-        console.log('✅ Setting new stats:', newStats);
+        console.log("✅ Setting new stats:", newStats);
         setStats(newStats);
       } else {
-        console.warn("⚠️ Failed to load real stats, using defaults. Result:", result);
+        console.warn(
+          "⚠️ Failed to load real stats, using defaults. Result:",
+          result,
+        );
         // Keep existing stats instead of resetting
       }
     } catch (error) {
@@ -409,10 +416,10 @@ export default function AdminDashboard() {
   const loadRealtimeStats = async () => {
     try {
       setRealtimeLoading(true);
-      console.log('📡 Loading realtime stats...');
+      console.log("📡 Loading realtime stats...");
 
       const result = await neonDbClient.getRealtimeStats();
-      console.log('🔄 Realtime stats result:', result);
+      console.log("🔄 Realtime stats result:", result);
 
       if (result.success && result.stats) {
         const newRealtimeStats = {
@@ -421,10 +428,13 @@ export default function AdminDashboard() {
           activeCustomers: result.stats.activeCustomers || 0,
           activeGroups: result.stats.activeGroups || 0,
         };
-        console.log('✅ Setting new realtime stats:', newRealtimeStats);
+        console.log("✅ Setting new realtime stats:", newRealtimeStats);
         setRealtimeStats(newRealtimeStats);
       } else {
-        console.warn("⚠️ Failed to load realtime stats, using defaults. Result:", result);
+        console.warn(
+          "⚠️ Failed to load realtime stats, using defaults. Result:",
+          result,
+        );
         // Keep existing stats instead of resetting
       }
     } catch (error) {
@@ -455,31 +465,49 @@ export default function AdminDashboard() {
       // Subscribe to realtime events (booking, pos, inventory, dashboard stats)
       const subs: Array<() => void> = [];
       try {
-        subs.push(realtimeService.subscribe('dashboard-stats', (d: any) => {
-          if (d && d.stats) {
-            setRealtimeStats({
-              onlineCrew: d.stats.onlineCrew || 0,
-              busyCrew: d.stats.busyCrew || 0,
-              activeCustomers: d.stats.activeCustomers || 0,
-              activeGroups: d.stats.activeGroups || 0,
+        subs.push(
+          realtimeService.subscribe("dashboard-stats", (d: any) => {
+            if (d && d.stats) {
+              setRealtimeStats({
+                onlineCrew: d.stats.onlineCrew || 0,
+                busyCrew: d.stats.busyCrew || 0,
+                activeCustomers: d.stats.activeCustomers || 0,
+                activeGroups: d.stats.activeGroups || 0,
+              });
+            }
+          }),
+        );
+
+        subs.push(
+          realtimeService.subscribe("booking.created", (d: any) => {
+            setStats((prev) => ({
+              ...prev,
+              totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1,
+            }));
+          }),
+        );
+
+        subs.push(
+          realtimeService.subscribe("pos.transaction.created", (d: any) => {
+            setStats((prev) => ({
+              ...prev,
+              totalRevenue:
+                (prev.totalRevenue || 0) + (parseFloat(d.totalAmount) || 0),
+            }));
+          }),
+        );
+
+        subs.push(
+          realtimeService.subscribe("inventory.updated", (d: any) => {
+            // simple UI hint: trigger a toast
+            toast({
+              title: "Inventory updated",
+              description: d.item?.name || "An inventory item was updated",
             });
-          }
-        }));
-
-        subs.push(realtimeService.subscribe('booking.created', (d: any) => {
-          setStats((prev) => ({ ...prev, totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1 }));
-        }));
-
-        subs.push(realtimeService.subscribe('pos.transaction.created', (d: any) => {
-          setStats((prev) => ({ ...prev, totalRevenue: (prev.totalRevenue || 0) + (parseFloat(d.totalAmount) || 0) }));
-        }));
-
-        subs.push(realtimeService.subscribe('inventory.updated', (d: any) => {
-          // simple UI hint: trigger a toast
-          toast({ title: 'Inventory updated', description: d.item?.name || 'An inventory item was updated' });
-        }));
+          }),
+        );
       } catch (e) {
-        console.warn('Realtime subscription failed:', e);
+        console.warn("Realtime subscription failed:", e);
       }
 
       // Load real customer data from database
@@ -492,7 +520,7 @@ export default function AdminDashboard() {
       loadSystemNotifications();
 
       // Load admin notifications from local store
-      import('@/utils/adminNotifications').then(({ getAdminNotifications }) => {
+      import("@/utils/adminNotifications").then(({ getAdminNotifications }) => {
         try {
           setAdminNotifications(getAdminNotifications().slice(0, 50));
         } catch (e) {}
@@ -874,7 +902,7 @@ export default function AdminDashboard() {
             plateNumber: editCustomerForm.plateNumber,
             membershipType: editCustomerForm.membershipType,
           }
-        : c
+        : c,
     );
 
     setCustomers(updatedCustomers);
@@ -916,7 +944,9 @@ export default function AdminDashboard() {
         <AdminNotificationBanner
           notifications={adminNotifications}
           onDismiss={(id) => {
-            setAdminNotifications(adminNotifications.filter((n) => n.id !== id));
+            setAdminNotifications(
+              adminNotifications.filter((n) => n.id !== id),
+            );
           }}
         />
 
@@ -1323,7 +1353,10 @@ export default function AdminDashboard() {
             <div className="space-y-8">
               {/* Time Period & Booking Type Filter */}
               <div className="flex justify-end gap-3 flex-wrap">
-                <Select value={bookingTypeFilter} onValueChange={(value: any) => setBookingTypeFilter(value)}>
+                <Select
+                  value={bookingTypeFilter}
+                  onValueChange={(value: any) => setBookingTypeFilter(value)}
+                >
                   <SelectTrigger className="w-40 border-orange-500">
                     <SelectValue placeholder="Booking type" />
                   </SelectTrigger>
@@ -1508,7 +1541,9 @@ export default function AdminDashboard() {
                         <p className="text-muted-foreground text-sm mb-2">
                           Net Income (Profit)
                         </p>
-                        <div className={`text-3xl font-bold ${stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div
+                          className={`text-3xl font-bold ${stats.netIncome >= 0 ? "text-green-600" : "text-red-600"}`}
+                        >
                           {statsLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
@@ -1519,7 +1554,9 @@ export default function AdminDashboard() {
                           Gross - Expenses
                         </p>
                       </div>
-                      <div className={`${stats.netIncome >= 0 ? 'bg-green-500' : 'bg-red-500'} p-3 rounded-lg`}>
+                      <div
+                        className={`${stats.netIncome >= 0 ? "bg-green-500" : "bg-red-500"} p-3 rounded-lg`}
+                      >
                         <TrendingUp className="h-6 w-6 text-white" />
                       </div>
                     </div>
@@ -2000,8 +2037,8 @@ export default function AdminDashboard() {
                                         notifications.find(
                                           (n) =>
                                             n.message.includes(customer.name) &&
-                                            n.type === "new_customer"
-                                        )?.id || ""
+                                            n.type === "new_customer",
+                                        )?.id || "",
                                       )
                                     }
                                   >
@@ -2017,8 +2054,8 @@ export default function AdminDashboard() {
                                         notifications.find(
                                           (n) =>
                                             n.message.includes(customer.name) &&
-                                            n.type === "new_customer"
-                                        )?.id || ""
+                                            n.type === "new_customer",
+                                        )?.id || "",
                                       )
                                     }
                                   >
@@ -2180,7 +2217,15 @@ export default function AdminDashboard() {
           {activeTab === "branches" && <BranchManagement userRole={userRole} />}
 
           {activeTab === "analytics" && (
-            <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center p-8">
+                  <span className="text-muted-foreground">
+                    Loading analytics...
+                  </span>
+                </div>
+              }
+            >
               <AnalyticsCharts
                 timeFilter={timeFilter}
                 onTimeFilterChange={setTimeFilter}
@@ -2237,7 +2282,15 @@ export default function AdminDashboard() {
               </div>
 
               {/* Sales Analytics Chart */}
-              <Suspense fallback={<div className="flex items-center justify-center p-8"><span className="text-muted-foreground">Loading analytics...</span></div>}>
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center p-8">
+                    <span className="text-muted-foreground">
+                      Loading analytics...
+                    </span>
+                  </div>
+                }
+              >
                 <AnalyticsCharts
                   timeFilter={timeFilter}
                   onTimeFilterChange={setTimeFilter}
@@ -2925,7 +2978,6 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { neonDbClient } from "@/services/neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
-import { log, warn, error as logError } from '@/utils/logger';
+import { log, warn, error as logError } from "@/utils/logger";
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
 import { notificationSoundService } from "@/services/notificationSoundService";
 import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
@@ -65,7 +65,14 @@ interface CustomerData {
   lifecycle?: "new" | "active" | "subscribed" | "vip" | "at-risk" | "upgraded";
 }
 
-type LifecycleType = "all" | "new" | "active" | "subscribed" | "vip" | "at-risk" | "upgraded";
+type LifecycleType =
+  | "all"
+  | "new"
+  | "active"
+  | "subscribed"
+  | "vip"
+  | "at-risk"
+  | "upgraded";
 
 const LIFECYCLE_LABELS: Record<string, string> = {
   new: "New Customer",
@@ -87,19 +94,27 @@ const LIFECYCLE_COLORS: Record<string, string> = {
 
 export default function CustomerHub() {
   const [customers, setCustomers] = useState<CustomerData[]>([]);
-  const [filteredCustomers, setFilteredCustomers] = useState<CustomerData[]>([]);
-  const [displayedCustomers, setDisplayedCustomers] = useState<CustomerData[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<CustomerData[]>(
+    [],
+  );
+  const [displayedCustomers, setDisplayedCustomers] = useState<CustomerData[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSubscription, setFilterSubscription] = useState<string>("all");
   const [filterLifecycle, setFilterLifecycle] = useState<LifecycleType>("all");
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"name" | "spent" | "bookings" | "loyalty">("name");
+  const [sortBy, setSortBy] = useState<
+    "name" | "spent" | "bookings" | "loyalty"
+  >("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(
+    null,
+  );
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("premium");
 
@@ -111,12 +126,20 @@ export default function CustomerHub() {
 
   useEffect(() => {
     filterAndSortCustomers();
-  }, [customers, searchTerm, filterStatus, filterSubscription, filterLifecycle, sortBy]);
+  }, [
+    customers,
+    searchTerm,
+    filterStatus,
+    filterSubscription,
+    filterLifecycle,
+    sortBy,
+  ]);
 
   useEffect(() => {
     // Apply pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = itemsPerPage === -1 ? undefined : startIndex + itemsPerPage;
+    const endIndex =
+      itemsPerPage === -1 ? undefined : startIndex + itemsPerPage;
     setDisplayedCustomers(filteredCustomers.slice(startIndex, endIndex));
   }, [filteredCustomers, itemsPerPage, currentPage]);
 
@@ -199,13 +222,13 @@ export default function CustomerHub() {
     const totalBookings = customerBookings.length;
     const totalSpent = customerBookings.reduce(
       (sum: number, b: any) => sum + (parseFloat(b.totalPrice) || 0),
-      0
+      0,
     );
 
     const sortedBookings = customerBookings.sort(
       (a: any, b: any) =>
         new Date(b.bookingDate || b.createdAt).getTime() -
-        new Date(a.bookingDate || a.createdAt).getTime()
+        new Date(a.bookingDate || a.createdAt).getTime(),
     );
 
     const lastBooking = sortedBookings[0];
@@ -213,7 +236,9 @@ export default function CustomerHub() {
     return {
       totalBookings,
       totalSpent,
-      lastBooking: lastBooking ? lastBooking.bookingDate || lastBooking.createdAt : null,
+      lastBooking: lastBooking
+        ? lastBooking.bookingDate || lastBooking.createdAt
+        : null,
     };
   };
 
@@ -238,7 +263,8 @@ export default function CustomerHub() {
 
     if (user.createdAt) {
       const accountAge = Math.floor(
-        (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - new Date(user.createdAt).getTime()) /
+          (1000 * 60 * 60 * 24),
       );
       const ageScore = Math.min(accountAge / 30, 10);
       score += ageScore;
@@ -250,13 +276,19 @@ export default function CustomerHub() {
   const calculateLifecycle = (user: any, stats: any): LifecycleType => {
     if (!user.createdAt) return "active";
 
-    const daysSinceCreated = differenceInDays(new Date(), new Date(user.createdAt));
+    const daysSinceCreated = differenceInDays(
+      new Date(),
+      new Date(user.createdAt),
+    );
 
     // New customer (within 30 days)
     if (daysSinceCreated <= 30) return "new";
 
     // VIP
-    if (user.subscriptionStatus === "vip" || user.subscriptionStatus === "premium") {
+    if (
+      user.subscriptionStatus === "vip" ||
+      user.subscriptionStatus === "premium"
+    ) {
       return "vip";
     }
 
@@ -267,7 +299,10 @@ export default function CustomerHub() {
 
     // Recently Upgraded (has bookings recently)
     if (stats.lastBooking) {
-      const daysSinceLastBooking = differenceInDays(new Date(), new Date(stats.lastBooking));
+      const daysSinceLastBooking = differenceInDays(
+        new Date(),
+        new Date(stats.lastBooking),
+      );
       if (daysSinceLastBooking <= 7 && stats.totalBookings >= 3) {
         return "upgraded";
       }
@@ -275,7 +310,10 @@ export default function CustomerHub() {
 
     // At Risk (inactive for 60+ days)
     if (stats.lastBooking) {
-      const daysSinceLastBooking = differenceInDays(new Date(), new Date(stats.lastBooking));
+      const daysSinceLastBooking = differenceInDays(
+        new Date(),
+        new Date(stats.lastBooking),
+      );
       if (daysSinceLastBooking > 60) {
         return "at-risk";
       }
@@ -294,7 +332,7 @@ export default function CustomerHub() {
           c.fullName.toLowerCase().includes(term) ||
           c.email.toLowerCase().includes(term) ||
           c.contactNumber.toLowerCase().includes(term) ||
-          c.carPlateNumber.toLowerCase().includes(term)
+          c.carPlateNumber.toLowerCase().includes(term),
       );
     }
 
@@ -303,7 +341,9 @@ export default function CustomerHub() {
     }
 
     if (filterSubscription !== "all") {
-      filtered = filtered.filter((c) => c.subscriptionStatus === filterSubscription);
+      filtered = filtered.filter(
+        (c) => c.subscriptionStatus === filterSubscription,
+      );
     }
 
     if (filterLifecycle !== "all") {
@@ -349,10 +389,26 @@ export default function CustomerHub() {
   };
 
   const getLoyaltyTier = (score: number) => {
-    if (score >= 80) return { tier: "Platinum", color: "text-yellow-600", bgColor: "bg-yellow-50" };
-    if (score >= 60) return { tier: "Gold", color: "text-yellow-500", bgColor: "bg-yellow-50" };
-    if (score >= 40) return { tier: "Silver", color: "text-gray-500", bgColor: "bg-gray-50" };
-    if (score >= 20) return { tier: "Bronze", color: "text-orange-600", bgColor: "bg-orange-50" };
+    if (score >= 80)
+      return {
+        tier: "Platinum",
+        color: "text-yellow-600",
+        bgColor: "bg-yellow-50",
+      };
+    if (score >= 60)
+      return {
+        tier: "Gold",
+        color: "text-yellow-500",
+        bgColor: "bg-yellow-50",
+      };
+    if (score >= 40)
+      return { tier: "Silver", color: "text-gray-500", bgColor: "bg-gray-50" };
+    if (score >= 20)
+      return {
+        tier: "Bronze",
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+      };
     return { tier: "New", color: "text-blue-600", bgColor: "bg-blue-50" };
   };
 
@@ -376,7 +432,7 @@ export default function CustomerHub() {
     const updatedCustomers = customers.map((c) =>
       c.id === selectedCustomer.id
         ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
-        : c
+        : c,
     );
     setCustomers(updatedCustomers);
     setIsSubscriptionModalOpen(false);
@@ -395,7 +451,10 @@ export default function CustomerHub() {
         : 0,
   };
 
-  const totalPages = Math.ceil(filteredCustomers.length / (itemsPerPage === -1 ? filteredCustomers.length : itemsPerPage));
+  const totalPages = Math.ceil(
+    filteredCustomers.length /
+      (itemsPerPage === -1 ? filteredCustomers.length : itemsPerPage),
+  );
 
   return (
     <div className="space-y-6">
@@ -412,7 +471,9 @@ export default function CustomerHub() {
           disabled={isLoading}
           className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           {isLoading ? "Loading..." : "Refresh"}
         </Button>
       </div>
@@ -422,28 +483,36 @@ export default function CustomerHub() {
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <p className="text-xs text-blue-700 font-medium">Total</p>
-            <p className="text-2xl font-bold text-blue-900 mt-1">{stats.totalCustomers}</p>
+            <p className="text-2xl font-bold text-blue-900 mt-1">
+              {stats.totalCustomers}
+            </p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <p className="text-xs text-green-700 font-medium">Active</p>
-            <p className="text-2xl font-bold text-green-900 mt-1">{stats.activeCustomers}</p>
+            <p className="text-2xl font-bold text-green-900 mt-1">
+              {stats.activeCustomers}
+            </p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-blue-50 to-cyan-100 border-blue-200 shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <p className="text-xs text-blue-700 font-medium">New</p>
-            <p className="text-2xl font-bold text-blue-900 mt-1">{stats.newCustomers}</p>
+            <p className="text-2xl font-bold text-blue-900 mt-1">
+              {stats.newCustomers}
+            </p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <p className="text-xs text-yellow-700 font-medium">VIP</p>
-            <p className="text-2xl font-bold text-yellow-900 mt-1">{stats.vipCustomers}</p>
+            <p className="text-2xl font-bold text-yellow-900 mt-1">
+              {stats.vipCustomers}
+            </p>
           </CardContent>
         </Card>
 
@@ -460,7 +529,10 @@ export default function CustomerHub() {
           <CardContent className="p-4">
             <p className="text-xs text-orange-700 font-medium">Avg Spent</p>
             <p className="text-lg font-bold text-orange-900 mt-1">
-              ₱{stats.avgSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              ₱
+              {stats.avgSpent.toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}
             </p>
           </CardContent>
         </Card>
@@ -503,7 +575,10 @@ export default function CustomerHub() {
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Subscription
                 </label>
-                <Select value={filterSubscription} onValueChange={setFilterSubscription}>
+                <Select
+                  value={filterSubscription}
+                  onValueChange={setFilterSubscription}
+                >
                   <SelectTrigger className="h-10 text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -521,7 +596,10 @@ export default function CustomerHub() {
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Lifecycle
                 </label>
-                <Select value={filterLifecycle} onValueChange={(value: any) => setFilterLifecycle(value)}>
+                <Select
+                  value={filterLifecycle}
+                  onValueChange={(value: any) => setFilterLifecycle(value)}
+                >
                   <SelectTrigger className="h-10 text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -541,7 +619,10 @@ export default function CustomerHub() {
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Sort By
                 </label>
-                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <Select
+                  value={sortBy}
+                  onValueChange={(value: any) => setSortBy(value)}
+                >
                   <SelectTrigger className="h-10 text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -578,7 +659,10 @@ export default function CustomerHub() {
                 </Select>
               </div>
 
-              {(searchTerm || filterStatus !== "all" || filterSubscription !== "all" || filterLifecycle !== "all") && (
+              {(searchTerm ||
+                filterStatus !== "all" ||
+                filterSubscription !== "all" ||
+                filterLifecycle !== "all") && (
                 <div className="flex items-end">
                   <Button
                     variant="outline"
@@ -604,7 +688,10 @@ export default function CustomerHub() {
               <span className="font-semibold text-foreground">
                 {displayedCustomers.length}
               </span>{" "}
-              of <span className="font-semibold text-foreground">{filteredCustomers.length}</span>{" "}
+              of{" "}
+              <span className="font-semibold text-foreground">
+                {filteredCustomers.length}
+              </span>{" "}
               (Total: <span className="font-semibold">{customers.length}</span>)
               {totalPages > 1 && (
                 <span className="ml-2">
@@ -625,20 +712,28 @@ export default function CustomerHub() {
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <RefreshCw className="h-8 w-8 animate-spin text-orange-500 mr-3" />
-              <p className="text-muted-foreground text-lg">Loading customer data...</p>
+              <p className="text-muted-foreground text-lg">
+                Loading customer data...
+              </p>
             </div>
           ) : displayedCustomers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Users className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-              <p className="text-muted-foreground text-lg">No customers found</p>
-              <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+              <p className="text-muted-foreground text-lg">
+                No customers found
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try adjusting your filters
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {displayedCustomers.map((customer) => {
                   const loyalty = getLoyaltyTier(customer.loyaltyScore);
-                  const loyaltyProgress = getLoyaltyProgress(customer.loyaltyScore);
+                  const loyaltyProgress = getLoyaltyProgress(
+                    customer.loyaltyScore,
+                  );
 
                   return (
                     <Card
@@ -646,7 +741,7 @@ export default function CustomerHub() {
                       className="hover:shadow-lg transition-all cursor-pointer border-border overflow-hidden"
                       onClick={() =>
                         setExpandedCustomer(
-                          expandedCustomer === customer.id ? null : customer.id
+                          expandedCustomer === customer.id ? null : customer.id,
                         )
                       }
                     >
@@ -657,19 +752,33 @@ export default function CustomerHub() {
                             <h3 className="font-bold text-lg text-foreground">
                               {customer.fullName}
                             </h3>
-                            <p className="text-sm text-muted-foreground">{customer.email}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {customer.email}
+                            </p>
                           </div>
                           <div className="flex flex-col gap-1">
-                            <Badge className={`capitalize border text-xs ${getStatusBadgeColor(customer.status)}`}>
+                            <Badge
+                              className={`capitalize border text-xs ${getStatusBadgeColor(customer.status)}`}
+                            >
                               {customer.status}
                             </Badge>
                             {customer.lifecycle && (
-                              <Badge className={`capitalize border text-xs ${LIFECYCLE_COLORS[customer.lifecycle]}`}>
+                              <Badge
+                                className={`capitalize border text-xs ${LIFECYCLE_COLORS[customer.lifecycle]}`}
+                              >
                                 <span className="flex items-center gap-1">
-                                  {customer.lifecycle === "new" && <Zap className="h-3 w-3" />}
-                                  {customer.lifecycle === "vip" && <Crown className="h-3 w-3" />}
-                                  {customer.lifecycle === "upgraded" && <TrendingUpIcon className="h-3 w-3" />}
-                                  {customer.lifecycle === "at-risk" && <AlertCircle className="h-3 w-3" />}
+                                  {customer.lifecycle === "new" && (
+                                    <Zap className="h-3 w-3" />
+                                  )}
+                                  {customer.lifecycle === "vip" && (
+                                    <Crown className="h-3 w-3" />
+                                  )}
+                                  {customer.lifecycle === "upgraded" && (
+                                    <TrendingUpIcon className="h-3 w-3" />
+                                  )}
+                                  {customer.lifecycle === "at-risk" && (
+                                    <AlertCircle className="h-3 w-3" />
+                                  )}
                                   {LIFECYCLE_LABELS[customer.lifecycle]}
                                 </span>
                               </Badge>
@@ -683,16 +792,25 @@ export default function CustomerHub() {
                             <p className="text-2xl font-bold text-orange-600">
                               {customer.totalBookings}
                             </p>
-                            <p className="text-xs text-muted-foreground">Bookings</p>
+                            <p className="text-xs text-muted-foreground">
+                              Bookings
+                            </p>
                           </div>
                           <div className="text-center">
                             <p className="text-2xl font-bold text-green-600">
-                              ₱{customer.totalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                              ₱
+                              {customer.totalSpent.toLocaleString(undefined, {
+                                maximumFractionDigits: 0,
+                              })}
                             </p>
-                            <p className="text-xs text-muted-foreground">Spent</p>
+                            <p className="text-xs text-muted-foreground">
+                              Spent
+                            </p>
                           </div>
                           <div className="text-center">
-                            <p className={`text-2xl font-bold ${loyalty.color}`}>
+                            <p
+                              className={`text-2xl font-bold ${loyalty.color}`}
+                            >
                               {customer.loyaltyScore}
                             </p>
                             <p className="text-xs text-muted-foreground">Pts</p>
@@ -702,7 +820,9 @@ export default function CustomerHub() {
                         {/* Loyalty Tier */}
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-2">
-                            <p className={`text-sm font-semibold ${loyalty.color}`}>
+                            <p
+                              className={`text-sm font-semibold ${loyalty.color}`}
+                            >
                               {loyalty.tier} Member
                             </p>
                             <Star className={`h-4 w-4 ${loyalty.color}`} />
@@ -728,7 +848,9 @@ export default function CustomerHub() {
                         {/* Subscription Badge */}
                         <div className="mb-4">
                           <SubscriptionStatusBadge
-                            subscriptionType={customer.subscriptionStatus as any}
+                            subscriptionType={
+                              customer.subscriptionStatus as any
+                            }
                             showIcon={true}
                             size="md"
                           />
@@ -752,7 +874,9 @@ export default function CustomerHub() {
                         {/* Expandable Details */}
                         <div
                           className={`overflow-hidden transition-all ${
-                            expandedCustomer === customer.id ? "max-h-full" : "max-h-0"
+                            expandedCustomer === customer.id
+                              ? "max-h-full"
+                              : "max-h-0"
                           }`}
                         >
                           <div className="pt-4 border-t space-y-3 text-sm">
@@ -774,12 +898,20 @@ export default function CustomerHub() {
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                   <p className="text-xs">
-                                    {format(new Date(customer.lastBooking), "MMM dd, yyyy")}
+                                    {format(
+                                      new Date(customer.lastBooking),
+                                      "MMM dd, yyyy",
+                                    )}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    ({formatDistanceToNow(new Date(customer.lastBooking), {
-                                      addSuffix: true,
-                                    })})
+                                    (
+                                    {formatDistanceToNow(
+                                      new Date(customer.lastBooking),
+                                      {
+                                        addSuffix: true,
+                                      },
+                                    )}
+                                    )
                                   </p>
                                 </div>
                               </div>
@@ -794,7 +926,9 @@ export default function CustomerHub() {
                                 <SubscriptionDetailsCard
                                   customerId={customer.id}
                                   customerName={customer.fullName}
-                                  subscriptionStatus={customer.subscriptionStatus as any}
+                                  subscriptionStatus={
+                                    customer.subscriptionStatus as any
+                                  }
                                   compact={true}
                                   onManageClick={() => {
                                     setSelectedCustomer(customer);
@@ -830,19 +964,23 @@ export default function CustomerHub() {
                   >
                     Previous
                   </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      onClick={() => setCurrentPage(page)}
-                      className="w-10"
-                    >
-                      {page}
-                    </Button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        onClick={() => setCurrentPage(page)}
+                        className="w-10"
+                      >
+                        {page}
+                      </Button>
+                    ),
+                  )}
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
                     disabled={currentPage === totalPages}
                   >
                     Next
@@ -855,7 +993,10 @@ export default function CustomerHub() {
       )}
 
       {/* Subscription/Upgrade Modal */}
-      <Dialog open={isSubscriptionModalOpen} onOpenChange={setIsSubscriptionModalOpen}>
+      <Dialog
+        open={isSubscriptionModalOpen}
+        onOpenChange={setIsSubscriptionModalOpen}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
@@ -870,10 +1011,14 @@ export default function CustomerHub() {
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground">
-                  Current Plan: <span className="capitalize font-bold">{selectedCustomer.subscriptionStatus}</span>
+                  Current Plan:{" "}
+                  <span className="capitalize font-bold">
+                    {selectedCustomer.subscriptionStatus}
+                  </span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {selectedCustomer.totalBookings} bookings • ₱{selectedCustomer.totalSpent.toLocaleString()}
+                  {selectedCustomer.totalBookings} bookings • ₱
+                  {selectedCustomer.totalSpent.toLocaleString()}
                   spent
                 </p>
               </div>
@@ -885,14 +1030,23 @@ export default function CustomerHub() {
                     id: "basic",
                     name: "Basic",
                     price: "₱500/month",
-                    features: ["5 free washes/month", "Priority booking", "Email support"],
+                    features: [
+                      "5 free washes/month",
+                      "Priority booking",
+                      "Email support",
+                    ],
                     icon: <TrendingUp className="h-6 w-6" />,
                   },
                   {
                     id: "premium",
                     name: "Premium",
                     price: "₱1,500/month",
-                    features: ["Unlimited washes", "VIP lounge access", "Phone support", "Free detailing"],
+                    features: [
+                      "Unlimited washes",
+                      "VIP lounge access",
+                      "Phone support",
+                      "Free detailing",
+                    ],
                     icon: <Crown className="h-6 w-6" />,
                     popular: true,
                   },
@@ -921,13 +1075,20 @@ export default function CustomerHub() {
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-bold text-foreground">{plan.name}</h4>
                       {plan.popular && (
-                        <Badge className="bg-orange-500 text-white">Popular</Badge>
+                        <Badge className="bg-orange-500 text-white">
+                          Popular
+                        </Badge>
                       )}
                     </div>
-                    <p className="text-lg font-bold text-orange-600 mb-3">{plan.price}</p>
+                    <p className="text-lg font-bold text-orange-600 mb-3">
+                      {plan.price}
+                    </p>
                     <ul className="space-y-2 text-sm">
                       {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-muted-foreground">
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2 text-muted-foreground"
+                        >
                           <span className="text-green-600 mt-1">✓</span>
                           {feature}
                         </li>

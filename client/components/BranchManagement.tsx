@@ -130,53 +130,68 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
   const loadBranches = async () => {
     try {
       setLoading(true);
-      console.log('🏪 Loading branches from database...');
+      console.log("🏪 Loading branches from database...");
 
       const result = await neonDbClient.getBranches();
-      console.log('✅ Branches loaded:', result);
+      console.log("✅ Branches loaded:", result);
 
       if (result.success && result.branches) {
         // Transform backend data to match frontend interface
-        const transformedBranches: Branch[] = result.branches.map((branch: any) => ({
-          id: branch.id,
-          name: branch.name,
-          address: branch.address || 'Address not set',
-          phone: branch.phone || 'N/A',
-          email: branch.email || 'N/A',
-          manager: branch.managerName || 'Manager not assigned',
-          status: branch.isActive ? 'active' : 'inactive',
-          coordinates: {
-            lat: parseFloat(branch.latitude) || 6.9214,
-            lng: parseFloat(branch.longitude) || 122.079,
-          },
-          loginCredentials: {
-            username: `${branch.code || branch.name.toLowerCase().replace(/\s+/g, '_')}_branch`,
-            password: '****',
-            lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          },
-          stats: {
-            monthlyRevenue: branch.stats?.monthlyRevenue || 0,
-            totalCustomers: branch.stats?.totalCustomers || 0,
-            totalWashes: branch.stats?.totalWashes || 0,
-            averageRating: branch.stats?.averageRating || 4.5,
-            staffCount: branch.stats?.staffCount || 0,
-          },
-          operatingHours: {
-            open: branch.operatingHours?.monday?.open || '08:00',
-            close: branch.operatingHours?.monday?.close || '18:00',
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-          },
-          services: branch.services || ['Classic Wash', 'VIP Silver', 'VIP Gold'],
-          washHistory: [], // TODO: Load actual wash history
-        }));
+        const transformedBranches: Branch[] = result.branches.map(
+          (branch: any) => ({
+            id: branch.id,
+            name: branch.name,
+            address: branch.address || "Address not set",
+            phone: branch.phone || "N/A",
+            email: branch.email || "N/A",
+            manager: branch.managerName || "Manager not assigned",
+            status: branch.isActive ? "active" : "inactive",
+            coordinates: {
+              lat: parseFloat(branch.latitude) || 6.9214,
+              lng: parseFloat(branch.longitude) || 122.079,
+            },
+            loginCredentials: {
+              username: `${branch.code || branch.name.toLowerCase().replace(/\s+/g, "_")}_branch`,
+              password: "****",
+              lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            },
+            stats: {
+              monthlyRevenue: branch.stats?.monthlyRevenue || 0,
+              totalCustomers: branch.stats?.totalCustomers || 0,
+              totalWashes: branch.stats?.totalWashes || 0,
+              averageRating: branch.stats?.averageRating || 4.5,
+              staffCount: branch.stats?.staffCount || 0,
+            },
+            operatingHours: {
+              open: branch.operatingHours?.monday?.open || "08:00",
+              close: branch.operatingHours?.monday?.close || "18:00",
+              days: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ],
+            },
+            services: branch.services || [
+              "Classic Wash",
+              "VIP Silver",
+              "VIP Gold",
+            ],
+            washHistory: [], // TODO: Load actual wash history
+          }),
+        );
 
         setBranches(transformedBranches);
       } else {
-        console.warn('⚠️ No branches found or failed to load, using empty array');
+        console.warn(
+          "⚠️ No branches found or failed to load, using empty array",
+        );
         setBranches([]);
       }
     } catch (error) {
-      console.error('❌ Error loading branches:', error);
+      console.error("❌ Error loading branches:", error);
       toast({
         title: "Error Loading Branches",
         description: "Failed to load branch data. Showing empty state.",
@@ -219,16 +234,12 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
   };
 
   const handleAddBranch = async () => {
-    if (
-      newBranch.name &&
-      newBranch.address &&
-      newBranch.username
-    ) {
+    if (newBranch.name && newBranch.address && newBranch.username) {
       try {
         // Call backend API to create branch
         const result = await neonDbClient.createBranch({
           name: newBranch.name,
-          code: newBranch.username.toLowerCase().replace(/\s+/g, '_'),
+          code: newBranch.username.toLowerCase().replace(/\s+/g, "_"),
           address: newBranch.address,
           phone: newBranch.phone,
           email: newBranch.email,
@@ -242,18 +253,18 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
           const branch: Branch = {
             id: result.branch.id,
             name: result.branch.name,
-            address: result.branch.address || 'Address not set',
-            phone: result.branch.phone || 'N/A',
-            email: result.branch.email || 'N/A',
-            manager: result.branch.managerName || 'Manager not assigned',
-            status: result.branch.is_active ? 'active' : 'inactive',
+            address: result.branch.address || "Address not set",
+            phone: result.branch.phone || "N/A",
+            email: result.branch.email || "N/A",
+            manager: result.branch.managerName || "Manager not assigned",
+            status: result.branch.is_active ? "active" : "inactive",
             coordinates: {
               lat: parseFloat(result.branch.latitude) || 6.9214,
               lng: parseFloat(result.branch.longitude) || 122.079,
             },
             loginCredentials: {
               username: newBranch.username,
-              password: '****',
+              password: "****",
             },
             stats: {
               monthlyRevenue: result.branch.stats?.monthlyRevenue || 0,
@@ -263,11 +274,22 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               staffCount: result.branch.stats?.staffCount || 0,
             },
             operatingHours: {
-              open: result.branch.operatingHours?.monday?.open || '08:00',
-              close: result.branch.operatingHours?.monday?.close || '18:00',
-              days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+              open: result.branch.operatingHours?.monday?.open || "08:00",
+              close: result.branch.operatingHours?.monday?.close || "18:00",
+              days: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ],
             },
-            services: result.branch.services || ['Classic Wash', 'VIP Silver', 'VIP Gold'],
+            services: result.branch.services || [
+              "Classic Wash",
+              "VIP Silver",
+              "VIP Gold",
+            ],
             washHistory: [],
           };
 
@@ -312,12 +334,18 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
   };
 
   const handleDeleteBranch = async (branchId: string) => {
-    if (confirm("Are you sure you want to delete this branch? This action cannot be undone.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete this branch? This action cannot be undone.",
+      )
+    ) {
       try {
         const result = await neonDbClient.deleteBranch(branchId);
 
         if (result.success) {
-          setBranches((prev) => prev.filter((branch) => branch.id !== branchId));
+          setBranches((prev) =>
+            prev.filter((branch) => branch.id !== branchId),
+          );
           toast({
             title: "Success",
             description: "Branch deleted successfully!",
@@ -418,7 +446,9 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-purple-100 text-sm">Total Customers</div>
+                    <div className="text-purple-100 text-sm">
+                      Total Customers
+                    </div>
                     <div className="text-2xl font-black">
                       {loading ? (
                         <span className="animate-pulse">-</span>
