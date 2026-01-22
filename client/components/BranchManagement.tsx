@@ -311,10 +311,32 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
     }
   };
 
-  const handleDeleteBranch = (branchId: string) => {
-    if (confirm("Are you sure you want to delete this branch?")) {
-      setBranches((prev) => prev.filter((branch) => branch.id !== branchId));
-      alert("Branch deleted successfully!");
+  const handleDeleteBranch = async (branchId: string) => {
+    if (confirm("Are you sure you want to delete this branch? This action cannot be undone.")) {
+      try {
+        const result = await neonDbClient.deleteBranch(branchId);
+
+        if (result.success) {
+          setBranches((prev) => prev.filter((branch) => branch.id !== branchId));
+          toast({
+            title: "Success",
+            description: "Branch deleted successfully!",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to delete branch",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error deleting branch:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete branch. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
