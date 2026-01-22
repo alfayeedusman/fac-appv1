@@ -101,6 +101,8 @@ export default function BookingHub() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusType>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "booking" | "walkin" | "guest">("all");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
+  const [uniqueBranches, setUniqueBranches] = useState<string[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<BookingData["status"]>("pending");
@@ -111,7 +113,7 @@ export default function BookingHub() {
 
   useEffect(() => {
     filterAndSortBookings();
-  }, [bookings, searchTerm, statusFilter, typeFilter]);
+  }, [bookings, searchTerm, statusFilter, typeFilter, branchFilter]);
 
   const loadBookings = async () => {
     try {
