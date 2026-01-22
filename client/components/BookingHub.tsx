@@ -431,7 +431,26 @@ export default function BookingHub() {
                 </Select>
               </div>
 
-              {(searchTerm || statusFilter !== "all" || typeFilter !== "all") && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Branch
+                </label>
+                <Select value={branchFilter} onValueChange={(value: string) => setBranchFilter(value)}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Branches</SelectItem>
+                    {uniqueBranches.map((branch) => (
+                      <SelectItem key={branch} value={branch}>
+                        {branch}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(searchTerm || statusFilter !== "all" || typeFilter !== "all" || branchFilter !== "all") && (
                 <div className="flex items-end">
                   <Button
                     variant="outline"
