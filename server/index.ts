@@ -283,19 +283,19 @@ export function createServer() {
   // Initialize database and seed data on server startup
   setTimeout(async () => {
     try {
-      console.log("🔄 Initializing database and running migrations...");
+      logInit("Initializing database and running migrations...");
       await import("./database/migrate").then((m) => m.migrate());
-      console.log(
-        "✅ Database initialization and migrations completed successfully",
+      logInit(
+        "Database initialization and migrations completed successfully",
       );
 
-      console.log("🏪 Auto-seeding branch data...");
+      logInit("Auto-seeding branch data...");
       await seedBranches();
-      console.log("✅ Branch seeding completed successfully");
+      logInit("Branch seeding completed successfully");
 
-      console.log("👥 Auto-seeding user data...");
+      logInit("Auto-seeding user data...");
       await seedUsers();
-      console.log("✅ User seeding completed successfully");
+      logInit("User seeding completed successfully");
     } catch (error) {
       console.error("❌ Initialization failed:", error);
       console.log(
@@ -303,6 +303,9 @@ export function createServer() {
       );
     }
   }, 1000);
+
+  // Error handling middleware (must be last)
+  app.use(errorHandler);
 
   return app;
 }
