@@ -16,6 +16,7 @@ import realtimeApiRoutes from "./routes/realtime-api";
 import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
 import * as adminInviteRoutes from "./routes/admin-invite";
+import * as branchesApiRoutes from "./routes/branches-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
@@ -178,6 +179,9 @@ export function createServer() {
   // New features endpoints
   app.get("/api/neon/branches", neonApiRoutes.getBranches);
   app.post("/api/neon/branches/seed", neonApiRoutes.seedBranchesEndpoint);
+  app.post("/api/neon/branches", branchesApiRoutes.createBranch);
+  app.put("/api/neon/branches/:id", branchesApiRoutes.updateBranch);
+  app.delete("/api/neon/branches/:id", branchesApiRoutes.deleteBranch);
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
   app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);

@@ -53,15 +53,31 @@ interface BookingData {
   serviceType: string;
   totalPrice: number;
   paymentMethod: string;
-  status: "pending" | "waitinglist" | "onbay" | "washing" | "finish" | "paid" | "completed";
+  status:
+    | "pending"
+    | "waitinglist"
+    | "onbay"
+    | "washing"
+    | "finish"
+    | "paid"
+    | "completed";
   paymentStatus?: "pending" | "completed" | "failed";
   confirmationCode?: string;
   type: "booking" | "walkin" | "guest";
   notes?: string;
+  branch?: string;
   rawBooking?: any;
 }
 
-type StatusType = "pending" | "waitinglist" | "onbay" | "washing" | "finish" | "paid" | "completed" | "all";
+type StatusType =
+  | "pending"
+  | "waitinglist"
+  | "onbay"
+  | "washing"
+  | "finish"
+  | "paid"
+  | "completed"
+  | "all";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Pending Confirmation",
@@ -99,8 +115,14 @@ export default function BookingHub() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusType>("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | "booking" | "walkin" | "guest">("all");
-  const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
+  const [typeFilter, setTypeFilter] = useState<
+    "all" | "booking" | "walkin" | "guest"
+  >("all");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
+  const [uniqueBranches, setUniqueBranches] = useState<string[]>([]);
+  const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(
+    null,
+  );
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<BookingData["status"]>("pending");
 
@@ -110,21 +132,26 @@ export default function BookingHub() {
 
   useEffect(() => {
     filterAndSortBookings();
-  }, [bookings, searchTerm, statusFilter, typeFilter]);
+  }, [bookings, searchTerm, statusFilter, typeFilter, branchFilter]);
 
   const loadBookings = async () => {
     try {
       setIsLoading(true);
-      const result = await neonDbClient.getAllBookings?.() || [];
+      const response = await neonDbClient.getBookings({
+        userRole: localStorage.getItem("userRole") || "user",
+        userEmail: localStorage.getItem("userEmail") || "",
+      });
+      const result = response?.bookings || [];
 
       if (Array.isArray(result)) {
         const formattedBookings = result.map((booking: any) => {
           // Handle guest bookings with guestInfo
-          const isGuest = booking.type === 'guest';
-          const guestInfo = isGuest && booking.guestInfo ? booking.guestInfo : null;
+          const isGuest = booking.type === "guest";
+          const guestInfo =
+            isGuest && booking.guestInfo ? booking.guestInfo : null;
 
           const customerName = guestInfo
-            ? `${guestInfo.firstName || ''} ${guestInfo.lastName || ''}`.trim()
+            ? `${guestInfo.firstName || ""} ${guestInfo.lastName || ""}`.trim()
             : booking.customerName || booking.fullName || "Unknown";
 
           const customerEmail = guestInfo
@@ -142,7 +169,10 @@ export default function BookingHub() {
             customerPhone,
             vehicleModel: booking.vehicleModel || booking.carUnit || "-",
             plateNumber: booking.plateNumber || booking.carPlateNumber || "-",
-            bookingDate: booking.bookingDate || booking.createdAt || new Date().toISOString(),
+            bookingDate:
+              booking.bookingDate ||
+              booking.createdAt ||
+              new Date().toISOString(),
             serviceType: booking.serviceType || booking.service || "Car Wash",
             totalPrice: parseFloat(booking.totalPrice || booking.price || 0),
             paymentMethod: booking.paymentMethod || "cash",
@@ -151,15 +181,24 @@ export default function BookingHub() {
             type: booking.type || "booking",
             confirmationCode: booking.confirmationCode || "",
             notes: booking.notes || "",
+            branch: booking.branch || "Main Branch",
             rawBooking: booking, // Keep raw booking data for details
           };
         });
 
         setBookings(formattedBookings);
+
+        // Extract unique branches from bookings
+        const branches = Array.from(
+          new Set(formattedBookings.map((b) => b.branch).filter(Boolean)),
+        );
+        setUniqueBranches(branches as string[]);
+
         console.log("✅ Bookings loaded:", formattedBookings.length);
       } else {
         console.warn("No bookings found");
         setBookings([]);
+        setUniqueBranches([]);
       }
     } catch (error) {
       console.error("Error loading bookings:", error);
@@ -185,7 +224,7 @@ export default function BookingHub() {
           b.customerName.toLowerCase().includes(term) ||
           b.customerEmail.toLowerCase().includes(term) ||
           b.customerPhone.toLowerCase().includes(term) ||
-          b.plateNumber.toLowerCase().includes(term)
+          b.plateNumber.toLowerCase().includes(term),
       );
     }
 
@@ -197,6 +236,11 @@ export default function BookingHub() {
     // Type filter (booking vs walkin)
     if (typeFilter !== "all") {
       filtered = filtered.filter((b) => b.type === typeFilter);
+    }
+
+    // Branch filter
+    if (branchFilter !== "all" && branchFilter) {
+      filtered = filtered.filter((b) => b.branch === branchFilter);
     }
 
     // Sort by status order (ascending through the workflow)
@@ -219,7 +263,7 @@ export default function BookingHub() {
     if (!selectedBooking) return;
 
     const updatedBookings = bookings.map((b) =>
-      b.id === selectedBooking.id ? { ...b, status: newStatus } : b
+      b.id === selectedBooking.id ? { ...b, status: newStatus } : b,
     );
 
     setBookings(updatedBookings);
@@ -264,9 +308,7 @@ export default function BookingHub() {
     todayBookings: bookings.filter((b) => {
       const bookingDate = new Date(b.bookingDate);
       const today = new Date();
-      return (
-        bookingDate.toDateString() === today.toDateString()
-      );
+      return bookingDate.toDateString() === today.toDateString();
     }).length,
   };
 
@@ -285,7 +327,9 @@ export default function BookingHub() {
           disabled={isLoading}
           className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           {isLoading ? "Loading..." : "Refresh"}
         </Button>
       </div>
@@ -296,7 +340,9 @@ export default function BookingHub() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-700 font-medium">Total Bookings</p>
+                <p className="text-sm text-blue-700 font-medium">
+                  Total Bookings
+                </p>
                 <p className="text-3xl font-bold text-blue-900 mt-1">
                   {stats.totalBookings}
                 </p>
@@ -344,9 +390,14 @@ export default function BookingHub() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-700 font-medium">Total Sales</p>
+                <p className="text-sm text-purple-700 font-medium">
+                  Total Sales
+                </p>
                 <p className="text-2xl font-bold text-purple-900 mt-1">
-                  ₱{stats.totalSales.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ₱
+                  {stats.totalSales.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
               </div>
               <div className="bg-purple-200 p-3 rounded-lg">
@@ -378,7 +429,10 @@ export default function BookingHub() {
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Status
                 </label>
-                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value: any) => setStatusFilter(value)}
+                >
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -397,7 +451,10 @@ export default function BookingHub() {
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Type
                 </label>
-                <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
+                <Select
+                  value={typeFilter}
+                  onValueChange={(value: any) => setTypeFilter(value)}
+                >
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -410,7 +467,32 @@ export default function BookingHub() {
                 </Select>
               </div>
 
-              {(searchTerm || statusFilter !== "all" || typeFilter !== "all") && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Branch
+                </label>
+                <Select
+                  value={branchFilter}
+                  onValueChange={(value: string) => setBranchFilter(value)}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Branches</SelectItem>
+                    {uniqueBranches.map((branch) => (
+                      <SelectItem key={branch} value={branch}>
+                        {branch}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(searchTerm ||
+                statusFilter !== "all" ||
+                typeFilter !== "all" ||
+                branchFilter !== "all") && (
                 <div className="flex items-end">
                   <Button
                     variant="outline"
@@ -419,6 +501,7 @@ export default function BookingHub() {
                       setSearchTerm("");
                       setStatusFilter("all");
                       setTypeFilter("all");
+                      setBranchFilter("all");
                     }}
                     className="w-full"
                   >
@@ -431,8 +514,15 @@ export default function BookingHub() {
 
             {/* Results count */}
             <div className="text-sm text-muted-foreground pt-2 border-t">
-              Showing <span className="font-semibold text-foreground">{filteredBookings.length}</span> of{" "}
-              <span className="font-semibold text-foreground">{bookings.length}</span> bookings
+              Showing{" "}
+              <span className="font-semibold text-foreground">
+                {filteredBookings.length}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-foreground">
+                {bookings.length}
+              </span>{" "}
+              bookings
             </div>
           </div>
         </CardContent>
@@ -453,7 +543,9 @@ export default function BookingHub() {
             <div className="flex flex-col items-center justify-center py-12">
               <Calendar className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
               <p className="text-muted-foreground text-lg">No bookings found</p>
-              <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try adjusting your filters
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -494,7 +586,9 @@ export default function BookingHub() {
                         <div className="flex items-center gap-2">
                           <Car className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                           <div>
-                            <p className="font-medium">{booking.vehicleModel}</p>
+                            <p className="font-medium">
+                              {booking.vehicleModel}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               {booking.plateNumber}
                             </p>
@@ -507,7 +601,10 @@ export default function BookingHub() {
                               {format(new Date(booking.bookingDate), "MMM dd")}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(booking.bookingDate), { addSuffix: true })}
+                              {formatDistanceToNow(
+                                new Date(booking.bookingDate),
+                                { addSuffix: true },
+                              )}
                             </p>
                           </div>
                         </div>
@@ -516,7 +613,9 @@ export default function BookingHub() {
 
                     {/* Center: Status */}
                     <div className="flex flex-col items-center gap-2">
-                      <Badge className={`capitalize border px-3 py-1 ${STATUS_COLORS[booking.status]}`}>
+                      <Badge
+                        className={`capitalize border px-3 py-1 ${STATUS_COLORS[booking.status]}`}
+                      >
                         <span className="flex items-center gap-1">
                           {getStatusIcon(booking.status)}
                           {STATUS_LABELS[booking.status]}
@@ -539,7 +638,10 @@ export default function BookingHub() {
                         {booking.serviceType}
                       </p>
                       <p className="text-2xl font-bold text-green-600">
-                        ₱{booking.totalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        ₱
+                        {booking.totalPrice.toLocaleString(undefined, {
+                          maximumFractionDigits: 0,
+                        })}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {booking.paymentMethod}
@@ -557,7 +659,9 @@ export default function BookingHub() {
       <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Update Booking Status</DialogTitle>
+            <DialogTitle className="text-lg font-bold">
+              Update Booking Status
+            </DialogTitle>
             <DialogDescription>
               Update the status for {selectedBooking?.customerName}
             </DialogDescription>
@@ -570,15 +674,24 @@ export default function BookingHub() {
                   {selectedBooking.vehicleModel} ({selectedBooking.plateNumber})
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Current Status: <span className="font-semibold">{STATUS_LABELS[selectedBooking.status]}</span>
+                  Current Status:{" "}
+                  <span className="font-semibold">
+                    {STATUS_LABELS[selectedBooking.status]}
+                  </span>
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="statusSelect" className="mb-2 block text-sm font-medium">
+                <Label
+                  htmlFor="statusSelect"
+                  className="mb-2 block text-sm font-medium"
+                >
                   New Status
                 </Label>
-                <Select value={newStatus} onValueChange={(value: any) => setNewStatus(value)}>
+                <Select
+                  value={newStatus}
+                  onValueChange={(value: any) => setNewStatus(value)}
+                >
                   <SelectTrigger id="statusSelect">
                     <SelectValue />
                   </SelectTrigger>
@@ -597,7 +710,8 @@ export default function BookingHub() {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> Updating to "completed" or "paid" status will add this booking to today's sales total.
+                  <strong>Note:</strong> Updating to "completed" or "paid"
+                  status will add this booking to today's sales total.
                 </p>
               </div>
             </div>
