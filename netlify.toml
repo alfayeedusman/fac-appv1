@@ -1,7 +1,7 @@
 [build]
   # Build command: install dependencies and build both client and server
   # Using --legacy-peer-deps to avoid dependency conflicts
-  command = "npm ci --legacy-peer-deps --include=dev --prefer-offline --no-audit && npm run build"
+  command = "npm ci --legacy-peer-deps --include=dev --prefer-offline --no-audit && npm run build && npm run build:server"
   functions = "netlify/functions"
   publish = "dist/spa"
   base = "/"
@@ -49,9 +49,23 @@
   environment = { NODE_ENV = "production" }
 
 [functions]
-  external_node_modules = ["express", "cors", "drizzle-orm", "@neondatabase/serverless"]
+  # Tell Netlify to not bundle these (they're NPM packages)
+  external_node_modules = [
+    "express",
+    "cors",
+    "drizzle-orm",
+    "@neondatabase/serverless",
+    "postgres",
+    "bcryptjs",
+    "firebase-admin",
+    "nodemailer",
+    "multer",
+    "serverless-http",
+    "zod"
+  ]
   node_bundler = "esbuild"
-  included_files = ["dist/**"]
+  # Include both dist and server directories
+  included_files = ["dist/**", "server/**"]
 
 # API Redirect (MUST come before catch-all SPA redirect)
 [[redirects]]
@@ -68,16 +82,6 @@
 
 [[redirects]]
   from = "/booking-failed"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/booking-success?*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/booking-failed?*"
   to = "/index.html"
   status = 200
 

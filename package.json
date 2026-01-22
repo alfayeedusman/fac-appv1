@@ -11,6 +11,8 @@
     ]
   },
   "scripts": {
+    "setup": "bash setup.sh",
+    "setup:win": "setup.bat",
     "dev": "vite",
     "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
@@ -24,8 +26,9 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "setup:netlify": "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build",
+    "setup:netlify": "npm install --legacy-peer-deps --prefer-offline --no-audit && npm run build && npm run build:server",
     "setup:netlify:clean": "rm -rf node_modules dist && npm run setup:netlify",
+    "setup:production": "npm ci --legacy-peer-deps --include=dev && npm run build && npm run build:server && npm run typecheck",
     "deploy:netlify": "bash deploy-to-netlify.sh",
     "deploy:vps": "bash deploy.sh deploy",
     "deploy:one-click": "bash scripts/one-click-deploy.sh"
