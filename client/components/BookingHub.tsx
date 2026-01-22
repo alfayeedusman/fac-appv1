@@ -58,6 +58,7 @@ interface BookingData {
   confirmationCode?: string;
   type: "booking" | "walkin" | "guest";
   notes?: string;
+  branch?: string;
   rawBooking?: any;
 }
 
