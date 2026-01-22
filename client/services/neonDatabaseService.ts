@@ -149,7 +149,7 @@ const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ) => {
-  let timeoutId: number | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let isAborted = false;
 
   timeoutId = setTimeout(() => {
