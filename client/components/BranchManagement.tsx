@@ -218,62 +218,96 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
     }
   };
 
-  const handleAddBranch = () => {
+  const handleAddBranch = async () => {
     if (
       newBranch.name &&
       newBranch.address &&
-      newBranch.username &&
-      newBranch.password
+      newBranch.username
     ) {
-      const id = Date.now().toString();
-      const branch: Branch = {
-        id,
-        name: newBranch.name,
-        address: newBranch.address,
-        phone: newBranch.phone,
-        email: newBranch.email,
-        manager: newBranch.manager,
-        status: "active",
-        coordinates: { lat: 6.9214, lng: 122.079 }, // Default coordinates
-        loginCredentials: {
-          username: newBranch.username,
-          password: newBranch.password,
-        },
-        stats: {
-          monthlyRevenue: 0,
-          totalCustomers: 0,
-          totalWashes: 0,
-          averageRating: 0,
-          staffCount: 0,
-        },
-        operatingHours: {
-          open: "08:00",
-          close: "18:00",
-          days: [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-          ],
-        },
-        services: ["Classic Wash"],
-        washHistory: [],
-      };
+      try {
+        // Call backend API to create branch
+        const result = await neonDbClient.createBranch({
+          name: newBranch.name,
+          code: newBranch.username.toLowerCase().replace(/\s+/g, '_'),
+          address: newBranch.address,
+          phone: newBranch.phone,
+          email: newBranch.email,
+          managerName: newBranch.manager,
+          type: "full_service",
+          timezone: "Asia/Manila",
+        });
 
-      setBranches((prev) => [...prev, branch]);
-      setNewBranch({
-        name: "",
-        address: "",
-        phone: "",
-        email: "",
-        manager: "",
-        username: "",
-        password: "",
+        if (result.success && result.branch) {
+          // Transform backend response to match frontend interface
+          const branch: Branch = {
+            id: result.branch.id,
+            name: result.branch.name,
+            address: result.branch.address || 'Address not set',
+            phone: result.branch.phone || 'N/A',
+            email: result.branch.email || 'N/A',
+            manager: result.branch.managerName || 'Manager not assigned',
+            status: result.branch.is_active ? 'active' : 'inactive',
+            coordinates: {
+              lat: parseFloat(result.branch.latitude) || 6.9214,
+              lng: parseFloat(result.branch.longitude) || 122.079,
+            },
+            loginCredentials: {
+              username: newBranch.username,
+              password: '****',
+            },
+            stats: {
+              monthlyRevenue: result.branch.stats?.monthlyRevenue || 0,
+              totalCustomers: result.branch.stats?.totalCustomers || 0,
+              totalWashes: result.branch.stats?.totalWashes || 0,
+              averageRating: result.branch.stats?.averageRating || 4.5,
+              staffCount: result.branch.stats?.staffCount || 0,
+            },
+            operatingHours: {
+              open: result.branch.operatingHours?.monday?.open || '08:00',
+              close: result.branch.operatingHours?.monday?.close || '18:00',
+              days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            },
+            services: result.branch.services || ['Classic Wash', 'VIP Silver', 'VIP Gold'],
+            washHistory: [],
+          };
+
+          setBranches((prev) => [...prev, branch]);
+          setNewBranch({
+            name: "",
+            address: "",
+            phone: "",
+            email: "",
+            manager: "",
+            username: "",
+            password: "",
+          });
+          setIsAddBranchOpen(false);
+
+          toast({
+            title: "Success",
+            description: `Branch "${newBranch.name}" added successfully!`,
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to create branch",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error adding branch:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add branch. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
       });
-      setIsAddBranchOpen(false);
-      alert("Branch added successfully!");
     }
   };
 
