@@ -215,6 +215,11 @@ export default function BookingHub() {
       filtered = filtered.filter((b) => b.type === typeFilter);
     }
 
+    // Branch filter
+    if (branchFilter !== "all" && branchFilter) {
+      filtered = filtered.filter((b) => b.branch === branchFilter);
+    }
+
     // Sort by status order (ascending through the workflow)
     filtered.sort((a, b) => {
       const aIndex = STATUS_ORDER.indexOf(a.status);
