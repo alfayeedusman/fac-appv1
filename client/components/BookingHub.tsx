@@ -115,7 +115,11 @@ export default function BookingHub() {
   const loadBookings = async () => {
     try {
       setIsLoading(true);
-      const result = await neonDbClient.getAllBookings?.() || [];
+      const response = await neonDbClient.getBookings({
+        userRole: localStorage.getItem("userRole") || "user",
+        userEmail: localStorage.getItem("userEmail") || "",
+      });
+      const result = response?.bookings || [];
 
       if (Array.isArray(result)) {
         const formattedBookings = result.map((booking: any) => {
