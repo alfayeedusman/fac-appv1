@@ -1456,12 +1456,17 @@ class NeonDatabaseClient {
     address?: string;
     city?: string;
     phone?: string;
+    email?: string;
+    managerName?: string;
+    managerPhone?: string;
+    type?: string;
+    timezone?: string;
   }): Promise<{ success: boolean; branch?: any; error?: string }> {
     if (!this.isConnected) {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/branches`, {
+      const response = await fetch(`${this.baseUrl}/neon/branches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1470,7 +1475,11 @@ class NeonDatabaseClient {
           address: data.address || null,
           city: data.city || "Zamboanga City",
           phone: data.phone || null,
-          type: "full_service",
+          email: data.email || null,
+          managerName: data.managerName || null,
+          managerPhone: data.managerPhone || null,
+          type: data.type || "full_service",
+          timezone: data.timezone || "Asia/Manila",
         }),
       });
       const result = await response.json();
@@ -1481,6 +1490,60 @@ class NeonDatabaseClient {
         success: false,
         error:
           error instanceof Error ? error.message : "Failed to create branch",
+      };
+    }
+  }
+
+  async updateBranch(
+    branchId: string,
+    data: Partial<{
+      name: string;
+      address: string;
+      city: string;
+      phone: string;
+      email: string;
+      managerName: string;
+      managerPhone: string;
+    }>,
+  ): Promise<{ success: boolean; branch?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false, error: "Database not connected" };
+    }
+    try {
+      const response = await fetch(`${this.baseUrl}/neon/branches/${branchId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("❌ Update branch failed:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to update branch",
+      };
+    }
+  }
+
+  async deleteBranch(branchId: string): Promise<{ success: boolean; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false, error: "Database not connected" };
+    }
+    try {
+      const response = await fetch(`${this.baseUrl}/neon/branches/${branchId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("❌ Delete branch failed:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to delete branch",
       };
     }
   }
