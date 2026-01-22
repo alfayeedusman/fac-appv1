@@ -164,10 +164,18 @@ export default function BookingHub() {
         });
 
         setBookings(formattedBookings);
+
+        // Extract unique branches from bookings
+        const branches = Array.from(
+          new Set(formattedBookings.map((b) => b.branch).filter(Boolean))
+        );
+        setUniqueBranches(branches as string[]);
+
         console.log("✅ Bookings loaded:", formattedBookings.length);
       } else {
         console.warn("No bookings found");
         setBookings([]);
+        setUniqueBranches([]);
       }
     } catch (error) {
       console.error("Error loading bookings:", error);
