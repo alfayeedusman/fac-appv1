@@ -20,6 +20,11 @@ import * as branchesApiRoutes from "./routes/branches-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
+import {
+  requestLogger,
+  errorHandler,
+  logInit,
+} from "./middleware/errorLogger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
