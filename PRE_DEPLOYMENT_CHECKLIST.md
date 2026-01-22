@@ -5,35 +5,41 @@ Use this checklist before deploying to Netlify!
 ## ✅ Local Development Checklist
 
 ### Setup & Dependencies
+
 - [ ] Run `bash setup.sh` (or `setup.bat` on Windows)
 - [ ] No error messages during setup
 - [ ] Dependencies installed successfully
 - [ ] `npm run dev` starts without errors
 
 ### Frontend Build
+
 - [ ] Frontend builds: `npm run build:client`
 - [ ] No TypeScript errors
 - [ ] No missing imports
 - [ ] Assets are in `dist/spa/`
 
 ### Backend Build
+
 - [ ] Backend builds: `npm run build:server`
 - [ ] No TypeScript errors
 - [ ] All routes are registered
 - [ ] Server code compiles successfully
 
 ### Type Checking
+
 - [ ] `npm run typecheck` passes
 - [ ] No TS errors in console
 - [ ] All imports are correct
 
 ### Local Testing
+
 - [ ] Frontend loads: http://localhost:8080
 - [ ] API responds: `/api/neon/test`
 - [ ] Diagnostics work: `/api/neon/diagnose`
 - [ ] No 404 errors on API routes
 
 ### Database
+
 - [ ] NEON_DATABASE_URL is set locally
 - [ ] Database initializes on startup
 - [ ] Migrations run successfully
@@ -41,6 +47,7 @@ Use this checklist before deploying to Netlify!
 - [ ] Can create test records
 
 ### API Endpoints
+
 - [ ] `POST /api/neon/auth/login` responds
 - [ ] `POST /api/neon/auth/register` responds
 - [ ] `GET /api/neon/bookings` returns data
@@ -48,6 +55,7 @@ Use this checklist before deploying to Netlify!
 - [ ] All major endpoints tested
 
 ### Error Handling
+
 - [ ] Errors don't crash the server
 - [ ] Error middleware logs messages
 - [ ] Invalid requests return proper errors
@@ -58,6 +66,7 @@ Use this checklist before deploying to Netlify!
 ## 🔐 Environment & Configuration Checklist
 
 ### Environment Variables
+
 - [ ] NEON_DATABASE_URL is valid
 - [ ] DATABASE_URL is set (backup)
 - [ ] All Firebase variables are set
@@ -69,6 +78,7 @@ Use this checklist before deploying to Netlify!
 - [ ] All variables are correct format
 
 ### Secrets
+
 - [ ] No secrets in `.env.local` (in .gitignore)
 - [ ] No hardcoded passwords in code
 - [ ] No API keys in git history
@@ -76,6 +86,7 @@ Use this checklist before deploying to Netlify!
 - [ ] Consider rotating old secrets
 
 ### Configuration Files
+
 - [ ] `netlify.toml` is valid TOML
 - [ ] Build command is correct
 - [ ] Functions directory is set
@@ -88,17 +99,20 @@ Use this checklist before deploying to Netlify!
 ## 🚀 Netlify Preparation Checklist
 
 ### Git Repository
+
 - [ ] Code is committed: `git status` shows clean
 - [ ] No uncommitted changes
 - [ ] Branch is ready to deploy (usually 'main')
 - [ ] Remote is set correctly: `git remote -v`
 
 ### GitHub Connection
+
 - [ ] Repository is on GitHub
 - [ ] Netlify has read access
 - [ ] No authentication issues
 
 ### Netlify Settings
+
 - [ ] Site is connected to GitHub
 - [ ] Build command is set correctly
 - [ ] Publish directory is `dist/spa`
@@ -106,6 +120,7 @@ Use this checklist before deploying to Netlify!
 - [ ] Node.js version is v18+
 
 ### Environment Variables (Netlify Dashboard)
+
 - [ ] NEON_DATABASE_URL ✓
 - [ ] DATABASE_URL ✓
 - [ ] VITE_FIREBASE_API_KEY ✓
@@ -131,6 +146,7 @@ Use this checklist before deploying to Netlify!
 ## 🧪 Final Testing Checklist
 
 ### Production Build Locally
+
 - [ ] Run: `npm run build`
 - [ ] Check `dist/spa/` exists
 - [ ] Check `dist/server/` exists
@@ -138,6 +154,7 @@ Use this checklist before deploying to Netlify!
 - [ ] No build warnings (OK if TypeScript warnings)
 
 ### Verify Builds
+
 - [ ] Frontend HTML is in `dist/spa/index.html`
 - [ ] CSS is compiled and minified
 - [ ] JavaScript is bundled
@@ -145,6 +162,7 @@ Use this checklist before deploying to Netlify!
 - [ ] Server files are in `dist/server/`
 
 ### Security Check
+
 - [ ] No secrets in built files
 - [ ] API keys are NOT in frontend bundle
 - [ ] Database password is NOT in code
@@ -152,6 +170,7 @@ Use this checklist before deploying to Netlify!
 - [ ] Headers are set properly
 
 ### Performance Check
+
 - [ ] Frontend bundle is < 1MB gzipped
 - [ ] Initial page load is fast
 - [ ] API responses are reasonable
@@ -163,12 +182,14 @@ Use this checklist before deploying to Netlify!
 ## 📋 Deployment Checklist
 
 ### Before Push
+
 - [ ] All checklist items above are complete
 - [ ] Local `npm run dev` works perfectly
 - [ ] No error messages in console
 - [ ] All API endpoints respond correctly
 
 ### Push to GitHub
+
 ```bash
 git add .
 git commit -m "Complete setup with all fixes and configurations"
@@ -180,6 +201,7 @@ git push origin main
 - [ ] Code appears on GitHub
 
 ### Monitor Netlify Deployment
+
 - [ ] Netlify detects new commit
 - [ ] Build starts automatically
 - [ ] Build completes without errors
@@ -188,6 +210,7 @@ git push origin main
 - [ ] DNS updates (if using custom domain)
 
 ### Verify Deployed Site
+
 - [ ] Site loads: https://facapptest.netlify.app
 - [ ] No 404 errors
 - [ ] API responds: https://facapptest.netlify.app/api/neon/test
@@ -195,9 +218,11 @@ git push origin main
 - [ ] Can login with test account
 
 ### Test Production API
+
 ```bash
 bash verify-setup.sh netlify
 ```
+
 - [ ] All endpoint tests pass
 - [ ] No connection errors
 - [ ] Response times are acceptable
@@ -207,12 +232,14 @@ bash verify-setup.sh netlify
 ## 🎯 Deployment Day Checklist
 
 ### Morning (Before Deploy)
+
 - [ ] Make backup of database (Neon console)
 - [ ] Notify team of planned deployment
 - [ ] Have rollback plan ready
 - [ ] Check Netlify status page for any incidents
 
 ### Deploy
+
 - [ ] Run all checklist items above
 - [ ] Push to GitHub
 - [ ] Monitor Netlify build
@@ -220,6 +247,7 @@ bash verify-setup.sh netlify
 - [ ] Test all features
 
 ### After Deploy
+
 - [ ] Check Netlify Functions logs
 - [ ] Monitor error rates
 - [ ] Check database performance
@@ -228,6 +256,7 @@ bash verify-setup.sh netlify
 - [ ] Check API response times
 
 ### Post-Deployment
+
 - [ ] Document any issues found
 - [ ] Notify team deployment is complete
 - [ ] Monitor for 24 hours
@@ -273,6 +302,7 @@ If something goes wrong:
 Make sure ALL items are checked before proceeding!
 
 If any items are not complete:
+
 1. Go back to that section
 2. Complete the required tasks
 3. Return to this checklist
@@ -282,14 +312,17 @@ If any items are not complete:
 
 ---
 
-**Deployment Date**: _____________
-**Deployed By**: _____________
-**Status**: ☐ Successful  ☐ Rolled Back  ☐ Pending
+**Deployment Date**: ******\_******
+**Deployed By**: ******\_******
+**Status**: ☐ Successful ☐ Rolled Back ☐ Pending
 
 **Notes**:
-_____________________________________________
-_____________________________________________
-_____________________________________________
+
+---
+
+---
+
+---
 
 ---
 

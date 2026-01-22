@@ -12,27 +12,30 @@ let initAttempted = false;
 async function initializeHandler() {
   if (handler) return handler; // Already initialized
   if (initAttempted && initError) throw initError; // Failed before
-  
+
   if (!initAttempted) {
     initAttempted = true;
     try {
       console.log("[Netlify Function] Initializing server...");
-      
+
       // Import and create Express app
       const { createServer } = await import("../../server/index.ts");
       const app = createServer();
-      
+
       // Wrap with serverless-http
       handler = serverless(app);
       console.log("[Netlify Function] ✅ Server initialized successfully");
       return handler;
     } catch (error) {
       initError = error instanceof Error ? error : new Error(String(error));
-      console.error("[Netlify Function] ❌ Initialization failed:", initError.message);
+      console.error(
+        "[Netlify Function] ❌ Initialization failed:",
+        initError.message,
+      );
       throw initError;
     }
   }
-  
+
   return handler;
 }
 
@@ -43,15 +46,15 @@ export async function handler(event: any, context: any) {
   try {
     // Initialize on first request
     const serverHandler = await initializeHandler();
-    
+
     // Route request through Express
     return serverHandler(event, context);
   } catch (error) {
     console.error("[Netlify Function] Fatal error:", error);
-    
+
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : "";
-    
+
     return {
       statusCode: 500,
       headers: {

@@ -102,11 +102,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
  * Usage: app.get('/route', asyncHandler(async (req, res) => { ... }))
  */
 export function asyncHandler(
-  fn: (
-    req: any,
-    res: any,
-    next?: any,
-  ) => Promise<any> | any,
+  fn: (req: any, res: any, next?: any) => Promise<any> | any,
 ): RequestHandler {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -150,8 +146,9 @@ export function logError(message: string, error: any, data?: any) {
   console.error(`❌ [${new Date().toISOString()}] ${message}`, {
     error: error instanceof Error ? error.message : error,
     ...(data && { data }),
-    ...(process.env.NODE_ENV === "development" && error instanceof Error && {
-      stack: error.stack,
-    }),
+    ...(process.env.NODE_ENV === "development" &&
+      error instanceof Error && {
+        stack: error.stack,
+      }),
   });
 }

@@ -20,11 +20,7 @@ import * as branchesApiRoutes from "./routes/branches-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
-import {
-  requestLogger,
-  errorHandler,
-  logInit,
-} from "./middleware/errorLogger";
+import { requestLogger, errorHandler, logInit } from "./middleware/errorLogger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -285,9 +281,7 @@ export function createServer() {
     try {
       logInit("Initializing database and running migrations...");
       await import("./database/migrate").then((m) => m.migrate());
-      logInit(
-        "Database initialization and migrations completed successfully",
-      );
+      logInit("Database initialization and migrations completed successfully");
 
       logInit("Auto-seeding branch data...");
       await seedBranches();

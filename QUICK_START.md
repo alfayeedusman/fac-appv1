@@ -3,11 +3,13 @@
 ## One-Command Setup
 
 ### macOS/Linux:
+
 ```bash
 bash setup.sh
 ```
 
 ### Windows:
+
 ```cmd
 setup.bat
 ```
@@ -15,6 +17,7 @@ setup.bat
 ## What the Setup Does
 
 The setup script automatically:
+
 - ✅ Checks Node.js and npm
 - ✅ Installs all dependencies
 - ✅ Builds frontend (React)
@@ -25,12 +28,15 @@ The setup script automatically:
 ## After Setup
 
 ### 1. Start Local Development
+
 ```bash
 npm run dev
 ```
+
 Then visit: **http://localhost:8080**
 
 ### 2. Test API
+
 ```bash
 # Test database connection
 curl http://localhost:8080/api/neon/test
@@ -43,6 +49,7 @@ curl -X POST http://localhost:8080/api/neon/init
 ```
 
 ### 3. Deploy to Netlify
+
 ```bash
 git add .
 git commit -m "Setup complete"
@@ -70,6 +77,7 @@ XENDIT_PUBLIC_KEY=...
 (See `.env.example` for all required variables)
 
 ## Project Structure
+
 ```
 ├── client/              Frontend (React SPA)
 ├── server/              Backend (Express)
@@ -93,16 +101,19 @@ XENDIT_PUBLIC_KEY=...
 ## Troubleshooting
 
 ### If you see "404" on API routes:
+
 1. Make sure `npm run dev` is running
 2. Check that NEON_DATABASE_URL is set
 3. Run: `curl http://localhost:8080/api/neon/diagnose`
 
 ### If Netlify deployment fails:
+
 1. Check build logs in Netlify Dashboard
 2. Verify all environment variables are set
 3. Run locally: `npm run build` to test build
 
 ### If database won't connect:
+
 1. Verify NEON_DATABASE_URL in environment
 2. Check Neon dashboard: https://console.neon.tech
 3. Ensure connection string is correct format
@@ -116,16 +127,16 @@ bash verify-setup.sh netlify    # For deployed version
 
 ## API Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/api/neon/test` | Test database connection |
-| GET | `/api/neon/diagnose` | Run system diagnostics |
-| POST | `/api/neon/init` | Initialize database |
-| POST | `/api/neon/auth/login` | User login |
-| POST | `/api/neon/auth/register` | User registration |
-| GET | `/api/neon/bookings` | Get bookings |
-| POST | `/api/neon/bookings` | Create booking |
-| GET | `/api/neon/branches` | Get branches |
+| Method | Endpoint                  | Purpose                  |
+| ------ | ------------------------- | ------------------------ |
+| GET    | `/api/neon/test`          | Test database connection |
+| GET    | `/api/neon/diagnose`      | Run system diagnostics   |
+| POST   | `/api/neon/init`          | Initialize database      |
+| POST   | `/api/neon/auth/login`    | User login               |
+| POST   | `/api/neon/auth/register` | User registration        |
+| GET    | `/api/neon/bookings`      | Get bookings             |
+| POST   | `/api/neon/bookings`      | Create booking           |
+| GET    | `/api/neon/branches`      | Get branches             |
 
 ## Scripts Available
 

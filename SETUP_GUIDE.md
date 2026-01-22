@@ -7,25 +7,30 @@ This guide covers the complete setup, configuration, and deployment of the FAC A
 ## What Was Fixed
 
 ### 1. **Netlify Serverless Function Integration** ✅
+
 - Enhanced `netlify/functions/api.ts` with robust error handling
 - Proper initialization of Express server on first request
 - Better error reporting for debugging
 
 ### 2. **Build Configuration** ✅
+
 - Updated `netlify.toml` to properly build both frontend and backend
 - Added server build step to build command
 - Configured external node modules for Netlify Functions
 
 ### 3. **Environment Variables** ✅
+
 - Created `.env.example` template with all required variables
 - Updated Netlify configuration to read environment variables
 
 ### 4. **Setup Scripts** ✅
+
 - Created `setup.sh` (macOS/Linux) for one-command setup
 - Created `setup.bat` (Windows) for one-command setup
 - Updated `package.json` with convenient npm scripts
 
 ### 5. **Database Initialization** ✅
+
 - Improved middleware for graceful database initialization
 - Better error handling in connection tests
 - Fallback mechanisms for unavailable database
@@ -41,16 +46,19 @@ This guide covers the complete setup, configuration, and deployment of the FAC A
 ## Quick Start
 
 ### For macOS/Linux:
+
 ```bash
 bash setup.sh
 ```
 
 ### For Windows:
+
 ```cmd
 setup.bat
 ```
 
 ### Manual Setup:
+
 ```bash
 npm install --legacy-peer-deps --include=dev
 npm run build
@@ -80,21 +88,25 @@ VITE_MAPBOX_TOKEN=pk.eyJ...
 ### 2. Netlify Deployment
 
 #### Step 1: Connect Git Repository
+
 1. Go to https://app.netlify.com
 2. Click "Add new site" → "Import an existing project"
 3. Choose GitHub and select your repository
 4. Click "Deploy site"
 
 #### Step 2: Configure Environment Variables
+
 1. Go to Site Settings → Build & Deploy → Environment
 2. Add all variables from `.env.example`
 3. Click "Save"
 
 #### Step 3: Trigger Redeploy
+
 1. Go to Deployments
 2. Click "Trigger deploy" → "Deploy site"
 
 The deployment will:
+
 1. Install dependencies
 2. Build frontend (React SPA)
 3. Build backend (Express server)
@@ -103,32 +115,38 @@ The deployment will:
 ## Development
 
 ### Local Development
+
 ```bash
 npm run dev
 ```
 
 This starts:
+
 - Frontend: http://localhost:8080 (Vite dev server)
-- Backend: http://localhost:8080/api/* (Express server)
+- Backend: http://localhost:8080/api/\* (Express server)
 
 ### Testing API Endpoints
 
 #### Test database connection:
+
 ```bash
 curl http://localhost:8080/api/neon/test
 ```
 
 #### Run diagnostics:
+
 ```bash
 curl http://localhost:8080/api/neon/diagnose
 ```
 
 #### Initialize database:
+
 ```bash
 curl -X POST http://localhost:8080/api/neon/init
 ```
 
 #### Test login (invalid credentials expected):
+
 ```bash
 curl -X POST http://localhost:8080/api/neon/auth/login \
   -H "Content-Type: application/json" \
@@ -136,6 +154,7 @@ curl -X POST http://localhost:8080/api/neon/auth/login \
 ```
 
 ### Running in Production Mode Locally
+
 ```bash
 npm run build
 npm start
@@ -173,16 +192,19 @@ npm start
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/neon/auth/login` - User login
 - `POST /api/neon/auth/register` - User registration
 - `POST /api/neon/auth/logout` - User logout
 
 ### Database
+
 - `GET /api/neon/test` - Test database connection
 - `GET /api/neon/diagnose` - Run diagnostics
 - `POST /api/neon/init` - Initialize database
 
 ### Bookings
+
 - `POST /api/neon/bookings` - Create booking
 - `GET /api/neon/bookings` - Get bookings
 - `GET /api/neon/bookings/availability` - Check slot availability
@@ -198,6 +220,7 @@ npm start
 **Solutions**:
 
 1. **Check Environment Variables**
+
    ```bash
    # On Netlify dashboard, verify all env vars are set
    # Especially: NEON_DATABASE_URL, DATABASE_URL
@@ -209,6 +232,7 @@ npm start
    - Look for build errors in the logs
 
 3. **Test Locally**
+
    ```bash
    npm run dev
    curl http://localhost:8080/api/neon/diagnose
@@ -226,6 +250,7 @@ npm start
 **Solutions**:
 
 1. **Verify Database URL**
+
    ```bash
    # Check NEON_DATABASE_URL format
    # Should be: postgresql://user:password@host:port/database
@@ -266,6 +291,7 @@ npm start
 **Causes**: Large dependencies, slow network
 
 **Solutions**:
+
 1. Use `npm ci` instead of `npm install` (faster, more reliable)
 2. The setup scripts already use this by default
 3. Netlify caches `node_modules` between builds (usually fast)
@@ -273,17 +299,21 @@ npm start
 ## Advanced Configuration
 
 ### Custom Domain
+
 1. Netlify dashboard → Domain settings
 2. Add custom domain
 3. Update DNS records (follow Netlify instructions)
 
 ### Custom Functions
+
 To add more API endpoints:
+
 1. Create handler in `server/routes/neon-api.ts`
 2. Register route in `server/index.ts`
 3. No changes needed in Netlify configuration
 
 ### SSL/HTTPS
+
 - Netlify automatically provides SSL certificates
 - HTTPS is enabled by default
 - No configuration needed
@@ -291,16 +321,19 @@ To add more API endpoints:
 ## Security Considerations
 
 ### Environment Variables
+
 - Never commit `.env.local` to git (already in `.gitignore`)
 - Store secrets in Netlify dashboard, not in code
 - Use separate keys for development and production
 
 ### API Keys
+
 - Firebase, Mapbox, Xendit, Pusher keys should be public/frontend safe
 - Secrets (Pusher Secret, Xendit Secret) should be backend-only
 - Netlify Functions run server-side, so secrets are safe
 
 ### CORS
+
 - Frontend and backend are on same origin (Netlify subdomain)
 - CORS is configured in `server/index.ts`
 - Production allows all origins (same domain)
@@ -308,6 +341,7 @@ To add more API endpoints:
 ## Monitoring
 
 ### Check Deployment Status
+
 ```bash
 # View latest deployment
 curl https://facapptest.netlify.app/api/neon/diagnose
@@ -317,6 +351,7 @@ curl https://facapptest.netlify.app/api/health
 ```
 
 ### View Server Logs
+
 1. Netlify dashboard → Functions
 2. Click on `api` function
 3. View real-time logs
@@ -343,12 +378,14 @@ curl https://facapptest.netlify.app/api/health
 ## Next Steps
 
 1. **Verify Setup**
+
    ```bash
    npm run dev
    curl http://localhost:8080/api/neon/diagnose
    ```
 
 2. **Deploy to Netlify**
+
    ```bash
    git add .
    git commit -m "Setup complete"
@@ -368,22 +405,26 @@ curl https://facapptest.netlify.app/api/health
 ## Support
 
 ### Error Reporting
+
 - Check `/api/neon/diagnose` endpoint for detailed system status
 - Review Netlify Functions logs for backend errors
 - Check browser console for frontend errors
 
 ### Database Issues
+
 - Neon status: https://status.neon.tech
 - Neon docs: https://neon.tech/docs
 - Connection help: https://neon.tech/docs/connect/connection-details
 
 ### Netlify Issues
+
 - Netlify docs: https://docs.netlify.com
 - Support: https://support.netlify.com
 
 ## Changelog
 
 ### Latest Changes
+
 - ✅ Enhanced Netlify serverless function with better error handling
 - ✅ Improved build configuration for both frontend and backend
 - ✅ Created one-command setup scripts (macOS/Linux/Windows)
