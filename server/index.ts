@@ -16,6 +16,7 @@ import realtimeApiRoutes from "./routes/realtime-api";
 import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
 import * as adminInviteRoutes from "./routes/admin-invite";
+import * as branchesApiRoutes from "./routes/branches-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
