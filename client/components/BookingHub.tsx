@@ -156,6 +156,7 @@ export default function BookingHub() {
             type: booking.type || "booking",
             confirmationCode: booking.confirmationCode || "",
             notes: booking.notes || "",
+            branch: booking.branch || "Main Branch",
             rawBooking: booking, // Keep raw booking data for details
           };
         });
