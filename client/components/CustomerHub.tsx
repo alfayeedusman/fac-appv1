@@ -125,15 +125,18 @@ export default function CustomerHub() {
       setIsLoading(true);
 
       // Fetch customers AND bookings in parallel (only once each!)
-      const [customersResult, allBookingsResult] = await Promise.all([
+      const [customersResult, bookingsResult] = await Promise.all([
         neonDbClient.getCustomers(),
-        neonDbClient.getAllBookings?.() || [],
+        neonDbClient.getBookings({
+          userRole: localStorage.getItem("userRole") || "admin",
+          userEmail: localStorage.getItem("userEmail") || "",
+        }),
       ]);
 
       if (customersResult.success && customersResult.users) {
         // Build a map of customer bookings for O(1) lookup
         const bookingsByCustomerId = new Map<string, any[]>();
-        const allBookings = Array.isArray(allBookingsResult) ? allBookingsResult : [];
+        const allBookings = bookingsResult?.bookings || [];
 
         allBookings.forEach((booking: any) => {
           const customerId = booking.userId || booking.customerId;
