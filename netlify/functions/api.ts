@@ -1,7 +1,7 @@
 import serverless from "serverless-http";
 
 // Global variables to track initialization state
-let handler: any = null;
+let cachedHandler: any = null;
 let initError: Error | null = null;
 let initAttempted = false;
 
@@ -10,7 +10,7 @@ let initAttempted = false;
  * This is called on the first request to ensure DB is available
  */
 async function initializeHandler() {
-  if (handler) return handler; // Already initialized
+  if (cachedHandler) return cachedHandler; // Already initialized
   if (initAttempted && initError) throw initError; // Failed before
 
   if (!initAttempted) {
@@ -23,9 +23,9 @@ async function initializeHandler() {
       const app = createServer();
 
       // Wrap with serverless-http
-      handler = serverless(app);
+      cachedHandler = serverless(app);
       console.log("[Netlify Function] ✅ Server initialized successfully");
-      return handler;
+      return cachedHandler;
     } catch (error) {
       initError = error instanceof Error ? error : new Error(String(error));
       console.error(
@@ -36,7 +36,7 @@ async function initializeHandler() {
     }
   }
 
-  return handler;
+  return cachedHandler;
 }
 
 /**
