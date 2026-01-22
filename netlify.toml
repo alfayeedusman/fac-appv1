@@ -51,7 +51,6 @@
 [functions]
   external_node_modules = ["express", "cors", "drizzle-orm", "@neondatabase/serverless"]
   node_bundler = "esbuild"
-  included_files = ["dist/**", "server/**"]
 
 # API Redirect (MUST come before catch-all SPA redirect)
 [[redirects]]
