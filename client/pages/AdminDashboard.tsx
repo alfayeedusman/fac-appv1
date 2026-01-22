@@ -2926,8 +2926,6 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Debug Panel for Development/Testing */}
-      <DebugPanel className="mt-8" />
     </div>
   );
 }
