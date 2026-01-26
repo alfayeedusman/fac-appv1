@@ -117,11 +117,35 @@ export default function CustomerHub() {
   );
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("premium");
+  const [availablePackages, setAvailablePackages] = useState<any[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(false);
 
   const PAGINATION_OPTIONS = [5, 10, 25, 50, 100];
 
+  // Load service packages from Package Studio
+  const loadPackages = async () => {
+    try {
+      setPackagesLoading(true);
+      const response = await fetch("/api/neon/packages");
+      const data = await response.json();
+      if (data.success && Array.isArray(data.packages)) {
+        console.log("✅ Packages loaded from Package Studio:", data.packages.length);
+        setAvailablePackages(data.packages);
+      } else {
+        console.warn("⚠️ Failed to load packages:", data);
+        setAvailablePackages([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading packages:", error);
+      setAvailablePackages([]);
+    } finally {
+      setPackagesLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadCustomers();
+    loadPackages();
   }, []);
 
   useEffect(() => {
