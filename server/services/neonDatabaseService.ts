@@ -560,6 +560,30 @@ class NeonDatabaseService {
     }
   }
 
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    status: string,
+  ): Promise<any> {
+    if (!this.db) throw new Error("Database not connected");
+
+    try {
+      const [subscription] = await this.db
+        .update(schema.packageSubscriptions)
+        .set({
+          status,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.packageSubscriptions.id, subscriptionId))
+        .returning();
+
+      console.log("✅ Subscription status updated:", subscriptionId, status);
+      return subscription || null;
+    } catch (error) {
+      console.error("❌ Error updating subscription status:", error);
+      throw error;
+    }
+  }
+
   // === NOTIFICATIONS ===
 
   async createSystemNotification(
