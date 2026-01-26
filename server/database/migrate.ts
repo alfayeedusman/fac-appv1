@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { getDatabase, testConnection } from "./connection";
 import bcrypt from "bcryptjs";
+import { seedPremiumUsers } from "./seed-premium-users";
 
 // Initialize Neon SQL client at module scope
 const DATABASE_URL =
