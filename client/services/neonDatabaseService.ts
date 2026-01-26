@@ -150,10 +150,8 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let isAborted = false;
-  let timerId: NodeJS.Timeout | null = null;
-
-  timerId = setTimeout(() => {
-    if (!isAborted && timerId) {
+  const timerId = setTimeout(() => {
+    if (!isAborted) {
       try {
         controller.abort();
       } catch (e) {
@@ -165,10 +163,7 @@ const createSafeTimeoutAbort = (
   return {
     clearTimeout: () => {
       isAborted = true;
-      if (timerId !== null) {
-        clearTimeout(timerId);
-        timerId = null;
-      }
+      clearTimeout(timerId);
     },
   };
 };
