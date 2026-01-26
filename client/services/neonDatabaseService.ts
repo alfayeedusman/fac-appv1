@@ -269,6 +269,7 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       let isResolved = false;
 
+      // Fixed: Proper timeout with const - prevents undefined errors
       const timerId = setTimeout(() => {
         if (!isResolved) {
           ac.abort();
