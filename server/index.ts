@@ -156,6 +156,14 @@ export function createServer() {
   // Subscription endpoints
   app.get("/api/neon/subscriptions", neonApiRoutes.getSubscriptions);
   app.post(
+    "/api/neon/subscriptions/upgrade",
+    neonApiRoutes.createSubscriptionUpgrade,
+  );
+  app.put(
+    "/api/neon/subscriptions/:subscriptionId/approve",
+    neonApiRoutes.approveSubscriptionUpgrade,
+  );
+  app.post(
     "/api/neon/subscriptions/create-plan",
     neonApiRoutes.createXenditSubscriptionPlan,
   );
