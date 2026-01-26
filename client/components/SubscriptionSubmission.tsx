@@ -177,7 +177,29 @@ export default function SubscriptionSubmission({
       const selectedPkg = packages.find((p) => p.id === selectedPackage);
       if (!selectedPkg) return;
 
-      // Create subscription request
+      // Extract price from string (e.g., "₱299" -> 299)
+      const packagePrice = parseInt(selectedPkg.price.replace(/[^0-9]/g, ""));
+
+      // Create subscription in backend
+      const upgradeResult = await neonDbClient.createSubscriptionUpgrade({
+        userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        email: userEmail,
+        packageId: selectedPackage,
+        packageName: selectedPkg.name,
+        finalPrice: packagePrice,
+        paymentMethod: paymentMethod,
+      });
+
+      if (!upgradeResult.success) {
+        notificationManager.error(
+          "Submission Failed",
+          upgradeResult.error || "Failed to submit subscription request",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Also create subscription request in localStorage for admin approval flow
       const request = addSubscriptionRequest({
         userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
         userEmail,
