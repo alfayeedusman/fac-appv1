@@ -1149,6 +1149,88 @@ class NeonDatabaseClient {
     }
   }
 
+  async createSubscriptionUpgrade(upgradeData: {
+    userId: string;
+    email: string;
+    packageId: string;
+    packageName: string;
+    finalPrice: number;
+    paymentMethod?: string;
+  }): Promise<{ success: boolean; subscription?: any; error?: string }> {
+    try {
+      const url = `${this.baseUrl}/subscriptions/upgrade`;
+      console.log("📦 Creating subscription upgrade:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(upgradeData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Subscription upgrade failed:", errorData);
+        return {
+          success: false,
+          error:
+            errorData.error ||
+            `Failed to create subscription: HTTP ${response.status}`,
+        };
+      }
+
+      const result = await response.json();
+      console.log("✅ Subscription upgrade created:", result.subscription?.id);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Subscription upgrade error:", error);
+      return {
+        success: false,
+        error:
+          error.message ||
+          "Failed to create subscription. Please check your connection.",
+      };
+    }
+  }
+
+  async approveSubscriptionUpgrade(
+    subscriptionId: string,
+    status: string = "active",
+  ): Promise<{ success: boolean; subscription?: any; error?: string }> {
+    try {
+      const url = `${this.baseUrl}/subscriptions/${subscriptionId}/approve`;
+      console.log("✅ Approving subscription upgrade:", url);
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Subscription approval failed:", errorData);
+        return {
+          success: false,
+          error:
+            errorData.error ||
+            `Failed to approve subscription: HTTP ${response.status}`,
+        };
+      }
+
+      const result = await response.json();
+      console.log("✅ Subscription approved:", subscriptionId);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Subscription approval error:", error);
+      return {
+        success: false,
+        error:
+          error.message ||
+          "Failed to approve subscription. Please check your connection.",
+      };
+    }
+  }
+
   // === NOTIFICATIONS ===
 
   async getNotifications(
