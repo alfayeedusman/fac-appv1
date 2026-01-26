@@ -145,6 +145,7 @@ export interface Ad {
 }
 
 // Safe timeout handler to prevent issues with AbortController
+// Fixed: Proper timeout cleanup with const declaration
 const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
