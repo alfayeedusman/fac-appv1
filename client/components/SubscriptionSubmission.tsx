@@ -215,6 +215,7 @@ export default function SubscriptionSubmission({
         receipt,
         status: "pending",
         customerStatus: "active",
+        subscriptionId: upgradeResult.subscription?.id, // Store backend subscription ID
       });
 
       // Show success notification
