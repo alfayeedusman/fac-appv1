@@ -440,27 +440,70 @@ export default function CustomerHub() {
     return Math.min((score / 100) * 100, 100);
   };
 
-  const handleSubscriptionUpgrade = () => {
+  const handleSubscriptionUpgrade = async () => {
     if (!selectedCustomer) return;
 
-    // Play notification sound
-    notificationSoundService.playNotificationSound("upgrade");
+    try {
+      // Get the selected package details
+      const selectedPackage = availablePackages.find((p) => p.id === selectedPlan);
+      if (!selectedPackage) {
+        toast({
+          title: "Error",
+          description: "Please select a valid package",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Show success toast with sound indicator
-    toast({
-      title: "✨ Upgrade Successful!",
-      description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
-    });
+      // Call the backend to create subscription upgrade
+      const response = await neonDbClient.createSubscriptionUpgrade({
+        userId: selectedCustomer.id,
+        email: selectedCustomer.email,
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        finalPrice: parseInt(selectedPackage.base_price) || 0,
+        paymentMethod: "admin_assignment",
+      });
 
-    // Update customer in list
-    const updatedCustomers = customers.map((c) =>
-      c.id === selectedCustomer.id
-        ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
-        : c,
-    );
-    setCustomers(updatedCustomers);
-    setIsSubscriptionModalOpen(false);
-    setSelectedCustomer(null);
+      if (!response.success) {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to upgrade subscription",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Play notification sound
+      notificationSoundService.playNotificationSound("upgrade");
+
+      // Show success toast
+      toast({
+        title: "✨ Upgrade Successful!",
+        description: `${selectedCustomer.fullName} upgraded to ${selectedPackage.name} plan! 🔔`,
+      });
+
+      // Update customer in list
+      const updatedCustomers = customers.map((c) =>
+        c.id === selectedCustomer.id
+          ? {
+              ...c,
+              subscriptionStatus: selectedPackage.name.toLowerCase(),
+              lifecycle: "upgraded",
+            }
+          : c,
+      );
+      setCustomers(updatedCustomers);
+      setIsSubscriptionModalOpen(false);
+      setSelectedCustomer(null);
+    } catch (error) {
+      console.error("Error upgrading subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process upgrade",
+        variant: "destructive",
+      });
+    }
   };
 
   const stats = {
