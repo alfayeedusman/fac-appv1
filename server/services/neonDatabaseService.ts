@@ -568,7 +568,22 @@ class NeonDatabaseService {
     if (!this.db) throw new Error("Database not connected");
 
     try {
-      const [subscription] = await this.db
+      // First, get the subscription to find the userId
+      const subscriptions = await this.db
+        .select()
+        .from(schema.packageSubscriptions)
+        .where(eq(schema.packageSubscriptions.id, subscriptionId));
+
+      if (!subscriptions || subscriptions.length === 0) {
+        console.error("❌ Subscription not found:", subscriptionId);
+        return null;
+      }
+
+      const subscription = subscriptions[0];
+      const userId = subscription.user_id || subscription.userId;
+
+      // Update subscription status
+      const [updatedSubscription] = await this.db
         .update(schema.packageSubscriptions)
         .set({
           status,
@@ -577,8 +592,49 @@ class NeonDatabaseService {
         .where(eq(schema.packageSubscriptions.id, subscriptionId))
         .returning();
 
+      // If subscription is being activated, update user's subscriptionStatus
+      if (status === "active" && userId) {
+        // Map package names to subscription status
+        const packageId = subscription.package_id || subscription.packageId;
+        let userSubscriptionStatus = "premium"; // default
+
+        if (
+          packageId &&
+          (packageId.includes("classic") || packageId.includes("silver"))
+        ) {
+          userSubscriptionStatus = "basic";
+        } else if (
+          packageId &&
+          (packageId.includes("vip") || packageId.includes("gold"))
+        ) {
+          userSubscriptionStatus = "premium";
+        }
+
+        console.log(
+          "🔄 Updating user subscription status to:",
+          userSubscriptionStatus,
+        );
+
+        await this.db
+          .update(schema.users)
+          .set({
+            subscriptionStatus: userSubscriptionStatus,
+            subscriptionExpiry: new Date(
+              Date.now() + 30 * 24 * 60 * 60 * 1000,
+            ), // 30 days from now
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.users.id, userId));
+
+        console.log(
+          "✅ User subscription status updated for userId:",
+          userId,
+          userSubscriptionStatus,
+        );
+      }
+
       console.log("✅ Subscription status updated:", subscriptionId, status);
-      return subscription || null;
+      return updatedSubscription || null;
     } catch (error) {
       console.error("❌ Error updating subscription status:", error);
       throw error;
