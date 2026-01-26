@@ -553,6 +553,22 @@ class NeonDatabaseService {
         })
         .returning();
 
+      // Update user's subscription status to indicate they have a pending subscription
+      console.log(
+        "🔄 Updating user subscription status to pending for userId:",
+        subscriptionData.userId,
+      );
+      await this.db
+        .update(schema.users)
+        .set({
+          subscriptionStatus: "premium", // Set to premium/basic during pending
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, subscriptionData.userId))
+        .catch((err) =>
+          console.warn("⚠️ Could not update user subscription status:", err),
+        );
+
       console.log("✅ Subscription created:", subscription.id);
       return subscription;
     } catch (error) {
