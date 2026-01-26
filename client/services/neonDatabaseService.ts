@@ -264,12 +264,11 @@ class NeonDatabaseClient {
     stats?: any;
     error?: string;
   }> {
-    const tryFetch = async (url: string, timeoutMs: number = 8000): Promise<Response> => {
+    const tryFetch = async (url: string, timeoutMs = 8000) => {
       const ac = new AbortController();
       let isResolved = false;
-      let timerId: NodeJS.Timeout | null = null;
 
-      timerId = setTimeout(() => {
+      const timerId = setTimeout(() => {
         if (!isResolved) {
           ac.abort();
         }
@@ -278,17 +277,11 @@ class NeonDatabaseClient {
       try {
         const res = await fetch(url, { signal: ac.signal });
         isResolved = true;
-        if (timerId !== null) {
-          clearTimeout(timerId);
-          timerId = null;
-        }
+        clearTimeout(timerId);
         return res;
       } catch (e) {
         isResolved = true;
-        if (timerId !== null) {
-          clearTimeout(timerId);
-          timerId = null;
-        }
+        clearTimeout(timerId);
         // Handle abort errors gracefully (timeout is expected behavior)
         if (e instanceof Error && e.name === "AbortError") {
           throw new Error(`Request timeout after ${timeoutMs}ms`);
