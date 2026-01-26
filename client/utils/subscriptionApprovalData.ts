@@ -33,6 +33,7 @@ export interface SubscriptionRequest {
   reviewedDate?: string;
   reviewNotes?: string;
   customerStatus: "active" | "banned" | "suspended";
+  subscriptionId?: string; // Backend subscription ID when created via API
 }
 
 export interface CustomerStatus {
