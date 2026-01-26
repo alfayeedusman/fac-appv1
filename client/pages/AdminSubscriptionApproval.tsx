@@ -38,6 +38,7 @@ import {
   updateSubscriptionRequest,
 } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "@/components/NotificationModal";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 export default function AdminSubscriptionApproval() {
   const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
