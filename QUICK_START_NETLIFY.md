@@ -81,6 +81,7 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
 ## ⏳ Wait for Deploy to Complete
 
 Watch the **Deploys** tab:
+
 - 🟡 Building... (5-10 min)
 - 🟢 Published ✅
 
@@ -95,12 +96,14 @@ Once green, your site is live!
 ### Test with these credentials:
 
 **Admin Account**:
+
 ```
 Email: test.admin@example.com
 Password: password123
 ```
 
 **Premium Customer**:
+
 ```
 Email: premium.customer1@example.com
 Password: password123
@@ -134,6 +137,7 @@ Password: password123
 You've deployed to Netlify! 🎊
 
 ### What happens next:
+
 - ✅ Every push to `main` auto-deploys
 - ✅ Frontend served via CDN (fast!)
 - ✅ API runs on serverless functions

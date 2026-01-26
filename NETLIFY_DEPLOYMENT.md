@@ -9,6 +9,7 @@ Your project is already configured for Netlify! Follow these steps to deploy:
 ## 📋 Pre-Deployment Checklist
 
 ### 1. Verify Local Build Works
+
 ```bash
 # Test the complete build process locally
 npm run build
@@ -19,6 +20,7 @@ npm run build
 ```
 
 ### 2. Ensure Git is Clean
+
 ```bash
 # Commit all changes
 git add .
@@ -29,6 +31,7 @@ git push origin main  # or your working branch
 ```
 
 ### 3. Create Netlify Account
+
 - Go to https://netlify.com
 - Sign up with GitHub
 - Authorize Netlify to access your repositories
@@ -127,6 +130,7 @@ npm ci --legacy-peer-deps --include=dev --prefer-offline --no-audit && npm run b
 ```
 
 This:
+
 1. ✅ Installs dependencies
 2. ✅ Builds React frontend → `dist/spa/`
 3. ✅ Builds server code → `dist/server/`
@@ -148,6 +152,7 @@ This:
 ```
 
 **How it works**:
+
 - Static files (`dist/spa/`) served by Netlify CDN
 - API routes (`/api/*`) proxied to `/.netlify/functions/api`
 - Express server handles all routes in the function
@@ -157,11 +162,13 @@ This:
 ## 🔄 Automatic Deployments
 
 Once connected:
+
 - **Every push to `main` branch** → Auto-deploys to production
 - **Every push to other branches** → Creates preview deploy
 - **Rollbacks**: Available in Netlify Dashboard
 
 To disable auto-deploy:
+
 1. Go to **Site Settings → Build & Deploy → Deploy contexts**
 2. Turn off **"Auto publish"** for specific branches
 
@@ -172,29 +179,35 @@ To disable auto-deploy:
 After deployment completes:
 
 ### 1. Check Site Health
+
 ```bash
 curl https://your-site.netlify.app/api/health
 ```
 
 Expected response:
+
 ```json
 { "success": true, "status": "ok" }
 ```
 
 ### 2. Test Database Connection
+
 ```bash
 curl https://your-site.netlify.app/api/neon/test
 ```
 
 Expected response:
+
 ```json
 { "success": true, "connected": true }
 ```
 
 ### 3. Test Login
+
 Visit: `https://your-site.netlify.app/login`
 
 Use credentials:
+
 ```
 Email: test.admin@example.com
 Password: password123
@@ -205,24 +218,30 @@ Password: password123
 ## 🐛 Troubleshooting
 
 ### Build Fails
+
 **Check**: Netlify build logs (Dashboard → Deploys → Pick failed deploy → Logs)
 
 Common issues:
+
 - Missing environment variables → Add to Netlify env settings
 - Node version mismatch → Ensure `NODE_VERSION=20`
 - Dependency issues → `npm install --legacy-peer-deps`
 
 ### API Routes Not Working
-**Check**: 
+
+**Check**:
+
 1. Function logs: **Dashboard → Functions → Logs**
 2. Ensure `netlify.toml` redirects are correct
 3. Verify environment variables are set
 
 ### CORS Errors
+
 - Netlify automatically adds CORS headers (configured in `netlify.toml`)
 - Headers set for `/api/*` routes
 
 ### Database Connection Fails
+
 - Verify `NEON_DATABASE_URL` is in Netlify environment
 - Check Neon dashboard for connection limits
 - Ensure IP whitelist allows Netlify's IPs (usually all)
@@ -232,11 +251,13 @@ Common issues:
 ## 📊 Monitoring
 
 ### Netlify Dashboard
+
 - **Analytics**: Dashboard → Analytics
 - **Logs**: Dashboard → Logs → Functions
 - **Performance**: Dashboard → Analytics → Page Speed
 
 ### Real-time Logs
+
 ```bash
 netlify logs --function=api --tail
 ```
@@ -257,23 +278,28 @@ netlify logs --function=api --tail
 ## 💡 Tips
 
 ### 1. Custom Domain
+
 1. Go to **Site settings → Domain management**
 2. Click **Add domain**
 3. Point your DNS to Netlify nameservers
 4. Automatic HTTPS certificate (Let's Encrypt)
 
 ### 2. Rollback to Previous Deploy
+
 1. Dashboard → Deploys
 2. Right-click previous deploy
 3. **Publish deploy**
 
 ### 3. Preview URLs
+
 Each branch gets a preview URL:
+
 ```
 https://branch-name--site-name.netlify.app
 ```
 
 ### 4. Split Testing
+
 1. Dashboard → Site Settings → Build & Deploy → Continuous Deployment
 2. Set up branch deployments
 3. A/B test different versions
@@ -283,6 +309,7 @@ https://branch-name--site-name.netlify.app
 ## ✨ Deployment Complete!
 
 Once deployed:
+
 - ✅ Frontend served via Netlify CDN (fast!)
 - ✅ API routes via Netlify Functions (serverless)
 - ✅ Database connected to Neon

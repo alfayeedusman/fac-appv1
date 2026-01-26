@@ -3,6 +3,7 @@
 ## ✅ Pre-Deployment (Do This First)
 
 - [ ] **Verify local build works**
+
   ```bash
   npm run build
   npm run build:server
@@ -10,6 +11,7 @@
   ```
 
 - [ ] **Test locally**
+
   ```bash
   npm run dev
   # Visit http://localhost:8080/login
@@ -17,12 +19,14 @@
   ```
 
 - [ ] **Commit all changes to Git**
+
   ```bash
   git add .
   git commit -m "Prepare for Netlify deployment - fix timeout errors and seed premium users"
   ```
 
 - [ ] **Push to GitHub**
+
   ```bash
   git push origin main  # or your branch name
   ```
@@ -36,6 +40,7 @@
 ## 🔗 Deploy to Netlify (Easy Version)
 
 ### Step 1: Sign Up for Netlify
+
 - [ ] Go to https://app.netlify.com
 - [ ] Click **"Sign up"**
 - [ ] Choose **"GitHub"** option
@@ -43,13 +48,16 @@
 - [ ] Select your repository
 
 ### Step 2: Connect Repository
+
 - [ ] Click **"Add new site"**
 - [ ] Choose **"Import an existing project"**
 - [ ] Select GitHub
 - [ ] Find and select: `alfayeedusman/fac-appv1`
 
 ### Step 3: Configure Build Settings
+
 - [ ] **Build command**: Paste this exactly:
+
   ```
   npm ci --legacy-peer-deps --include=dev --prefer-offline --no-audit && npm run build && npm run build:server
   ```
@@ -62,6 +70,7 @@
   - [ ] **Node version**: Set to `20`
 
 ### Step 4: Set Environment Variables
+
 - [ ] Click **"Build & Deploy"** → **"Environment"**
 - [ ] Click **"Edit variables"**
 - [ ] Add all variables from `.env.example`:
@@ -103,6 +112,7 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
 ```
 
 ### Step 5: Deploy!
+
 - [ ] Click **"Deploy site"**
 - [ ] Wait for build to complete (5-10 minutes)
 - [ ] Check build logs for any errors
@@ -113,22 +123,28 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
 ## ✅ Post-Deployment Testing
 
 ### Immediate Checks (First 5 Minutes)
+
 - [ ] **Visit your site**: https://your-site.netlify.app
 - [ ] Page loads without errors
 - [ ] Login form displays correctly
 - [ ] No console errors (Open DevTools → Console)
 
 ### API Testing
+
 - [ ] Test health endpoint:
+
   ```
   https://your-site.netlify.app/api/health
   ```
+
   Should return: `{ "success": true, "status": "ok" }`
 
 - [ ] Test database connection:
+
   ```
   https://your-site.netlify.app/api/neon/test
   ```
+
   Should show database is connected
 
 - [ ] Check function logs:
@@ -137,28 +153,34 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
   - Should see successful requests logged
 
 ### Login Testing
+
 - [ ] Try login with test admin account
+
   ```
   Email: test.admin@example.com
   Password: password123
   ```
+
   Should redirect to admin dashboard
 
 - [ ] Try login with premium customer
+
   ```
   Email: premium.customer1@example.com
   Password: password123
   ```
+
   Should redirect to customer dashboard
 
 - [ ] Try login with invalid credentials
-  Should show error message (not 500 error)
+      Should show error message (not 500 error)
 
 ---
 
 ## 🔧 Troubleshooting
 
 ### Build Failed
+
 1. [ ] Check build logs: Dashboard → Deploys → Click failed build → Logs
 2. [ ] Common issues:
    - Missing environment variables → Add them and retry
@@ -167,23 +189,27 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
 3. [ ] Trigger rebuild: Dashboard → Deploys → Trigger Deploy
 
 ### Site Shows 404
+
 1. [ ] Check if build completed successfully
 2. [ ] Verify publish directory is `dist/spa`
 3. [ ] Check that SPA redirect is in `netlify.toml`
 
 ### API Returns 500 Errors
+
 1. [ ] Check function logs: Dashboard → Functions → Logs
 2. [ ] Verify all environment variables are set
 3. [ ] Check Neon database connection is working
 4. [ ] Try redeploying: Dashboard → Deploys → Publish Deploy
 
 ### Database Connection Failed
+
 1. [ ] Verify `NEON_DATABASE_URL` is correct
 2. [ ] Check Neon connection is still active
 3. [ ] Test connection locally first
 4. [ ] Check IP allowlist in Neon dashboard
 
 ### Login Not Working
+
 1. [ ] Check browser console for errors (F12)
 2. [ ] Check function logs for login errors
 3. [ ] Verify database is connected
@@ -194,6 +220,7 @@ SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = AIzaSyAaH10Jpspj7t2N4QeVXmfwJYubb0Lwk
 ## 📊 Monitoring Your Deployment
 
 ### View Logs
+
 ```bash
 # Install Netlify CLI
 npm install -g netlify-cli
@@ -206,12 +233,14 @@ netlify logs --function=api --tail
 ```
 
 ### Dashboard Monitoring
+
 - **Analytics**: Dashboard → Analytics → Page Performance
 - **Deployments**: Dashboard → Deploys
 - **Functions**: Dashboard → Functions → Logs
 - **Environment**: Dashboard → Site Settings → Build & Deploy
 
 ### Set Up Alerts
+
 - [ ] Netlify Dashboard → Notifications
 - [ ] Enable build notifications
 - [ ] Enable deployment notifications
@@ -277,6 +306,7 @@ Once all checkboxes are complete, your app is live and production-ready!
 - ✅ Auto-deploys on push
 
 **Next Steps**:
+
 1. Share your site URL with team
 2. Set up custom domain (optional)
 3. Monitor performance regularly

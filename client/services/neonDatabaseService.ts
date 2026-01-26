@@ -514,11 +514,15 @@ class NeonDatabaseClient {
         // Log detailed error info for debugging
         logError(
           `❌ Login failed with status ${status}:`,
-          JSON.stringify({
-            serverError: json.error,
-            debugInfo: json.debug,
-            serverMsg: typeof json.error === "string" ? json.error : "",
-          }, null, 2)
+          JSON.stringify(
+            {
+              serverError: json.error,
+              debugInfo: json.debug,
+              serverMsg: typeof json.error === "string" ? json.error : "",
+            },
+            null,
+            2,
+          ),
         );
 
         // Prefer server-provided public message if available
