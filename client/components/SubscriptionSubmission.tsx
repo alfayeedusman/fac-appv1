@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "./NotificationModal";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 interface SubscriptionSubmissionProps {
   isOpen: boolean;
