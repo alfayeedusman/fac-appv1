@@ -319,10 +319,11 @@ Set in: **Site Settings → Build & Deploy → Environment**
 
 ## 🔗 Quick Links
 
-**Current Test Server** (Builder.io):
-- Preview: https://97dcb675217446989cfa8808aee48b7d-br-eed43170ee8044f7939f3c22d.fly.dev
+**Current Test Server** (Builder.io - Netlify-Ready):
+- Preview: Interactive iframe on the right
 - Login: Use `/login` path in iframe
 - Test credentials: See section above
+- Status: Running with full Netlify configuration
 
 **Future Production** (Netlify):
 - Will be: https://your-site.netlify.app
