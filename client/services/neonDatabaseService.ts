@@ -177,7 +177,7 @@ class NeonDatabaseClient {
   // Cache with TTL to prevent excessive API calls
   private statsCache: { data: any; timestamp: number } | null = null;
   private realtimeStatsCache: { data: any; timestamp: number } | null = null;
-  private cacheTTL = 5000; // 5 seconds cache
+  private cacheTTL = 5000; // 5 seconds cache - source map refresh
 
   constructor() {
     // Ensure baseUrl is properly constructed
