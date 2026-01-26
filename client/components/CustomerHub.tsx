@@ -1158,10 +1158,13 @@ export default function CustomerHub() {
             </Button>
             <Button
               onClick={handleSubscriptionUpgrade}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              disabled={!selectedPlan || packagesLoading}
+              className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
             >
               <Crown className="h-4 w-4 mr-2" />
-              Upgrade to {selectedPlan}
+              Upgrade to{" "}
+              {availablePackages.find((p) => p.id === selectedPlan)?.name ||
+                selectedPlan}
             </Button>
           </DialogFooter>
         </DialogContent>
