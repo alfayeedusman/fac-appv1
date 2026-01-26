@@ -136,8 +136,8 @@ See **.env.example** for exact variable names and where to get each one.
 | Build | ✅ Tested | npm run build works |
 | Netlify Config | ✅ Ready | netlify.toml configured |
 | Docs | ✅ Complete | All guides written |
-| Tests Accounts | ✅ Seeded | 5 customers + 3 admins |
-| Fly.dev | ⚠️ Stale | No longer needed (Netlify is primary) |
+| Test Accounts | ✅ Seeded | 5 customers + 3 admins |
+| Builder.io Server | ✅ Netlify-Ready | Production-ready configuration |
 
 ---
 
