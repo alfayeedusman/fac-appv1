@@ -1047,79 +1047,61 @@ export default function CustomerHub() {
                 </p>
               </div>
 
-              {/* Plan Options */}
+              {/* Plan Options - From Package Studio */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  {
-                    id: "basic",
-                    name: "Basic",
-                    price: "₱500/month",
-                    features: [
-                      "5 free washes/month",
-                      "Priority booking",
-                      "Email support",
-                    ],
-                    icon: <TrendingUp className="h-6 w-6" />,
-                  },
-                  {
-                    id: "premium",
-                    name: "Premium",
-                    price: "₱1,500/month",
-                    features: [
-                      "Unlimited washes",
-                      "VIP lounge access",
-                      "Phone support",
-                      "Free detailing",
-                    ],
-                    icon: <Crown className="h-6 w-6" />,
-                    popular: true,
-                  },
-                  {
-                    id: "vip",
-                    name: "VIP",
-                    price: "₱3,000/month",
-                    features: [
-                      "Everything in Premium",
-                      "24/7 concierge",
-                      "Free premium detailing",
-                      "Priority scheduling",
-                    ],
-                    icon: <Star className="h-6 w-6 text-yellow-500" />,
-                  },
-                ].map((plan) => (
-                  <div
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPlan === plan.id
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    } ${plan.popular ? "ring-2 ring-orange-200" : ""}`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-bold text-foreground">{plan.name}</h4>
-                      {plan.popular && (
-                        <Badge className="bg-orange-500 text-white">
-                          Popular
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-lg font-bold text-orange-600 mb-3">
-                      {plan.price}
-                    </p>
-                    <ul className="space-y-2 text-sm">
-                      {plan.features.map((feature, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start gap-2 text-muted-foreground"
-                        >
-                          <span className="text-green-600 mt-1">✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                {availablePackages.length > 0 ? (
+                  availablePackages.map((plan: any) => {
+                    const features =
+                      typeof plan.features === "string"
+                        ? JSON.parse(plan.features)
+                        : plan.features || [];
+                    return (
+                      <div
+                        key={plan.id}
+                        onClick={() => setSelectedPlan(plan.id)}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                          selectedPlan === plan.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        } ${plan.is_popular ? "ring-2 ring-orange-200" : ""}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-bold text-foreground">
+                            {plan.name}
+                          </h4>
+                          {plan.is_popular && (
+                            <Badge className="bg-orange-500 text-white">
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-lg font-bold text-orange-600 mb-3">
+                          ₱{parseInt(plan.base_price) || "0"}/month
+                        </p>
+                        {plan.description && (
+                          <p className="text-xs text-muted-foreground mb-3">
+                            {plan.description}
+                          </p>
+                        )}
+                        <ul className="space-y-2 text-sm">
+                          {features.slice(0, 4).map((feature: any, idx: number) => (
+                            <li
+                              key={idx}
+                              className="flex items-start gap-2 text-muted-foreground"
+                            >
+                              <span className="text-green-600 mt-1">✓</span>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    <p>Loading packages from Package Studio...</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
