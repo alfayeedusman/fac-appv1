@@ -61,7 +61,7 @@ export function createServer() {
       // In production, also allow same-origin requests (frontend served from same domain)
       // and requests from the current host
       if (process.env.NODE_ENV === "production") {
-        // Allow all requests in production to same domain (Fly.dev, etc.)
+        // Allow all requests in production to same domain (Netlify, Builder.io, etc.)
         callback(null, true);
       } else if (allowedOrigins.includes(origin)) {
         callback(null, true);
