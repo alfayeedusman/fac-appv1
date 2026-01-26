@@ -1243,6 +1243,13 @@ export async function seedInitialData() {
 export async function migrate() {
   await runMigrations();
   await seedInitialData();
+
+  // Seed premium users and test accounts
+  try {
+    await seedPremiumUsers();
+  } catch (err) {
+    console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+  }
 }
 
 // Run migrations if this file is executed directly
