@@ -139,6 +139,21 @@ export default function AdminSubscriptionApproval() {
 
   const handleApprove = async (requestId: string, notes?: string) => {
     try {
+      // Get the request to check for subscriptionId
+      const request = requests.find((r) => r.id === requestId);
+      if (request && request.subscriptionId) {
+        // Approve in backend database
+        const result = await neonDbClient.approveSubscriptionUpgrade(
+          request.subscriptionId,
+          "active",
+        );
+        if (!result.success) {
+          console.warn("⚠️ Backend approval failed:", result.error);
+          // Continue with localStorage approval as fallback
+        }
+      }
+
+      // Approve in localStorage for backward compatibility
       approveSubscriptionRequest(requestId, adminEmail, notes);
       loadRequests();
 
