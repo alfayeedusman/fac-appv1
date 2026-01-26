@@ -187,6 +187,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
 
     // Try to fetch from Xendit, but always return fallback on any error
     try {
+      const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
