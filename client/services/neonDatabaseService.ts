@@ -148,11 +148,12 @@ export interface Ad {
 const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
-) => {
+): { clearTimeout: () => void } => {
   let isAborted = false;
+  let timerId: NodeJS.Timeout | null = null;
 
-  const timeoutId = setTimeout(() => {
-    if (!isAborted) {
+  timerId = setTimeout(() => {
+    if (!isAborted && timerId) {
       try {
         controller.abort();
       } catch (e) {
@@ -164,7 +165,10 @@ const createSafeTimeoutAbort = (
   return {
     clearTimeout: () => {
       isAborted = true;
-      clearTimeout(timeoutId);
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
     },
   };
 };
