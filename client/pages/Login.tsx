@@ -124,7 +124,7 @@ export default function Login() {
           result.error?.includes("credentials")
         ) {
           description =
-            "Invalid email or password. Please check your credentials and try again.\n\nNeed help? Contact support at support@fayeedautocare.com";
+            "Invalid email or password. Please check your credentials and try again.";
         } else if (result.error?.includes("disabled")) {
           description =
             "Your account has been disabled. Please contact support.";
@@ -134,6 +134,13 @@ export default function Login() {
         ) {
           description =
             "Service temporarily unavailable. Please try again in a few moments.";
+        } else if (
+          result.error?.includes("connect") ||
+          result.error?.includes("network") ||
+          result.error?.includes("internet")
+        ) {
+          description =
+            "Unable to connect to the server. Please check your internet connection and try again.";
         }
 
         toast({
@@ -167,10 +174,13 @@ export default function Login() {
           "Unable to connect to the authentication service. Please try again.";
       }
 
-      toast({
-        title,
-        description,
-        variant: "destructive",
+      // Use requestAnimationFrame to defer toast to next frame to avoid React reconciliation conflicts
+      requestAnimationFrame(() => {
+        toast({
+          title,
+          description,
+          variant: "destructive",
+        });
       });
     }
 
