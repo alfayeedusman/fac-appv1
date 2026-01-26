@@ -3,6 +3,7 @@ import { getDatabase } from "../database/connection";
 import * as schema from "../database/schema";
 import bcrypt from "bcryptjs";
 import { createId } from "@paralleldrive/cuid2";
+import { eq, and, desc } from "drizzle-orm";
 
 // Types based on our schema
 export type User = typeof schema.users.$inferSelect;
