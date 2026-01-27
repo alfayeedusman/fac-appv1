@@ -1491,10 +1491,36 @@ class NeonDatabaseService {
   // Service packages methods
   async getServicePackages() {
     try {
-      const sql = this.createSqlClient();
-      const result =
-        await sql`SELECT * FROM service_packages WHERE is_active = true ORDER BY is_featured DESC, is_popular DESC, name ASC`;
-      return result || [];
+      if (!this.db) {
+        console.warn("Database not initialized, returning fallback packages");
+        return [
+          {
+            id: "pkg_basic_carwash",
+            name: "Basic Car Wash",
+            description: "Essential car wash service",
+            category: "carwash",
+            base_price: 150,
+            is_active: true,
+            is_popular: true,
+          },
+        ];
+      }
+
+      // Use Drizzle ORM to fetch packages
+      const packages = await this.db
+        .select()
+        .from(schema.servicePackages)
+        .where(eq(schema.servicePackages.isActive, true))
+        .orderBy(
+          desc(schema.servicePackages.isFeatured),
+          desc(schema.servicePackages.isPopular),
+          asc(schema.servicePackages.name)
+        );
+
+      console.log(
+        `✅ Service packages retrieved: ${packages.length} packages found`
+      );
+      return packages || [];
     } catch (error) {
       console.error("Get service packages error:", error);
       // Return mock data if table doesn't exist yet
