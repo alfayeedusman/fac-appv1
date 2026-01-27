@@ -48,6 +48,25 @@ export const createServer = () => {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Cache control middleware - prevent browser from caching index.html and stale assets
+  app.use((req, res, next) => {
+    // Never cache HTML files (index.html)
+    if (req.path === "/" || req.path.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+    }
+    // Cache static assets with versioning for 1 year
+    else if (/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(req.path)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    }
+    // Default: no caching for dynamic content
+    else {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    }
+    next();
+  });
+
   // Health check
   app.get("/api/health", (req, res) => {
     res.json({
