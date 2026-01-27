@@ -1231,6 +1231,97 @@ export async function seedInitialData() {
       }
     }
 
+    // Seed service packages (subscriptions)
+    console.log("📦 Seeding service packages...");
+    const packages = [
+      {
+        name: "Free Account",
+        type: "free",
+        basePrice: 0,
+        features: [
+          "Basic car wash services",
+          "Pay per service",
+          "Email support",
+        ],
+        description: "Perfect for occasional car wash needs",
+        isPopular: false,
+        isFeatured: false,
+      },
+      {
+        name: "Classic Pro",
+        type: "classic",
+        basePrice: 500,
+        features: [
+          "10 washes per month",
+          "Basic car wash services",
+          "Priority booking",
+          "Email support",
+        ],
+        description: "Great for regular customers",
+        isPopular: true,
+        isFeatured: true,
+      },
+      {
+        name: "VIP Silver Elite",
+        type: "silver",
+        basePrice: 1500,
+        features: [
+          "Unlimited basic washes",
+          "Premium detailing included",
+          "Priority support",
+          "Free add-on services",
+          "24/7 customer support",
+        ],
+        description: "Premium membership with unlimited benefits",
+        isPopular: false,
+        isFeatured: true,
+      },
+      {
+        name: "VIP Gold Ultimate",
+        type: "gold",
+        basePrice: 3000,
+        features: [
+          "All services unlimited",
+          "Premium detailing included",
+          "VIP concierge service",
+          "Free home pickup & delivery",
+          "Priority support",
+          "Exclusive member events",
+        ],
+        description: "Ultimate premium experience",
+        isPopular: true,
+        isFeatured: true,
+      },
+    ];
+
+    for (const pkg of packages) {
+      const pkgExists =
+        await sql`SELECT id FROM service_packages WHERE name = ${pkg.name} LIMIT 1`;
+      if (pkgExists.length === 0) {
+        await sql`
+          INSERT INTO service_packages (
+            id, name, description, category, type, base_price, currency, features,
+            is_active, is_popular, is_featured, color, priority
+          ) VALUES (
+            'pkg_' || ${pkg.type} || '_' || extract(epoch from now())::text,
+            ${pkg.name},
+            ${pkg.description},
+            'subscription',
+            'recurring',
+            ${pkg.basePrice},
+            'PHP',
+            ${JSON.stringify(pkg.features)},
+            true,
+            ${pkg.isPopular},
+            ${pkg.isFeatured},
+            ${pkg.type === "gold" ? "#FFD700" : pkg.type === "silver" ? "#C0C0C0" : pkg.type === "classic" ? "#8B4513" : "#E5E7EB"},
+            ${pkg.basePrice / 500}
+          );
+        `;
+      }
+    }
+    console.log("✅ Service packages seeded successfully!");
+
     console.log("✅ Initial data seeded successfully!");
     return true;
   } catch (error) {
