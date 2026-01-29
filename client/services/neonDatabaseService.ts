@@ -593,7 +593,7 @@ class NeonDatabaseClient {
           processed.error?.toLowerCase().includes("cors") ||
           processed.error?.toLowerCase().includes("network")
         ) {
-          logError(
+          info(
             "🔄 CORS/Network error detected, retrying via same-origin fallback...",
           );
           const ac2 = new AbortController();
