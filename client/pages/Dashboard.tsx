@@ -158,7 +158,35 @@ export default function Dashboard() {
     };
   };
 
-  const [membershipData] = useState<MembershipData>(getUserMembershipData());
+  const [membershipData, setMembershipData] = useState<MembershipData>(getUserMembershipData());
+
+  // Fetch subscription data from backend
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const userEmail = localStorage.getItem("userEmail");
+        if (!userEmail) return;
+
+        const response = await fetch(`/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.subscription) {
+            // Update localStorage with fresh subscription data
+            localStorage.setItem(`subscription_${userEmail}`, JSON.stringify(data.subscription));
+            // Update state with the fetched subscription
+            setMembershipData(data.subscription);
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Failed to fetch subscription from server:", error);
+        // Continue with local data on error
+      }
+    };
+
+    if (userEmail) {
+      fetchSubscription();
+    }
+  }, [userEmail]);
 
   // Recent activity items (bookings)
   const [washLogs, setWashLogs] = useState<WashLog[]>([]);
