@@ -753,7 +753,7 @@ class NeonDatabaseClient {
         }
       } catch (error: any) {
         logError(`❌ Registration attempt failed: ${error?.message || JSON.stringify(error)}`);
-        if (error?.name === "AbortError") {
+        if (error?.name === "AbortError" || error?.message?.includes("aborted")) {
           return {
             success: false,
             error: "Request timed out. Please try again.",
