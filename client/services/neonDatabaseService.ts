@@ -304,7 +304,7 @@ class NeonDatabaseClient {
         }
         logError(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn("Primary connection test failed:", (err as any).message || err);
+        warn(`Primary connection test failed: ${(err as any)?.message || JSON.stringify(err)}`);
       }
 
       // 2) Fallback to same-origin relative API
