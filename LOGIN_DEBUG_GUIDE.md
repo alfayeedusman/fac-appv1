@@ -3,12 +3,14 @@
 ## Quick Diagnosis Steps
 
 ### Step 1: Check Browser Console
+
 1. Go to your live site login page
 2. Open Developer Tools (F12)
 3. Go to **Console** tab
 4. Try to login and note the exact error message
 
 ### Step 2: Check Network Tab
+
 1. Open **Network** tab in Developer Tools
 2. Try to login
 3. Look for failed requests to `/api/neon/auth/login`
@@ -19,39 +21,48 @@
 On your hosting provider, ensure these are set:
 
 **Critical:**
+
 ```
 NEON_DATABASE_URL=postgresql://...your database url...
 ```
 
 **Frontend Build:**
+
 ```
 VITE_API_BASE_URL=/api
 ```
+
 (or full URL if API is on different domain)
 
 ## Common Issues and Fixes
 
 ### Issue 1: "Login failed" with no error details
+
 **Cause**: Frontend can't reach the API endpoint
 
 **Fix**:
+
 1. Check Network tab - is the API request being made?
 2. If request is failing: Set `VITE_API_BASE_URL` environment variable
 3. Rebuild frontend: `npm run build`
 4. Restart server: `npm start`
 
 ### Issue 2: "Invalid email or password"
+
 **Cause**: Database connection works, but user credentials wrong or user doesn't exist
 
 **Fix**:
+
 1. Verify user exists in database
 2. Check if password is correct
 3. Make sure you're using correct username/password for your test account
 
 ### Issue 3: Server Error (503)
+
 **Cause**: Database not connected or NEON_DATABASE_URL not set
 
 **Fix**:
+
 1. Verify `NEON_DATABASE_URL` is set on hosting provider
 2. Test database connection: Go to `/api/neon/test` in browser
 3. If error persists, check database credentials
@@ -61,12 +72,15 @@ VITE_API_BASE_URL=/api
 Test your API endpoints manually:
 
 ### Test Database Connection
+
 ```
 GET https://yourdomain.com/api/neon/test
 ```
+
 Should return: `{ success: true, connected: true, ... }`
 
 ### Test Login Endpoint
+
 ```
 POST https://yourdomain.com/api/neon/auth/login
 Content-Type: application/json
@@ -88,6 +102,7 @@ Content-Type: application/json
    - (or `VITE_API_BASE_URL=https://yourdomain.com/api` if needed)
 
 3. **Rebuild & Redeploy**
+
    ```bash
    npm run build
    npm start
@@ -102,6 +117,7 @@ Content-Type: application/json
 Check server logs for detailed error messages:
 
 Look for lines like:
+
 - `🔐 Login attempt received` - Login attempt started
 - `✅ User found in database` - User exists
 - `🔐 Password verification result` - Password check
