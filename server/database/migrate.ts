@@ -1,5 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { getDatabase, testConnection } from "./connection";
+import { seedUsers } from "./seed-users";
+import { seedBranches } from "./seed-branches";
 import bcrypt from "bcryptjs";
 
 // Initialize Neon SQL client at module scope
