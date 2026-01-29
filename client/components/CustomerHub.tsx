@@ -118,6 +118,24 @@ export default function CustomerHub() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("premium");
 
+  // Open subscription modal with proper initialization
+  const openUpgradeModal = (customer: CustomerData) => {
+    setSelectedCustomer(customer);
+    // Determine next upgrade plan based on current subscription
+    let nextPlan = "premium";
+    if (customer.subscriptionStatus === "free") {
+      nextPlan = "basic";
+    } else if (customer.subscriptionStatus === "basic") {
+      nextPlan = "premium";
+    } else if (customer.subscriptionStatus === "premium") {
+      nextPlan = "vip";
+    } else if (customer.subscriptionStatus === "vip") {
+      nextPlan = "vip"; // Already at highest
+    }
+    setSelectedPlan(nextPlan);
+    setIsSubscriptionModalOpen(true);
+  };
+
   const PAGINATION_OPTIONS = [5, 10, 25, 50, 100];
 
   useEffect(() => {
