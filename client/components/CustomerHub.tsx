@@ -913,8 +913,7 @@ export default function CustomerHub() {
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedCustomer(customer);
-                              setIsSubscriptionModalOpen(true);
+                              openUpgradeModal(customer);
                             }}
                             className="w-full bg-orange-500 hover:bg-orange-600 text-sm"
                           >
