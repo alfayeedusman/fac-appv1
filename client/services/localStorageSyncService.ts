@@ -136,9 +136,7 @@ export class LocalStorageSyncService {
         });
 
         if (response.ok) {
-          console.log(
-            `✅ ${notifications.length} notifications synced`,
-          );
+          console.log(`✅ ${notifications.length} notifications synced`);
           this.syncProgress.syncedItems++;
         } else {
           this.syncProgress.failedItems++;
@@ -301,8 +299,7 @@ export class LocalStorageSyncService {
         localStorage.getItem("notificationsEnabled") !== "false",
       emailNotifications:
         localStorage.getItem("emailNotifications") !== "false",
-      pushNotifications:
-        localStorage.getItem("pushNotifications") !== "false",
+      pushNotifications: localStorage.getItem("pushNotifications") !== "false",
       smsNotifications: localStorage.getItem("smsNotifications") === "true",
       language: localStorage.getItem("language") || "en",
       timezone: localStorage.getItem("timezone") || "UTC",
@@ -380,10 +377,7 @@ export class LocalStorageSyncService {
         return data.printers || [];
       }
     } catch (error) {
-      console.warn(
-        "⚠️ Failed to fetch printer configs from database:",
-        error,
-      );
+      console.warn("⚠️ Failed to fetch printer configs from database:", error);
     }
 
     // Fallback to localStorage

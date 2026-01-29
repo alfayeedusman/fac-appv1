@@ -1203,7 +1203,9 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_printer_configs_user_id ON printer_configurations(user_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_gamification_progress_user_id ON gamification_user_progress(user_id);`;
 
-    console.log("✅ User preferences, notifications, printer, and gamification tables created successfully!");
+    console.log(
+      "✅ User preferences, notifications, printer, and gamification tables created successfully!",
+    );
 
     console.log("✅ Database migrations completed successfully!");
     return true;

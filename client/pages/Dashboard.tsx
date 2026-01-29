@@ -158,7 +158,9 @@ export default function Dashboard() {
     };
   };
 
-  const [membershipData, setMembershipData] = useState<MembershipData>(getUserMembershipData());
+  const [membershipData, setMembershipData] = useState<MembershipData>(
+    getUserMembershipData(),
+  );
 
   // Fetch subscription data from backend
   useEffect(() => {
@@ -167,12 +169,17 @@ export default function Dashboard() {
         const userEmail = localStorage.getItem("userEmail");
         if (!userEmail) return;
 
-        const response = await fetch(`/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`);
+        const response = await fetch(
+          `/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.subscription) {
             // Update localStorage with fresh subscription data
-            localStorage.setItem(`subscription_${userEmail}`, JSON.stringify(data.subscription));
+            localStorage.setItem(
+              `subscription_${userEmail}`,
+              JSON.stringify(data.subscription),
+            );
             // Update state with the fetched subscription
             setMembershipData(data.subscription);
           }

@@ -158,7 +158,9 @@ const createSafeTimeoutAbort = (
       try {
         controller.abort();
       } catch (e) {
-        console.warn(`Error aborting request: ${e instanceof Error ? e.message : JSON.stringify(e)}`);
+        console.warn(
+          `Error aborting request: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
+        );
       }
     }
   }, timeoutMs);
@@ -191,7 +193,9 @@ class NeonDatabaseClient {
     log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
-      warn(`⚠️ Background initialization failed: ${err?.message || JSON.stringify(err)}`),
+      warn(
+        `⚠️ Background initialization failed: ${err?.message || JSON.stringify(err)}`,
+      ),
     );
   }
 
@@ -305,7 +309,9 @@ class NeonDatabaseClient {
         }
         logError(`Connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn(`Primary connection test failed: ${(err as any)?.message || JSON.stringify(err)}`);
+        warn(
+          `Primary connection test failed: ${(err as any)?.message || JSON.stringify(err)}`,
+        );
       }
 
       // 2) Fallback to same-origin relative API
@@ -324,7 +330,9 @@ class NeonDatabaseClient {
         }
         logError(`Fallback connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn(`Fallback connection test failed: ${(err as any)?.message || JSON.stringify(err)}`);
+        warn(
+          `Fallback connection test failed: ${(err as any)?.message || JSON.stringify(err)}`,
+        );
       }
 
       // 3) Final: health check to distinguish server vs network
@@ -341,7 +349,9 @@ class NeonDatabaseClient {
       this.isConnected = false;
       return { connected: false, error: "Network error" };
     } catch (error: any) {
-      logError(`❌ Connection test failed: ${error?.message || JSON.stringify(error)}`);
+      logError(
+        `❌ Connection test failed: ${error?.message || JSON.stringify(error)}`,
+      );
       this.isConnected = false;
       if (error.name === "AbortError" || error?.message?.includes("aborted")) {
         return { connected: false, error: "Connection timeout" };
@@ -377,7 +387,9 @@ class NeonDatabaseClient {
       debug.testResults = await this.testConnection();
       log("✅ Test connection result:", debug.testResults);
     } catch (error) {
-      logError(`❌ Test connection failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+      logError(
+        `❌ Test connection failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+      );
       debug.testResults = {
         error: error instanceof Error ? error.message : "Unknown test error",
       };
@@ -389,7 +401,9 @@ class NeonDatabaseClient {
       debug.initResults = await this.initialize();
       log("✅ Init result:", debug.initResults);
     } catch (error) {
-      logError(`❌ Initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+      logError(
+        `❌ Initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+      );
       debug.initResults = {
         error: error instanceof Error ? error.message : "Unknown init error",
       };
@@ -432,7 +446,9 @@ class NeonDatabaseClient {
       const initResult = await this.initialize();
       return initResult;
     } catch (error) {
-      logError(`❌ Auto-initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+      logError(
+        `❌ Auto-initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+      );
       return false;
     }
   }
@@ -483,7 +499,9 @@ class NeonDatabaseClient {
         warn("⚠️ Response body already consumed; skipping read");
       }
     } catch (readErr: any) {
-      logError(`❌ Failed to read response body: ${readErr?.message || JSON.stringify(readErr)}`);
+      logError(
+        `❌ Failed to read response body: ${readErr?.message || JSON.stringify(readErr)}`,
+      );
       // Continue with empty text; we'll return a generic error below if needed
     }
 
@@ -510,7 +528,7 @@ class NeonDatabaseClient {
         // Log detailed error info for debugging
         logError(
           `❌ Login failed with status ${status}`,
-          `Server error: ${json.error}, Debug: ${JSON.stringify(json.debug)}`
+          `Server error: ${json.error}, Debug: ${JSON.stringify(json.debug)}`,
         );
 
         // Prefer server-provided public message if available
@@ -561,7 +579,9 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     // Attempt background connection check but don't block login
     this.ensureConnection().catch((err) =>
-      warn(`Background connection check failed: ${err?.message || JSON.stringify(err)}`),
+      warn(
+        `Background connection check failed: ${err?.message || JSON.stringify(err)}`,
+      ),
     );
 
     try {
@@ -618,7 +638,9 @@ class NeonDatabaseClient {
             return result;
           } catch (retryErr: any) {
             timeoutHandler2.clearTimeout();
-            logError(`❌ Retry login failed: ${retryErr?.message || JSON.stringify(retryErr)}`);
+            logError(
+              `❌ Retry login failed: ${retryErr?.message || JSON.stringify(retryErr)}`,
+            );
             return {
               success: false,
               error: "Login failed. Please try again.",
@@ -632,7 +654,9 @@ class NeonDatabaseClient {
         throw error;
       }
     } catch (error: any) {
-      logError(`Database login failed: ${error?.message || JSON.stringify(error)}`);
+      logError(
+        `Database login failed: ${error?.message || JSON.stringify(error)}`,
+      );
 
       // Handle abort errors (including timeouts)
       if (error?.name === "AbortError" || error?.message?.includes("aborted")) {
@@ -670,7 +694,9 @@ class NeonDatabaseClient {
             throw err;
           }
         } catch (e3: any) {
-          logError(`❌ Fallback login also failed: ${e3?.message || JSON.stringify(e3)}`);
+          logError(
+            `❌ Fallback login also failed: ${e3?.message || JSON.stringify(e3)}`,
+          );
           return {
             success: false,
             error:
@@ -693,7 +719,9 @@ class NeonDatabaseClient {
 
     // Attempt background connection check but don't block registration
     this.ensureConnection().catch((err) =>
-      warn(`Background connection check failed: ${err?.message || JSON.stringify(err)}`),
+      warn(
+        `Background connection check failed: ${err?.message || JSON.stringify(err)}`,
+      ),
     );
 
     const tryRegister = async (
@@ -752,8 +780,13 @@ class NeonDatabaseClient {
           throw error;
         }
       } catch (error: any) {
-        logError(`❌ Registration attempt failed: ${error?.message || JSON.stringify(error)}`);
-        if (error?.name === "AbortError" || error?.message?.includes("aborted")) {
+        logError(
+          `❌ Registration attempt failed: ${error?.message || JSON.stringify(error)}`,
+        );
+        if (
+          error?.name === "AbortError" ||
+          error?.message?.includes("aborted")
+        ) {
           return {
             success: false,
             error: "Request timed out. Please try again.",

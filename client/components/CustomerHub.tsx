@@ -448,7 +448,12 @@ export default function CustomerHub() {
 
     try {
       // Update the subscription in the database via the API
-      log("🔄 Upgrading subscription for", selectedCustomer.email, "to", selectedPlan);
+      log(
+        "🔄 Upgrading subscription for",
+        selectedCustomer.email,
+        "to",
+        selectedPlan,
+      );
 
       const response = await fetch(`/api/neon/auth/update-subscription`, {
         method: "POST",
@@ -483,10 +488,16 @@ export default function CustomerHub() {
       setIsSubscriptionModalOpen(false);
       setSelectedCustomer(null);
     } catch (error) {
-      logError("❌ Subscription upgrade failed:", error instanceof Error ? error.message : String(error));
+      logError(
+        "❌ Subscription upgrade failed:",
+        error instanceof Error ? error.message : String(error),
+      );
       toast({
         title: "❌ Upgrade Failed",
-        description: error instanceof Error ? error.message : "Failed to upgrade subscription. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to upgrade subscription. Please try again.",
       });
     }
   };
