@@ -388,7 +388,7 @@ class NeonDatabaseClient {
       debug.initResults = await this.initialize();
       log("✅ Init result:", debug.initResults);
     } catch (error) {
-      logError("❌ Initialization failed:", error);
+      logError(`❌ Initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       debug.initResults = {
         error: error instanceof Error ? error.message : "Unknown init error",
       };
