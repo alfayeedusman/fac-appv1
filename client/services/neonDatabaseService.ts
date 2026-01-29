@@ -323,7 +323,7 @@ class NeonDatabaseClient {
         }
         logError(`Fallback connection test failed: HTTP ${response.status}`);
       } catch (err) {
-        warn("Fallback connection test failed:", (err as any).message || err);
+        warn(`Fallback connection test failed: ${(err as any)?.message || JSON.stringify(err)}`);
       }
 
       // 3) Final: health check to distinguish server vs network
