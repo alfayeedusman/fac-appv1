@@ -692,7 +692,7 @@ class NeonDatabaseClient {
 
     // Attempt background connection check but don't block registration
     this.ensureConnection().catch((err) =>
-      warn("Background connection check failed:", err),
+      warn(`Background connection check failed: ${err?.message || JSON.stringify(err)}`),
     );
 
     const tryRegister = async (
