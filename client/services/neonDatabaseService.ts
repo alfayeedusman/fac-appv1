@@ -190,7 +190,7 @@ class NeonDatabaseClient {
     log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
-      warn("⚠️ Background initialization failed:", err),
+      warn(`⚠️ Background initialization failed: ${err?.message || JSON.stringify(err)}`),
     );
   }
 
