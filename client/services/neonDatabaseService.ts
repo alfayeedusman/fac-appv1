@@ -376,7 +376,7 @@ class NeonDatabaseClient {
       debug.testResults = await this.testConnection();
       log("✅ Test connection result:", debug.testResults);
     } catch (error) {
-      logError("❌ Test connection failed:", error);
+      logError(`❌ Test connection failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       debug.testResults = {
         error: error instanceof Error ? error.message : "Unknown test error",
       };
