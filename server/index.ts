@@ -137,6 +137,7 @@ export function createServer() {
   app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
   app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
   app.post("/api/neon/auth/update-subscription", neonApiRoutes.updateSubscription);
+  app.get("/api/neon/auth/subscription", neonApiRoutes.fetchUserSubscription);
   app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
   app.post("/api/neon/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
 
