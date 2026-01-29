@@ -431,7 +431,7 @@ class NeonDatabaseClient {
       const initResult = await this.initialize();
       return initResult;
     } catch (error) {
-      logError("❌ Auto-initialization failed:", error);
+      logError(`❌ Auto-initialization failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       return false;
     }
   }
