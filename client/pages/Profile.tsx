@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +85,41 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const fileInputId = "profile_pic_input";
+
+  // Fetch subscription data from backend
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        if (!userEmail) return;
+
+        const response = await fetch(
+          `/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.subscription) {
+            // Update localStorage with fresh subscription data
+            localStorage.setItem(
+              `subscription_${userEmail}`,
+              JSON.stringify(data.subscription),
+            );
+            // Update profile with the fetched subscription
+            setProfile((prev) => ({
+              ...prev,
+              membershipType: data.subscription.package || "Regular Member",
+            }));
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Failed to fetch subscription from server:", error);
+        // Continue with local data on error
+      }
+    };
+
+    if (userEmail) {
+      fetchSubscription();
+    }
+  }, [userEmail]);
 
   const saveProfilePicture = (dataUrl: string) => {
     const key = `userProfilePicture_${(profile.email || "").trim()}`;

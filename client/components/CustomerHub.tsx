@@ -118,6 +118,24 @@ export default function CustomerHub() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("premium");
 
+  // Open subscription modal with proper initialization
+  const openUpgradeModal = (customer: CustomerData) => {
+    setSelectedCustomer(customer);
+    // Determine next upgrade plan based on current subscription
+    let nextPlan = "premium";
+    if (customer.subscriptionStatus === "free") {
+      nextPlan = "basic";
+    } else if (customer.subscriptionStatus === "basic") {
+      nextPlan = "premium";
+    } else if (customer.subscriptionStatus === "premium") {
+      nextPlan = "vip";
+    } else if (customer.subscriptionStatus === "vip") {
+      nextPlan = "vip"; // Already at highest
+    }
+    setSelectedPlan(nextPlan);
+    setIsSubscriptionModalOpen(true);
+  };
+
   const PAGINATION_OPTIONS = [5, 10, 25, 50, 100];
 
   useEffect(() => {
@@ -416,27 +434,72 @@ export default function CustomerHub() {
     return Math.min((score / 100) * 100, 100);
   };
 
-  const handleSubscriptionUpgrade = () => {
+  const handleSubscriptionUpgrade = async () => {
     if (!selectedCustomer) return;
 
-    // Play notification sound
-    notificationSoundService.playNotificationSound("upgrade");
+    // Validate that we're actually upgrading
+    if (selectedPlan === selectedCustomer.subscriptionStatus) {
+      toast({
+        title: "ℹ️ No Change",
+        description: `Customer is already on the ${selectedPlan} plan`,
+      });
+      return;
+    }
 
-    // Show success toast with sound indicator
-    toast({
-      title: "✨ Upgrade Successful!",
-      description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
-    });
+    try {
+      // Update the subscription in the database via the API
+      log(
+        "🔄 Upgrading subscription for",
+        selectedCustomer.email,
+        "to",
+        selectedPlan,
+      );
 
-    // Update customer in list
-    const updatedCustomers = customers.map((c) =>
-      c.id === selectedCustomer.id
-        ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
-        : c,
-    );
-    setCustomers(updatedCustomers);
-    setIsSubscriptionModalOpen(false);
-    setSelectedCustomer(null);
+      const response = await fetch(`/api/neon/auth/update-subscription`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedCustomer.id,
+          newStatus: selectedPlan,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update subscription");
+      }
+
+      // Play notification sound
+      notificationSoundService.playNotificationSound("upgrade");
+
+      // Show success toast
+      toast({
+        title: "✨ Upgrade Successful!",
+        description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
+      });
+
+      // Update customer in list
+      const updatedCustomers = customers.map((c) =>
+        c.id === selectedCustomer.id
+          ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
+          : c,
+      );
+      setCustomers(updatedCustomers);
+      setIsSubscriptionModalOpen(false);
+      setSelectedCustomer(null);
+    } catch (error) {
+      logError(
+        "❌ Subscription upgrade failed:",
+        error instanceof Error ? error.message : String(error),
+      );
+      toast({
+        title: "❌ Upgrade Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to upgrade subscription. Please try again.",
+      });
+    }
   };
 
   const stats = {
@@ -857,12 +920,11 @@ export default function CustomerHub() {
                         </div>
 
                         {/* Action Button */}
-                        {customer.subscriptionStatus === "free" && (
+                        {customer.subscriptionStatus !== "vip" && (
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedCustomer(customer);
-                              setIsSubscriptionModalOpen(true);
+                              openUpgradeModal(customer);
                             }}
                             className="w-full bg-orange-500 hover:bg-orange-600 text-sm"
                           >

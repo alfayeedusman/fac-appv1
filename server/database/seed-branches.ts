@@ -1,4 +1,5 @@
 import { getDatabase } from "./connection";
+import { getDatabase } from "./connection";
 import * as schema from "./schema";
 
 export async function seedBranches() {

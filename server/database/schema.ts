@@ -1203,5 +1203,107 @@ export const webhookEventLogs = pgTable("webhook_event_logs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// User Preferences table (theme, notification settings, etc.)
+export const userPreferences = pgTable("user_preferences", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id").notNull().unique(),
+  theme: varchar("theme", { length: 20 }).default("light"), // 'light' | 'dark'
+  notificationsEnabled: boolean("notifications_enabled").default(true),
+  emailNotifications: boolean("email_notifications").default(true),
+  pushNotifications: boolean("push_notifications").default(true),
+  smsNotifications: boolean("sms_notifications").default(false),
+  language: varchar("language", { length: 10 }).default("en"),
+  timezone: varchar("timezone", { length: 50 }).default("UTC"),
+  preferences: json("preferences").$type<Record<string, any>>(), // Custom preferences
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// User Notifications table (personal notifications for each user)
+export const userNotifications = pgTable("user_notifications", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'booking' | 'subscription' | 'promotion' | 'system'
+  notificationId: text("notification_id"), // Reference to push_notifications if from broadcast
+  isRead: boolean("is_read").default(false),
+  readAt: timestamp("read_at"),
+  actionUrl: text("action_url"),
+  imageUrl: text("image_url"),
+  metadata: json("metadata").$type<Record<string, any>>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Printer Templates table
+export const printerTemplates = pgTable("printer_templates", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id"), // Null for system templates
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'receipt' | 'invoice' | 'label'
+  templateContent: text("template_content").notNull(), // HTML/JSON template
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  paperSize: varchar("paper_size", { length: 50 }).default("80mm"), // 58mm, 80mm, A4, etc.
+  layout: varchar("layout", { length: 50 }).default("landscape"), // landscape, portrait
+  marginTop: integer("margin_top").default(0),
+  marginBottom: integer("margin_bottom").default(0),
+  marginLeft: integer("margin_left").default(0),
+  marginRight: integer("margin_right").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Printer Configuration table
+export const printerConfigurations = pgTable("printer_configurations", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id"), // Null for system config
+  printerName: varchar("printer_name", { length: 255 }).notNull(),
+  printerType: varchar("printer_type", { length: 50 }).notNull(), // 'thermal' | 'inkjet' | 'laser'
+  connectionType: varchar("connection_type", { length: 50 }).notNull(), // 'bluetooth' | 'usb' | 'network' | 'cloud'
+  deviceId: varchar("device_id", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  port: integer("port"),
+  isActive: boolean("is_active").default(true),
+  isDefault: boolean("is_default").default(false),
+  templateId: text("template_id"), // Reference to printerTemplates
+  settings: json("settings").$type<Record<string, any>>(), // Custom settings (dpi, darkness, etc.)
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Gamification User Progress table
+export const gamificationUserProgress = pgTable("gamification_user_progress", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("user_id").notNull().unique(),
+  currentLevel: integer("current_level").default(1),
+  currentXP: integer("current_xp").default(0),
+  totalXP: integer("total_xp").default(0),
+  levelProgress: json("level_progress").$type<{
+    currentLevelMinXP: number;
+    currentLevelMaxXP: number;
+    progressPercentage: number;
+  }>(),
+  unlockedAchievements: json("unlocked_achievements").$type<string[]>(),
+  badges: json("badges").$type<string[]>(),
+  streakDays: integer("streak_days").default(0),
+  lastActivityDate: timestamp("last_activity_date"),
+  totalBookingsCompleted: integer("total_bookings_completed").default(0),
+  totalWashesCompleted: integer("total_washes_completed").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Export CMS schema types and tables
 export * from "./cmsSchema";

@@ -429,6 +429,126 @@ export const registerUser: RequestHandler = async (req, res) => {
   }
 };
 
+// Update user subscription status
+export const updateSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userId, newStatus } = req.body;
+
+    if (!userId || !newStatus) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: userId, newStatus",
+      });
+    }
+
+    console.log("🔄 Updating subscription for user:", {
+      userId,
+      newStatus,
+    });
+
+    // Update user's subscription status
+    const updatedUser = await neonDbService.updateUser(userId, {
+      subscriptionStatus: newStatus,
+    });
+
+    console.log("✅ Subscription updated successfully:", {
+      userId,
+      newStatus,
+      email: updatedUser.email,
+    });
+
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: `Subscription updated to ${newStatus}`,
+    });
+  } catch (error) {
+    console.error("❌ Subscription update error:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update subscription",
+    });
+  }
+};
+
+// Fetch user's subscription status
+export const fetchUserSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userId, email } = req.query;
+
+    if (!userId && !email) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: userId or email",
+      });
+    }
+
+    let user;
+    if (userId) {
+      user = await neonDbService.getUserById(userId as string);
+    } else {
+      user = await neonDbService.getUserByEmail(email as string);
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    console.log("✅ Fetched subscription for user:", {
+      userId: user.id,
+      email: user.email,
+      subscriptionStatus: user.subscriptionStatus,
+    });
+
+    // Return subscription data in format expected by frontend
+    const subscriptionData = {
+      package: user.subscriptionStatus || "Regular Member",
+      subscriptionStatus: user.subscriptionStatus || "free",
+      daysLeft: 30,
+      currentCycleStart: new Date().toISOString().split("T")[0],
+      currentCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      daysLeftInCycle: 30,
+      autoRenewal: false,
+      remainingWashes: {
+        classic: 0,
+        vipProMax: 0,
+        premium: 0,
+      },
+      totalWashes: {
+        classic: 0,
+        vipProMax: 0,
+        premium: 0,
+      },
+    };
+
+    res.json({
+      success: true,
+      subscription: subscriptionData,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        subscriptionStatus: user.subscriptionStatus,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Fetch subscription error:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch subscription",
+    });
+  }
+};
+
 // Helper function to get package price
 function getPackagePrice(packageId: string): number {
   const prices: Record<string, number> = {
@@ -2376,5 +2496,491 @@ export const processSubscriptionRenewal: RequestHandler = async (req, res) => {
       success: false,
       error: "Failed to process subscription renewal",
     });
+  }
+};
+
+// ============= LOCALSTORAGE DATA MIGRATION & SYNC ENDPOINTS =============
+
+// Sync user preferences
+export const syncUserPreferences: RequestHandler = async (req, res) => {
+  try {
+    const {
+      userId,
+      theme,
+      notificationsEnabled,
+      emailNotifications,
+      pushNotifications,
+      smsNotifications,
+      language,
+      timezone,
+      preferences,
+    } = req.body;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const existingPrefs = await db.query(
+      `
+      SELECT id FROM user_preferences WHERE user_id = $1
+    `,
+      [userId],
+    );
+
+    if (existingPrefs.rows.length > 0) {
+      await db.query(
+        `
+        UPDATE user_preferences SET
+          theme = COALESCE($2, theme),
+          notifications_enabled = COALESCE($3, notifications_enabled),
+          email_notifications = COALESCE($4, email_notifications),
+          push_notifications = COALESCE($5, push_notifications),
+          sms_notifications = COALESCE($6, sms_notifications),
+          language = COALESCE($7, language),
+          timezone = COALESCE($8, timezone),
+          preferences = COALESCE($9, preferences),
+          updated_at = NOW()
+        WHERE user_id = $1
+      `,
+        [
+          userId,
+          theme,
+          notificationsEnabled,
+          emailNotifications,
+          pushNotifications,
+          smsNotifications,
+          language,
+          timezone,
+          JSON.stringify(preferences || {}),
+        ],
+      );
+    } else {
+      const { createId } = await import("@paralleldrive/cuid2");
+      await db.query(
+        `
+        INSERT INTO user_preferences
+        (id, user_id, theme, notifications_enabled, email_notifications, push_notifications, sms_notifications, language, timezone, preferences)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `,
+        [
+          createId(),
+          userId,
+          theme || "light",
+          notificationsEnabled !== false,
+          emailNotifications !== false,
+          pushNotifications !== false,
+          smsNotifications || false,
+          language || "en",
+          timezone || "UTC",
+          JSON.stringify(preferences || {}),
+        ],
+      );
+    }
+
+    res.json({ success: true, message: "User preferences synced" });
+  } catch (error) {
+    console.error("❌ User preferences sync error:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to sync preferences",
+      });
+  }
+};
+
+// Get user preferences
+export const getUserPreferences: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const result = await db.query(
+      `
+      SELECT * FROM user_preferences WHERE user_id = $1
+    `,
+      [userId as string],
+    );
+
+    res.json({
+      success: true,
+      preferences: result.rows[0] || {
+        theme: "light",
+        notificationsEnabled: true,
+        emailNotifications: true,
+        pushNotifications: true,
+        smsNotifications: false,
+        language: "en",
+        timezone: "UTC",
+      },
+    });
+  } catch (error) {
+    console.error("❌ Get preferences error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to get preferences" });
+  }
+};
+
+// Sync user notifications
+export const syncUserNotifications: RequestHandler = async (req, res) => {
+  try {
+    const { userId, notifications } = req.body;
+    if (!userId || !Array.isArray(notifications)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "userId and notifications array required",
+        });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const { createId } = await import("@paralleldrive/cuid2");
+
+    for (const notif of notifications) {
+      const existing = await db.query(
+        `
+        SELECT id FROM user_notifications WHERE id = $1
+      `,
+        [notif.id],
+      );
+
+      if (existing.rows.length === 0) {
+        await db.query(
+          `
+          INSERT INTO user_notifications
+          (id, user_id, title, message, type, notification_id, is_read, read_at, action_url, image_url, metadata)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        `,
+          [
+            notif.id || createId(),
+            userId,
+            notif.title,
+            notif.message,
+            notif.type || "system",
+            notif.notificationId,
+            notif.isRead || false,
+            notif.readAt,
+            notif.actionUrl,
+            notif.imageUrl,
+            JSON.stringify(notif.metadata || {}),
+          ],
+        );
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `${notifications.length} notifications synced`,
+    });
+  } catch (error) {
+    console.error("❌ Notification sync error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to sync notifications" });
+  }
+};
+
+// Get user notifications
+export const getUserNotifications: RequestHandler = async (req, res) => {
+  try {
+    const { userId, unreadOnly } = req.query;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const query =
+      unreadOnly === "true"
+        ? "SELECT * FROM user_notifications WHERE user_id = $1 AND is_read = false ORDER BY created_at DESC"
+        : "SELECT * FROM user_notifications WHERE user_id = $1 ORDER BY created_at DESC";
+
+    const result = await db.query(query, [userId as string]);
+
+    res.json({ success: true, notifications: result.rows });
+  } catch (error) {
+    console.error("❌ Get notifications error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to get notifications" });
+  }
+};
+
+// Sync printer configurations
+export const syncPrinterConfig: RequestHandler = async (req, res) => {
+  try {
+    const {
+      userId,
+      printerName,
+      printerType,
+      connectionType,
+      deviceId,
+      ipAddress,
+      port,
+      templateId,
+      settings,
+      isDefault,
+    } = req.body;
+
+    if (!userId || !printerName) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId and printerName required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const { createId } = await import("@paralleldrive/cuid2");
+
+    // If setting as default, unset other defaults for this user
+    if (isDefault) {
+      await db.query(
+        `
+        UPDATE printer_configurations SET is_default = false WHERE user_id = $1
+      `,
+        [userId],
+      );
+    }
+
+    const existing = await db.query(
+      `
+      SELECT id FROM printer_configurations WHERE user_id = $1 AND printer_name = $2
+    `,
+      [userId, printerName],
+    );
+
+    if (existing.rows.length > 0) {
+      await db.query(
+        `
+        UPDATE printer_configurations SET
+          printer_type = $3, connection_type = $4, device_id = $5, ip_address = $6,
+          port = $7, template_id = $8, settings = $9, is_default = $10, updated_at = NOW()
+        WHERE user_id = $1 AND printer_name = $2
+      `,
+        [
+          userId,
+          printerName,
+          printerType,
+          connectionType,
+          deviceId,
+          ipAddress,
+          port,
+          templateId,
+          JSON.stringify(settings || {}),
+          isDefault || false,
+        ],
+      );
+    } else {
+      await db.query(
+        `
+        INSERT INTO printer_configurations
+        (id, user_id, printer_name, printer_type, connection_type, device_id, ip_address, port, template_id, settings, is_default)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      `,
+        [
+          createId(),
+          userId,
+          printerName,
+          printerType,
+          connectionType,
+          deviceId,
+          ipAddress,
+          port,
+          templateId,
+          JSON.stringify(settings || {}),
+          isDefault || false,
+        ],
+      );
+    }
+
+    res.json({ success: true, message: "Printer configuration synced" });
+  } catch (error) {
+    console.error("❌ Printer sync error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to sync printer config" });
+  }
+};
+
+// Get printer configurations
+export const getPrinterConfigs: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const result = await db.query(
+      `
+      SELECT * FROM printer_configurations WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC
+    `,
+      [userId as string],
+    );
+
+    res.json({ success: true, printers: result.rows });
+  } catch (error) {
+    console.error("❌ Get printer configs error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to get printer configs" });
+  }
+};
+
+// Sync gamification progress
+export const syncGamificationProgress: RequestHandler = async (req, res) => {
+  try {
+    const {
+      userId,
+      currentLevel,
+      currentXP,
+      totalXP,
+      levelProgress,
+      unlockedAchievements,
+      badges,
+      streakDays,
+      totalBookingsCompleted,
+      totalWashesCompleted,
+    } = req.body;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const existing = await db.query(
+      `
+      SELECT id FROM gamification_user_progress WHERE user_id = $1
+    `,
+      [userId],
+    );
+
+    if (existing.rows.length > 0) {
+      await db.query(
+        `
+        UPDATE gamification_user_progress SET
+          current_level = COALESCE($2, current_level),
+          current_xp = COALESCE($3, current_xp),
+          total_xp = COALESCE($4, total_xp),
+          level_progress = COALESCE($5, level_progress),
+          unlocked_achievements = COALESCE($6, unlocked_achievements),
+          badges = COALESCE($7, badges),
+          streak_days = COALESCE($8, streak_days),
+          total_bookings_completed = COALESCE($9, total_bookings_completed),
+          total_washes_completed = COALESCE($10, total_washes_completed),
+          updated_at = NOW()
+        WHERE user_id = $1
+      `,
+        [
+          userId,
+          currentLevel,
+          currentXP,
+          totalXP,
+          JSON.stringify(levelProgress || {}),
+          JSON.stringify(unlockedAchievements || []),
+          JSON.stringify(badges || []),
+          streakDays,
+          totalBookingsCompleted,
+          totalWashesCompleted,
+        ],
+      );
+    } else {
+      const { createId } = await import("@paralleldrive/cuid2");
+      await db.query(
+        `
+        INSERT INTO gamification_user_progress
+        (id, user_id, current_level, current_xp, total_xp, level_progress, unlocked_achievements, badges, streak_days, total_bookings_completed, total_washes_completed)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      `,
+        [
+          createId(),
+          userId,
+          currentLevel || 1,
+          currentXP || 0,
+          totalXP || 0,
+          JSON.stringify(levelProgress || {}),
+          JSON.stringify(unlockedAchievements || []),
+          JSON.stringify(badges || []),
+          streakDays || 0,
+          totalBookingsCompleted || 0,
+          totalWashesCompleted || 0,
+        ],
+      );
+    }
+
+    res.json({ success: true, message: "Gamification progress synced" });
+  } catch (error) {
+    console.error("❌ Gamification sync error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to sync gamification progress" });
+  }
+};
+
+// Get gamification progress
+export const getGamificationProgress: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
+    }
+
+    const db = initializeDatabase();
+    if (!db) throw new Error("Database not connected");
+
+    const result = await db.query(
+      `
+      SELECT * FROM gamification_user_progress WHERE user_id = $1
+    `,
+      [userId as string],
+    );
+
+    res.json({
+      success: true,
+      progress: result.rows[0] || {
+        currentLevel: 1,
+        currentXP: 0,
+        totalXP: 0,
+        streakDays: 0,
+        totalBookingsCompleted: 0,
+        totalWashesCompleted: 0,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Get gamification progress error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to get gamification progress" });
   }
 };

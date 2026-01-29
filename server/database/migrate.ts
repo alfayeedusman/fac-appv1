@@ -1,5 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { getDatabase, testConnection } from "./connection";
+import { seedUsers } from "./seed-users";
+import { seedBranches } from "./seed-branches";
 import bcrypt from "bcryptjs";
 
 // Initialize Neon SQL client at module scope
@@ -1090,6 +1092,121 @@ export async function runMigrations() {
 
     console.log("✅ CMS tables created successfully!");
 
+    // Create User Preferences table
+    console.log("📝 Creating user preferences table...");
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_preferences (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL UNIQUE,
+        theme VARCHAR(20) DEFAULT 'light',
+        notifications_enabled BOOLEAN DEFAULT true,
+        email_notifications BOOLEAN DEFAULT true,
+        push_notifications BOOLEAN DEFAULT true,
+        sms_notifications BOOLEAN DEFAULT false,
+        language VARCHAR(10) DEFAULT 'en',
+        timezone VARCHAR(50) DEFAULT 'UTC',
+        preferences JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create User Notifications table
+    console.log("📢 Creating user notifications table...");
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_notifications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        notification_id TEXT,
+        is_read BOOLEAN DEFAULT false,
+        read_at TIMESTAMP,
+        action_url TEXT,
+        image_url TEXT,
+        metadata JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create Printer Templates table
+    console.log("🖨️ Creating printer templates table...");
+    await sql`
+      CREATE TABLE IF NOT EXISTS printer_templates (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        name VARCHAR(255) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        template_content TEXT NOT NULL,
+        is_default BOOLEAN DEFAULT false,
+        is_active BOOLEAN DEFAULT true,
+        paper_size VARCHAR(50) DEFAULT '80mm',
+        layout VARCHAR(50) DEFAULT 'landscape',
+        margin_top INTEGER DEFAULT 0,
+        margin_bottom INTEGER DEFAULT 0,
+        margin_left INTEGER DEFAULT 0,
+        margin_right INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create Printer Configurations table
+    console.log("🖨️ Creating printer configurations table...");
+    await sql`
+      CREATE TABLE IF NOT EXISTS printer_configurations (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        printer_name VARCHAR(255) NOT NULL,
+        printer_type VARCHAR(50) NOT NULL,
+        connection_type VARCHAR(50) NOT NULL,
+        device_id VARCHAR(255),
+        ip_address VARCHAR(45),
+        port INTEGER,
+        is_active BOOLEAN DEFAULT true,
+        is_default BOOLEAN DEFAULT false,
+        template_id TEXT,
+        settings JSONB,
+        last_used_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create Gamification User Progress table
+    console.log("🎮 Creating gamification user progress table...");
+    await sql`
+      CREATE TABLE IF NOT EXISTS gamification_user_progress (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL UNIQUE,
+        current_level INTEGER DEFAULT 1,
+        current_xp INTEGER DEFAULT 0,
+        total_xp INTEGER DEFAULT 0,
+        level_progress JSONB,
+        unlocked_achievements JSONB,
+        badges JSONB,
+        streak_days INTEGER DEFAULT 0,
+        last_activity_date TIMESTAMP,
+        total_bookings_completed INTEGER DEFAULT 0,
+        total_washes_completed INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create indexes for new tables
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_notifications_user_id ON user_notifications(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_notifications_read ON user_notifications(is_read);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_printer_templates_user_id ON printer_templates(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_printer_configs_user_id ON printer_configurations(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_gamification_progress_user_id ON gamification_user_progress(user_id);`;
+
+    console.log(
+      "✅ User preferences, notifications, printer, and gamification tables created successfully!",
+    );
+
     console.log("✅ Database migrations completed successfully!");
     return true;
   } catch (error) {
@@ -1242,6 +1359,8 @@ export async function seedInitialData() {
 export async function migrate() {
   await runMigrations();
   await seedInitialData();
+  await seedUsers();
+  await seedBranches();
 }
 
 // Run migrations if this file is executed directly

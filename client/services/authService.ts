@@ -1,6 +1,7 @@
 import { neonDbClient } from "./neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
+import LocalStorageSyncService from "./localStorageSyncService";
 
 export interface LoginCredentials {
   email: string;
@@ -129,6 +130,15 @@ class AuthService {
 
         if ((result as any).expiresAt) {
           localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
+        }
+
+        // Sync localStorage data to database in the background
+        try {
+          LocalStorageSyncService.syncAllData().catch((err) => {
+            console.warn("⚠️ Background sync failed:", err);
+          });
+        } catch (syncError) {
+          console.warn("⚠️ Failed to initiate data sync:", syncError);
         }
 
         toast({
