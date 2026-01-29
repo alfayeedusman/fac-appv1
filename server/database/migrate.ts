@@ -1244,6 +1244,8 @@ export async function seedInitialData() {
 export async function migrate() {
   await runMigrations();
   await seedInitialData();
+  await seedUsers();
+  await seedBranches();
 }
 
 // Run migrations if this file is executed directly
