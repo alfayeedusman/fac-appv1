@@ -751,7 +751,7 @@ class NeonDatabaseClient {
           throw error;
         }
       } catch (error: any) {
-        logError("❌ Registration attempt failed:", error);
+        logError(`❌ Registration attempt failed: ${error?.message || JSON.stringify(error)}`);
         if (error?.name === "AbortError") {
           return {
             success: false,
