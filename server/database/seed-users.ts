@@ -1,4 +1,5 @@
 import { getDatabase } from "./connection";
+import { getDatabase } from "./connection";
 import * as schema from "./schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
