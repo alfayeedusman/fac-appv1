@@ -472,6 +472,81 @@ export const updateSubscription: RequestHandler = async (req, res) => {
   }
 };
 
+// Fetch user's subscription status
+export const fetchUserSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userId, email } = req.query;
+
+    if (!userId && !email) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: userId or email",
+      });
+    }
+
+    let user;
+    if (userId) {
+      user = await neonDbService.getUserById(userId as string);
+    } else {
+      user = await neonDbService.getUserByEmail(email as string);
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    console.log("✅ Fetched subscription for user:", {
+      userId: user.id,
+      email: user.email,
+      subscriptionStatus: user.subscriptionStatus,
+    });
+
+    // Return subscription data in format expected by frontend
+    const subscriptionData = {
+      package: user.subscriptionStatus || "Regular Member",
+      subscriptionStatus: user.subscriptionStatus || "free",
+      daysLeft: 30,
+      currentCycleStart: new Date().toISOString().split("T")[0],
+      currentCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      daysLeftInCycle: 30,
+      autoRenewal: false,
+      remainingWashes: {
+        classic: 0,
+        vipProMax: 0,
+        premium: 0,
+      },
+      totalWashes: {
+        classic: 0,
+        vipProMax: 0,
+        premium: 0,
+      },
+    };
+
+    res.json({
+      success: true,
+      subscription: subscriptionData,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        subscriptionStatus: user.subscriptionStatus,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Fetch subscription error:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch subscription",
+    });
+  }
+};
+
 // Helper function to get package price
 function getPackagePrice(packageId: string): number {
   const prices: Record<string, number> = {
