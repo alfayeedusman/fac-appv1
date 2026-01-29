@@ -429,6 +429,49 @@ export const registerUser: RequestHandler = async (req, res) => {
   }
 };
 
+// Update user subscription status
+export const updateSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userId, newStatus } = req.body;
+
+    if (!userId || !newStatus) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: userId, newStatus",
+      });
+    }
+
+    console.log("🔄 Updating subscription for user:", {
+      userId,
+      newStatus,
+    });
+
+    // Update user's subscription status
+    const updatedUser = await neonDbService.updateUser(userId, {
+      subscriptionStatus: newStatus,
+    });
+
+    console.log("✅ Subscription updated successfully:", {
+      userId,
+      newStatus,
+      email: updatedUser.email,
+    });
+
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: `Subscription updated to ${newStatus}`,
+    });
+  } catch (error) {
+    console.error("❌ Subscription update error:", error);
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to update subscription",
+    });
+  }
+};
+
 // Helper function to get package price
 function getPackagePrice(packageId: string): number {
   const prices: Record<string, number> = {
