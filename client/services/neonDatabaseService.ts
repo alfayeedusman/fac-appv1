@@ -618,7 +618,7 @@ class NeonDatabaseClient {
             return result;
           } catch (retryErr: any) {
             timeoutHandler2.clearTimeout();
-            logError("❌ Retry login failed:", retryErr?.message || retryErr);
+            logError(`❌ Retry login failed: ${retryErr?.message || JSON.stringify(retryErr)}`);
             return {
               success: false,
               error: "Login failed. Please try again.",
@@ -632,7 +632,7 @@ class NeonDatabaseClient {
         throw error;
       }
     } catch (error: any) {
-      logError("Database login failed:", error);
+      logError(`Database login failed: ${error?.message || JSON.stringify(error)}`);
 
       if (error?.name === "AbortError") {
         return {
@@ -669,7 +669,7 @@ class NeonDatabaseClient {
             throw err;
           }
         } catch (e3: any) {
-          logError("❌ Fallback login also failed:", e3?.message || e3);
+          logError(`❌ Fallback login also failed: ${e3?.message || JSON.stringify(e3)}`);
           return {
             success: false,
             error:
