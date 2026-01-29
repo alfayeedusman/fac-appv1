@@ -1,6 +1,7 @@
 import { eq, and, or, desc, count, sql, lte, asc, gte, ne } from "drizzle-orm";
 import { getDatabase } from "../database/connection";
 import * as schema from "../database/schema";
+import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createId } from "@paralleldrive/cuid2";
 
