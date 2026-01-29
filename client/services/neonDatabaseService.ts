@@ -343,7 +343,7 @@ class NeonDatabaseClient {
     } catch (error: any) {
       logError(`❌ Connection test failed: ${error?.message || JSON.stringify(error)}`);
       this.isConnected = false;
-      if (error.name === "AbortError") {
+      if (error.name === "AbortError" || error?.message?.includes("aborted")) {
         return { connected: false, error: "Connection timeout" };
       }
       return { connected: false, error: error.message };
