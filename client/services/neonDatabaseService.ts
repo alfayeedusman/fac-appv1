@@ -634,7 +634,8 @@ class NeonDatabaseClient {
     } catch (error: any) {
       logError(`Database login failed: ${error?.message || JSON.stringify(error)}`);
 
-      if (error?.name === "AbortError") {
+      // Handle abort errors (including timeouts)
+      if (error?.name === "AbortError" || error?.message?.includes("aborted")) {
         return {
           success: false,
           error: "Request timed out. Please try again.",
