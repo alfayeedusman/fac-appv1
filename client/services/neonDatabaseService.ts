@@ -528,8 +528,7 @@ class NeonDatabaseClient {
         localStorage.setItem("userId", json.user.id);
       } catch (e) {
         warn(
-          "⚠️ Storage unavailable, proceeding without persisting session:",
-          (e as any)?.message || e,
+          `⚠️ Storage unavailable, proceeding without persisting session: ${(e as any)?.message || JSON.stringify(e)}`,
         );
         try {
           sessionStorage.setItem("userEmail", json.user.email);
