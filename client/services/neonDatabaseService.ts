@@ -561,7 +561,7 @@ class NeonDatabaseClient {
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     // Attempt background connection check but don't block login
     this.ensureConnection().catch((err) =>
-      warn("Background connection check failed:", err),
+      warn(`Background connection check failed: ${err?.message || JSON.stringify(err)}`),
     );
 
     try {
