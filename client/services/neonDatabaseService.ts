@@ -340,7 +340,7 @@ class NeonDatabaseClient {
       this.isConnected = false;
       return { connected: false, error: "Network error" };
     } catch (error: any) {
-      logError("❌ Connection test failed:", error.message || error);
+      logError(`❌ Connection test failed: ${error?.message || JSON.stringify(error)}`);
       this.isConnected = false;
       if (error.name === "AbortError") {
         return { connected: false, error: "Connection timeout" };
