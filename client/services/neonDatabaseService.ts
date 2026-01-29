@@ -157,7 +157,7 @@ const createSafeTimeoutAbort = (
       try {
         controller.abort();
       } catch (e) {
-        console.warn("Error aborting request:", e);
+        console.warn(`Error aborting request: ${e instanceof Error ? e.message : JSON.stringify(e)}`);
       }
     }
   }, timeoutMs);
