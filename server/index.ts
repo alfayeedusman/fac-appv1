@@ -300,6 +300,23 @@ export function createServer() {
     }
   }, 1000);
 
+  // ============= LOCALSTORAGE DATA SYNC ENDPOINTS =============
+  // User Preferences
+  app.post("/api/neon/sync/preferences", neonApiRoutes.syncUserPreferences);
+  app.get("/api/neon/sync/preferences", neonApiRoutes.getUserPreferences);
+
+  // User Notifications
+  app.post("/api/neon/sync/notifications", neonApiRoutes.syncUserNotifications);
+  app.get("/api/neon/sync/notifications", neonApiRoutes.getUserNotifications);
+
+  // Printer Configuration
+  app.post("/api/neon/sync/printer-config", neonApiRoutes.syncPrinterConfig);
+  app.get("/api/neon/sync/printer-configs", neonApiRoutes.getPrinterConfigs);
+
+  // Gamification Progress
+  app.post("/api/neon/sync/gamification", neonApiRoutes.syncGamificationProgress);
+  app.get("/api/neon/sync/gamification", neonApiRoutes.getGamificationProgress);
+
   // Error handling middleware (must be last)
   app.use(errorHandler);
 
