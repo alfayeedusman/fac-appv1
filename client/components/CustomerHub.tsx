@@ -909,7 +909,7 @@ export default function CustomerHub() {
                         </div>
 
                         {/* Action Button */}
-                        {customer.subscriptionStatus === "free" && (
+                        {customer.subscriptionStatus !== "vip" && (
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
