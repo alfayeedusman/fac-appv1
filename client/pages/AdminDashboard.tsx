@@ -1598,6 +1598,34 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => navigate("/admin-crew-management")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Crew Commission
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {crewCommissionLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(crewCommissionSummary?.totalCommission || 0)
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Selected period
+                        </p>
+                      </div>
+                      <div className="bg-emerald-500 p-3 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("analytics")}
                 >
                   <CardContent className="p-6">
