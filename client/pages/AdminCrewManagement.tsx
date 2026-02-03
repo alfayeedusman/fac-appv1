@@ -1548,12 +1548,12 @@ export default function AdminCrewManagement() {
                       <p className="text-sm text-muted-foreground">
                         Loading payouts...
                       </p>
-                    ) : payouts.length === 0 ? (
+                    ) : filteredPayouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
-                        No payouts recorded yet.
+                        No payouts recorded for the selected crew.
                       </p>
                     ) : (
-                      payouts.map((payout) => (
+                      filteredPayouts.map((payout) => (
                         <div
                           key={payout.id}
                           className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
