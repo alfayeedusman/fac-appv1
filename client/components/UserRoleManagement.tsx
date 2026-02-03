@@ -984,6 +984,8 @@ export default function UserRoleManagement() {
         return "bg-gradient-to-r from-purple-500 to-blue-600";
       case "manager":
         return "bg-gradient-to-r from-blue-500 to-cyan-600";
+      case "dispatcher":
+        return "bg-gradient-to-r from-emerald-500 to-teal-600";
       case "crew":
         return "bg-gradient-to-r from-red-500 to-pink-600";
       case "cashier":
