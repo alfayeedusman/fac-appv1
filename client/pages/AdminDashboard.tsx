@@ -298,6 +298,13 @@ export default function AdminDashboard() {
 
   const [editingFeatures, setEditingFeatures] = useState("");
 
+  const [dailyIncomeAmount, setDailyIncomeAmount] = useState("");
+  const [dailyIncomeDate, setDailyIncomeDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [dailyIncomeNotes, setDailyIncomeNotes] = useState("");
+  const [dailyIncomeLoading, setDailyIncomeLoading] = useState(false);
+
   // Function to load real statistics from database
   const loadRealStats = async (period: string = timeFilter) => {
     try {
