@@ -11,6 +11,7 @@ import * as neonApiRoutes from "./routes/neon-api";
 import * as crewApiRoutes from "./routes/crew-api";
 import * as xenditApiRoutes from "./routes/xendit-api";
 import notificationsApiRoutes from "./routes/notifications-api";
+import * as gamificationApiRoutes from "./routes/gamification-api";
 import imagesApiRoutes from "./routes/images-api";
 import cmsApiRoutes from "./routes/cms-api";
 import { seedBranches } from "./database/seed-branches";
@@ -262,6 +263,57 @@ export const createServer = () => {
 
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
+
+  // ============= GAMIFICATION API (mobile-ready) =============
+  app.get("/api/gamification/levels", gamificationApiRoutes.getCustomerLevels);
+  app.post(
+    "/api/gamification/levels",
+    gamificationApiRoutes.createCustomerLevel,
+  );
+  app.put(
+    "/api/gamification/levels/:id",
+    gamificationApiRoutes.updateCustomerLevel,
+  );
+  app.get(
+    "/api/gamification/levels/user/:userId",
+    gamificationApiRoutes.getUserLevel,
+  );
+  app.get(
+    "/api/gamification/achievements",
+    gamificationApiRoutes.getAchievements,
+  );
+  app.post(
+    "/api/gamification/achievements",
+    gamificationApiRoutes.createAchievement,
+  );
+  app.get(
+    "/api/gamification/achievements/user/:userId",
+    gamificationApiRoutes.getUserAchievements,
+  );
+  app.post(
+    "/api/gamification/achievements/award",
+    gamificationApiRoutes.awardAchievement,
+  );
+  app.post(
+    "/api/gamification/achievements/complete",
+    gamificationApiRoutes.completeAchievement,
+  );
+  app.get(
+    "/api/gamification/loyalty/:userId",
+    gamificationApiRoutes.getLoyaltyTransactions,
+  );
+  app.post(
+    "/api/gamification/loyalty/add",
+    gamificationApiRoutes.addLoyaltyPoints,
+  );
+  app.post(
+    "/api/gamification/loyalty/redeem",
+    gamificationApiRoutes.redeemLoyaltyPoints,
+  );
+  app.get(
+    "/api/gamification/dashboard/:userId",
+    gamificationApiRoutes.getGamificationDashboard,
+  );
 
   // ============= IMAGE MANAGEMENT API =============
   app.use("/api/images", imagesApiRoutes);
