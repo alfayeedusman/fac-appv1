@@ -379,6 +379,70 @@ export default function AdminDashboard() {
     }
   };
 
+  const getDateRangeForFilter = (
+    period: "daily" | "weekly" | "monthly" | "yearly",
+  ) => {
+    const now = new Date();
+    let start = new Date(now);
+    let end = new Date(now);
+
+    switch (period) {
+      case "daily":
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "weekly":
+        start.setDate(now.getDate() - now.getDay());
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "monthly":
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "yearly":
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31);
+        end.setHours(23, 59, 59, 999);
+        break;
+      default:
+        break;
+    }
+
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+  };
+
+  const loadCrewCommissionSummary = async (
+    period: "daily" | "weekly" | "monthly" | "yearly" = timeFilter,
+  ) => {
+    try {
+      setCrewCommissionLoading(true);
+      const { startDate, endDate } = getDateRangeForFilter(period);
+      const result = await neonDbClient.getCrewCommissionSummary({
+        startDate,
+        endDate,
+      });
+
+      if (result.success && result.summary) {
+        setCrewCommissionSummary(result.summary);
+      } else {
+        console.warn("⚠️ Failed to load crew commission summary", result);
+        setCrewCommissionSummary(null);
+      }
+    } catch (error) {
+      console.error("Crew commission summary load failed:", error);
+      setCrewCommissionSummary(null);
+    } finally {
+      setCrewCommissionLoading(false);
+    }
+  };
+
   const submitDailyIncome = async () => {
     const amount = Number(dailyIncomeAmount);
     if (!amount || amount <= 0) {
