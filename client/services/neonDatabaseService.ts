@@ -1531,6 +1531,69 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCrewGroups(): Promise<{ success: boolean; groups?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/groups`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew groups fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCrewGroupAssignment(params: {
+    userId: string;
+    groupId?: string | null;
+  }): Promise<{ success: boolean; crewMember?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/${params.userId}/group`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: params.groupId || null }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew group update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCrewWashBayAssignment(params: {
+    userId: string;
+    washBay?: string | null;
+  }): Promise<{ success: boolean; crewMember?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/${params.userId}/wash-bay`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ washBay: params.washBay || null }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew wash bay update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async seedCrew(): Promise<{ success: boolean; message?: string; error?: string }> {
     await this.ensureConnection();
     const ac = new AbortController();
