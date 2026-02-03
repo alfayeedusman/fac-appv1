@@ -657,6 +657,10 @@ export async function runMigrations() {
       );
     `;
 
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS gradient VARCHAR(100) DEFAULT 'from-gray-400 to-gray-600';`;
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS badge_shape VARCHAR(20) DEFAULT 'circle';`;
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS badge_pattern VARCHAR(20) DEFAULT 'solid';`;
+
     // Create achievements table
     await sql`
       CREATE TABLE IF NOT EXISTS achievements (
