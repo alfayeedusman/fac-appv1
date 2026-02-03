@@ -1093,6 +1093,10 @@ export default function AdminDashboard() {
             navigate("/admin-fac-map");
             return;
           }
+          if (tab === "crew") {
+            navigate("/admin-crew-management");
+            return;
+          }
           setActiveTab(tab);
         }}
         userRole={userRole}
