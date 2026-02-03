@@ -1935,7 +1935,7 @@ export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
     // Fetch all users
     const allUsers = await users
       .select()
-      .from(schema.default.users);
+      .from(schema.users);
 
     let updated = 0;
     const results: any[] = [];
@@ -1948,9 +1948,9 @@ export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
           const hashedPassword = await bcrypt.hash(newPassword, 10);
 
           await users
-            .update(schema.default.users)
+            .update(schema.users)
             .set({ password: hashedPassword })
-            .where(eq(schema.default.users.id, user.id));
+            .where(eq(schema.users.id, user.id));
 
           updated++;
           results.push({
