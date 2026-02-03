@@ -2747,6 +2747,37 @@ export const updateUserAddress: RequestHandler = async (req, res) => {
   }
 };
 
+// Update user status (ban/unban)
+export const updateUserStatus: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { isActive } = req.body;
+
+    if (!userId || typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        error: "userId and isActive are required",
+      });
+    }
+
+    const updatedUser = await neonDbService.updateUser(userId, {
+      isActive,
+    });
+
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: "User status updated successfully",
+    });
+  } catch (error) {
+    console.error("Update user status error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update user status",
+    });
+  }
+};
+
 // === SUBSCRIPTIONS ===
 
 export const getSubscriptions: RequestHandler = async (req, res) => {
