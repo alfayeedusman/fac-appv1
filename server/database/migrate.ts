@@ -160,6 +160,25 @@ export async function runMigrations() {
 
     // Add missing columns to existing users table (safe migration)
     console.log("🔧 Checking for missing columns in users table...");
+
+    // Convert password column from varchar to text if needed (for bcrypt compatibility)
+    try {
+      await sql`
+        ALTER TABLE users
+        ALTER COLUMN password TYPE TEXT USING password::text;
+      `;
+      console.log("✅ password column converted to TEXT type");
+    } catch (error: any) {
+      if (error.message?.includes("already text type") || error.message?.includes("no conversion")) {
+        console.log("✅ password column is already TEXT type");
+      } else {
+        console.warn(
+          "⚠️ Could not convert password column to TEXT:",
+          error.message,
+        );
+      }
+    }
+
     try {
       await sql`
         ALTER TABLE users
