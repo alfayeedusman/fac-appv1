@@ -1251,7 +1251,7 @@ export default function AdminCrewManagement() {
                   <CardTitle>Payout History</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Crew Member</Label>
                       <Select value={payoutCrewId} onValueChange={setPayoutCrewId}>
@@ -1268,15 +1268,37 @@ export default function AdminCrewManagement() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Amount (₱)</Label>
+                      <Label>Auto Amount (₱)</Label>
                       <Input
                         type="number"
                         min="0"
                         step="0.01"
                         value={payoutAmount}
-                        onChange={(e) => setPayoutAmount(e.target.value)}
-                        placeholder="Total payout"
+                        readOnly
+                        placeholder="Auto from commissions"
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Eligible entries: {eligiblePayoutEntries.length}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bonus (optional)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payoutBonus}
+                        onChange={(e) => setPayoutBonus(e.target.value)}
+                        placeholder="Performance bonus"
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Total payout (auto + bonus)</span>
+                      <span className="font-semibold">
+                        ₱{payoutTotalAmount.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                   <div className="grid gap-4 md:grid-cols-3">
