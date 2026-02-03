@@ -66,12 +66,16 @@ export const createCustomerLevel: RequestHandler = async (req, res) => {
       INSERT INTO customer_levels (
         id, name, description, min_points, max_points, discount_percentage,
         priority, special_perks, badge_icon, badge_color, level_color,
+        gradient, badge_shape, badge_pattern, is_active,
         sort_order, created_at, updated_at
       ) VALUES (
         ${levelId}, ${name}, ${description}, ${minPoints}, ${maxPoints || null},
-        ${discountPercentage || 0}, ${priority || 0}, 
+        ${discountPercentage || 0}, ${priority || 0},
         ${JSON.stringify(specialPerks || [])}, ${badgeIcon || null},
         ${badgeColor || '#6B7280'}, ${levelColor || '#F97316'},
+        ${gradient || levelColor || 'from-gray-400 to-gray-600'},
+        ${badgeShape || 'circle'}, ${badgePattern || 'solid'},
+        ${isActive ?? true},
         ${sortOrder || 0}, NOW(), NOW()
       ) RETURNING *
     `;
