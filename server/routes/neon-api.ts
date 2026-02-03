@@ -2198,54 +2198,51 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const payload = req.body || {};
 
-    const updated = await neonDbService.updateServicePackage(id, {
-      name: payload.name,
-      description: payload.description,
-      category: payload.category,
-      type: payload.type,
-      basePrice:
-        payload.basePrice !== undefined || payload.base_price !== undefined
-          ? Number(payload.basePrice ?? payload.base_price)
-          : undefined,
-      currency: payload.currency,
-      durationType: payload.durationType || payload.duration_type,
-      duration:
-        payload.duration !== undefined ? payload.duration : undefined,
-      hours:
-        payload.hours !== undefined && payload.hours !== null
-          ? Number(payload.hours)
-          : payload.hours === null
-            ? null
-            : undefined,
-      startDate:
-        payload.startDate !== undefined && payload.startDate !== null
-          ? new Date(payload.startDate)
-          : payload.startDate === null
-            ? null
-            : undefined,
-      endDate:
-        payload.endDate !== undefined && payload.endDate !== null
-          ? new Date(payload.endDate)
-          : payload.endDate === null
-            ? null
-            : undefined,
-      features: Array.isArray(payload.features) ? payload.features : undefined,
-      bannerUrl:
-        payload.banner !== undefined ||
-        payload.bannerUrl !== undefined ||
-        payload.banner_url !== undefined
-          ? payload.banner || payload.bannerUrl || payload.banner_url || null
-          : undefined,
-      isActive:
-        typeof payload.active === "boolean"
-          ? payload.active
-          : payload.isActive,
-      isPopular: payload.isPopular,
-      isFeatured: payload.isFeatured,
-      color: payload.color,
-      priority:
-        payload.priority !== undefined ? Number(payload.priority) : undefined,
-    });
+    const updates: Record<string, any> = {};
+
+    if (payload.name !== undefined) updates.name = payload.name;
+    if (payload.description !== undefined)
+      updates.description = payload.description;
+    if (payload.category !== undefined) updates.category = payload.category;
+    if (payload.type !== undefined) updates.type = payload.type;
+    if (payload.basePrice !== undefined || payload.base_price !== undefined) {
+      updates.basePrice = Number(payload.basePrice ?? payload.base_price);
+    }
+    if (payload.currency !== undefined) updates.currency = payload.currency;
+    if (payload.durationType !== undefined || payload.duration_type !== undefined) {
+      updates.durationType = payload.durationType || payload.duration_type;
+    }
+    if (payload.duration !== undefined) updates.duration = payload.duration;
+    if (payload.hours !== undefined) {
+      updates.hours = payload.hours === null ? null : Number(payload.hours);
+    }
+    if (payload.startDate !== undefined) {
+      updates.startDate =
+        payload.startDate === null ? null : new Date(payload.startDate);
+    }
+    if (payload.endDate !== undefined) {
+      updates.endDate =
+        payload.endDate === null ? null : new Date(payload.endDate);
+    }
+    if (Array.isArray(payload.features)) updates.features = payload.features;
+    if (
+      payload.banner !== undefined ||
+      payload.bannerUrl !== undefined ||
+      payload.banner_url !== undefined
+    ) {
+      updates.bannerUrl = payload.banner || payload.bannerUrl || payload.banner_url;
+    }
+    if (typeof payload.active === "boolean" || payload.isActive !== undefined) {
+      updates.isActive =
+        typeof payload.active === "boolean" ? payload.active : payload.isActive;
+    }
+    if (payload.isPopular !== undefined) updates.isPopular = payload.isPopular;
+    if (payload.isFeatured !== undefined) updates.isFeatured = payload.isFeatured;
+    if (payload.color !== undefined) updates.color = payload.color;
+    if (payload.priority !== undefined)
+      updates.priority = Number(payload.priority);
+
+    const updated = await neonDbService.updateServicePackage(id, updates);
 
     res.json({
       success: true,
