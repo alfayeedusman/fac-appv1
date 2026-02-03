@@ -24,6 +24,29 @@ class NeonDatabaseService {
     this.db = getDatabase();
   }
 
+  // Add method to refresh connection when needed
+  private async ensureConnection() {
+    if (!this.db) {
+      this.db = await getDatabase();
+    }
+    return this.db;
+  }
+
+  // Handle connection errors
+  private handleConnectionError(error: any) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("connection") ||
+        error.message.includes("timeout") ||
+        error.message.includes("ECONNREFUSED"))
+    ) {
+      console.log(
+        "🔄 Detected connection error, resetting connection on next call",
+      );
+      this.db = null;
+    }
+  }
+
   // === USER MANAGEMENT ===
 
   async createUser(
