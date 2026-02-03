@@ -56,6 +56,31 @@ export const crewMembers = pgTable("crew_members", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Crew commission rates (by service type)
+export const crewCommissionRates = pgTable("crew_commission_rates", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  serviceType: varchar("service_type", { length: 255 }).notNull(),
+  rate: decimal("rate", { precision: 5, scale: 2 }).notNull().default("0.00"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Daily income entries (admin/manager input)
+export const dailyIncome = pgTable("daily_income", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  branch: varchar("branch", { length: 255 }).notNull(),
+  incomeDate: timestamp("income_date").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  recordedBy: text("recorded_by").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Real-time Crew Locations table
 export const crewLocations = pgTable("crew_locations", {
   id: text("id")
