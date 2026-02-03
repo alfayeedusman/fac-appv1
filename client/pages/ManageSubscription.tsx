@@ -46,7 +46,8 @@ import SwipeablePackageModal from "@/components/SwipeablePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
   getUserSubscriptionStatus,
-  getSubscriptionRequests,
+  getUserSubscriptionData,
+  type UserSubscriptionData,
 } from "@/utils/subscriptionApprovalData";
 
 interface SubscriptionPlan {
