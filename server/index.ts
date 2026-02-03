@@ -201,6 +201,7 @@ export function createServer() {
   // Admin settings endpoints
   app.get("/api/neon/settings", neonApiRoutes.getSettings);
   app.put("/api/neon/settings", neonApiRoutes.updateSetting);
+  app.get("/api/neon/admin/api-catalog", neonApiRoutes.getApiCatalog);
 
   // Daily income endpoints
   app.get("/api/neon/daily-income", neonApiRoutes.getDailyIncome);
