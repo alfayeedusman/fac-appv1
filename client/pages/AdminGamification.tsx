@@ -32,6 +32,7 @@ import {
   CustomerLevel,
   getGamificationLevels,
   updateGamificationLevels,
+  updateGamificationLevel,
 } from "@/utils/gamificationData";
 
 export default function AdminGamification() {
@@ -39,18 +40,30 @@ export default function AdminGamification() {
   const [editingLevel, setEditingLevel] = useState<CustomerLevel | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newReward, setNewReward] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [persistedIds, setPersistedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadLevels();
   }, []);
 
-  const loadLevels = () => {
-    const gamificationLevels = getGamificationLevels();
+  const loadLevels = async () => {
+    const gamificationLevels = await getGamificationLevels();
     setLevels(gamificationLevels);
+    setPersistedIds(new Set(gamificationLevels.map((level) => level.id)));
   };
 
-  const saveLevels = () => {
-    updateGamificationLevels(levels);
+  const saveLevels = async () => {
+    setIsSaving(true);
+    const result = await updateGamificationLevels(levels, persistedIds);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.error || "Failed to save gamification levels.");
+      return;
+    }
+
+    await loadLevels();
     alert("Gamification levels saved successfully!");
   };
 
@@ -90,10 +103,31 @@ export default function AdminGamification() {
     setIsCreating(false);
   };
 
-  const deleteLevel = (levelId: string) => {
-    if (window.confirm("Are you sure you want to delete this level?")) {
-      setLevels(levels.filter((level) => level.id !== levelId));
+  const deleteLevel = async (levelId: string) => {
+    if (!window.confirm("Are you sure you want to delete this level?")) {
+      return;
     }
+
+    const level = levels.find((item) => item.id === levelId);
+    if (!level) {
+      return;
+    }
+
+    if (persistedIds.has(levelId)) {
+      setIsSaving(true);
+      const result = await updateGamificationLevel(levelId, {
+        ...level,
+        isActive: false,
+      });
+      setIsSaving(false);
+
+      if (!result.success) {
+        alert(result.error || "Failed to delete level.");
+        return;
+      }
+    }
+
+    setLevels(levels.filter((item) => item.id !== levelId));
   };
 
   const addReward = () => {
@@ -194,6 +228,7 @@ export default function AdminGamification() {
             </Button>
             <Button
               onClick={saveLevels}
+              disabled={isSaving}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
               <Save className="h-4 w-4 mr-2" />
