@@ -150,22 +150,17 @@ const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
-  let timerHandle: NodeJS.Timeout | null = setTimeout(() => {
-    if (timerHandle !== null) {
-      try {
-        controller.abort();
-      } catch (e) {
-        console.warn("Error aborting request:", e);
-      }
+  const timerHandle = window.setTimeout(() => {
+    try {
+      controller.abort();
+    } catch (e) {
+      console.warn("Error aborting request:", e);
     }
   }, timeoutMs);
 
   return {
     clearTimeout: () => {
-      if (timerHandle !== null) {
-        clearTimeout(timerHandle);
-        timerHandle = null;
-      }
+      window.clearTimeout(timerHandle);
     },
   };
 };
