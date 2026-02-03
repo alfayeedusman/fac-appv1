@@ -66,16 +66,14 @@ export default function PaymentHistory() {
 
   useEffect(() => {
     loadTransactionHistory();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     filterAndSortTransactions();
   }, [transactions, searchTerm, statusFilter, typeFilter, sortBy]);
 
-  const loadTransactionHistory = () => {
-    // Get user's subscription requests
-    const allRequests = getSubscriptionRequests();
-    const userRequests = allRequests.filter((req) => req.userId === userId);
+  const loadTransactionHistory = async () => {
+    const userRequests = await getSubscriptionRequests({ userId });
 
     // Convert subscription requests to transaction history
     const subscriptionTransactions: TransactionHistory[] = userRequests.map(
