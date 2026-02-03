@@ -475,6 +475,26 @@ export default function AdminCrewManagement() {
   const payoutBonusAmount = Number(payoutBonus) || 0;
   const payoutTotalAmount = autoPayoutAmount + payoutBonusAmount;
 
+  const selectedCrew = useMemo(
+    () => crewMembers.find((crew) => crew.id === selectedCrewId),
+    [crewMembers, selectedCrewId],
+  );
+
+  const selectedCrewGroup = useMemo(() => {
+    if (!selectedCrew?.groupId) return null;
+    return crewGroups.find((group) => group.id === selectedCrew.groupId) || null;
+  }, [crewGroups, selectedCrew]);
+
+  const filteredCommissionEntries = useMemo(() => {
+    if (!selectedCrewId) return commissionEntries;
+    return commissionEntries.filter((entry) => entry.crewUserId === selectedCrewId);
+  }, [commissionEntries, selectedCrewId]);
+
+  const filteredPayouts = useMemo(() => {
+    if (!selectedCrewId) return payouts;
+    return payouts.filter((payout) => payout.crewUserId === selectedCrewId);
+  }, [payouts, selectedCrewId]);
+
   const handleCreatePayout = async () => {
     const baseAmount = Number(payoutAmount) || 0;
     const bonusAmount = Number(payoutBonus) || 0;
