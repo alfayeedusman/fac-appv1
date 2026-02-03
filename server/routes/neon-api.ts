@@ -721,6 +721,7 @@ export const getBookings: RequestHandler = async (req, res) => {
     const canViewAll =
       userRole === "admin" ||
       userRole === "superadmin" ||
+      userRole === "dispatcher" ||
       (currentUser && currentUser.canViewAllBranches);
 
     if (userId) {
