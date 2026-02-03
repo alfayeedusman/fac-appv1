@@ -1664,6 +1664,86 @@ export const seedBranchesEndpoint: RequestHandler = async (req, res) => {
   }
 };
 
+// DEBUG: Password verification diagnostic endpoint
+export const debugPasswordVerification: RequestHandler = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Email and password required",
+      });
+    }
+
+    console.log("🔍 DEBUG: Starting password verification check...");
+
+    // Fetch user
+    const user = await neonDbService.getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+        debug: {
+          email,
+          userFound: false,
+        },
+      });
+    }
+
+    console.log("🔍 DEBUG: User found", {
+      email: user.email,
+      hasPassword: !!user.password,
+      passwordLength: user.password ? user.password.length : 0,
+      passwordHashStart: user.password
+        ? user.password.substring(0, 15) + "..."
+        : "NO_HASH",
+    });
+
+    if (!user.password) {
+      return res.status(400).json({
+        success: false,
+        error: "User has no password hash in database",
+        debug: {
+          email,
+          userFound: true,
+          passwordHash: null,
+        },
+      });
+    }
+
+    // Try password verification
+    const bcrypt = await import("bcryptjs");
+    console.log("🔍 DEBUG: Comparing password...");
+    console.log("   Input password length:", password.length);
+    console.log("   Hash length:", user.password.length);
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("🔍 DEBUG: Comparison result:", isMatch);
+
+    return res.json({
+      success: true,
+      debug: {
+        email,
+        userFound: true,
+        passwordHashExists: !!user.password,
+        passwordHashAlgorithm: user.password?.substring(0, 4),
+        passwordMatchResult: isMatch,
+        inputPasswordLength: password.length,
+        storedHashLength: user.password.length,
+      },
+    });
+  } catch (error) {
+    console.error("🔍 DEBUG: Error during verification", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 // Service packages endpoints
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
