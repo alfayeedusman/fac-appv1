@@ -1521,7 +1521,7 @@ class NeonDatabaseService {
   // ============= NEW FEATURES METHODS =============
 
   // Service packages methods
-  async getServicePackages() {
+  async getServicePackages(options?: { includeInactive?: boolean }) {
     try {
       if (!this.db) {
         console.warn("Database not initialized, returning fallback packages");
@@ -1538,16 +1538,16 @@ class NeonDatabaseService {
         ];
       }
 
-      // Use Drizzle ORM to fetch packages
-      const packages = await this.db
-        .select()
-        .from(schema.servicePackages)
-        .where(eq(schema.servicePackages.isActive, true))
-        .orderBy(
-          desc(schema.servicePackages.isFeatured),
-          desc(schema.servicePackages.isPopular),
-          asc(schema.servicePackages.name)
-        );
+      let query = this.db.select().from(schema.servicePackages);
+      if (!options?.includeInactive) {
+        query = query.where(eq(schema.servicePackages.isActive, true));
+      }
+
+      const packages = await query.orderBy(
+        desc(schema.servicePackages.isFeatured),
+        desc(schema.servicePackages.isPopular),
+        asc(schema.servicePackages.name)
+      );
 
       console.log(
         `✅ Service packages retrieved: ${packages.length} packages found`
@@ -1567,6 +1567,115 @@ class NeonDatabaseService {
           is_popular: true,
         },
       ];
+    }
+  }
+
+  async createServicePackage(packageData: {
+    name: string;
+    description?: string;
+    category?: string;
+    type?: string;
+    basePrice: number;
+    currency?: string;
+    durationType?: string;
+    duration?: string | null;
+    hours?: number | null;
+    startDate?: Date | null;
+    endDate?: Date | null;
+    features?: string[];
+    bannerUrl?: string | null;
+    isActive?: boolean;
+    isPopular?: boolean;
+    isFeatured?: boolean;
+    color?: string;
+    priority?: number;
+  }) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      const [created] = await this.db
+        .insert(schema.servicePackages)
+        .values({
+          name: packageData.name,
+          description: packageData.description,
+          category: packageData.category || "subscription",
+          type: packageData.type || "recurring",
+          basePrice: packageData.basePrice,
+          currency: packageData.currency || "PHP",
+          durationType: packageData.durationType || "preset",
+          duration: packageData.duration || null,
+          hours: packageData.hours || null,
+          startDate: packageData.startDate || null,
+          endDate: packageData.endDate || null,
+          features: packageData.features || [],
+          bannerUrl: packageData.bannerUrl || null,
+          isActive: packageData.isActive ?? true,
+          isPopular: packageData.isPopular ?? false,
+          isFeatured: packageData.isFeatured ?? false,
+          color: packageData.color,
+          priority: packageData.priority ?? 0,
+        })
+        .returning();
+
+      return created;
+    } catch (error) {
+      console.error("❌ Error creating service package:", error);
+      throw error;
+    }
+  }
+
+  async updateServicePackage(
+    id: string,
+    updates: Partial<{
+      name: string;
+      description: string;
+      category: string;
+      type: string;
+      basePrice: number;
+      currency: string;
+      durationType: string;
+      duration: string | null;
+      hours: number | null;
+      startDate: Date | null;
+      endDate: Date | null;
+      features: string[];
+      bannerUrl: string | null;
+      isActive: boolean;
+      isPopular: boolean;
+      isFeatured: boolean;
+      color: string;
+      priority: number;
+    }>
+  ) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      const [updated] = await this.db
+        .update(schema.servicePackages)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.servicePackages.id, id))
+        .returning();
+
+      return updated;
+    } catch (error) {
+      console.error("❌ Error updating service package:", error);
+      throw error;
+    }
+  }
+
+  async deleteServicePackage(id: string) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      await this.db
+        .delete(schema.servicePackages)
+        .where(eq(schema.servicePackages.id, id));
+    } catch (error) {
+      console.error("❌ Error deleting service package:", error);
+      throw error;
     }
   }
 
