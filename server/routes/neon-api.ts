@@ -28,6 +28,123 @@ const emitPusher = async (
 let __NEON_DB_INITIALIZED__ = false;
 let __NEON_DB_INITIALIZING__ = false;
 
+// Admin API catalog for mobile app integration
+export const getApiCatalog: RequestHandler = async (req, res) => {
+  res.json({
+    success: true,
+    baseUrl: "/api",
+    catalog: {
+      dashboard: [
+        { method: "GET", path: "/api/neon/stats", description: "Dashboard stats" },
+        {
+          method: "GET",
+          path: "/api/neon/realtime-stats",
+          description: "Live crew/customer stats",
+        },
+        {
+          method: "GET",
+          path: "/api/neon/analytics",
+          description: "Analytics charts data",
+        },
+        {
+          method: "GET",
+          path: "/api/neon/crew/commission-summary",
+          description: "Crew commission totals",
+        },
+      ],
+      ads: [
+        { method: "GET", path: "/api/neon/ads", description: "Popup ads" },
+        { method: "POST", path: "/api/neon/ads", description: "Create ad" },
+        {
+          method: "POST",
+          path: "/api/neon/ads/:adId/dismiss",
+          description: "Dismiss ad",
+        },
+      ],
+      cms: [
+        { method: "GET", path: "/api/cms/pages", description: "CMS pages" },
+        { method: "GET", path: "/api/cms/sections", description: "CMS sections" },
+        { method: "POST", path: "/api/cms/pages", description: "Create page" },
+        {
+          method: "PUT",
+          path: "/api/cms/pages/:id",
+          description: "Update page",
+        },
+      ],
+      notifications: [
+        {
+          method: "GET",
+          path: "/api/neon/notifications",
+          description: "System notifications",
+        },
+        {
+          method: "PUT",
+          path: "/api/neon/notifications/:notificationId/read",
+          description: "Mark notification read",
+        },
+        {
+          method: "POST",
+          path: "/api/notifications/send",
+          description: "Send push notification",
+        },
+      ],
+      crew: [
+        { method: "GET", path: "/api/neon/crew/list", description: "Crew list" },
+        {
+          method: "GET",
+          path: "/api/neon/crew/commission-entries",
+          description: "Commission entries",
+        },
+        {
+          method: "POST",
+          path: "/api/neon/crew/commission-entries",
+          description: "Create commission entry",
+        },
+        {
+          method: "GET",
+          path: "/api/neon/crew/payouts",
+          description: "Crew payouts",
+        },
+        {
+          method: "POST",
+          path: "/api/neon/crew/payouts",
+          description: "Create payout",
+        },
+      ],
+      users: [
+        { method: "GET", path: "/api/neon/users", description: "All users" },
+        { method: "GET", path: "/api/neon/customers", description: "Customers" },
+        { method: "GET", path: "/api/neon/staff", description: "Staff" },
+        { method: "POST", path: "/api/neon/staff", description: "Create staff" },
+      ],
+      bookings: [
+        { method: "GET", path: "/api/neon/bookings", description: "Bookings" },
+        { method: "POST", path: "/api/neon/bookings", description: "Create booking" },
+        { method: "PUT", path: "/api/neon/bookings/:id", description: "Update booking" },
+      ],
+      inventory: [
+        {
+          method: "GET",
+          path: "/api/neon/inventory/items",
+          description: "Inventory items",
+        },
+        {
+          method: "GET",
+          path: "/api/neon/inventory/analytics",
+          description: "Inventory analytics",
+        },
+      ],
+      payments: [
+        {
+          method: "POST",
+          path: "/api/neon/payment/xendit/create-invoice",
+          description: "Create invoice",
+        },
+      ],
+    },
+  });
+};
+
 // Initialize database connection
 export const initializeNeonDB: RequestHandler = async (req, res) => {
   try {
