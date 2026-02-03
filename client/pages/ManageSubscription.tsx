@@ -135,14 +135,7 @@ export default function ManageSubscription() {
 
   const currentSubscription: CurrentSubscription = {
     plan: userSubscription?.package || "Regular Member",
-    price:
-      userSubscription?.package === "Classic Pro"
-        ? 500
-        : userSubscription?.package === "VIP Silver Elite"
-          ? 1500
-          : userSubscription?.package === "VIP Gold Ultimate"
-            ? 3000
-            : 0,
+    price: userSubscription?.price || 0,
     startDate:
       userSubscription?.currentCycleStart ||
       new Date().toISOString().split("T")[0],
@@ -154,8 +147,7 @@ export default function ManageSubscription() {
     lockInPeriod: "Monthly (Flexible)",
     autoRenewal: userSubscription?.autoRenewal || false,
     status:
-      userSubscription?.package !== "Regular Member" &&
-      userSubscription?.daysLeft > 0
+      userSubscription?.package && userSubscription?.daysLeft > 0
         ? "active"
         : "inactive",
   };
