@@ -184,6 +184,9 @@ export const createServer = () => {
 
   // Service packages endpoints
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
+  app.post("/api/neon/packages", neonApiRoutes.createServicePackage);
+  app.put("/api/neon/packages/:id", neonApiRoutes.updateServicePackage);
+  app.delete("/api/neon/packages/:id", neonApiRoutes.deleteServicePackage);
 
   // Gamification endpoints
   app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
