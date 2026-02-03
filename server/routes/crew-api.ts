@@ -1080,7 +1080,7 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
         if (!crewSummary[crewId]) {
           crewSummary[crewId] = {
             crewId,
-            crewName: profile?.fullName || "Unknown Crew",
+            crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
             totalRevenue: 0,
             totalCommission: 0,
             totalBookings: 0,
@@ -1115,7 +1115,7 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
         const profile = crewProfileMap.get(crewId);
         crewSummary[crewId] = {
           crewId,
-          crewName: profile?.fullName || "Unknown Crew",
+          crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
           totalRevenue: 0,
           totalCommission: 0,
           totalBookings: 0,
