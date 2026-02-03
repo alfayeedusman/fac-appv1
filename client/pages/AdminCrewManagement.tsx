@@ -1041,11 +1041,29 @@ export default function AdminCrewManagement() {
             {/* Commissions Tab */}
             <TabsContent value="commissions" className="space-y-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Add Commission Entry</CardTitle>
+                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle>Quick Commission Entry</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Add a crew commission in seconds. Status defaults to pending.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSeedCrew}
+                    disabled={isSeedingCrew}
+                  >
+                    {isSeedingCrew ? "Adding sample crew..." : "Add Sample Crew"}
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  {crewMembers.length === 0 && (
+                    <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                      No crew accounts yet. Add sample crew accounts to test commission entry.
+                    </div>
+                  )}
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Crew Member</Label>
                       <Select
@@ -1065,16 +1083,6 @@ export default function AdminCrewManagement() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Date</Label>
-                      <Input
-                        type="date"
-                        value={commissionEntryDate}
-                        onChange={(e) => setCommissionEntryDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="space-y-2">
                       <Label>Amount (₱)</Label>
                       <Input
                         type="number"
@@ -1084,31 +1092,36 @@ export default function AdminCrewManagement() {
                         onChange={(e) => setCommissionEntryAmount(e.target.value)}
                         placeholder="500"
                       />
+                      <div className="flex flex-wrap gap-2">
+                        {[200, 500, 1000].map((amount) => (
+                          <Button
+                            key={amount}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCommissionEntryAmount(String(amount))}
+                          >
+                            ₱{amount}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Select
-                        value={commissionEntryStatus}
-                        onValueChange={setCommissionEntryStatus}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {commissionStatusOptions.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Date</Label>
+                      <Input
+                        type="date"
+                        value={commissionEntryDate}
+                        onChange={(e) => setCommissionEntryDate(e.target.value)}
+                      />
                     </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Notes</Label>
+                      <Label>Notes (optional)</Label>
                       <Input
                         value={commissionEntryNotes}
                         onChange={(e) => setCommissionEntryNotes(e.target.value)}
-                        placeholder="Optional notes"
+                        placeholder="e.g., Extra detailing bonus"
                       />
                     </div>
                   </div>
