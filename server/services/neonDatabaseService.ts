@@ -21,12 +21,12 @@ class NeonDatabaseService {
   private db: any;
 
   constructor() {
-    this.db = getDatabase();
+    this.db = null;
   }
 
   // Add method to refresh connection when needed
   private async ensureConnection() {
-    if (!this.db) {
+    if (!this.db || typeof this.db?.then === "function") {
       this.db = await getDatabase();
     }
     return this.db;
