@@ -1236,6 +1236,72 @@ export const updateSetting: RequestHandler = async (req, res) => {
   }
 };
 
+// Daily income endpoints
+export const createDailyIncome: RequestHandler = async (req, res) => {
+  try {
+    const { branch, incomeDate, amount, recordedBy, notes } = req.body;
+    if (!branch || !incomeDate || amount === undefined || !recordedBy) {
+      return res.status(400).json({
+        success: false,
+        error: "branch, incomeDate, amount, and recordedBy are required",
+      });
+    }
+
+    const db = await getDatabase();
+    const [entry] = await db
+      .insert(schema.dailyIncome)
+      .values({
+        id: createId(),
+        branch,
+        incomeDate: new Date(incomeDate),
+        amount: String(amount),
+        recordedBy,
+        notes: notes || null,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    res.json({ success: true, entry });
+  } catch (error) {
+    console.error("Create daily income error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create daily income entry",
+    });
+  }
+};
+
+export const getDailyIncome: RequestHandler = async (req, res) => {
+  try {
+    const { branch, startDate, endDate } = req.query;
+    const filters = [] as any[];
+    if (branch) {
+      filters.push(eq(schema.dailyIncome.branch, branch as string));
+    }
+    if (startDate) {
+      filters.push(gte(schema.dailyIncome.incomeDate, new Date(startDate as string)));
+    }
+    if (endDate) {
+      filters.push(lte(schema.dailyIncome.incomeDate, new Date(endDate as string)));
+    }
+
+    const db = await getDatabase();
+    const entries = await db
+      .select()
+      .from(schema.dailyIncome)
+      .where(filters.length ? and(...filters) : undefined)
+      .orderBy(desc(schema.dailyIncome.incomeDate));
+
+    res.json({ success: true, entries });
+  } catch (error) {
+    console.error("Get daily income error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch daily income entries",
+    });
+  }
+};
+
 // Ads endpoints
 export const getAds: RequestHandler = async (req, res) => {
   try {
