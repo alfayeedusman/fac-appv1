@@ -1,13 +1,5 @@
-// Import bookings utility functions
-const getBookingsData = () => {
-  try {
-    const stored = localStorage.getItem("fac_bookings");
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error("Error loading bookings:", error);
-    return [];
-  }
-};
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
+const gamificationBaseUrl = `${apiBase}/gamification`;
 
 export interface CustomerLevel {
   id: string;
@@ -23,6 +15,7 @@ export interface CustomerLevel {
     shape: "circle" | "shield" | "star" | "crown";
     pattern: "solid" | "gradient" | "striped" | "glow";
   };
+  isActive?: boolean;
 }
 
 export interface UserProgress {
@@ -53,6 +46,7 @@ const defaultLevels: CustomerLevel[] = [
       shape: "circle",
       pattern: "solid",
     },
+    isActive: true,
   },
   {
     id: "rookie",
@@ -72,6 +66,7 @@ const defaultLevels: CustomerLevel[] = [
       shape: "shield",
       pattern: "gradient",
     },
+    isActive: true,
   },
   {
     id: "pro",
@@ -92,6 +87,7 @@ const defaultLevels: CustomerLevel[] = [
       shape: "star",
       pattern: "glow",
     },
+    isActive: true,
   },
   {
     id: "legend",
@@ -112,150 +108,230 @@ const defaultLevels: CustomerLevel[] = [
       shape: "crown",
       pattern: "glow",
     },
+    isActive: true,
   },
 ];
 
-export const getGamificationLevels = (): CustomerLevel[] => {
-  const stored = localStorage.getItem("fac_gamification_levels");
-  if (stored) {
-    return JSON.parse(stored);
-  }
+const normalizeLevel = (level: any): CustomerLevel => {
+  const color = level.badge_color ?? level.badgeColor ?? "#6B7280";
+  const gradient =
+    level.gradient ?? level.level_color ?? "from-gray-400 to-gray-600";
 
-  // Initialize with default levels
-  localStorage.setItem(
-    "fac_gamification_levels",
-    JSON.stringify(defaultLevels),
+  return {
+    id: level.id,
+    name: level.name || "Level",
+    minBookings: level.min_points ?? level.minPoints ?? 0,
+    maxBookings: level.max_points ?? level.maxPoints ?? undefined,
+    color,
+    gradient,
+    icon: level.badge_icon ?? level.badgeIcon ?? "⭐",
+    description: level.description || "",
+    rewards: level.special_perks ?? level.specialPerks ?? [],
+    badge: {
+      shape: level.badge_shape ?? level.badgeShape ?? "circle",
+      pattern: level.badge_pattern ?? level.badgePattern ?? "solid",
+    },
+    isActive: level.is_active ?? level.isActive ?? true,
+  };
+};
+
+const buildLevelPayload = (level: CustomerLevel) => ({
+  name: level.name,
+  description: level.description,
+  minPoints: level.minBookings,
+  maxPoints: level.maxBookings ?? null,
+  discountPercentage: 0,
+  priority: 0,
+  specialPerks: level.rewards,
+  badgeIcon: level.icon,
+  badgeColor: level.color,
+  levelColor: level.gradient,
+  gradient: level.gradient,
+  badgeShape: level.badge.shape,
+  badgePattern: level.badge.pattern,
+  isActive: level.isActive ?? true,
+  sortOrder: level.minBookings,
+});
+
+export const getGamificationLevels = async (): Promise<CustomerLevel[]> => {
+  try {
+    const response = await fetch(`${gamificationBaseUrl}/levels?isActive=true`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || "Failed to fetch levels");
+    }
+
+    const levels = (data.levels || []).map(normalizeLevel);
+    return levels.length > 0 ? levels : defaultLevels;
+  } catch (error) {
+    console.error("Error loading gamification levels:", error);
+    return defaultLevels;
+  }
+};
+
+export const createGamificationLevel = async (
+  level: CustomerLevel,
+): Promise<{ success: boolean; level?: CustomerLevel; error?: string }> => {
+  try {
+    const response = await fetch(`${gamificationBaseUrl}/levels`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildLevelPayload(level)),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      return { success: false, error: data?.error || "Failed to create level" };
+    }
+
+    return { success: true, level: normalizeLevel(data.level) };
+  } catch (error: any) {
+    console.error("Error creating gamification level:", error);
+    return { success: false, error: error.message || "Network error" };
+  }
+};
+
+export const updateGamificationLevel = async (
+  levelId: string,
+  level: CustomerLevel,
+): Promise<{ success: boolean; level?: CustomerLevel; error?: string }> => {
+  try {
+    const response = await fetch(`${gamificationBaseUrl}/levels/${levelId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildLevelPayload(level)),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      return { success: false, error: data?.error || "Failed to update level" };
+    }
+
+    return { success: true, level: normalizeLevel(data.level) };
+  } catch (error: any) {
+    console.error("Error updating gamification level:", error);
+    return { success: false, error: error.message || "Network error" };
+  }
+};
+
+export const updateGamificationLevels = async (
+  levels: CustomerLevel[],
+  persistedIds: Set<string> = new Set(),
+): Promise<{ success: boolean; levels?: CustomerLevel[]; error?: string }> => {
+  const results = await Promise.all(
+    levels.map((level) =>
+      persistedIds.has(level.id)
+        ? updateGamificationLevel(level.id, level)
+        : createGamificationLevel(level),
+    ),
   );
-  return defaultLevels;
-};
 
-export const updateGamificationLevels = (levels: CustomerLevel[]): void => {
-  localStorage.setItem("fac_gamification_levels", JSON.stringify(levels));
-};
-
-export const getUserProgress = (userId: string): UserProgress => {
-  const stored = localStorage.getItem(`fac_user_progress_${userId}`);
-  if (stored) {
-    return JSON.parse(stored);
+  const failures = results.filter((result) => !result.success);
+  if (failures.length > 0) {
+    return {
+      success: false,
+      error: failures[0]?.error || "Failed to save gamification levels",
+    };
   }
 
-  // Calculate progress based on completed bookings
-  const bookings = getBookingsData();
-  const userBookings = bookings.filter((b: any) => b.status === "completed");
-  const completedCount = userBookings.length;
+  return {
+    success: true,
+    levels: results
+      .map((result) => result.level)
+      .filter((level): level is CustomerLevel => Boolean(level)),
+  };
+};
 
-  const levels = getGamificationLevels();
-  const currentLevel = getCurrentLevel(completedCount, levels);
-  const nextLevel = getNextLevel(currentLevel.id, levels);
+export const getUserProgress = async (userId: string): Promise<UserProgress> => {
+  const [levels, dashboardResponse] = await Promise.all([
+    getGamificationLevels(),
+    fetch(`${gamificationBaseUrl}/dashboard/${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }).then((response) => response.json()),
+  ]);
 
-  const progress: UserProgress = {
+  if (!dashboardResponse?.success) {
+    throw new Error(dashboardResponse?.error || "Failed to load progress");
+  }
+
+  const dashboard = dashboardResponse.dashboard || {};
+  const points = dashboard.userPoints || 0;
+  const currentLevel = dashboard.currentLevel
+    ? normalizeLevel(dashboard.currentLevel)
+    : getCurrentLevel(points, levels);
+  const nextLevel = dashboard.nextLevel
+    ? normalizeLevel(dashboard.nextLevel)
+    : getNextLevel(currentLevel.id, levels);
+
+  return {
     userId,
     currentLevel: currentLevel.id,
-    totalBookings: bookings.length,
-    completedBookings: completedCount,
-    nextLevelBookings: nextLevel ? nextLevel.minBookings - completedCount : 0,
+    totalBookings: points,
+    completedBookings: points,
+    nextLevelBookings: nextLevel ? Math.max(0, nextLevel.minBookings - points) : 0,
     earnedRewards: currentLevel.rewards,
     badges: [currentLevel.id],
-    rank: calculateUserRank(completedCount),
+    rank: calculateUserRank(currentLevel.id, levels),
     joinDate: new Date().toISOString(),
   };
-
-  localStorage.setItem(`fac_user_progress_${userId}`, JSON.stringify(progress));
-  return progress;
 };
 
 export const getCurrentLevel = (
-  completedBookings: number,
-  levels?: CustomerLevel[],
+  points: number,
+  levels: CustomerLevel[],
 ): CustomerLevel => {
-  const gamificationLevels = levels || getGamificationLevels();
+  if (!levels.length) {
+    return defaultLevels[0];
+  }
 
-  for (let i = gamificationLevels.length - 1; i >= 0; i--) {
-    const level = gamificationLevels[i];
-    if (completedBookings >= level.minBookings) {
+  for (let i = levels.length - 1; i >= 0; i--) {
+    const level = levels[i];
+    if (points >= level.minBookings) {
       return level;
     }
   }
 
-  return gamificationLevels[0]; // Return newbie if no match
+  return levels[0];
 };
 
 export const getNextLevel = (
   currentLevelId: string,
-  levels?: CustomerLevel[],
+  levels: CustomerLevel[],
 ): CustomerLevel | null => {
-  const gamificationLevels = levels || getGamificationLevels();
-  const currentIndex = gamificationLevels.findIndex(
-    (l) => l.id === currentLevelId,
-  );
+  const currentIndex = levels.findIndex((level) => level.id === currentLevelId);
 
-  if (currentIndex === -1 || currentIndex === gamificationLevels.length - 1) {
-    return null; // No next level
+  if (currentIndex === -1 || currentIndex === levels.length - 1) {
+    return null;
   }
 
-  return gamificationLevels[currentIndex + 1];
+  return levels[currentIndex + 1];
 };
 
-export const updateUserProgress = (userId: string): UserProgress => {
-  const bookings = getBookingsData();
-  const userBookings = bookings.filter((b: any) => b.status === "completed");
-  const completedCount = userBookings.length;
-
-  const levels = getGamificationLevels();
-  const currentLevel = getCurrentLevel(completedCount, levels);
-  const nextLevel = getNextLevel(currentLevel.id, levels);
-
-  const existingProgress = getUserProgress(userId);
-
-  const updatedProgress: UserProgress = {
-    ...existingProgress,
-    currentLevel: currentLevel.id,
-    totalBookings: bookings.length,
-    completedBookings: completedCount,
-    nextLevelBookings: nextLevel
-      ? Math.max(0, nextLevel.minBookings - completedCount)
-      : 0,
-    earnedRewards: currentLevel.rewards,
-    badges: Array.from(new Set([...existingProgress.badges, currentLevel.id])),
-    rank: calculateUserRank(completedCount),
-  };
-
-  localStorage.setItem(
-    `fac_user_progress_${userId}`,
-    JSON.stringify(updatedProgress),
-  );
-  return updatedProgress;
-};
-
-export const calculateUserRank = (completedBookings: number): number => {
-  // Simple ranking system - could be enhanced with more complex logic
-  const levels = getGamificationLevels();
-  const currentLevel = getCurrentLevel(completedBookings, levels);
-
-  switch (currentLevel.id) {
-    case "newbie":
-      return 4;
-    case "rookie":
-      return 3;
-    case "pro":
-      return 2;
-    case "legend":
-      return 1;
-    default:
-      return 4;
-  }
+export const calculateUserRank = (
+  currentLevelId: string,
+  levels: CustomerLevel[],
+): number => {
+  if (!levels.length) return 1;
+  const index = levels.findIndex((level) => level.id === currentLevelId);
+  if (index === -1) return levels.length;
+  return levels.length - index;
 };
 
 export const getLevelProgress = (
-  completedBookings: number,
+  points: number,
+  levels: CustomerLevel[],
 ): { current: CustomerLevel; next: CustomerLevel | null; progress: number } => {
-  const levels = getGamificationLevels();
-  const current = getCurrentLevel(completedBookings, levels);
+  const current = getCurrentLevel(points, levels);
   const next = getNextLevel(current.id, levels);
 
   let progress = 100;
   if (next) {
-    const levelBookings = completedBookings - current.minBookings;
+    const levelBookings = points - current.minBookings;
     const levelRange = next.minBookings - current.minBookings;
     progress = Math.min(100, (levelBookings / levelRange) * 100);
   }
@@ -263,17 +339,4 @@ export const getLevelProgress = (
   return { current, next, progress };
 };
 
-export const checkLevelUp = (
-  previousBookings: number,
-  currentBookings: number,
-): CustomerLevel | null => {
-  const levels = getGamificationLevels();
-  const previousLevel = getCurrentLevel(previousBookings, levels);
-  const currentLevel = getCurrentLevel(currentBookings, levels);
-
-  if (previousLevel.id !== currentLevel.id) {
-    return currentLevel;
-  }
-
-  return null;
-};
+export const getDefaultGamificationLevels = (): CustomerLevel[] => defaultLevels;
