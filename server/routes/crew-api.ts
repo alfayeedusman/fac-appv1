@@ -957,15 +957,36 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       .select({
         userId: schema.crewMembers.userId,
         fullName: schema.users.fullName,
+        crewName: schema.crewMembers.name,
         commissionRate: schema.crewMembers.commissionRate,
       })
       .from(schema.crewMembers)
-      .innerJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id))
+      .leftJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id));
+
+    const crewUsers = await db
+      .select({
+        userId: schema.users.id,
+        fullName: schema.users.fullName,
+      })
+      .from(schema.users)
       .where(eq(schema.users.role, "crew"));
 
-    const crewProfileMap = new Map(
-      crewProfiles.map((profile) => [profile.userId, profile]),
-    );
+    const crewProfileMap = new Map<string, {
+      userId: string;
+      fullName?: string | null;
+      crewName?: string | null;
+      commissionRate?: string | number | null;
+    }>();
+
+    crewProfiles.forEach((profile) => {
+      crewProfileMap.set(profile.userId, profile);
+    });
+
+    crewUsers.forEach((user) => {
+      if (!crewProfileMap.has(user.userId)) {
+        crewProfileMap.set(user.userId, user);
+      }
+    });
 
     const bookings = await db
       .select({
