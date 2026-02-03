@@ -91,6 +91,8 @@ export default function ProtectedRoute({
             navigate("/manager-dashboard", { replace: true });
           } else if (authService.hasRole("crew")) {
             navigate("/crew-dashboard", { replace: true });
+          } else if (authService.hasRole("dispatcher")) {
+            navigate("/dispatcher-dashboard", { replace: true });
           } else if (authService.hasRole("cashier")) {
             navigate("/pos", { replace: true });
           } else if (authService.hasRole("inventory_manager")) {
