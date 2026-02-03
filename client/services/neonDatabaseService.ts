@@ -1540,6 +1540,31 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCrewCommissionSummary(params: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ success: boolean; summary?: any; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-summary?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew commission summary fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async createDailyIncome(payload: {
     branch: string;
     incomeDate: string;
