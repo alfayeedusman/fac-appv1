@@ -112,6 +112,8 @@ export const createServer = () => {
     "/api/neon/debug/password-verify",
     neonApiRoutes.debugPasswordVerification,
   );
+  app.get("/api/neon/debug/list-users", neonApiRoutes.debugListUsers);
+  app.post("/api/neon/debug/hash-password", neonApiRoutes.debugHashPassword);
 
   // Auth endpoints with database health check (critical routes)
   app.post(
