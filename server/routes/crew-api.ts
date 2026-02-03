@@ -331,6 +331,229 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
   }
 };
 
+const getPayrollWindow = (referenceDate: Date) => {
+  const start = new Date(referenceDate);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay()); // Sunday
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 5); // Friday
+  end.setHours(23, 59, 59, 999);
+
+  const payoutDate = new Date(start);
+  payoutDate.setDate(payoutDate.getDate() + 6); // Saturday
+  payoutDate.setHours(9, 0, 0, 0);
+
+  return { start, end, payoutDate };
+};
+
+export const getCommissionRates: RequestHandler = async (req, res) => {
+  try {
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const rates = await db
+      .select()
+      .from(schema.crewCommissionRates)
+      .where(eq(schema.crewCommissionRates.isActive, true))
+      .orderBy(desc(schema.crewCommissionRates.updatedAt));
+
+    res.json({ success: true, rates });
+  } catch (error) {
+    console.error("Error fetching commission rates:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch commission rates",
+    });
+  }
+};
+
+export const upsertCommissionRate: RequestHandler = async (req, res) => {
+  try {
+    const { serviceType, rate } = req.body;
+    if (!serviceType || rate === undefined || rate === null) {
+      return res.status(400).json({
+        success: false,
+        error: "serviceType and rate are required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const [existing] = await db
+      .select()
+      .from(schema.crewCommissionRates)
+      .where(eq(schema.crewCommissionRates.serviceType, serviceType));
+
+    if (existing) {
+      const [updated] = await db
+        .update(schema.crewCommissionRates)
+        .set({ rate: String(rate), updatedAt: new Date() })
+        .where(eq(schema.crewCommissionRates.id, existing.id))
+        .returning();
+      return res.json({ success: true, rate: updated });
+    }
+
+    const [created] = await db
+      .insert(schema.crewCommissionRates)
+      .values({
+        id: createId(),
+        serviceType,
+        rate: String(rate),
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return res.json({ success: true, rate: created });
+  } catch (error) {
+    console.error("Error saving commission rate:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to save commission rate",
+    });
+  }
+};
+
+export const getCrewPayroll: RequestHandler = async (req, res) => {
+  try {
+    const { userId, startDate, endDate } = req.query;
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "userId is required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const referenceDate = new Date();
+    const window = getPayrollWindow(referenceDate);
+
+    const start = startDate ? new Date(startDate as string) : window.start;
+    const end = endDate ? new Date(endDate as string) : window.end;
+
+    const commissionRates = await db
+      .select()
+      .from(schema.crewCommissionRates)
+      .where(eq(schema.crewCommissionRates.isActive, true));
+
+    const rateMap = new Map<string, number>();
+    commissionRates.forEach((rate) => {
+      rateMap.set(rate.serviceType.toLowerCase(), Number(rate.rate) || 0);
+    });
+
+    const [crewMember] = await db
+      .select({ commissionRate: schema.crewMembers.commissionRate })
+      .from(schema.crewMembers)
+      .where(eq(schema.crewMembers.userId, userId as string));
+
+    const fallbackRate = Number(crewMember?.commissionRate || 0);
+
+    const bookings = await db
+      .select({
+        id: schema.bookings.id,
+        service: schema.bookings.service,
+        category: schema.bookings.category,
+        totalPrice: schema.bookings.totalPrice,
+        completedAt: schema.bookings.completedAt,
+      })
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.status, "completed"),
+          gte(schema.bookings.completedAt, start),
+          lte(schema.bookings.completedAt, end),
+          sql`COALESCE(${schema.bookings.assignedCrew}, '[]'::jsonb) @> ${JSON.stringify([
+            userId,
+          ])}::jsonb`,
+        ),
+      );
+
+    let totalCommission = 0;
+    let totalRevenue = 0;
+
+    const breakdown: Record<
+      string,
+      {
+        serviceType: string;
+        bookingCount: number;
+        totalRevenue: number;
+        rate: number;
+        commission: number;
+      }
+    > = {};
+
+    bookings.forEach((booking) => {
+      const serviceKey =
+        booking.service || booking.category || "Unspecified Service";
+      const normalizedKey = serviceKey.toLowerCase();
+      const rate =
+        rateMap.get(normalizedKey) ||
+        rateMap.get((booking.category || "").toLowerCase()) ||
+        fallbackRate;
+      const revenue = Number(booking.totalPrice) || 0;
+      const commission = (revenue * rate) / 100;
+
+      totalCommission += commission;
+      totalRevenue += revenue;
+
+      if (!breakdown[serviceKey]) {
+        breakdown[serviceKey] = {
+          serviceType: serviceKey,
+          bookingCount: 0,
+          totalRevenue: 0,
+          rate,
+          commission: 0,
+        };
+      }
+
+      breakdown[serviceKey].bookingCount += 1;
+      breakdown[serviceKey].totalRevenue += revenue;
+      breakdown[serviceKey].commission += commission;
+    });
+
+    res.json({
+      success: true,
+      payroll: {
+        period: {
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+          payoutDate: window.payoutDate.toISOString(),
+        },
+        totalBookings: bookings.length,
+        totalRevenue,
+        totalCommission,
+        breakdown: Object.values(breakdown),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching crew payroll:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch crew payroll",
+    });
+  }
+};
+
 // Seed crew data (for development/testing)
 export const seedCrew: RequestHandler = async (req, res) => {
   try {
