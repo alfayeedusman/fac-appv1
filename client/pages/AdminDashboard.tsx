@@ -616,6 +616,9 @@ export default function AdminDashboard() {
       // Load real statistics from database
       loadRealStats();
 
+      // Load crew commission summary
+      loadCrewCommissionSummary();
+
       // Load real-time crew and customer statistics
       loadRealtimeStats();
 
