@@ -228,6 +228,14 @@ export const createServer = () => {
   app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
   app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
   app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.put(
+    "/api/neon/crew/:userId/group",
+    crewApiRoutes.updateCrewGroupAssignment,
+  );
+  app.put(
+    "/api/neon/crew/:userId/wash-bay",
+    crewApiRoutes.updateCrewWashBayAssignment,
+  );
   app.get(
     "/api/neon/crew/commission-rates",
     crewApiRoutes.getCommissionRates,
