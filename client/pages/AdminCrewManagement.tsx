@@ -92,6 +92,39 @@ export default function AdminCrewManagement() {
   const [commissionRateValue, setCommissionRateValue] = useState("");
   const [commissionLoading, setCommissionLoading] = useState(false);
 
+  const [crewMembers, setCrewMembers] = useState<any[]>([]);
+  const [commissionEntries, setCommissionEntries] = useState<any[]>([]);
+  const [commissionEntriesLoading, setCommissionEntriesLoading] = useState(false);
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(false);
+
+  const [commissionCrewId, setCommissionCrewId] = useState("");
+  const [commissionEntryDate, setCommissionEntryDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [commissionEntryAmount, setCommissionEntryAmount] = useState("");
+  const [commissionEntryNotes, setCommissionEntryNotes] = useState("");
+  const [commissionEntryStatus, setCommissionEntryStatus] =
+    useState("pending");
+
+  const [payoutCrewId, setPayoutCrewId] = useState("");
+  const [payoutStartDate, setPayoutStartDate] = useState(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    return start.toISOString().split("T")[0];
+  });
+  const [payoutEndDate, setPayoutEndDate] = useState(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return end.toISOString().split("T")[0];
+  });
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutStatus, setPayoutStatus] = useState("pending");
+
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
     const checkAuth = () => {
