@@ -32,6 +32,10 @@ class NeonDatabaseService {
     return this.db;
   }
 
+  async getDb() {
+    return this.ensureConnection();
+  }
+
   // Handle connection errors
   private handleConnectionError(error: any) {
     if (
