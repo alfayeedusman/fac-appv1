@@ -92,6 +92,8 @@ export default function AdminCrewManagement() {
   const [commissionLoading, setCommissionLoading] = useState(false);
 
   const [crewMembers, setCrewMembers] = useState<any[]>([]);
+  const [crewGroups, setCrewGroups] = useState<any[]>([]);
+  const [crewGroupsLoading, setCrewGroupsLoading] = useState(false);
   const [commissionEntries, setCommissionEntries] = useState<any[]>([]);
   const [commissionEntriesLoading, setCommissionEntriesLoading] = useState(false);
   const [payouts, setPayouts] = useState<any[]>([]);
