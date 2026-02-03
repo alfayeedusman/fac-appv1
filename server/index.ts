@@ -17,6 +17,7 @@ import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
 import * as adminInviteRoutes from "./routes/admin-invite";
 import * as branchesApiRoutes from "./routes/branches-api";
+import * as gamificationApiRoutes from "./routes/gamification-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
@@ -138,6 +139,57 @@ export function createServer() {
   app.use("/api/v2", customerApiRoutes);
   app.use("/api/images", imagesApiRoutes);
   app.use("/api/notifications", notificationsApiRoutes);
+
+  // Gamification endpoints (mobile-ready)
+  app.get("/api/gamification/levels", gamificationApiRoutes.getCustomerLevels);
+  app.post(
+    "/api/gamification/levels",
+    gamificationApiRoutes.createCustomerLevel,
+  );
+  app.put(
+    "/api/gamification/levels/:id",
+    gamificationApiRoutes.updateCustomerLevel,
+  );
+  app.get(
+    "/api/gamification/levels/user/:userId",
+    gamificationApiRoutes.getUserLevel,
+  );
+  app.get(
+    "/api/gamification/achievements",
+    gamificationApiRoutes.getAchievements,
+  );
+  app.post(
+    "/api/gamification/achievements",
+    gamificationApiRoutes.createAchievement,
+  );
+  app.get(
+    "/api/gamification/achievements/user/:userId",
+    gamificationApiRoutes.getUserAchievements,
+  );
+  app.post(
+    "/api/gamification/achievements/award",
+    gamificationApiRoutes.awardAchievement,
+  );
+  app.post(
+    "/api/gamification/achievements/complete",
+    gamificationApiRoutes.completeAchievement,
+  );
+  app.get(
+    "/api/gamification/loyalty/:userId",
+    gamificationApiRoutes.getLoyaltyTransactions,
+  );
+  app.post(
+    "/api/gamification/loyalty/add",
+    gamificationApiRoutes.addLoyaltyPoints,
+  );
+  app.post(
+    "/api/gamification/loyalty/redeem",
+    gamificationApiRoutes.redeemLoyaltyPoints,
+  );
+  app.get(
+    "/api/gamification/dashboard/:userId",
+    gamificationApiRoutes.getGamificationDashboard,
+  );
 
   // ============= CRITICAL PRODUCTION ROUTES =============
   app.use("/api/realtime", realtimeApiRoutes);
