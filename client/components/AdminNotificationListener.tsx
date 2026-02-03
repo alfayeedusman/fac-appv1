@@ -15,8 +15,8 @@ export default function AdminNotificationListener() {
       const userEmail = localStorage.getItem('userEmail');
       const userRole = localStorage.getItem('userRole');
 
-      // Only check for notifications if user is admin, superadmin, or manager
-      if (!userEmail || !['admin', 'superadmin', 'manager'].includes(userRole || '')) {
+      // Only check for notifications if user is admin, superadmin, manager, or dispatcher
+      if (!userEmail || !['admin', 'superadmin', 'manager', 'dispatcher'].includes(userRole || '')) {
         return;
       }
 
