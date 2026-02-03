@@ -1113,6 +1113,34 @@ export default function AdminCrewManagement() {
                         value={commissionEntryDate}
                         onChange={(e) => setCommissionEntryDate(e.target.value)}
                       />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setCommissionEntryDate(
+                              new Date().toISOString().split("T")[0],
+                            )
+                          }
+                        >
+                          Today
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            setCommissionEntryDate(
+                              yesterday.toISOString().split("T")[0],
+                            );
+                          }}
+                        >
+                          Yesterday
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
