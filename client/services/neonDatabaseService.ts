@@ -1595,7 +1595,7 @@ class NeonDatabaseClient {
     }
     try {
       const response = await fetch(
-        `${this.baseUrl}/neon/branches/${branchId}`,
+        `${this.baseUrl}/branches/${branchId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
