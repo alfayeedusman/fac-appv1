@@ -49,6 +49,7 @@ export default function SubscriptionRequestCard({
   const [approvalNotes, setApprovalNotes] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [banReason, setBanReason] = useState("");
+  const hasReceipt = Boolean(request.receipt?.imageUrl);
 
   const getStatusColor = (status: SubscriptionRequest["status"]) => {
     switch (status) {
