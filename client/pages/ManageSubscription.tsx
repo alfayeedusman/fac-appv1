@@ -93,17 +93,20 @@ export default function ManageSubscription() {
     status: string | null;
     request: any | null;
   }>({ hasRequest: false, status: null, request: null });
+  const [userSubscription, setUserSubscription] =
+    useState<UserSubscriptionData | null>(null);
 
   // Get real user data
   const userEmail = localStorage.getItem("userEmail") || "";
-  const userSubscription = JSON.parse(
-    localStorage.getItem(`subscription_${userEmail}`) || "null",
-  );
 
   // Function to refresh subscription status
-  const refreshSubscriptionStatus = () => {
-    const status = getUserSubscriptionStatus(userEmail);
+  const refreshSubscriptionStatus = async () => {
+    const [status, subscriptionData] = await Promise.all([
+      getUserSubscriptionStatus(userEmail),
+      getUserSubscriptionData(userEmail),
+    ]);
     setSubscriptionRequestStatus(status);
+    setUserSubscription(subscriptionData);
   };
 
   // Load subscription request status
