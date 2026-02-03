@@ -25,6 +25,7 @@ export interface User {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   contactNumber?: string;
   address?: string;
