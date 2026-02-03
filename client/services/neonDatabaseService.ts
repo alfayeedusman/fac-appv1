@@ -145,14 +145,13 @@ export interface Ad {
 }
 
 // Safe timeout handler to prevent issues with AbortController
-// Fixed: Proper timeout cleanup with const declaration
+// Handles cleanup properly to avoid race conditions
 const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
-  let isAborted = false;
-  const timerId = setTimeout(() => {
-    if (!isAborted) {
+  let timerHandle: NodeJS.Timeout | null = setTimeout(() => {
+    if (timerHandle !== null) {
       try {
         controller.abort();
       } catch (e) {
@@ -163,8 +162,10 @@ const createSafeTimeoutAbort = (
 
   return {
     clearTimeout: () => {
-      isAborted = true;
-      clearTimeout(timerId);
+      if (timerHandle !== null) {
+        clearTimeout(timerHandle);
+        timerHandle = null;
+      }
     },
   };
 };
