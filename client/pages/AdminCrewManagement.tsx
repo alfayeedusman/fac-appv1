@@ -1412,7 +1412,7 @@ export default function AdminCrewManagement() {
                     </p>
                   ) : filteredCommissionEntries.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      No commission entries for the selected crew.
+                      {commissionEmptyMessage}
                     </p>
                   ) : (
                     <div className="space-y-3">
@@ -1558,7 +1558,7 @@ export default function AdminCrewManagement() {
                       </p>
                     ) : filteredPayouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
-                        No payouts recorded for the selected crew.
+                        {payoutEmptyMessage}
                       </p>
                     ) : (
                       filteredPayouts.map((payout) => (
