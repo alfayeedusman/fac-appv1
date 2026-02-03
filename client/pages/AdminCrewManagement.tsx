@@ -563,6 +563,49 @@ export default function AdminCrewManagement() {
     }
   };
 
+  const handleAssignCrewGroup = async (groupId: string | null) => {
+    if (!selectedCrewId) return;
+    const result = await neonDbClient.updateCrewGroupAssignment({
+      userId: selectedCrewId,
+      groupId,
+    });
+    if (result.success) {
+      toast({
+        title: "Crew group updated",
+        description: groupId ? "Group assignment saved." : "Crew unassigned from group.",
+      });
+      loadCrewMembers();
+      loadCrewGroups();
+    } else {
+      toast({
+        title: "Failed to update group",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAssignWashBay = async (washBay: string | null) => {
+    if (!selectedCrewId) return;
+    const result = await neonDbClient.updateCrewWashBayAssignment({
+      userId: selectedCrewId,
+      washBay,
+    });
+    if (result.success) {
+      toast({
+        title: "Wash bay updated",
+        description: washBay ? "Wash bay assignment saved." : "Wash bay cleared.",
+      });
+      loadCrewMembers();
+    } else {
+      toast({
+        title: "Failed to update wash bay",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       if (!userRole || isAuthLoading) return; // Don't load data until auth is complete
