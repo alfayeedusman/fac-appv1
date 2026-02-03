@@ -159,13 +159,18 @@ export default function EnhancedCrewDashboard() {
         return;
       }
 
+      const storedUserId = localStorage.getItem('userId') || user.id;
+      if (storedUserId) {
+        loadPayroll(storedUserId);
+      }
+
       // Get crew assignments using the utility function
       const userAssignments = getCrewAssignments(user.id);
       setAssignments(userAssignments);
 
       // Get all bookings and filter for assigned ones
       const allBookings = getAllBookings();
-      const assignedBookings = allBookings.filter((booking: Booking) => 
+      const assignedBookings = allBookings.filter((booking: Booking) =>
         booking.assignedCrew?.includes(user.id)
       );
       setBookings(assignedBookings);
@@ -177,6 +182,23 @@ export default function EnhancedCrewDashboard() {
         description: "Failed to load crew data",
         variant: "destructive",
       });
+    }
+  };
+
+  const loadPayroll = async (userId: string) => {
+    try {
+      setPayrollLoading(true);
+      const result = await neonDbClient.getCrewPayroll({ userId });
+      if (result.success) {
+        setPayrollSummary(result.payroll);
+      } else {
+        setPayrollSummary(null);
+      }
+    } catch (error) {
+      console.error('Error loading payroll summary:', error);
+      setPayrollSummary(null);
+    } finally {
+      setPayrollLoading(false);
     }
   };
 
