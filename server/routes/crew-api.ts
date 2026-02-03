@@ -1085,6 +1085,25 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       });
     });
 
+    manualEntries.forEach((entry) => {
+      const crewId = entry.crewUserId;
+      const amount = Number(entry.amount) || 0;
+      totalCommission += amount;
+
+      if (!crewSummary[crewId]) {
+        const profile = crewProfileMap.get(crewId);
+        crewSummary[crewId] = {
+          crewId,
+          crewName: profile?.fullName || "Unknown Crew",
+          totalRevenue: 0,
+          totalCommission: 0,
+          totalBookings: 0,
+        };
+      }
+
+      crewSummary[crewId].totalCommission += amount;
+    });
+
     res.json({
       success: true,
       summary: {
