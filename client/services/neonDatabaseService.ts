@@ -150,7 +150,7 @@ const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
-  const timerHandle = window.setTimeout(() => {
+  const timerHandle = globalThis.setTimeout(() => {
     try {
       controller.abort();
     } catch (e) {
@@ -160,7 +160,7 @@ const createSafeTimeoutAbort = (
 
   return {
     clearTimeout: () => {
-      window.clearTimeout(timerHandle);
+      globalThis.clearTimeout(timerHandle);
     },
   };
 };
