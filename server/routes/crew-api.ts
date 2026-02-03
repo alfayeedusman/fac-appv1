@@ -5,6 +5,18 @@ import { count, eq, and, sql, desc, avg, gte, lte, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { seedCrewData } from "../database/seed-crew";
 
+const requireDb = async (res: any) => {
+  const db = await neonDbService.getDb();
+  if (!db) {
+    res.status(500).json({
+      success: false,
+      error: "Database connection not available",
+    });
+    return null;
+  }
+  return db;
+};
+
 // Get comprehensive crew statistics
 export const getCrewStats: RequestHandler = async (req, res) => {
   try {
