@@ -2353,7 +2353,6 @@ class NeonDatabaseClient {
         const res = await fetch(url, {
           signal: ac.signal,
           headers: {
-            "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
