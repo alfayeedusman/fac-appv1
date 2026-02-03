@@ -21,6 +21,7 @@ export interface RegisterData {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   carUnit?: string;
   carPlateNumber?: string;
