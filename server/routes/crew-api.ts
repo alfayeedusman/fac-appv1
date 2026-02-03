@@ -236,6 +236,8 @@ export const getCrewList: RequestHandler = async (req, res) => {
         crewMemberId: schema.crewMembers.id,
         employeeId: schema.crewMembers.employeeId,
         groupId: schema.crewMembers.crewGroupId,
+        commissionRate: schema.crewMembers.commissionRate,
+        washBay: schema.crewMembers.washBay,
         currentStatus: schema.crewStatus.status
       })
       .from(schema.users)
@@ -280,7 +282,7 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
         name: schema.crewGroups.name,
         description: schema.crewGroups.description,
         leaderId: schema.crewGroups.leaderId,
-        color: schema.crewGroups.color,
+        color: schema.crewGroups.colorCode,
         status: schema.crewGroups.status,
         createdAt: schema.crewGroups.createdAt,
         leaderName: schema.users.fullName
