@@ -625,7 +625,7 @@ export const createBooking: RequestHandler = async (req, res) => {
         title: "🎯 New Booking Received",
         message: `New booking created: ${booking.service} on ${booking.date}`,
         priority: "high",
-        targetRoles: ["admin", "superadmin", "manager"],
+        targetRoles: ["admin", "superadmin", "manager", "dispatcher"],
         data: { bookingId: booking.id },
         playSound: true,
         soundType: "new_booking",
