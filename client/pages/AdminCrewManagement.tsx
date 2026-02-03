@@ -779,7 +779,7 @@ export default function AdminCrewManagement() {
             className="space-y-6"
           >
             <div className="bg-white rounded-lg shadow-sm border p-1">
-              <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
+              <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1">
                 <TabsTrigger
                   value="overview"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
@@ -787,6 +787,14 @@ export default function AdminCrewManagement() {
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
                   <span className="sm:hidden">Overview</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="commissions"
+                  className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Commissions</span>
+                  <span className="sm:hidden">Comms</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="groups"
