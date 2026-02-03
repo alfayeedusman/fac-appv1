@@ -38,7 +38,6 @@ import {
   updateSubscriptionRequest,
 } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "@/components/NotificationModal";
-import { neonDbClient } from "@/services/neonDatabaseService";
 
 export default function AdminSubscriptionApproval() {
   const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
@@ -68,9 +67,11 @@ export default function AdminSubscriptionApproval() {
     filterAndSortRequests();
   }, [requests, searchTerm, statusFilter, customerFilter, sortBy]);
 
-  const loadRequests = () => {
-    const allRequests = getSubscriptionRequests();
-    const subscriptionStats = getSubscriptionStats();
+  const loadRequests = async () => {
+    const [allRequests, subscriptionStats] = await Promise.all([
+      getSubscriptionRequests({ status: "all" }),
+      getSubscriptionStats(),
+    ]);
     setRequests(allRequests);
     setStats(subscriptionStats);
   };
@@ -139,25 +140,16 @@ export default function AdminSubscriptionApproval() {
 
   const handleApprove = async (requestId: string, notes?: string) => {
     try {
-      // Get the request to check for subscriptionId
-      const request = requests.find((r) => r.id === requestId);
-      if (request && request.subscriptionId) {
-        // Approve in backend database
-        const result = await neonDbClient.approveSubscriptionUpgrade(
-          request.subscriptionId,
-          "active",
+      const result = await approveSubscriptionRequest(requestId, adminEmail, notes);
+      if (!result.success) {
+        notificationManager.error(
+          "Approval Failed",
+          result.error || "Failed to approve request. Please try again.",
         );
-        if (!result.success) {
-          console.warn("⚠️ Backend approval failed:", result.error);
-          // Continue with localStorage approval as fallback
-        }
+        return;
       }
 
-      // Approve in localStorage for backward compatibility
-      approveSubscriptionRequest(requestId, adminEmail, notes);
-      loadRequests();
-
-      // Show success notification
+      await loadRequests();
       notificationManager.success(
         "Request Approved! 🎉",
         "Subscription request approved successfully! Customer has been notified.",
@@ -174,10 +166,20 @@ export default function AdminSubscriptionApproval() {
 
   const handleReject = async (requestId: string, reason: string) => {
     try {
-      rejectSubscriptionRequest(requestId, adminEmail, reason);
-      loadRequests();
+      const result = await rejectSubscriptionRequest(
+        requestId,
+        adminEmail,
+        reason,
+      );
+      if (!result.success) {
+        notificationManager.error(
+          "Rejection Failed",
+          result.error || "Failed to reject request. Please try again.",
+        );
+        return;
+      }
 
-      // Show success notification
+      await loadRequests();
       notificationManager.info(
         "Request Rejected",
         "Subscription request rejected. Customer has been notified.",
@@ -194,10 +196,16 @@ export default function AdminSubscriptionApproval() {
 
   const handleBan = async (userId: string, reason: string) => {
     try {
-      banCustomer(userId, adminEmail, reason);
-      loadRequests();
+      const result = await banCustomer(userId, adminEmail, reason);
+      if (!result.success) {
+        notificationManager.error(
+          "Ban Failed",
+          result.error || "Failed to ban customer. Please try again.",
+        );
+        return;
+      }
 
-      // Show success notification
+      await loadRequests();
       notificationManager.warning(
         "Customer Banned",
         "Customer has been banned. All their requests have been updated.",
@@ -214,10 +222,16 @@ export default function AdminSubscriptionApproval() {
 
   const handleUnban = async (userId: string) => {
     try {
-      unbanCustomer(userId, adminEmail);
-      loadRequests();
+      const result = await unbanCustomer(userId, adminEmail);
+      if (!result.success) {
+        notificationManager.error(
+          "Unban Failed",
+          result.error || "Failed to unban customer. Please try again.",
+        );
+        return;
+      }
 
-      // Show success notification
+      await loadRequests();
       notificationManager.success(
         "Customer Unbanned",
         "Customer has been unbanned successfully.",
@@ -232,13 +246,22 @@ export default function AdminSubscriptionApproval() {
     }
   };
 
-  const handleMarkUnderReview = (requestId: string) => {
-    updateSubscriptionRequest(requestId, {
+  const handleMarkUnderReview = async (requestId: string) => {
+    const result = await updateSubscriptionRequest(requestId, {
       status: "under_review",
       reviewedBy: adminEmail,
       reviewedDate: new Date().toISOString(),
     });
-    loadRequests();
+
+    if (!result.success) {
+      notificationManager.error(
+        "Update Failed",
+        result.error || "Failed to update request status.",
+      );
+      return;
+    }
+
+    await loadRequests();
   };
 
   return (
