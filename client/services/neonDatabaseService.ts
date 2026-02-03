@@ -263,14 +263,9 @@ class NeonDatabaseClient {
   }> {
     const tryFetch = async (url: string, timeoutMs = 8000) => {
       const ac = new AbortController();
-      let timerHandle: NodeJS.Timeout | null = null;
+      const timeoutHandler = createSafeTimeoutAbort(ac, timeoutMs);
 
       try {
-        // Create timeout that aborts the request
-        timerHandle = setTimeout(() => {
-          ac.abort();
-        }, timeoutMs);
-
         const res = await fetch(url, { signal: ac.signal });
         return res;
       } catch (e) {
@@ -280,10 +275,7 @@ class NeonDatabaseClient {
         }
         throw e;
       } finally {
-        // Always clear the timeout
-        if (timerHandle !== null) {
-          clearTimeout(timerHandle);
-        }
+        timeoutHandler.clearTimeout();
       }
     };
 
