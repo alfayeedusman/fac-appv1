@@ -359,7 +359,9 @@ export default function AdminDashboard() {
         const connected = await neonDbClient.testConnection();
         console.log("🔗 Connection test result:", connected);
         if (!connected.connected) {
-          throw new Error("Database connection failed");
+          console.warn("⚠️ Database connection failed, showing empty list");
+          setCustomers([]);
+          return;
         }
       }
 
