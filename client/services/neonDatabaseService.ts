@@ -149,10 +149,9 @@ const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
 ) => {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let isCleared = false;
 
-  timeoutId = setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     // Only abort if not already cleared
     if (!isCleared && !controller.signal.aborted) {
       try {
@@ -168,10 +167,7 @@ const createSafeTimeoutAbort = (
   return {
     clearTimeout: () => {
       isCleared = true;
-      if (timeoutId !== null) {
-        globalThis.clearTimeout(timeoutId);
-        timeoutId = null;
-      }
+      globalThis.clearTimeout(timeoutId);
     },
   };
 };
