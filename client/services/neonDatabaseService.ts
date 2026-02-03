@@ -1137,6 +1137,66 @@ class NeonDatabaseClient {
     }
   }
 
+  async getServicePackages(): Promise<{
+    success: boolean;
+    packages?: any[];
+    error?: string;
+  }> {
+    if (!this.isConnected) {
+      return { success: false, packages: [] };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/packages`, {
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Database packages fetch failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("Packages fetch timed out");
+      }
+      return { success: false, packages: [] };
+    }
+  }
+
+  async updateUserStatus(
+    userId: string,
+    isActive: boolean,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive }),
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Database user status update failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("User status update timed out");
+      }
+      return { success: false };
+    }
+  }
+
   async createSubscriptionUpgrade(upgradeData: {
     userId: string;
     email: string;
