@@ -69,8 +69,9 @@ class NeonDatabaseService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    if (!this.db) {
-      console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
+    const db = await this.ensureConnection();
+
+    if (!db) {
       throw new Error(
         "Database not connected. Please check your NEON_DATABASE_URL environment variable.",
       );
@@ -78,7 +79,7 @@ class NeonDatabaseService {
 
     try {
       // Try exact match first for performance
-      const [user] = await this.db
+      const [user] = await db
         .select()
         .from(schema.users)
         .where(eq(schema.users.email, email))
@@ -88,7 +89,7 @@ class NeonDatabaseService {
 
       // If no exact match, try case-insensitive search (fallback)
       const lowercaseEmail = email.toLowerCase();
-      const result = await this.db.select().from(schema.users);
+      const result = await db.select().from(schema.users);
 
       const caseInsensitiveUser = result.find(
         (u) => u.email.toLowerCase() === lowercaseEmail,
@@ -99,8 +100,10 @@ class NeonDatabaseService {
       console.error("❌ Error fetching user from database", {
         email,
         error: error instanceof Error ? error.message : String(error),
-        dbConnected: !!this.db,
       });
+
+      // If it's a connection error, reset connection for next attempt
+      this.handleConnectionError(error);
       throw error;
     }
   }
