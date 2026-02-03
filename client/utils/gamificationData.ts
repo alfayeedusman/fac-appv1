@@ -246,14 +246,18 @@ export const updateGamificationLevels = async (
   };
 };
 
-export const getUserProgress = async (userId: string): Promise<UserProgress> => {
-  const [levels, dashboardResponse] = await Promise.all([
-    getGamificationLevels(),
-    fetch(`${gamificationBaseUrl}/dashboard/${userId}`, {
+export const getUserProgress = async (
+  userId: string,
+  levels?: CustomerLevel[],
+): Promise<UserProgress> => {
+  const resolvedLevels = levels ?? (await getGamificationLevels());
+  const dashboardResponse = await fetch(
+    `${gamificationBaseUrl}/dashboard/${userId}`,
+    {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-    }).then((response) => response.json()),
-  ]);
+    },
+  ).then((response) => response.json());
 
   if (!dashboardResponse?.success) {
     throw new Error(dashboardResponse?.error || "Failed to load progress");
@@ -263,10 +267,10 @@ export const getUserProgress = async (userId: string): Promise<UserProgress> => 
   const points = dashboard.userPoints || 0;
   const currentLevel = dashboard.currentLevel
     ? normalizeLevel(dashboard.currentLevel)
-    : getCurrentLevel(points, levels);
+    : getCurrentLevel(points, resolvedLevels);
   const nextLevel = dashboard.nextLevel
     ? normalizeLevel(dashboard.nextLevel)
-    : getNextLevel(currentLevel.id, levels);
+    : getNextLevel(currentLevel.id, resolvedLevels);
 
   return {
     userId,
@@ -276,7 +280,7 @@ export const getUserProgress = async (userId: string): Promise<UserProgress> => 
     nextLevelBookings: nextLevel ? Math.max(0, nextLevel.minBookings - points) : 0,
     earnedRewards: currentLevel.rewards,
     badges: [currentLevel.id],
-    rank: calculateUserRank(currentLevel.id, levels),
+    rank: calculateUserRank(currentLevel.id, resolvedLevels),
     joinDate: new Date().toISOString(),
   };
 };
