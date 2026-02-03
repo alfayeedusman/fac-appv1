@@ -2209,15 +2209,33 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
           : undefined,
       currency: payload.currency,
       durationType: payload.durationType || payload.duration_type,
-      duration: payload.duration ?? null,
+      duration:
+        payload.duration !== undefined ? payload.duration : undefined,
       hours:
         payload.hours !== undefined && payload.hours !== null
           ? Number(payload.hours)
-          : null,
-      startDate: payload.startDate ? new Date(payload.startDate) : null,
-      endDate: payload.endDate ? new Date(payload.endDate) : null,
+          : payload.hours === null
+            ? null
+            : undefined,
+      startDate:
+        payload.startDate !== undefined && payload.startDate !== null
+          ? new Date(payload.startDate)
+          : payload.startDate === null
+            ? null
+            : undefined,
+      endDate:
+        payload.endDate !== undefined && payload.endDate !== null
+          ? new Date(payload.endDate)
+          : payload.endDate === null
+            ? null
+            : undefined,
       features: Array.isArray(payload.features) ? payload.features : undefined,
-      bannerUrl: payload.banner || payload.bannerUrl || payload.banner_url || null,
+      bannerUrl:
+        payload.banner !== undefined ||
+        payload.bannerUrl !== undefined ||
+        payload.banner_url !== undefined
+          ? payload.banner || payload.bannerUrl || payload.banner_url || null
+          : undefined,
       isActive:
         typeof payload.active === "boolean"
           ? payload.active
