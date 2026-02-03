@@ -333,6 +333,84 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
   }
 };
 
+export const updateCrewGroupAssignment: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { groupId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "userId is required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const [updated] = await db
+      .update(schema.crewMembers)
+      .set({
+        crewGroupId: groupId || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.crewMembers.userId, userId))
+      .returning();
+
+    res.json({ success: true, crewMember: updated });
+  } catch (error) {
+    console.error("Error updating crew group assignment:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update crew group assignment",
+    });
+  }
+};
+
+export const updateCrewWashBayAssignment: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { washBay } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "userId is required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const [updated] = await db
+      .update(schema.crewMembers)
+      .set({
+        washBay: washBay || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.crewMembers.userId, userId))
+      .returning();
+
+    res.json({ success: true, crewMember: updated });
+  } catch (error) {
+    console.error("Error updating crew wash bay assignment:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update crew wash bay assignment",
+    });
+  }
+};
+
 const getPayrollWindow = (referenceDate: Date) => {
   const start = new Date(referenceDate);
   start.setHours(0, 0, 0, 0);
