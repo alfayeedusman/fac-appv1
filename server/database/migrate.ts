@@ -86,6 +86,38 @@ export async function runMigrations() {
       )
     `;
 
+    // Create crew commission entries table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_commission_entries (
+        id TEXT PRIMARY KEY,
+        crew_user_id TEXT NOT NULL,
+        entry_date TIMESTAMP NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        notes TEXT,
+        recorded_by TEXT NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        payout_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew payouts table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_payouts (
+        id TEXT PRIMARY KEY,
+        crew_user_id TEXT NOT NULL,
+        period_start TIMESTAMP NOT NULL,
+        period_end TIMESTAMP NOT NULL,
+        total_amount DECIMAL(12,2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        created_by TEXT NOT NULL,
+        released_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     // Create daily income table
     await sql`
       CREATE TABLE IF NOT EXISTS daily_income (

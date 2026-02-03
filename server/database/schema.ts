@@ -68,6 +68,38 @@ export const crewCommissionRates = pgTable("crew_commission_rates", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Manual crew commission entries
+export const crewCommissionEntries = pgTable("crew_commission_entries", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  crewUserId: text("crew_user_id").notNull(),
+  entryDate: timestamp("entry_date").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  notes: text("notes"),
+  recordedBy: text("recorded_by").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  payoutId: text("payout_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Crew payout history
+export const crewPayouts = pgTable("crew_payouts", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  crewUserId: text("crew_user_id").notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  createdBy: text("created_by").notNull(),
+  releasedAt: timestamp("released_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Daily income entries (admin/manager input)
 export const dailyIncome = pgTable("daily_income", {
   id: text("id")
