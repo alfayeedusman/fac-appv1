@@ -428,6 +428,33 @@ export default function AdminCrewManagement() {
     }
   };
 
+  const eligiblePayoutEntries = useMemo(() => {
+    if (!payoutCrewId || !payoutStartDate || !payoutEndDate) return [];
+    const start = new Date(payoutStartDate);
+    const end = new Date(payoutEndDate);
+    return commissionEntries.filter((entry) => {
+      if (entry.crewUserId !== payoutCrewId) return false;
+      if (entry.payoutId) return false;
+      if (entry.status === "released") return false;
+      const entryDate = new Date(entry.entryDate);
+      return entryDate >= start && entryDate <= end;
+    });
+  }, [commissionEntries, payoutCrewId, payoutStartDate, payoutEndDate]);
+
+  const computedAutoPayoutAmount = useMemo(() => {
+    return eligiblePayoutEntries.reduce(
+      (total, entry) => total + Number(entry.amount || 0),
+      0,
+    );
+  }, [eligiblePayoutEntries]);
+
+  useEffect(() => {
+    setAutoPayoutAmount(computedAutoPayoutAmount);
+    setPayoutAmount(
+      computedAutoPayoutAmount > 0 ? computedAutoPayoutAmount.toFixed(2) : "",
+    );
+  }, [computedAutoPayoutAmount]);
+
   const handleCreatePayout = async () => {
     const amount = Number(payoutAmount);
     if (!payoutCrewId || !payoutStartDate || !payoutEndDate || !amount || amount <= 0) {
