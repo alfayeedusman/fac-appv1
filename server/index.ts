@@ -291,6 +291,10 @@ export function createServer() {
     crewApiRoutes.upsertCommissionRate,
   );
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
+  app.get(
+    "/api/neon/crew/commission-summary",
+    crewApiRoutes.getCrewCommissionSummary,
+  );
   app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew);
 
   // Inventory endpoints
