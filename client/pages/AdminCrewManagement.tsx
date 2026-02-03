@@ -100,6 +100,7 @@ export default function AdminCrewManagement() {
   const [payoutsLoading, setPayoutsLoading] = useState(false);
 
   const [commissionCrewId, setCommissionCrewId] = useState("");
+  const [selectedCrewId, setSelectedCrewId] = useState("");
   const [commissionEntryDate, setCommissionEntryDate] = useState(
     () => new Date().toISOString().split("T")[0],
   );
