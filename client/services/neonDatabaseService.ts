@@ -1531,6 +1531,45 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCrewStats(): Promise<{ success: boolean; stats?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/stats`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew stats fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewActivity(params?: {
+    limit?: number;
+  }): Promise<{ success: boolean; activities?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/activity?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew activity fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getCrewGroups(): Promise<{ success: boolean; groups?: any[]; error?: string }> {
     await this.ensureConnection();
     const ac = new AbortController();
