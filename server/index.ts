@@ -282,6 +282,15 @@ export function createServer() {
   app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
   app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
   app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.get(
+    "/api/neon/crew/commission-rates",
+    crewApiRoutes.getCommissionRates,
+  );
+  app.post(
+    "/api/neon/crew/commission-rates",
+    crewApiRoutes.upsertCommissionRate,
+  );
+  app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
   app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew);
 
   // Inventory endpoints
