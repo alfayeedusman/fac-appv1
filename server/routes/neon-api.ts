@@ -2135,7 +2135,10 @@ export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
 // Service packages endpoints
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
-    const packages = await neonDbService.getServicePackages();
+    const includeInactive = req.query.includeInactive === "true";
+    const packages = await neonDbService.getServicePackages({
+      includeInactive,
+    });
     res.json({
       success: true,
       packages: packages || [],
@@ -2145,6 +2148,114 @@ export const getServicePackages: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch service packages",
+    });
+  }
+};
+
+export const createServicePackage: RequestHandler = async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const created = await neonDbService.createServicePackage({
+      name: payload.name,
+      description: payload.description,
+      category: payload.category || "subscription",
+      type: payload.type || "recurring",
+      basePrice: Number(payload.basePrice || payload.base_price || 0),
+      currency: payload.currency || "PHP",
+      durationType: payload.durationType || payload.duration_type,
+      duration: payload.duration || null,
+      hours: payload.hours ? Number(payload.hours) : null,
+      startDate: payload.startDate ? new Date(payload.startDate) : null,
+      endDate: payload.endDate ? new Date(payload.endDate) : null,
+      features: Array.isArray(payload.features) ? payload.features : [],
+      bannerUrl: payload.banner || payload.bannerUrl || payload.banner_url || null,
+      isActive:
+        typeof payload.active === "boolean"
+          ? payload.active
+          : payload.isActive ?? true,
+      isPopular: payload.isPopular ?? false,
+      isFeatured: payload.isFeatured ?? false,
+      color: payload.color,
+      priority: payload.priority ? Number(payload.priority) : undefined,
+    });
+
+    res.status(201).json({
+      success: true,
+      package: created,
+      message: "Service package created successfully",
+    });
+  } catch (error) {
+    console.error("Create service package error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create service package",
+    });
+  }
+};
+
+export const updateServicePackage: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body || {};
+
+    const updated = await neonDbService.updateServicePackage(id, {
+      name: payload.name,
+      description: payload.description,
+      category: payload.category,
+      type: payload.type,
+      basePrice:
+        payload.basePrice !== undefined || payload.base_price !== undefined
+          ? Number(payload.basePrice ?? payload.base_price)
+          : undefined,
+      currency: payload.currency,
+      durationType: payload.durationType || payload.duration_type,
+      duration: payload.duration ?? null,
+      hours:
+        payload.hours !== undefined && payload.hours !== null
+          ? Number(payload.hours)
+          : null,
+      startDate: payload.startDate ? new Date(payload.startDate) : null,
+      endDate: payload.endDate ? new Date(payload.endDate) : null,
+      features: Array.isArray(payload.features) ? payload.features : undefined,
+      bannerUrl: payload.banner || payload.bannerUrl || payload.banner_url || null,
+      isActive:
+        typeof payload.active === "boolean"
+          ? payload.active
+          : payload.isActive,
+      isPopular: payload.isPopular,
+      isFeatured: payload.isFeatured,
+      color: payload.color,
+      priority:
+        payload.priority !== undefined ? Number(payload.priority) : undefined,
+    });
+
+    res.json({
+      success: true,
+      package: updated,
+      message: "Service package updated successfully",
+    });
+  } catch (error) {
+    console.error("Update service package error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update service package",
+    });
+  }
+};
+
+export const deleteServicePackage: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await neonDbService.deleteServicePackage(id);
+    res.json({
+      success: true,
+      message: "Service package deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete service package error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete service package",
     });
   }
 };
