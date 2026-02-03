@@ -1531,6 +1531,25 @@ class NeonDatabaseClient {
     }
   }
 
+  async seedCrew(): Promise<{ success: boolean; message?: string; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 12000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/seed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew seed failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getCommissionEntries(params: {
     crewUserId?: string;
     startDate?: string;
