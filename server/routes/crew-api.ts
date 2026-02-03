@@ -20,20 +20,19 @@ const requireDb = async (res: any) => {
 // Get comprehensive crew statistics
 export const getCrewStats: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
-      return res.status(500).json({
-        success: false,
-        error: "Database connection not available"
-      });
-    }
-
-    const db = neonDbService.db;
+    const db = await requireDb(res);
+    if (!db) return;
 
     // Get total crew count
     const [totalCrewResult] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(eq(schema.users.role, "crew"));
+
+    const [unassignedCrewResult] = await db
+      .select({ count: count() })
+      .from(schema.crewMembers)
+      .where(sql`${schema.crewMembers.crewGroupId} IS NULL`);
 
     // Get crew by status
     const [onlineCrewResult] = await db
@@ -133,11 +132,11 @@ export const getCrewStats: RequestHandler = async (req, res) => {
         )
       );
 
-    const totalCrew = totalCrewResult.count;
-    const onlineCrew = onlineCrewResult.count;
-    const busyCrew = busyCrewResult.count;
-    const availableCrew = availableCrewResult.count;
-    const offlineCrew = totalCrew - onlineCrew - busyCrew - availableCrew;
+    const totalCrew = Number(totalCrewResult.count || 0);
+    const onlineCrew = Number(onlineCrewResult.count || 0);
+    const busyCrew = Number(busyCrewResult.count || 0);
+    const availableCrew = Number(availableCrewResult.count || 0);
+    const offlineCrew = Math.max(0, totalCrew - onlineCrew - busyCrew - availableCrew);
 
     const stats = {
       totalCrew,
@@ -147,7 +146,7 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       offlineCrew,
       totalGroups: totalGroupsResult.count,
       activeGroups: activeGroupsResult.count,
-      unassignedCrew: totalCrew - onlineCrew - busyCrew - availableCrew,
+      unassignedCrew: Number(unassignedCrewResult.count || 0),
       avgRating: avgRatingResult.avgRating ? parseFloat(String(avgRatingResult.avgRating)) : 0,
       todayJobs: todayJobsResult.count,
       todayRevenue: Number(todayRevenueResult.revenue) || 0
@@ -170,14 +169,8 @@ export const getCrewStats: RequestHandler = async (req, res) => {
 // Get recent crew activity
 export const getCrewActivity: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
-      return res.status(500).json({
-        success: false,
-        error: "Database connection not available"
-      });
-    }
-
-    const db = neonDbService.db;
+    const db = await requireDb(res);
+    if (!db) return;
     const limit = parseInt(req.query.limit as string) || 10;
 
     // Get recent status changes
