@@ -202,13 +202,6 @@ const sidebarItems = [
     gradient: "from-slate-500 to-gray-600",
   },
   {
-    id: "crew-management",
-    label: "Crew Management",
-    icon: Users,
-    description: "Crew Teams & Location",
-    gradient: "from-orange-500 to-red-500",
-  },
-  {
     id: "database",
     label: "Database Setup",
     icon: Database,
