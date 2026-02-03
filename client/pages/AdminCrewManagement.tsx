@@ -494,6 +494,7 @@ export default function AdminCrewManagement() {
         description: "Payout history updated.",
       });
       setPayoutAmount("");
+      setPayoutBonus("");
       loadPayouts();
       loadCommissionEntries();
     } else {
