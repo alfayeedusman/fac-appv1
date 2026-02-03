@@ -32,7 +32,7 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     }
 
     // Restrict roles that can be assigned by this endpoint
-    const allowedRoles = ["admin", "manager", "cashier"];
+    const allowedRoles = ["admin", "manager", "cashier", "dispatcher"];
     let assignedRole = "admin";
     if (role && typeof role === "string") {
       if (role === "superadmin") {
