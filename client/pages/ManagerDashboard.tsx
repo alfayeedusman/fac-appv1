@@ -162,7 +162,7 @@ export default function ManagerDashboard() {
     try {
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
       const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      
+
       const customerList = registeredUsers
         .filter((user: any) => user.role === 'user')
         .map((user: any) => {
@@ -190,6 +190,62 @@ export default function ManagerDashboard() {
         description: "Failed to load customers",
         variant: "destructive",
       });
+    }
+  };
+
+  const submitDailyIncome = async () => {
+    const amount = Number(dailyIncomeAmount);
+    if (!amount || amount <= 0) {
+      toast({
+        title: 'Invalid amount',
+        description: 'Enter a daily income amount greater than zero.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem('currentUser');
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const recordedBy =
+      parsedUser?.id ||
+      localStorage.getItem('userId') ||
+      localStorage.getItem('userEmail') ||
+      'unknown';
+    const branch = parsedUser?.branchLocation || 'Main Branch';
+
+    try {
+      setDailyIncomeLoading(true);
+      const result = await neonDbClient.createDailyIncome({
+        branch,
+        incomeDate: dailyIncomeDate,
+        amount,
+        recordedBy,
+        notes: dailyIncomeNotes || undefined,
+      });
+
+      if (result.success) {
+        toast({
+          title: 'Daily income saved',
+          description: `Recorded ₱${amount.toFixed(2)} for ${branch}.`,
+        });
+        setDailyIncomeAmount('');
+        setDailyIncomeNotes('');
+      } else {
+        toast({
+          title: 'Failed to save income',
+          description: result.error || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Daily income submit failed:', error);
+      toast({
+        title: 'Failed to save income',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDailyIncomeLoading(false);
     }
   };
 
