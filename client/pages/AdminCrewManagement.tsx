@@ -78,6 +78,10 @@ export default function AdminCrewManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [commissionRates, setCommissionRates] = useState<any[]>([]);
+  const [commissionServiceType, setCommissionServiceType] = useState("");
+  const [commissionRateValue, setCommissionRateValue] = useState("");
+  const [commissionLoading, setCommissionLoading] = useState(false);
 
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
