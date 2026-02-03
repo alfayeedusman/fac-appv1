@@ -624,6 +624,7 @@ export default function AdminCrewManagement() {
         await Promise.all([
           loadCommissionRates(),
           loadCrewMembers(),
+          loadCrewGroups(),
           loadCommissionEntries(),
           loadPayouts(),
         ]);
@@ -658,6 +659,7 @@ export default function AdminCrewManagement() {
       await Promise.all([
         loadCommissionRates(),
         loadCrewMembers(),
+        loadCrewGroups(),
         loadCommissionEntries(),
         loadPayouts(),
       ]);
