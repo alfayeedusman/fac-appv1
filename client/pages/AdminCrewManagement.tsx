@@ -103,8 +103,7 @@ export default function AdminCrewManagement() {
   );
   const [commissionEntryAmount, setCommissionEntryAmount] = useState("");
   const [commissionEntryNotes, setCommissionEntryNotes] = useState("");
-  const [commissionEntryStatus, setCommissionEntryStatus] =
-    useState("pending");
+  const [isSeedingCrew, setIsSeedingCrew] = useState(false);
 
   const [payoutCrewId, setPayoutCrewId] = useState("");
   const [payoutStartDate, setPayoutStartDate] = useState(() => {
