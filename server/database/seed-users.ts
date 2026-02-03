@@ -109,16 +109,26 @@ export async function seedUsers() {
       return;
     }
 
-    // Hash passwords
-    const hashPassword = async (password: string) =>
-      await bcrypt.hash(password, 10);
+    // Hash passwords FIRST before creating user objects
+    console.log("🔐 Hashing passwords for new users...");
+    const hashedPasswords = await Promise.all([
+      hashPassword("SuperAdmin2024!"), // superadmin
+      hashPassword("FayeedSuper123!"), // admin.fayeed
+      hashPassword("TumagaAdmin2024!"), // manager.tumaga
+      hashPassword("BoalanAdmin2024!"), // manager.boalan
+      hashPassword("Cashier123!"), // cashier.tumaga
+      hashPassword("Customer123!"), // john.doe
+      hashPassword("Maria2024!"), // maria.santos
+      hashPassword("Carlos123!"), // carlos.reyes
+      hashPassword("Anna2024!"), // anna.lopez
+    ]);
 
     // Sample user data based on SAMPLE_LOGIN_CREDENTIALS.md
     const sampleUsers = [
       {
         email: "superadmin@fayeedautocare.com",
         fullName: "Super Admin",
-        password: await hashPassword("SuperAdmin2024!"),
+        password: hashedPasswords[0],
         role: "superadmin" as const,
         contactNumber: "+63 999 111 1111",
         address: "Head Office, Zamboanga City, Philippines",
@@ -132,7 +142,7 @@ export async function seedUsers() {
       {
         email: "admin.fayeed@gmail.com",
         fullName: "Admin Fayeed",
-        password: await hashPassword("FayeedSuper123!"),
+        password: hashedPasswords[1],
         role: "superadmin" as const,
         contactNumber: "+63 999 111 2222",
         address: "Head Office, Zamboanga City, Philippines",
@@ -146,7 +156,7 @@ export async function seedUsers() {
       {
         email: "manager.tumaga@fayeedautocare.com",
         fullName: "Manager Tumaga",
-        password: await hashPassword("TumagaAdmin2024!"),
+        password: hashedPasswords[2],
         role: "manager" as const,
         contactNumber: "+63 962 123 4567",
         address: "Tumaga Branch, Zamboanga City, Philippines",
@@ -160,7 +170,7 @@ export async function seedUsers() {
       {
         email: "manager.boalan@fayeedautocare.com",
         fullName: "Manager Boalan",
-        password: await hashPassword("BoalanAdmin2024!"),
+        password: hashedPasswords[3],
         role: "manager" as const,
         contactNumber: "+63 962 234 5678",
         address: "Boalan Branch, Zamboanga City, Philippines",
@@ -174,7 +184,7 @@ export async function seedUsers() {
       {
         email: "cashier.tumaga@fayeedautocare.com",
         fullName: "Cashier Tumaga",
-        password: await hashPassword("Cashier123!"),
+        password: hashedPasswords[4],
         role: "cashier" as const,
         contactNumber: "+63 962 345 6789",
         address: "Tumaga Branch, Zamboanga City, Philippines",
@@ -188,7 +198,7 @@ export async function seedUsers() {
       {
         email: "john.doe@gmail.com",
         fullName: "John Doe",
-        password: await hashPassword("Customer123!"),
+        password: hashedPasswords[5],
         role: "user" as const,
         contactNumber: "+63 998 123 4567",
         address: "Zamboanga City, Philippines",
@@ -202,7 +212,7 @@ export async function seedUsers() {
       {
         email: "maria.santos@gmail.com",
         fullName: "Maria Santos",
-        password: await hashPassword("Maria2024!"),
+        password: hashedPasswords[6],
         role: "user" as const,
         contactNumber: "+63 998 234 5678",
         address: "Zamboanga City, Philippines",
@@ -216,7 +226,7 @@ export async function seedUsers() {
       {
         email: "carlos.reyes@gmail.com",
         fullName: "Carlos Reyes",
-        password: await hashPassword("Carlos123!"),
+        password: hashedPasswords[7],
         role: "user" as const,
         contactNumber: "+63 998 345 6789",
         address: "Zamboanga City, Philippines",
@@ -230,7 +240,7 @@ export async function seedUsers() {
       {
         email: "anna.lopez@gmail.com",
         fullName: "Anna Lopez",
-        password: await hashPassword("Anna2024!"),
+        password: hashedPasswords[8],
         role: "user" as const,
         contactNumber: "+63 998 456 7890",
         address: "Zamboanga City, Philippines",
