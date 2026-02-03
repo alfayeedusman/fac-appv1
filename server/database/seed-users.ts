@@ -4,14 +4,43 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 export async function seedUsers() {
-  const db = getDatabase();
-  if (!db) {
-    console.error("❌ Database not connected");
-    return;
-  }
-
   try {
     console.log("👥 Seeding user data...");
+
+    // Wait for database to be ready
+    let db = getDatabase();
+    let retries = 0;
+    while (!db && retries < 3) {
+      console.log(
+        "⏳ Waiting for database connection... (attempt",
+        retries + 1,
+        ")",
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      db = getDatabase();
+      retries++;
+    }
+
+    if (!db) {
+      console.error("❌ Database not connected after retries");
+      return;
+    }
+
+    // Hash password helper with logging
+    const hashPassword = async (password: string): Promise<string> => {
+      try {
+        const hashed = await bcrypt.hash(password, 10);
+        console.log(
+          "   ✓ Password hashed:",
+          password.substring(0, 3) + "**** →",
+          hashed.substring(0, 20) + "...",
+        );
+        return hashed;
+      } catch (err) {
+        console.error("   ✗ Error hashing password:", err);
+        throw err;
+      }
+    };
 
     // Check if users already exist
     const existingUsers = await db.select().from(schema.users);
@@ -24,32 +53,32 @@ export async function seedUsers() {
       );
 
       // Update passwords for sample accounts if they exist
-      console.log("🔄 Updating sample user passwords...");
-      const hashPassword = async (password: string) =>
-        await bcrypt.hash(password, 10);
+      console.log("🔄 Updating sample user passwords with new hashes...");
 
       const superadmin = existingUsers.find(
         (u) => u.email === "superadmin@fayeedautocare.com",
       );
       if (superadmin) {
+        console.log("   → Updating superadmin@fayeedautocare.com");
         const hashedPassword = await hashPassword("SuperAdmin2024!");
         await db
           .update(schema.users)
           .set({ password: hashedPassword })
           .where(eq(schema.users.id, superadmin.id));
-        console.log("✅ Updated superadmin password");
+        console.log("   ✅ Updated superadmin password");
       }
 
       const adminFayeed = existingUsers.find(
         (u) => u.email === "admin.fayeed@gmail.com",
       );
       if (adminFayeed) {
+        console.log("   → Updating admin.fayeed@gmail.com");
         const hashedPassword = await hashPassword("FayeedSuper123!");
         await db
           .update(schema.users)
           .set({ password: hashedPassword })
           .where(eq(schema.users.id, adminFayeed.id));
-        console.log("✅ Updated admin.fayeed password");
+        console.log("   ✅ Updated admin.fayeed password");
       }
 
       // Update other sample user passwords
@@ -66,15 +95,17 @@ export async function seedUsers() {
       for (const [email, password] of Object.entries(sampleEmails)) {
         const user = existingUsers.find((u) => u.email === email);
         if (user) {
+          console.log(`   → Updating ${email}`);
           const hashedPassword = await hashPassword(password);
           await db
             .update(schema.users)
             .set({ password: hashedPassword })
             .where(eq(schema.users.id, user.id));
-          console.log(`✅ Updated ${email} password`);
+          console.log(`   ✅ Updated ${email} password`);
         }
       }
 
+      console.log("✅ All user passwords updated successfully!");
       return;
     }
 
