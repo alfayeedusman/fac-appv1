@@ -863,6 +863,27 @@ export default function EnhancedCrewDashboard() {
     0,
   );
 
+  const payrollCommissionTotal = Number(payrollSummary?.totalCommission || 0);
+  const walletTotalEarnings = payrollCommissionTotal + manualCommissionTotal;
+  const releasedPayoutTotal = payoutHistory.reduce(
+    (total, payout) =>
+      payout.status === "released"
+        ? total + Number(payout.totalAmount || 0)
+        : total,
+    0,
+  );
+  const pendingPayoutTotal = payoutHistory.reduce(
+    (total, payout) =>
+      payout.status !== "released"
+        ? total + Number(payout.totalAmount || 0)
+        : total,
+    0,
+  );
+  const walletAvailableBalance = Math.max(
+    0,
+    walletTotalEarnings - releasedPayoutTotal,
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <StickyHeader />
