@@ -1115,6 +1115,7 @@ export default function UserRoleManagement() {
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="crew">Crew</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="dispatcher">Dispatcher</SelectItem>
                       <SelectItem value="cashier">Cashier</SelectItem>
                       <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
