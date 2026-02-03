@@ -299,6 +299,8 @@ export default function Index() {
         // Route based on user role
         if (userRole === "manager") {
           navigate("/manager-dashboard");
+        } else if (userRole === "dispatcher") {
+          navigate("/dispatcher-dashboard");
         } else if (userRole === "crew") {
           navigate("/crew-dashboard");
         } else if (userRole === "cashier") {
