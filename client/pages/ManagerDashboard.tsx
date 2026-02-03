@@ -439,6 +439,15 @@ export default function ManagerDashboard() {
               </Button>
             </div>
 
+            <Button
+              onClick={() => navigate('/dispatcher-dashboard')}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Dispatcher View
+            </Button>
+
             <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logout
