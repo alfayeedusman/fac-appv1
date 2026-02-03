@@ -858,6 +858,11 @@ export default function EnhancedCrewDashboard() {
     activeJobs: bookings.filter(b => ['crew_going', 'crew_arrived', 'in_progress', 'washing'].includes(b.status)).length,
   };
 
+  const manualCommissionTotal = commissionEntries.reduce(
+    (total, entry) => total + Number(entry.amount || 0),
+    0,
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <StickyHeader />
