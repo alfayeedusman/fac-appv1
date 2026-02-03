@@ -152,6 +152,30 @@ interface DashboardStats {
   topPackage: string;
 }
 
+interface CrewCommissionSummary {
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  totalRevenue: number;
+  totalCommission: number;
+  totalBookings: number;
+  crewCount: number;
+  crew: Array<{
+    crewId: string;
+    crewName: string;
+    totalRevenue: number;
+    totalCommission: number;
+    totalBookings: number;
+  }>;
+  breakdown?: Array<{
+    serviceType: string;
+    bookingCount: number;
+    totalRevenue: number;
+    totalCommission: number;
+  }>;
+}
+
 interface Notification {
   id: string;
   type:
