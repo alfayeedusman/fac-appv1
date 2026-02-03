@@ -1278,6 +1278,123 @@ export default function AdminCrewManagement() {
 
               <Card>
                 <CardHeader>
+                  <CardTitle>Crew Profile & Assignments</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select a crew member to view their commissions, rates, and assignments.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Selected Crew</Label>
+                      <Select value={selectedCrewId} onValueChange={setSelectedCrewId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="rounded-lg border p-3 text-sm">
+                      <p className="text-xs uppercase text-muted-foreground">
+                        Commission Rate
+                      </p>
+                      <p className="text-lg font-semibold">
+                        {selectedCrew
+                          ? `${Number(selectedCrew.commissionRate || 0).toFixed(2)}%`
+                          : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedCrewGroup
+                          ? `Group: ${selectedCrewGroup.name}`
+                          : "No group assigned"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Group Assignment</Label>
+                      <Select
+                        value={selectedCrew?.groupId || "unassigned"}
+                        onValueChange={(value) =>
+                          handleAssignCrewGroup(
+                            value === "unassigned" ? null : value,
+                          )
+                        }
+                        disabled={!selectedCrewId || crewGroupsLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {crewGroups.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Wash Bay</Label>
+                      <Select
+                        value={selectedCrew?.washBay || "unassigned"}
+                        onValueChange={(value) =>
+                          handleAssignWashBay(
+                            value === "unassigned" ? null : value,
+                          )
+                        }
+                        disabled={!selectedCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign wash bay" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {washBayOptions.map((bay) => (
+                            <SelectItem key={bay} value={bay}>
+                              {bay}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-3 text-sm">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Service Rates
+                    </p>
+                    {commissionRates.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No service rates configured yet.
+                      </p>
+                    ) : (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        {commissionRates.map((rate) => (
+                          <div
+                            key={rate.id}
+                            className="flex items-center justify-between rounded-md border px-3 py-2"
+                          >
+                            <span>{rate.serviceType}</span>
+                            <span className="font-semibold">
+                              {Number(rate.rate || 0).toFixed(2)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle>Commission Entries</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
