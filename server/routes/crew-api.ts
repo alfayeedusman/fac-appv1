@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { neonDbService } from "../services/neonDatabaseService";
 import * as schema from "../database/schema";
-import { count, eq, and, sql, desc, avg, gte, lte } from "drizzle-orm";
+import { count, eq, and, sql, desc, avg, gte, lte, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { seedCrewData } from "../database/seed-crew";
 
