@@ -117,7 +117,7 @@ export const users = pgTable("users", {
     .$defaultFn(() => createId()),
   email: varchar("email", { length: 255 }).notNull().unique(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }).notNull(), // Should be hashed
+  password: text("password").notNull(), // Bcrypt hash (60+ characters)
   role: varchar("role", { length: 50 }).notNull().default("user"), // 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew'
   contactNumber: varchar("contact_number", { length: 20 }),
   address: text("address"),
