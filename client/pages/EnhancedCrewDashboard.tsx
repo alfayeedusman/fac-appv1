@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
+import { neonDbClient } from '@/services/neonDatabaseService';
 import { cn } from '@/lib/utils';
 import {
   getGeolocationErrorDetails,
