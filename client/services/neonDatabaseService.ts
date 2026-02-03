@@ -1514,6 +1514,150 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCrewList(): Promise<{ success: boolean; crew?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/list`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew list fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCommissionEntries(params: {
+    crewUserId?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }): Promise<{ success: boolean; entries?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.crewUserId) queryParams.append("crewUserId", params.crewUserId);
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+    if (params.status) queryParams.append("status", params.status);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-entries?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entries fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createCommissionEntry(payload: {
+    crewUserId: string;
+    entryDate: string;
+    amount: number;
+    notes?: string;
+    recordedBy: string;
+    status?: string;
+  }): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-entries`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entry create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCommissionEntryStatus(id: string, status: string): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-entries/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entry status update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewPayouts(params: {
+    crewUserId?: string;
+  }): Promise<{ success: boolean; payouts?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.crewUserId) queryParams.append("crewUserId", params.crewUserId);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/payouts?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payouts fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createCrewPayout(payload: {
+    crewUserId: string;
+    periodStart: string;
+    periodEnd: string;
+    totalAmount: number;
+    createdBy: string;
+    status?: string;
+    entryIds?: string[];
+  }): Promise<{ success: boolean; payout?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/payouts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payout create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getCrewPayroll(params: {
     userId: string;
     startDate?: string;
