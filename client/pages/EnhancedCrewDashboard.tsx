@@ -166,6 +166,7 @@ export default function EnhancedCrewDashboard() {
       const storedUserId = localStorage.getItem('userId') || user.id;
       if (storedUserId) {
         loadPayroll(storedUserId);
+        loadManualCommissionData(storedUserId);
       }
 
       // Get crew assignments using the utility function
