@@ -8,7 +8,7 @@ export async function seedUsers() {
     console.log("👥 Seeding user data...");
 
     // Wait for database to be ready
-    let db = getDatabase();
+    let db = await getDatabase();
     let retries = 0;
     while (!db && retries < 3) {
       console.log(
@@ -17,7 +17,7 @@ export async function seedUsers() {
         ")",
       );
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      db = getDatabase();
+      db = await getDatabase();
       retries++;
     }
 
