@@ -236,6 +236,14 @@ export const createServer = () => {
     "/api/neon/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,
   );
+  app.get("/api/neon/crew/commission-entries", crewApiRoutes.getCommissionEntries);
+  app.post("/api/neon/crew/commission-entries", crewApiRoutes.createCommissionEntry);
+  app.put(
+    "/api/neon/crew/commission-entries/:id/status",
+    crewApiRoutes.updateCommissionEntryStatus,
+  );
+  app.get("/api/neon/crew/payouts", crewApiRoutes.getCrewPayouts);
+  app.post("/api/neon/crew/payouts", crewApiRoutes.createCrewPayout);
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
   app.get(
     "/api/neon/crew/commission-summary",
