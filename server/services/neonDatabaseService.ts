@@ -52,12 +52,13 @@ class NeonDatabaseService {
   async createUser(
     userData: Omit<NewUser, "id" | "createdAt" | "updatedAt">,
   ): Promise<User> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const [user] = await this.db
+    const [user] = await db
       .insert(schema.users)
       .values({
         ...userData,
@@ -273,9 +274,10 @@ class NeonDatabaseService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
-    return await this.db
+    return await db
       .select()
       .from(schema.users)
       .orderBy(desc(schema.users.createdAt));
@@ -953,7 +955,8 @@ class NeonDatabaseService {
     subscriptionUpgrades: number;
     monthlyGrowth: number;
   }> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
     // Calculate date range based on period
     const now = new Date();
@@ -977,17 +980,17 @@ class NeonDatabaseService {
         break;
     }
 
-    const [userCount] = await this.db
+    const [userCount] = await db
       .select({ count: count() })
       .from(schema.users);
 
-    const [bookingCount] = await this.db
+    const [bookingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(gte(schema.bookings.createdAt, startDate));
 
     // Count online bookings (where userId IS NOT NULL - registered customers)
-    const [onlineBookingCount] = await this.db
+    const [onlineBookingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -997,12 +1000,12 @@ class NeonDatabaseService {
         ),
       );
 
-    const [adCount] = await this.db
+    const [adCount] = await db
       .select({ count: count() })
       .from(schema.ads)
       .where(eq(schema.ads.isActive, true));
 
-    const [pendingCount] = await this.db
+    const [pendingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -1013,7 +1016,7 @@ class NeonDatabaseService {
       );
 
     // Calculate total revenue from completed bookings (within date range)
-    const [bookingRevenueResult] = await this.db
+    const [bookingRevenueResult] = await db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
       .where(
@@ -1024,7 +1027,7 @@ class NeonDatabaseService {
       );
 
     // Calculate total revenue from POS transactions (within date range)
-    const [posRevenueResult] = await this.db
+    const [posRevenueResult] = await db
       .select({
         totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
       })
