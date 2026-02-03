@@ -271,6 +271,9 @@ export function createServer() {
   app.put("/api/neon/branches/:id", branchesApiRoutes.updateBranch);
   app.delete("/api/neon/branches/:id", branchesApiRoutes.deleteBranch);
   app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
+  app.post("/api/neon/packages", neonApiRoutes.createServicePackage);
+  app.put("/api/neon/packages/:id", neonApiRoutes.updateServicePackage);
+  app.delete("/api/neon/packages/:id", neonApiRoutes.deleteServicePackage);
   app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
   app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
 
