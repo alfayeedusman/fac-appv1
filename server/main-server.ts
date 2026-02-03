@@ -237,6 +237,10 @@ export const createServer = () => {
     crewApiRoutes.upsertCommissionRate,
   );
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
+  app.get(
+    "/api/neon/crew/commission-summary",
+    crewApiRoutes.getCrewCommissionSummary,
+  );
   app.post("/api/neon/crew/seed", crewApiRoutes.seedCrew); // For development only
 
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
