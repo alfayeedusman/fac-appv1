@@ -90,6 +90,12 @@ export default function ManagerDashboard() {
   const [messageText, setMessageText] = useState('');
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [dailyIncomeDate, setDailyIncomeDate] = useState(
+    () => new Date().toISOString().split('T')[0]
+  );
+  const [dailyIncomeAmount, setDailyIncomeAmount] = useState('');
+  const [dailyIncomeNotes, setDailyIncomeNotes] = useState('');
+  const [dailyIncomeLoading, setDailyIncomeLoading] = useState(false);
 
   // Load data on component mount
   useEffect(() => {
