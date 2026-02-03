@@ -814,6 +814,53 @@ export const createCrewPayout: RequestHandler = async (req, res) => {
   }
 };
 
+export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id || !status) {
+      return res.status(400).json({
+        success: false,
+        error: "id and status are required",
+      });
+    }
+
+    if (!COMMISSION_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid status",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const [updated] = await db
+      .update(schema.crewPayouts)
+      .set({
+        status,
+        releasedAt: status === "released" ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.crewPayouts.id, id))
+      .returning();
+
+    res.json({ success: true, payout: updated });
+  } catch (error) {
+    console.error("Error updating crew payout status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update crew payout status",
+    });
+  }
+};
+
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
