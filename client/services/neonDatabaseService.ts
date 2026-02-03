@@ -1550,7 +1550,7 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/neon/branches`, {
+      const response = await fetch(`${this.baseUrl}/branches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
