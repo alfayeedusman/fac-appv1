@@ -223,6 +223,7 @@ export const createServer = () => {
     neonApiRoutes.deleteUserVehicle,
   );
   app.put("/api/neon/users/:userId/address", neonApiRoutes.updateUserAddress);
+  app.put("/api/neon/users/:userId/status", neonApiRoutes.updateUserStatus);
 
   // ============= CREW MANAGEMENT API =============
   app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
