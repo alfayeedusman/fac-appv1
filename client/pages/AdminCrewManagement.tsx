@@ -1560,10 +1560,51 @@ export default function AdminCrewManagement() {
 
             {/* Groups Tab */}
             <TabsContent value="groups" className="space-y-6">
-              <CrewGroupManagement
-                onGroupSelect={setSelectedGroup}
-                selectedGroupId={selectedGroup?.id}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active Crew Groups</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Groups pulled from the database.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {crewGroupsLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading groups...
+                    </p>
+                  ) : crewGroups.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No crew groups found.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {crewGroups.map((group) => (
+                        <div
+                          key={group.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {group.name}
+                            </p>
+                            {group.description && (
+                              <p className="text-xs text-muted-foreground">
+                                {group.description}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Leader: {group.leaderName || "Unassigned"}
+                            </p>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Members: {group.members?.length || 0}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Heat Map Tab */}
