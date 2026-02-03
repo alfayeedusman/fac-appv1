@@ -374,6 +374,27 @@ const AppComponent = () => {
                   }
                 />
                 <Route
+                  path="/dispatcher-dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="dispatcher">
+                      <div className="min-h-screen bg-background p-6">
+                        <div className="max-w-6xl mx-auto space-y-6">
+                          <div>
+                            <h1 className="text-3xl font-bold text-foreground">
+                              Dispatcher Console
+                            </h1>
+                            <p className="text-muted-foreground">
+                              Monitor bookings, assign bays/crew, and track
+                              payments in real time.
+                            </p>
+                          </div>
+                          <BookingHub />
+                        </div>
+                      </div>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/crew-dashboard"
                   element={
                     <ProtectedRoute requiredRole="crew">
