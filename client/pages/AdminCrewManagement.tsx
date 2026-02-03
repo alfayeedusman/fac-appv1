@@ -459,7 +459,7 @@ export default function AdminCrewManagement() {
   const payoutTotalAmount = autoPayoutAmount + payoutBonusAmount;
 
   const handleCreatePayout = async () => {
-    const baseAmount = Number(payoutAmount);
+    const baseAmount = Number(payoutAmount) || 0;
     const bonusAmount = Number(payoutBonus) || 0;
     const totalAmount = baseAmount + bonusAmount;
     if (!payoutCrewId || !payoutStartDate || !payoutEndDate || totalAmount <= 0) {
