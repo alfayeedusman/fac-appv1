@@ -90,6 +90,11 @@ export const createServer = () => {
     next();
   });
 
+  // Import health check middleware
+  const { ensureDbConnection } = await import(
+    "./middleware/dbHealthCheck"
+  );
+
   // API Routes
   app.use("/api", demoRoutes);
   app.use("/api", customerApiRoutes);
@@ -102,9 +107,17 @@ export const createServer = () => {
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
 
-  // Auth endpoints
-  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
-  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
+  // Auth endpoints with database health check (critical routes)
+  app.post(
+    "/api/neon/auth/login",
+    ensureDbConnection,
+    neonApiRoutes.loginUser,
+  );
+  app.post(
+    "/api/neon/auth/register",
+    ensureDbConnection,
+    neonApiRoutes.registerUser,
+  );
 
   // Booking endpoints
   app.post("/api/neon/bookings", neonApiRoutes.createBooking);
