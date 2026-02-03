@@ -1,4 +1,12 @@
-export type UserRole = "customer" | "admin" | "cashier" | "inventory_manager";
+export type UserRole =
+  | "customer"
+  | "admin"
+  | "superadmin"
+  | "manager"
+  | "dispatcher"
+  | "crew"
+  | "cashier"
+  | "inventory_manager";
 
 export interface UserAccount {
   id: string;
