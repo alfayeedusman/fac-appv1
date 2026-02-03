@@ -29,6 +29,7 @@ import BookingManagement from "./pages/BookingManagement";
 import BookingSuccess from "./pages/BookingSuccess";
 import BookingFailed from "./pages/BookingFailed";
 import ManageSubscription from "./pages/ManageSubscription";
+import BookingHub from "./components/BookingHub";
 import NotificationSettings from "./pages/NotificationSettings";
 import NotificationHistory from "./pages/NotificationHistory";
 import Settings from "./pages/Settings";
