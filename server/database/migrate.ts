@@ -132,7 +132,7 @@ export async function runMigrations() {
         id TEXT PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
         full_name VARCHAR(255) NOT NULL,
-        password VARCHAR(255) NOT NULL,
+        password TEXT NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'user',
         contact_number VARCHAR(20),
         address TEXT,
