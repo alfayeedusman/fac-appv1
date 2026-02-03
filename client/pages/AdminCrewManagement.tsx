@@ -1012,6 +1012,264 @@ export default function AdminCrewManagement() {
               </div>
             </TabsContent>
 
+            {/* Commissions Tab */}
+            <TabsContent value="commissions" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add Commission Entry</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Crew Member</Label>
+                      <Select
+                        value={commissionCrewId}
+                        onValueChange={setCommissionCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <Input
+                        type="date"
+                        value={commissionEntryDate}
+                        onChange={(e) => setCommissionEntryDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Amount (₱)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={commissionEntryAmount}
+                        onChange={(e) => setCommissionEntryAmount(e.target.value)}
+                        placeholder="500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Status</Label>
+                      <Select
+                        value={commissionEntryStatus}
+                        onValueChange={setCommissionEntryStatus}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {commissionStatusOptions.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Notes</Label>
+                      <Input
+                        value={commissionEntryNotes}
+                        onChange={(e) => setCommissionEntryNotes(e.target.value)}
+                        placeholder="Optional notes"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddCommissionEntry}>
+                    Add Commission
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Commission Entries</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {commissionEntriesLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading commission entries...
+                    </p>
+                  ) : commissionEntries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No commission entries yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {commissionEntries.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {entry.crewName || "Crew"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(entry.entryDate).toLocaleDateString()} · ₱
+                              {Number(entry.amount || 0).toFixed(2)}
+                            </p>
+                            {entry.notes && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {entry.notes}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={entry.status}
+                              onValueChange={(value) =>
+                                handleUpdateCommissionEntryStatus(entry.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-36">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {commissionStatusOptions.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {status}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payout History</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Crew Member</Label>
+                      <Select value={payoutCrewId} onValueChange={setPayoutCrewId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Amount (₱)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payoutAmount}
+                        onChange={(e) => setPayoutAmount(e.target.value)}
+                        placeholder="Total payout"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Period Start</Label>
+                      <Input
+                        type="date"
+                        value={payoutStartDate}
+                        onChange={(e) => setPayoutStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Period End</Label>
+                      <Input
+                        type="date"
+                        value={payoutEndDate}
+                        onChange={(e) => setPayoutEndDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Status</Label>
+                      <Select value={payoutStatus} onValueChange={setPayoutStatus}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {commissionStatusOptions.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button onClick={handleCreatePayout}>Record Payout</Button>
+
+                  <div className="space-y-3 pt-2">
+                    {payoutsLoading ? (
+                      <p className="text-sm text-muted-foreground">
+                        Loading payouts...
+                      </p>
+                    ) : payouts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No payouts recorded yet.
+                      </p>
+                    ) : (
+                      payouts.map((payout) => (
+                        <div
+                          key={payout.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {payout.crewName || "Crew"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(payout.periodStart).toLocaleDateString()} -{" "}
+                              {new Date(payout.periodEnd).toLocaleDateString()} · ₱
+                              {Number(payout.totalAmount || 0).toFixed(2)}
+                            </p>
+                          </div>
+                          <Select
+                            value={payout.status}
+                            onValueChange={(value) =>
+                              handleUpdatePayoutStatus(payout.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-36">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {commissionStatusOptions.map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Groups Tab */}
             <TabsContent value="groups" className="space-y-6">
               <CrewGroupManagement
