@@ -1422,10 +1422,21 @@ export const getAnalyticsData: RequestHandler = async (req, res) => {
     console.log("📊 Getting analytics data...");
     const { timeFilter } = req.query;
 
-    // Get real analytics data from database
-    const stats = await neonDbService.getStats();
-    const users = await neonDbService.getAllUsers();
-    const bookings = await neonDbService.getAllBookings();
+    let stats = {
+      totalRevenue: 0,
+      totalUsers: 0,
+      totalWashes: 0,
+    } as any;
+    let users: any[] = [];
+    let bookings: any[] = [];
+
+    try {
+      stats = await neonDbService.getStats((timeFilter as string) || "monthly");
+      users = await neonDbService.getAllUsers();
+      bookings = await neonDbService.getAllBookings();
+    } catch (dbError) {
+      console.warn("⚠️ Analytics fallback: database unavailable", dbError);
+    }
 
     // Calculate analytics based on time filter
     const analyticsData = {
