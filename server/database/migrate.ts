@@ -1135,7 +1135,7 @@ export async function seedInitialData() {
 
     // Use environment variable for superadmin password, fallback to secure default
     const defaultPassword =
-      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
+      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2024!";
     const superAdminPassword = await bcrypt.hash(defaultPassword, 10);
 
     if (superAdminExists.length === 0) {
