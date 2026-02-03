@@ -62,13 +62,25 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
         },
       ],
       cms: [
-        { method: "GET", path: "/api/cms/pages", description: "CMS pages" },
-        { method: "GET", path: "/api/cms/sections", description: "CMS sections" },
-        { method: "POST", path: "/api/cms/pages", description: "Create page" },
         {
-          method: "PUT",
-          path: "/api/cms/pages/:id",
-          description: "Update page",
+          method: "GET",
+          path: "/api/cms/homepage",
+          description: "Homepage CMS content",
+        },
+        {
+          method: "POST",
+          path: "/api/cms/homepage",
+          description: "Update homepage CMS",
+        },
+        {
+          method: "GET",
+          path: "/api/cms/history",
+          description: "CMS update history",
+        },
+        {
+          method: "POST",
+          path: "/api/cms/initialize",
+          description: "Initialize CMS defaults",
         },
       ],
       notifications: [
@@ -86,6 +98,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
           method: "POST",
           path: "/api/notifications/send",
           description: "Send push notification",
+        },
+        {
+          method: "POST",
+          path: "/api/notifications/register-token",
+          description: "Register device token",
         },
       ],
       crew: [
