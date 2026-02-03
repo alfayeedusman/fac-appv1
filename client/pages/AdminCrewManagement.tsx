@@ -253,6 +253,14 @@ export default function AdminCrewManagement() {
     "disputed",
   ];
 
+  const washBayOptions = [
+    "Wash Bay 1",
+    "Wash Bay 2",
+    "Wash Bay 3",
+    "Wash Bay 4",
+    "Wash Bay 5",
+  ];
+
   const loadCommissionRates = async () => {
     try {
       setCommissionLoading(true);
