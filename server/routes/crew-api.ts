@@ -934,14 +934,9 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    if (!neonDbService.db) {
-      return res.status(500).json({
-        success: false,
-        error: "Database connection not available",
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
-    const db = neonDbService.db;
     const referenceDate = new Date();
     const window = getPayrollWindow(referenceDate);
 
