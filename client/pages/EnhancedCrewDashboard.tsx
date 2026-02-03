@@ -1110,7 +1110,7 @@ export default function EnhancedCrewDashboard() {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="bg-white rounded-lg shadow-sm border p-1">
-            <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1">
+            <TabsList className="grid w-full grid-cols-6 bg-transparent gap-1">
               <TabsTrigger
                 value="assignments"
                 className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
@@ -1150,6 +1150,14 @@ export default function EnhancedCrewDashboard() {
                 <ImageIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">Images</span>
                 <span className="sm:hidden">Pics</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="payroll"
+                className="flex items-center gap-2 py-3 px-3 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Payroll</span>
+                <span className="sm:hidden">Pay</span>
               </TabsTrigger>
             </TabsList>
           </div>
