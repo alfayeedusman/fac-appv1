@@ -554,6 +554,266 @@ export const getCrewPayroll: RequestHandler = async (req, res) => {
   }
 };
 
+const COMMISSION_STATUSES = ["pending", "approved", "released", "disputed"] as const;
+
+type CommissionStatus = (typeof COMMISSION_STATUSES)[number];
+
+export const getCommissionEntries: RequestHandler = async (req, res) => {
+  try {
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const { crewUserId, startDate, endDate, status } = req.query;
+    const db = neonDbService.db;
+
+    const conditions = [] as any[];
+    if (crewUserId) {
+      conditions.push(eq(schema.crewCommissionEntries.crewUserId, crewUserId as string));
+    }
+    if (status) {
+      conditions.push(eq(schema.crewCommissionEntries.status, status as string));
+    }
+    if (startDate) {
+      conditions.push(gte(schema.crewCommissionEntries.entryDate, new Date(startDate as string)));
+    }
+    if (endDate) {
+      conditions.push(lte(schema.crewCommissionEntries.entryDate, new Date(endDate as string)));
+    }
+
+    let query = db
+      .select({
+        id: schema.crewCommissionEntries.id,
+        crewUserId: schema.crewCommissionEntries.crewUserId,
+        entryDate: schema.crewCommissionEntries.entryDate,
+        amount: schema.crewCommissionEntries.amount,
+        notes: schema.crewCommissionEntries.notes,
+        recordedBy: schema.crewCommissionEntries.recordedBy,
+        status: schema.crewCommissionEntries.status,
+        payoutId: schema.crewCommissionEntries.payoutId,
+        createdAt: schema.crewCommissionEntries.createdAt,
+        updatedAt: schema.crewCommissionEntries.updatedAt,
+        crewName: schema.users.fullName,
+      })
+      .from(schema.crewCommissionEntries)
+      .leftJoin(schema.users, eq(schema.crewCommissionEntries.crewUserId, schema.users.id))
+      .orderBy(desc(schema.crewCommissionEntries.entryDate));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+
+    const entries = await query;
+    res.json({ success: true, entries });
+  } catch (error) {
+    console.error("Error fetching commission entries:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch commission entries",
+    });
+  }
+};
+
+export const createCommissionEntry: RequestHandler = async (req, res) => {
+  try {
+    const { crewUserId, entryDate, amount, notes, recordedBy, status } = req.body;
+
+    if (!crewUserId || !entryDate || amount === undefined || amount === null || !recordedBy) {
+      return res.status(400).json({
+        success: false,
+        error: "crewUserId, entryDate, amount, and recordedBy are required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const entryStatus: CommissionStatus = COMMISSION_STATUSES.includes(status)
+      ? status
+      : "pending";
+
+    const db = neonDbService.db;
+    const [created] = await db
+      .insert(schema.crewCommissionEntries)
+      .values({
+        id: createId(),
+        crewUserId,
+        entryDate: new Date(entryDate),
+        amount: String(amount),
+        notes: notes || null,
+        recordedBy,
+        status: entryStatus,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.json({ success: true, entry: created });
+  } catch (error) {
+    console.error("Error creating commission entry:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create commission entry",
+    });
+  }
+};
+
+export const updateCommissionEntryStatus: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id || !status) {
+      return res.status(400).json({
+        success: false,
+        error: "id and status are required",
+      });
+    }
+
+    if (!COMMISSION_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid status",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const [updated] = await db
+      .update(schema.crewCommissionEntries)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(schema.crewCommissionEntries.id, id))
+      .returning();
+
+    res.json({ success: true, entry: updated });
+  } catch (error) {
+    console.error("Error updating commission entry status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update commission entry status",
+    });
+  }
+};
+
+export const getCrewPayouts: RequestHandler = async (req, res) => {
+  try {
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const { crewUserId } = req.query;
+    const db = neonDbService.db;
+
+    let query = db
+      .select({
+        id: schema.crewPayouts.id,
+        crewUserId: schema.crewPayouts.crewUserId,
+        periodStart: schema.crewPayouts.periodStart,
+        periodEnd: schema.crewPayouts.periodEnd,
+        totalAmount: schema.crewPayouts.totalAmount,
+        status: schema.crewPayouts.status,
+        createdBy: schema.crewPayouts.createdBy,
+        releasedAt: schema.crewPayouts.releasedAt,
+        createdAt: schema.crewPayouts.createdAt,
+        updatedAt: schema.crewPayouts.updatedAt,
+        crewName: schema.users.fullName,
+      })
+      .from(schema.crewPayouts)
+      .leftJoin(schema.users, eq(schema.crewPayouts.crewUserId, schema.users.id))
+      .orderBy(desc(schema.crewPayouts.periodEnd));
+
+    if (crewUserId) {
+      query = query.where(eq(schema.crewPayouts.crewUserId, crewUserId as string)) as typeof query;
+    }
+
+    const payouts = await query;
+    res.json({ success: true, payouts });
+  } catch (error) {
+    console.error("Error fetching crew payouts:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch crew payouts",
+    });
+  }
+};
+
+export const createCrewPayout: RequestHandler = async (req, res) => {
+  try {
+    const { crewUserId, periodStart, periodEnd, totalAmount, status, createdBy, entryIds } =
+      req.body;
+
+    if (!crewUserId || !periodStart || !periodEnd || totalAmount === undefined || !createdBy) {
+      return res.status(400).json({
+        success: false,
+        error: "crewUserId, periodStart, periodEnd, totalAmount, and createdBy are required",
+      });
+    }
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const payoutStatus: CommissionStatus = COMMISSION_STATUSES.includes(status)
+      ? status
+      : "pending";
+
+    const db = neonDbService.db;
+    const [created] = await db
+      .insert(schema.crewPayouts)
+      .values({
+        id: createId(),
+        crewUserId,
+        periodStart: new Date(periodStart),
+        periodEnd: new Date(periodEnd),
+        totalAmount: String(totalAmount),
+        status: payoutStatus,
+        createdBy,
+        releasedAt: payoutStatus === "released" ? new Date() : null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    if (Array.isArray(entryIds) && entryIds.length > 0) {
+      await db
+        .update(schema.crewCommissionEntries)
+        .set({
+          payoutId: created.id,
+          status: payoutStatus,
+          updatedAt: new Date(),
+        })
+        .where(inArray(schema.crewCommissionEntries.id, entryIds));
+    }
+
+    res.json({ success: true, payout: created });
+  } catch (error) {
+    console.error("Error creating crew payout:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create crew payout",
+    });
+  }
+};
+
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
