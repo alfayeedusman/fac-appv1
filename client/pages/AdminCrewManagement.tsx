@@ -214,6 +214,53 @@ export default function AdminCrewManagement() {
     ];
   };
 
+  const loadCommissionRates = async () => {
+    try {
+      setCommissionLoading(true);
+      const result = await neonDbClient.getCommissionRates();
+      if (result.success) {
+        setCommissionRates(result.rates || []);
+      }
+    } catch (error) {
+      console.error("Failed to load commission rates:", error);
+    } finally {
+      setCommissionLoading(false);
+    }
+  };
+
+  const handleSaveCommissionRate = async () => {
+    const rate = Number(commissionRateValue);
+    if (!commissionServiceType || !rate || rate <= 0) {
+      toast({
+        title: "Invalid commission rate",
+        description: "Enter a service type and a rate greater than zero.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await neonDbClient.upsertCommissionRate(
+      commissionServiceType,
+      rate,
+    );
+
+    if (result.success) {
+      toast({
+        title: "Commission rate saved",
+        description: `${commissionServiceType} set to ${rate}%`,
+      });
+      setCommissionServiceType("");
+      setCommissionRateValue("");
+      loadCommissionRates();
+    } else {
+      toast({
+        title: "Failed to save rate",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       if (!userRole || isAuthLoading) return; // Don't load data until auth is complete
