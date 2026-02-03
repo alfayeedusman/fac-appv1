@@ -702,6 +702,7 @@ export default function AdminDashboard() {
   // Reload stats when time filter changes
   useEffect(() => {
     loadRealStats(timeFilter);
+    loadCrewCommissionSummary(timeFilter);
   }, [timeFilter]);
 
   const loadSystemNotifications = () => {
