@@ -74,6 +74,31 @@ export async function runMigrations() {
       )
     `;
 
+    // Create crew commission rates table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_commission_rates (
+        id TEXT PRIMARY KEY,
+        service_type VARCHAR(255) NOT NULL,
+        rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create daily income table
+    await sql`
+      CREATE TABLE IF NOT EXISTS daily_income (
+        id TEXT PRIMARY KEY,
+        branch VARCHAR(255) NOT NULL,
+        income_date TIMESTAMP NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        recorded_by TEXT NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     // Create crew locations table
     await sql`
       CREATE TABLE IF NOT EXISTS crew_locations (
