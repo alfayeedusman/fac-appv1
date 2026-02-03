@@ -224,14 +224,8 @@ export const getCrewActivity: RequestHandler = async (req, res) => {
 // Get crew list with details
 export const getCrewList: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
-      return res.status(500).json({
-        success: false,
-        error: "Database connection not available"
-      });
-    }
-
-    const db = neonDbService.db;
+    const db = await requireDb(res);
+    if (!db) return;
 
     const crewList = await db
       .select({
