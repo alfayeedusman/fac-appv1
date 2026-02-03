@@ -74,6 +74,11 @@ export async function runMigrations() {
       )
     `;
 
+    await sql`
+      ALTER TABLE crew_members
+      ADD COLUMN IF NOT EXISTS wash_bay VARCHAR(50);
+    `;
+
     // Create crew commission rates table
     await sql`
       CREATE TABLE IF NOT EXISTS crew_commission_rates (
