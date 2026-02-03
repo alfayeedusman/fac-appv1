@@ -385,14 +385,9 @@ export const updateCrewWashBayAssignment: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
-      return res.status(500).json({
-        success: false,
-        error: "Database connection not available",
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
-    const db = neonDbService.db;
     const [updated] = await db
       .update(schema.crewMembers)
       .set({
