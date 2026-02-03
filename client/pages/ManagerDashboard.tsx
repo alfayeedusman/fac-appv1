@@ -455,6 +455,54 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Daily Income Entry</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="manager-income-date">Date</Label>
+                <Input
+                  id="manager-income-date"
+                  type="date"
+                  value={dailyIncomeDate}
+                  onChange={(e) => setDailyIncomeDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manager-income-amount">Amount (₱)</Label>
+                <Input
+                  id="manager-income-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={dailyIncomeAmount}
+                  onChange={(e) => setDailyIncomeAmount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manager-income-notes">Notes</Label>
+                <Input
+                  id="manager-income-notes"
+                  placeholder="Optional notes"
+                  value={dailyIncomeNotes}
+                  onChange={(e) => setDailyIncomeNotes(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={submitDailyIncome}
+                disabled={dailyIncomeLoading}
+                className="btn-futuristic"
+              >
+                {dailyIncomeLoading ? 'Saving...' : 'Save Daily Income'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
