@@ -97,6 +97,8 @@ export default function Login() {
             navigate("/admin-dashboard");
           } else if (result.user.role === "manager") {
             navigate("/manager-dashboard");
+          } else if (result.user.role === "dispatcher") {
+            navigate("/dispatcher-dashboard");
           } else if (result.user.role === "crew") {
             navigate("/crew-dashboard");
           } else if (result.user.role === "cashier") {
