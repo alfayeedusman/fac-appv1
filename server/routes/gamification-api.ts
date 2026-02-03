@@ -43,8 +43,21 @@ export const getCustomerLevels: RequestHandler = async (req, res) => {
 export const createCustomerLevel: RequestHandler = async (req, res) => {
   try {
     const {
-      name, description, minPoints, maxPoints, discountPercentage,
-      priority, specialPerks, badgeIcon, badgeColor, levelColor, sortOrder
+      name,
+      description,
+      minPoints,
+      maxPoints,
+      discountPercentage,
+      priority,
+      specialPerks,
+      badgeIcon,
+      badgeColor,
+      levelColor,
+      gradient,
+      badgeShape,
+      badgePattern,
+      isActive,
+      sortOrder,
     } = req.body;
 
     const levelId = `level_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
