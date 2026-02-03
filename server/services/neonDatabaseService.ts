@@ -1045,7 +1045,7 @@ class NeonDatabaseService {
     const totalRevenue = bookingRevenue + posRevenue;
 
     // Count completed washes from bookings (within date range)
-    const [bookingWashCount] = await this.db
+    const [bookingWashCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -1056,7 +1056,7 @@ class NeonDatabaseService {
       );
 
     // Count POS carwash transactions (items with "Wash" in name, within date range)
-    const [posWashCount] = await this.db
+    const [posWashCount] = await db
       .select({ count: count() })
       .from(schema.posTransactionItems)
       .where(
@@ -1069,7 +1069,7 @@ class NeonDatabaseService {
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
     // Calculate total expenses from POS sessions (within date range)
-    const [expenseResult] = await this.db
+    const [expenseResult] = await db
       .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
       .from(schema.posExpenses)
       .where(gte(schema.posExpenses.createdAt, startDate));
@@ -1078,7 +1078,7 @@ class NeonDatabaseService {
     const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
-    const [subscriptionCount] = await this.db
+    const [subscriptionCount] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(sql`${schema.users.subscriptionStatus} != 'free'`);
@@ -1087,12 +1087,12 @@ class NeonDatabaseService {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
-    const [recentUsers] = await this.db
+    const [recentUsers] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
 
-    const [previousUsers] = await this.db
+    const [previousUsers] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(
@@ -1111,7 +1111,7 @@ class NeonDatabaseService {
     // === SUBSCRIPTION METRICS ===
 
     // Calculate total subscription revenue from active/completed subscriptions (within date range)
-    const [subscriptionRevenueResult] = await this.db
+    const [subscriptionRevenueResult] = await db
       .select({
         totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
       })
@@ -1129,13 +1129,13 @@ class NeonDatabaseService {
     );
 
     // Count new subscriptions (within date range)
-    const [newSubscriptionCount] = await this.db
+    const [newSubscriptionCount] = await db
       .select({ count: count() })
       .from(schema.packageSubscriptions)
       .where(gte(schema.packageSubscriptions.startDate, startDate));
 
     // Count subscription upgrades (users with non-free subscription status created/updated in period)
-    const [upgradeCount] = await this.db
+    const [upgradeCount] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(
