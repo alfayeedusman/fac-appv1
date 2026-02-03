@@ -244,6 +244,7 @@ export const createServer = () => {
   );
   app.get("/api/neon/crew/payouts", crewApiRoutes.getCrewPayouts);
   app.post("/api/neon/crew/payouts", crewApiRoutes.createCrewPayout);
+  app.put("/api/neon/crew/payouts/:id/status", crewApiRoutes.updateCrewPayoutStatus);
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
   app.get(
     "/api/neon/crew/commission-summary",
