@@ -2736,11 +2736,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === "crew" && (
-            <div className="space-y-6">
-              <AdminCrewManagement />
-            </div>
-          )}
 
           {activeTab === "database" && (
             <div className="space-y-6">
