@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
+import { neonDbClient } from '@/services/neonDatabaseService';
 import {
   Calendar,
   Clock,
