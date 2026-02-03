@@ -375,6 +375,34 @@ export default function AdminCrewManagement() {
     }
   };
 
+  const handleSeedCrew = async () => {
+    try {
+      setIsSeedingCrew(true);
+      const result = await neonDbClient.seedCrew();
+      if (result.success) {
+        toast({
+          title: "Sample crew added",
+          description: "Sample crew accounts are ready for testing.",
+        });
+        await loadCrewMembers();
+      } else {
+        toast({
+          title: "Failed to add sample crew",
+          description: result.error || "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to add sample crew",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSeedingCrew(false);
+    }
+  };
+
   const handleUpdateCommissionEntryStatus = async (
     entryId: string,
     status: string,
