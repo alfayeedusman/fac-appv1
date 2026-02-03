@@ -1,4 +1,4 @@
-import { addAdminNotification } from "./adminNotifications";
+import { neonDbClient } from "@/services/neonDatabaseService";
 
 export interface PaymentReceipt {
   id: string;
@@ -14,26 +14,23 @@ export interface SubscriptionRequest {
   userEmail: string;
   userName: string;
   userPhone?: string;
-  packageType:
-    | "Classic Silver"
-    | "VIP Gold Ultimate"
-    | "Premium Platinum Elite";
+  packageType: string;
   packagePrice: string;
-  paymentMethod: "gcash" | "maya" | "bank_transfer" | "over_counter";
+  paymentMethod: string;
   paymentDetails: {
     referenceNumber?: string;
     accountName?: string;
     amount: string;
     paymentDate: string;
   };
-  receipt: PaymentReceipt;
+  receipt?: PaymentReceipt;
   status: "pending" | "approved" | "rejected" | "under_review";
   submissionDate: string;
   reviewedBy?: string;
   reviewedDate?: string;
   reviewNotes?: string;
   customerStatus: "active" | "banned" | "suspended";
-  subscriptionId?: string; // Backend subscription ID when created via API
+  subscriptionId?: string;
 }
 
 export interface CustomerStatus {
@@ -46,308 +43,205 @@ export interface CustomerStatus {
   suspensionEnd?: string;
 }
 
-// Start with empty data - no sample requests
-const sampleRequests: SubscriptionRequest[] = [];
+export interface UserSubscriptionData {
+  package: string;
+  price: number;
+  paymentMethod?: string;
+  activatedDate: string;
+  currentCycleStart: string;
+  currentCycleEnd: string;
+  daysLeft: number;
+  totalWashes: {
+    classic: number;
+    vipProMax: number;
+    premium: number;
+  };
+  remainingWashes: {
+    classic: number;
+    vipProMax: number;
+    premium: number;
+  };
+  status: string;
+  autoRenewal?: boolean;
+}
 
-export const getSubscriptionRequests = (): SubscriptionRequest[] => {
-  const stored = localStorage.getItem("fac_subscription_requests");
-  if (stored) {
-    return JSON.parse(stored);
+const formatCurrency = (amount: number) =>
+  `₱${amount.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+const mapStatusToRequest = (status?: string): SubscriptionRequest["status"] => {
+  switch (status) {
+    case "active":
+      return "approved";
+    case "rejected":
+      return "rejected";
+    case "under_review":
+      return "under_review";
+    default:
+      return "pending";
   }
-
-  // Initialize with empty data - start fresh
-  localStorage.setItem("fac_subscription_requests", JSON.stringify([]));
-  return [];
 };
 
-export const updateSubscriptionRequest = (
+const mapStatusToSubscription = (status: SubscriptionRequest["status"]) => {
+  switch (status) {
+    case "approved":
+      return "active";
+    case "rejected":
+      return "rejected";
+    case "under_review":
+      return "under_review";
+    default:
+      return "pending";
+  }
+};
+
+const mapPaymentMethod = (method?: string) => {
+  if (!method) return "online";
+  const normalized = method.toLowerCase();
+  if (normalized === "paymaya") return "maya";
+  return normalized;
+};
+
+const buildWashLimits = (packageName: string) => {
+  if (packageName.toLowerCase().includes("classic")) {
+    return { classic: 5, vipProMax: 0, premium: 0 };
+  }
+  if (packageName.toLowerCase().includes("vip")) {
+    return { classic: 10, vipProMax: 2, premium: 0 };
+  }
+  if (packageName.toLowerCase().includes("premium")) {
+    return { classic: 999, vipProMax: 5, premium: 1 };
+  }
+  return { classic: 0, vipProMax: 0, premium: 0 };
+};
+
+const fetchSubscriptions = async (params?: {
+  status?: SubscriptionRequest["status"] | "all";
+  userId?: string;
+}) => {
+  const statuses = params?.status && params.status !== "all"
+    ? [mapStatusToSubscription(params.status)]
+    : ["pending", "under_review", "active", "rejected", "cancelled", "expired"];
+
+  const results = await Promise.all(
+    statuses.map((status) =>
+      neonDbClient.getSubscriptions({
+        status,
+        userId: params?.userId,
+      }),
+    ),
+  );
+
+  const subscriptions = results.flatMap((result) => result.subscriptions || []);
+  const seen = new Set<string>();
+  return subscriptions.filter((sub) => {
+    if (seen.has(sub.id)) return false;
+    seen.add(sub.id);
+    return true;
+  });
+};
+
+export const getSubscriptionRequests = async (params?: {
+  status?: SubscriptionRequest["status"] | "all";
+  userId?: string;
+}): Promise<SubscriptionRequest[]> => {
+  const [subscriptions, usersResult, packagesResult] = await Promise.all([
+    fetchSubscriptions(params),
+    neonDbClient.getCustomers(),
+    neonDbClient.getServicePackages(),
+  ]);
+
+  const users = usersResult.users || [];
+  const packages = packagesResult.packages || [];
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const packagesById = new Map(packages.map((pkg: any) => [pkg.id, pkg]));
+
+  return subscriptions.map((subscription) => {
+    const user = usersById.get(subscription.userId);
+    const pkg = packagesById.get(subscription.packageId);
+    const submissionDate = subscription.startDate
+      ? new Date(subscription.startDate).toISOString()
+      : new Date().toISOString();
+    const packageName = pkg?.name || subscription.packageId;
+    const priceLabel = formatCurrency(subscription.finalPrice || 0);
+
+    return {
+      id: subscription.id,
+      userId: subscription.userId,
+      userEmail: user?.email || "",
+      userName: user?.fullName || user?.email || "Customer",
+      userPhone: user?.contactNumber,
+      packageType: packageName,
+      packagePrice: priceLabel,
+      paymentMethod: mapPaymentMethod(subscription.paymentMethod),
+      paymentDetails: {
+        amount: priceLabel,
+        paymentDate: submissionDate,
+      },
+      status: mapStatusToRequest(subscription.status),
+      submissionDate,
+      reviewedBy: undefined,
+      reviewedDate: undefined,
+      reviewNotes: undefined,
+      customerStatus: user?.isActive === false ? "banned" : "active",
+      subscriptionId: subscription.id,
+    };
+  });
+};
+
+export const updateSubscriptionRequest = async (
   requestId: string,
   updates: Partial<SubscriptionRequest>,
-): void => {
-  const requests = getSubscriptionRequests();
-  const requestIndex = requests.findIndex((r) => r.id === requestId);
-  if (requestIndex !== -1) {
-    requests[requestIndex] = { ...requests[requestIndex], ...updates };
-    localStorage.setItem("fac_subscription_requests", JSON.stringify(requests));
+): Promise<{ success: boolean; error?: string }> => {
+  if (!updates.status) {
+    return { success: true };
   }
+
+  const result = await neonDbClient.approveSubscriptionUpgrade(
+    requestId,
+    mapStatusToSubscription(updates.status),
+  );
+
+  return { success: result.success, error: result.error };
 };
 
-export const approveSubscriptionRequest = (
+export const approveSubscriptionRequest = async (
   requestId: string,
-  adminEmail: string,
-  notes?: string,
-): void => {
-  const requests = getSubscriptionRequests();
-  const request = requests.find((r) => r.id === requestId);
-
-  if (request) {
-    updateSubscriptionRequest(requestId, {
-      status: "approved",
-      reviewedBy: adminEmail,
-      reviewedDate: new Date().toISOString(),
-      reviewNotes: notes || "Payment verified and subscription activated",
-    });
-
-    // Update user's subscription in localStorage
-    const subscriptionData = {
-      package: request.packageType,
-      price: parseFloat(request.paymentDetails.amount.replace(/[₱,]/g, "")),
-      paymentMethod: request.paymentMethod,
-      activatedDate: new Date().toISOString(),
-      currentCycleEnd: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000,
-      ).toISOString(), // 30 days from now
-      daysLeft: 30,
-      totalWashes: {
-        classic: request.packageType.includes("Classic")
-          ? 5
-          : request.packageType.includes("VIP")
-            ? 10
-            : 999,
-        premium: request.packageType.includes("Premium") ? 2 : 0,
-      },
-      remainingWashes: {
-        classic: request.packageType.includes("Classic")
-          ? 5
-          : request.packageType.includes("VIP")
-            ? 10
-            : 999,
-        premium: request.packageType.includes("Premium") ? 2 : 0,
-      },
-      status: "active",
-    };
-
-    localStorage.setItem(
-      `subscription_${request.userEmail}`,
-      JSON.stringify(subscriptionData),
-    );
-
-    // Send notification to customer
-    addApprovalNotification(requestId, "approved");
-  }
+  _adminEmail: string,
+  _notes?: string,
+): Promise<{ success: boolean; error?: string }> => {
+  return updateSubscriptionRequest(requestId, { status: "approved" });
 };
 
-export const rejectSubscriptionRequest = (
+export const rejectSubscriptionRequest = async (
   requestId: string,
-  adminEmail: string,
-  reason: string,
-): void => {
-  updateSubscriptionRequest(requestId, {
-    status: "rejected",
-    reviewedBy: adminEmail,
-    reviewedDate: new Date().toISOString(),
-    reviewNotes: reason,
-  });
-
-  // Send notification to customer
-  addApprovalNotification(requestId, "rejected", reason);
+  _adminEmail: string,
+  _reason: string,
+): Promise<{ success: boolean; error?: string }> => {
+  return updateSubscriptionRequest(requestId, { status: "rejected" });
 };
 
-export const banCustomer = (
+export const banCustomer = async (
   userId: string,
-  adminEmail: string,
-  reason: string,
-): void => {
-  // Update all requests for this user
-  const requests = getSubscriptionRequests();
-  const updatedRequests = requests.map((request) => {
-    if (request.userId === userId) {
-      return {
-        ...request,
-        customerStatus: "banned" as const,
-        reviewNotes: `Customer banned: ${reason}`,
-        reviewedBy: adminEmail,
-        reviewedDate: new Date().toISOString(),
-      };
-    }
-    return request;
-  });
-
-  localStorage.setItem(
-    "fac_subscription_requests",
-    JSON.stringify(updatedRequests),
-  );
-
-  // Store customer ban status
-  const customerStatuses = getCustomerStatuses();
-  const existingIndex = customerStatuses.findIndex(
-    (cs) => cs.userId === userId,
-  );
-
-  const banStatus: CustomerStatus = {
-    userId,
-    email: requests.find((r) => r.userId === userId)?.userEmail || "",
-    status: "banned",
-    banReason: reason,
-    banDate: new Date().toISOString(),
-    bannedBy: adminEmail,
-  };
-
-  if (existingIndex !== -1) {
-    customerStatuses[existingIndex] = banStatus;
-  } else {
-    customerStatuses.push(banStatus);
-  }
-
-  localStorage.setItem(
-    "fac_customer_statuses",
-    JSON.stringify(customerStatuses),
-  );
-
-  // Send notification to customer
-  addBanNotification(userId, reason);
+  _adminEmail: string,
+  _reason: string,
+): Promise<{ success: boolean; error?: string }> => {
+  const result = await neonDbClient.updateUserStatus(userId, false);
+  return { success: result.success, error: result.error };
 };
 
-export const unbanCustomer = (userId: string, adminEmail: string): void => {
-  // Update customer status
-  const customerStatuses = getCustomerStatuses();
-  const statusIndex = customerStatuses.findIndex((cs) => cs.userId === userId);
-
-  if (statusIndex !== -1) {
-    customerStatuses[statusIndex].status = "active";
-    customerStatuses[statusIndex].banReason = undefined;
-    customerStatuses[statusIndex].banDate = undefined;
-    customerStatuses[statusIndex].bannedBy = undefined;
-  }
-
-  localStorage.setItem(
-    "fac_customer_statuses",
-    JSON.stringify(customerStatuses),
-  );
-
-  // Update subscription requests
-  const requests = getSubscriptionRequests();
-  const updatedRequests = requests.map((request) => {
-    if (request.userId === userId) {
-      return {
-        ...request,
-        customerStatus: "active" as const,
-      };
-    }
-    return request;
-  });
-
-  localStorage.setItem(
-    "fac_subscription_requests",
-    JSON.stringify(updatedRequests),
-  );
+export const unbanCustomer = async (
+  userId: string,
+  _adminEmail: string,
+): Promise<{ success: boolean; error?: string }> => {
+  const result = await neonDbClient.updateUserStatus(userId, true);
+  return { success: result.success, error: result.error };
 };
 
-export const getCustomerStatuses = (): CustomerStatus[] => {
-  const stored = localStorage.getItem("fac_customer_statuses");
-  return stored ? JSON.parse(stored) : [];
-};
-
-export const getRequestsByStatus = (
-  status: SubscriptionRequest["status"],
-): SubscriptionRequest[] => {
-  return getSubscriptionRequests().filter(
-    (request) => request.status === status,
-  );
-};
-
-export const getRequestsByCustomerStatus = (
-  status: CustomerStatus["status"],
-): SubscriptionRequest[] => {
-  return getSubscriptionRequests().filter(
-    (request) => request.customerStatus === status,
-  );
-};
-
-export const addSubscriptionRequest = (
-  request: Omit<SubscriptionRequest, "id" | "submissionDate">,
-): SubscriptionRequest => {
-  const requests = getSubscriptionRequests();
-  const newRequest: SubscriptionRequest = {
-    ...request,
-    id: `SUB${String(requests.length + 1).padStart(3, "0")}`,
-    submissionDate: new Date().toISOString(),
-  };
-
-  requests.push(newRequest);
-  localStorage.setItem("fac_subscription_requests", JSON.stringify(requests));
-
-  // Send admin notification
-  const {
-    addSubscriptionRequestNotification,
-  } = require("./adminNotifications");
-  addSubscriptionRequestNotification(
-    request.userName,
-    request.userEmail,
-    request.packageType,
-    request.paymentDetails.amount,
-    newRequest.id,
-  );
-
-  return newRequest;
-};
-
-// Notification helpers
-const addApprovalNotification = (
-  requestId: string,
-  type: "approved" | "rejected",
-  reason?: string,
-): void => {
-  const request = getSubscriptionRequests().find((r) => r.id === requestId);
-  if (!request) return;
-
-  const notification = {
-    id: `approval_${requestId}_${Date.now()}`,
-    type: "subscription",
-    title:
-      type === "approved"
-        ? "Subscription Approved! 🎉"
-        : "Subscription Request Update",
-    message:
-      type === "approved"
-        ? `Your ${request.packageType} subscription has been approved and activated!`
-        : `Your subscription request has been rejected. Reason: ${reason}`,
-    timestamp: new Date().toISOString(),
-    read: false,
-    actionUrl: "/manage-subscription",
-    actionText: type === "approved" ? "View Subscription" : "Try Again",
-  };
-
-  // Add to user notifications (this would normally be done via API)
-  const userNotifications = JSON.parse(
-    localStorage.getItem(`notifications_${request.userEmail}`) || "[]",
-  );
-  userNotifications.unshift(notification);
-  localStorage.setItem(
-    `notifications_${request.userEmail}`,
-    JSON.stringify(userNotifications),
-  );
-};
-
-const addBanNotification = (userId: string, reason: string): void => {
-  const requests = getSubscriptionRequests();
-  const userRequest = requests.find((r) => r.userId === userId);
-  if (!userRequest) return;
-
-  const notification = {
-    id: `ban_${userId}_${Date.now()}`,
-    type: "system",
-    title: "Account Status Update",
-    message: `Your account has been suspended. Reason: ${reason}. Please contact support for assistance.`,
-    timestamp: new Date().toISOString(),
-    read: false,
-    actionUrl: "/profile",
-    actionText: "Contact Support",
-  };
-
-  // Add to user notifications
-  const userNotifications = JSON.parse(
-    localStorage.getItem(`notifications_${userRequest.userEmail}`) || "[]",
-  );
-  userNotifications.unshift(notification);
-  localStorage.setItem(
-    `notifications_${userRequest.userEmail}`,
-    JSON.stringify(userNotifications),
-  );
-};
-
-export const getSubscriptionStats = () => {
-  const requests = getSubscriptionRequests();
+export const getSubscriptionStats = async () => {
+  const requests = await getSubscriptionRequests({ status: "all" });
 
   return {
     total: requests.length,
@@ -359,36 +253,90 @@ export const getSubscriptionStats = () => {
   };
 };
 
-export const getUserSubscriptionRequest = (
+export const getUserSubscriptionRequest = async (
   userEmail: string,
-): SubscriptionRequest | null => {
-  const requests = getSubscriptionRequests();
-  const userId = `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
+): Promise<SubscriptionRequest | null> => {
+  const usersResult = await neonDbClient.getCustomers();
+  const user = (usersResult.users || []).find(
+    (item) => item.email === userEmail,
+  );
 
-  // Find the most recent request for this user
-  const userRequests = requests
-    .filter((req) => req.userId === userId)
-    .sort(
-      (a, b) =>
-        new Date(b.submissionDate).getTime() -
-        new Date(a.submissionDate).getTime(),
-    );
+  if (!user) return null;
 
-  return userRequests.length > 0 ? userRequests[0] : null;
+  const requests = await getSubscriptionRequests({ userId: user.id });
+  const sorted = requests.sort(
+    (a, b) =>
+      new Date(b.submissionDate).getTime() -
+      new Date(a.submissionDate).getTime(),
+  );
+
+  return sorted[0] || null;
 };
 
-export const getUserSubscriptionStatus = (
+export const getUserSubscriptionStatus = async (
   userEmail: string,
-): {
+): Promise<{
   hasRequest: boolean;
   status: SubscriptionRequest["status"] | null;
   request: SubscriptionRequest | null;
-} => {
-  const request = getUserSubscriptionRequest(userEmail);
+}> => {
+  const request = await getUserSubscriptionRequest(userEmail);
 
   return {
     hasRequest: !!request,
     status: request?.status || null,
     request,
+  };
+};
+
+export const getUserSubscriptionData = async (
+  userEmail: string,
+): Promise<UserSubscriptionData | null> => {
+  if (!userEmail) return null;
+
+  const usersResult = await neonDbClient.getCustomers();
+  const user = (usersResult.users || []).find(
+    (item) => item.email === userEmail,
+  );
+
+  if (!user) return null;
+
+  const [subscriptionsResult, packagesResult] = await Promise.all([
+    neonDbClient.getSubscriptions({ userId: user.id, status: "active" }),
+    neonDbClient.getServicePackages(),
+  ]);
+
+  const subscription = subscriptionsResult.subscriptions?.[0];
+  if (!subscription) return null;
+
+  const packages = packagesResult.packages || [];
+  const pkg = packages.find((item: any) => item.id === subscription.packageId);
+  const packageName = pkg?.name || subscription.packageId;
+  const washLimits = buildWashLimits(packageName);
+  const endDate = subscription.endDate
+    ? new Date(subscription.endDate)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+  );
+
+  return {
+    package: packageName,
+    price: subscription.finalPrice || 0,
+    paymentMethod: mapPaymentMethod(subscription.paymentMethod),
+    activatedDate: subscription.startDate
+      ? new Date(subscription.startDate).toISOString()
+      : new Date().toISOString(),
+    currentCycleStart: subscription.startDate
+      ? new Date(subscription.startDate).toISOString()
+      : new Date().toISOString(),
+    currentCycleEnd: endDate.toISOString(),
+    daysLeft,
+    totalWashes: washLimits,
+    remainingWashes: washLimits,
+    status: subscription.status || "active",
+    autoRenewal: subscription.autoRenew,
   };
 };
