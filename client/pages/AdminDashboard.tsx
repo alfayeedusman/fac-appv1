@@ -1809,6 +1809,129 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
+              {/* Crew Commission Summary */}
+              <Card className="glass border-border shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-lg">
+                        <DollarSign className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground">
+                          Crew Commission Summary
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Commissions for the selected period
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => navigate("/admin-crew-management")}
+                      variant="outline"
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                    >
+                      Manage Commission Rates
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {crewCommissionLoading ? (
+                    <div className="text-sm text-muted-foreground animate-pulse">
+                      Loading commission data...
+                    </div>
+                  ) : crewCommissionSummary ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Total Commission
+                          </p>
+                          <p className="text-2xl font-bold text-emerald-600">
+                            {formatCurrency(
+                              crewCommissionSummary.totalCommission,
+                            )}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Total Revenue
+                          </p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {formatCurrency(crewCommissionSummary.totalRevenue)}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-orange-50 dark:bg-orange-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Completed Jobs
+                          </p>
+                          <p className="text-2xl font-bold text-orange-600">
+                            {crewCommissionSummary.totalBookings}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-purple-50 dark:bg-purple-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Active Crew
+                          </p>
+                          <p className="text-2xl font-bold text-purple-600">
+                            {crewCommissionSummary.crewCount}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-semibold text-foreground">
+                            Crew Breakdown
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            Top commissions first
+                          </p>
+                        </div>
+                        <ScrollArea className="h-48 rounded-lg border border-border p-3">
+                          <div className="space-y-3">
+                            {crewCommissionSummary.crew.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">
+                                No crew commission records for this period.
+                              </p>
+                            ) : (
+                              crewCommissionSummary.crew.map((crew) => (
+                                <div
+                                  key={crew.crewId}
+                                  className="flex items-center justify-between"
+                                >
+                                  <div>
+                                    <p className="font-medium text-foreground">
+                                      {crew.crewName}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {crew.totalBookings} jobs •{" "}
+                                      {formatCurrency(crew.totalRevenue)} revenue
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-semibold text-emerald-600">
+                                      {formatCurrency(crew.totalCommission)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      commission
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No commission data yet for this period.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Location Summary */}
               <Card className="glass border-border shadow-xl">
                 <CardHeader>
