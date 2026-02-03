@@ -243,6 +243,13 @@ export default function AdminCrewManagement() {
     ];
   };
 
+  const commissionStatusOptions = [
+    "pending",
+    "approved",
+    "released",
+    "disputed",
+  ];
+
   const loadCommissionRates = async () => {
     try {
       setCommissionLoading(true);
