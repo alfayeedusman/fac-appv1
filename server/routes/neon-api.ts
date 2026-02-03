@@ -4,9 +4,13 @@ import {
   initializeDatabase,
   testConnection,
   sql,
+  getDatabase,
 } from "../database/connection";
 import { migrate } from "../database/migrate";
 import { triggerPusherEvent } from "../services/pusherService"; // Fire events to Pusher
+import * as schema from "../database/schema";
+import { and, eq, gte, lte, desc } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 const emitPusher = async (
   channels: string | string[],
