@@ -121,6 +121,8 @@ export default function AdminCrewManagement() {
     return end.toISOString().split("T")[0];
   });
   const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutBonus, setPayoutBonus] = useState("");
+  const [autoPayoutAmount, setAutoPayoutAmount] = useState(0);
   const [payoutStatus, setPayoutStatus] = useState("pending");
 
   // Check authentication on mount and whenever storage changes
