@@ -456,8 +456,10 @@ export default function AdminCrewManagement() {
   }, [computedAutoPayoutAmount]);
 
   const handleCreatePayout = async () => {
-    const amount = Number(payoutAmount);
-    if (!payoutCrewId || !payoutStartDate || !payoutEndDate || !amount || amount <= 0) {
+    const baseAmount = Number(payoutAmount);
+    const bonusAmount = Number(payoutBonus) || 0;
+    const totalAmount = baseAmount + bonusAmount;
+    if (!payoutCrewId || !payoutStartDate || !payoutEndDate || totalAmount <= 0) {
       toast({
         title: "Missing payout details",
         description: "Select crew, period, and amount.",
@@ -474,21 +476,13 @@ export default function AdminCrewManagement() {
       localStorage.getItem("userEmail") ||
       "unknown";
 
-    const entryIds = commissionEntries
-      .filter((entry) => {
-        if (entry.crewUserId !== payoutCrewId) return false;
-        const entryDate = new Date(entry.entryDate);
-        const start = new Date(payoutStartDate);
-        const end = new Date(payoutEndDate);
-        return entryDate >= start && entryDate <= end;
-      })
-      .map((entry) => entry.id);
+    const entryIds = eligiblePayoutEntries.map((entry) => entry.id);
 
     const result = await neonDbClient.createCrewPayout({
       crewUserId: payoutCrewId,
       periodStart: payoutStartDate,
       periodEnd: payoutEndDate,
-      totalAmount: amount,
+      totalAmount,
       status: payoutStatus,
       createdBy,
       entryIds,
