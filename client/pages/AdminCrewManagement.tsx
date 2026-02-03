@@ -871,6 +871,58 @@ export default function AdminCrewManagement() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Commission Rates by Service</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Input
+                        placeholder="Service type (e.g., Premium Wash)"
+                        value={commissionServiceType}
+                        onChange={(e) => setCommissionServiceType(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Rate %"
+                        value={commissionRateValue}
+                        onChange={(e) => setCommissionRateValue(e.target.value)}
+                      />
+                      <Button
+                        onClick={handleSaveCommissionRate}
+                        disabled={commissionLoading}
+                        className="btn-futuristic"
+                      >
+                        {commissionLoading ? "Saving..." : "Save Rate"}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {commissionRates.length === 0 && !commissionLoading && (
+                        <p className="text-sm text-muted-foreground">
+                          No commission rates configured yet.
+                        </p>
+                      )}
+                      {commissionRates.map((rate) => (
+                        <div
+                          key={rate.id || rate.serviceType}
+                          className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        >
+                          <div>
+                            <p className="font-medium">{rate.serviceType}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {rate.isActive ? "Active" : "Inactive"}
+                            </p>
+                          </div>
+                          <Badge variant="outline">{Number(rate.rate).toFixed(2)}%</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
           </Tabs>
