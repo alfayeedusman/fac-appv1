@@ -799,7 +799,9 @@ router.post("/pusher/auth", async (req, res) => {
     if (channel_name.startsWith("private-admin")) {
       if (
         !authenticatedUserRole ||
-        !["admin", "superadmin", "manager"].includes(authenticatedUserRole)
+        !["admin", "superadmin", "manager", "dispatcher"].includes(
+          authenticatedUserRole,
+        )
       ) {
         return res
           .status(403)
