@@ -1903,6 +1903,53 @@ export default function EnhancedCrewDashboard() {
           <TabsContent value="payroll" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
+                <CardTitle className="text-lg">FAC Boy Wallet</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border p-4">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Available Balance
+                    </p>
+                    <p className="text-2xl font-semibold text-emerald-600">
+                      ₱{walletAvailableBalance.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Total Earnings
+                    </p>
+                    <p className="text-2xl font-semibold">
+                      ₱{walletTotalEarnings.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border p-4">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Released Payouts
+                    </p>
+                    <p className="text-xl font-semibold">
+                      ₱{releasedPayoutTotal.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Pending Payouts
+                    </p>
+                    <p className="text-xl font-semibold">
+                      ₱{pendingPayoutTotal.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Earnings combine auto commissions and manual entries.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle className="text-lg">Weekly Payroll Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
