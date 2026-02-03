@@ -107,6 +107,12 @@ export const createServer = () => {
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
 
+  // DEBUG endpoints (for development only)
+  app.post(
+    "/api/neon/debug/password-verify",
+    neonApiRoutes.debugPasswordVerification,
+  );
+
   // Auth endpoints with database health check (critical routes)
   app.post(
     "/api/neon/auth/login",
