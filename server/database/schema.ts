@@ -612,6 +612,9 @@ export const customerLevels = pgTable("customer_levels", {
   badgeIcon: varchar("badge_icon", { length: 100 }),
   badgeColor: varchar("badge_color", { length: 50 }).default("#6B7280"),
   levelColor: varchar("level_color", { length: 50 }).default("#F97316"),
+  gradient: varchar("gradient", { length: 100 }).default("from-gray-400 to-gray-600"),
+  badgeShape: varchar("badge_shape", { length: 20 }).default("circle"),
+  badgePattern: varchar("badge_pattern", { length: 20 }).default("solid"),
 
   isActive: boolean("is_active").default(true),
   sortOrder: integer("sort_order").default(0),
