@@ -69,6 +69,7 @@ export default function ProtectedRoute({
           cashier: 2,
           inventory_manager: 2,
           manager: 3,
+          dispatcher: 3,
           admin: 4,
           superadmin: 5,
         };
