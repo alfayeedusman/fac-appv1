@@ -107,6 +107,8 @@ export default function EnhancedCrewDashboard() {
   const [isWorkActive, setIsWorkActive] = useState(false);
   const [signatureCanvas, setSignatureCanvas] = useState<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [payrollSummary, setPayrollSummary] = useState<any>(null);
+  const [payrollLoading, setPayrollLoading] = useState(false);
 
   useEffect(() => {
     loadCrewData();
