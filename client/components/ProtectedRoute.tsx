@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   redirectTo?: string;
 }
