@@ -1744,6 +1744,83 @@ export const debugPasswordVerification: RequestHandler = async (req, res) => {
   }
 };
 
+// DEBUG: List all users and their password status
+export const debugListUsers: RequestHandler = async (req, res) => {
+  try {
+    console.log("🔍 DEBUG: Fetching all users...");
+    const users = await neonDbService.getAllUsers();
+
+    const usersList = users.map((user: any) => ({
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      isActive: user.isActive,
+      hasPassword: !!user.password,
+      passwordHashLength: user.password ? user.password.length : 0,
+      passwordHashStart: user.password
+        ? user.password.substring(0, 15) + "..."
+        : "NO_HASH",
+      passwordHashAlgorithm: user.password?.substring(0, 4) || "NONE",
+    }));
+
+    console.log("🔍 DEBUG: Found", usersList.length, "users");
+
+    return res.json({
+      success: true,
+      totalUsers: usersList.length,
+      users: usersList,
+    });
+  } catch (error) {
+    console.error("🔍 DEBUG: Error fetching users", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+// DEBUG: Manually hash a test password
+export const debugHashPassword: RequestHandler = async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        error: "Password required",
+      });
+    }
+
+    const bcrypt = await import("bcryptjs");
+    console.log("🔍 DEBUG: Hashing password:", password.substring(0, 3) + "****");
+
+    const hash = await bcrypt.hash(password, 10);
+
+    console.log("🔍 DEBUG: Generated hash:", hash);
+
+    // Try comparing immediately
+    const isMatch = await bcrypt.compare(password, hash);
+    console.log("🔍 DEBUG: Immediate comparison result:", isMatch);
+
+    return res.json({
+      success: true,
+      debug: {
+        password: password.substring(0, 3) + "****",
+        generatedHash: hash,
+        immediateComparisonResult: isMatch,
+        hashLength: hash.length,
+        hashAlgorithm: hash.substring(0, 4),
+      },
+    });
+  } catch (error) {
+    console.error("🔍 DEBUG: Error hashing password", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 // Service packages endpoints
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
