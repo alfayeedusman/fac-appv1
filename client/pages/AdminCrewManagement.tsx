@@ -137,7 +137,7 @@ export default function AdminCrewManagement() {
         return;
       }
 
-      if (role !== "admin" && role !== "superadmin") {
+      if (role !== "admin" && role !== "superadmin" && role !== "manager") {
         console.log("❌ Insufficient permissions, redirecting to login");
         navigate("/login");
         return;
