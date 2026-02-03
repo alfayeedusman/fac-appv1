@@ -1959,6 +1959,100 @@ export default function EnhancedCrewDashboard() {
                 )}
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Manual Commission (Current Period)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border p-4">
+                  <p className="text-xs uppercase text-muted-foreground">
+                    Total Manual Commission
+                  </p>
+                  <p className="text-2xl font-semibold">
+                    ₱{manualCommissionTotal.toFixed(2)}
+                  </p>
+                </div>
+                {commissionEntriesLoading ? (
+                  <p className="text-sm text-muted-foreground">
+                    Loading manual commission entries...
+                  </p>
+                ) : commissionEntries.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No manual commissions recorded yet.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {commissionEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {new Date(entry.entryDate).toLocaleDateString()}
+                          </p>
+                          {entry.notes && (
+                            <p className="text-xs text-muted-foreground">
+                              {entry.notes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            ₱{Number(entry.amount || 0).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {entry.status}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Payout History</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {payoutHistoryLoading ? (
+                  <p className="text-sm text-muted-foreground">
+                    Loading payout history...
+                  </p>
+                ) : payoutHistory.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No payouts recorded yet.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {payoutHistory.map((payout) => (
+                      <div
+                        key={payout.id}
+                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {new Date(payout.periodStart).toLocaleDateString()} -{" "}
+                            {new Date(payout.periodEnd).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {payout.status}
+                          </p>
+                        </div>
+                        <p className="font-semibold">
+                          ₱{Number(payout.totalAmount || 0).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
