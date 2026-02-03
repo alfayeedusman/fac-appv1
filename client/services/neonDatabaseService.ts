@@ -1622,7 +1622,7 @@ class NeonDatabaseClient {
     }
     try {
       const response = await fetch(
-        `${this.baseUrl}/neon/branches/${branchId}`,
+        `${this.baseUrl}/branches/${branchId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
