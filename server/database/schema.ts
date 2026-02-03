@@ -52,6 +52,7 @@ export const crewMembers = pgTable("crew_members", {
   emergencyContactName: varchar("emergency_contact_name", { length: 100 }),
   emergencyContactPhone: varchar("emergency_contact_phone", { length: 20 }),
   notes: text("notes"),
+  washBay: varchar("wash_bay", { length: 50 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
