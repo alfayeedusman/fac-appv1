@@ -963,6 +963,8 @@ export default function UserRoleManagement() {
         return <Shield className="h-4 w-4" />;
       case "manager":
         return <UserCheck className="h-4 w-4" />;
+      case "dispatcher":
+        return <Send className="h-4 w-4" />;
       case "crew":
         return <Wrench className="h-4 w-4" />;
       case "cashier":
