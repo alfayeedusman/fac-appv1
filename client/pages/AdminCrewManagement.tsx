@@ -1402,13 +1402,13 @@ export default function AdminCrewManagement() {
                     <p className="text-sm text-muted-foreground">
                       Loading commission entries...
                     </p>
-                  ) : commissionEntries.length === 0 ? (
+                  ) : filteredCommissionEntries.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      No commission entries yet.
+                      No commission entries for the selected crew.
                     </p>
                   ) : (
                     <div className="space-y-3">
-                      {commissionEntries.map((entry) => (
+                      {filteredCommissionEntries.map((entry) => (
                         <div
                           key={entry.id}
                           className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
