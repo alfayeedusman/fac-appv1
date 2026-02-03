@@ -503,6 +503,14 @@ export default function AdminCrewManagement() {
     return payouts.filter((payout) => payout.crewUserId === selectedCrewId);
   }, [payouts, selectedCrewId]);
 
+  const commissionEmptyMessage = selectedCrewId
+    ? "No commission entries for the selected crew."
+    : "No commission entries yet.";
+
+  const payoutEmptyMessage = selectedCrewId
+    ? "No payouts recorded for the selected crew."
+    : "No payouts recorded yet.";
+
   const handleCreatePayout = async () => {
     const baseAmount = Number(payoutAmount) || 0;
     const bonusAmount = Number(payoutBonus) || 0;
