@@ -1658,6 +1658,26 @@ class NeonDatabaseClient {
     }
   }
 
+  async updateCrewPayoutStatus(id: string, status: string): Promise<{ success: boolean; payout?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/payouts/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payout status update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getCrewPayroll(params: {
     userId: string;
     startDate?: string;
