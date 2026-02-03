@@ -297,6 +297,182 @@ export default function AdminCrewManagement() {
     }
   };
 
+  const loadCrewMembers = async () => {
+    const result = await neonDbClient.getCrewList();
+    if (result.success) {
+      setCrewMembers(result.crew || []);
+    }
+  };
+
+  const loadCommissionEntries = async () => {
+    try {
+      setCommissionEntriesLoading(true);
+      const result = await neonDbClient.getCommissionEntries({});
+      if (result.success) {
+        setCommissionEntries(result.entries || []);
+      }
+    } catch (error) {
+      console.error("Failed to load commission entries:", error);
+    } finally {
+      setCommissionEntriesLoading(false);
+    }
+  };
+
+  const loadPayouts = async () => {
+    try {
+      setPayoutsLoading(true);
+      const result = await neonDbClient.getCrewPayouts({});
+      if (result.success) {
+        setPayouts(result.payouts || []);
+      }
+    } catch (error) {
+      console.error("Failed to load payouts:", error);
+    } finally {
+      setPayoutsLoading(false);
+    }
+  };
+
+  const handleAddCommissionEntry = async () => {
+    const amount = Number(commissionEntryAmount);
+    if (!commissionCrewId || !commissionEntryDate || !amount || amount <= 0) {
+      toast({
+        title: "Missing commission entry",
+        description: "Select a crew member, date, and amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem("currentUser");
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const recordedBy =
+      parsedUser?.id ||
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+
+    const result = await neonDbClient.createCommissionEntry({
+      crewUserId: commissionCrewId,
+      entryDate: commissionEntryDate,
+      amount,
+      notes: commissionEntryNotes || undefined,
+      recordedBy,
+      status: commissionEntryStatus,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Commission entry added",
+        description: "Commission entry saved successfully.",
+      });
+      setCommissionEntryAmount("");
+      setCommissionEntryNotes("");
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to add commission",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateCommissionEntryStatus = async (
+    entryId: string,
+    status: string,
+  ) => {
+    const result = await neonDbClient.updateCommissionEntryStatus(
+      entryId,
+      status,
+    );
+    if (result.success) {
+      toast({
+        title: "Commission status updated",
+        description: `Entry marked as ${status}.`,
+      });
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to update status",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreatePayout = async () => {
+    const amount = Number(payoutAmount);
+    if (!payoutCrewId || !payoutStartDate || !payoutEndDate || !amount || amount <= 0) {
+      toast({
+        title: "Missing payout details",
+        description: "Select crew, period, and amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem("currentUser");
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const createdBy =
+      parsedUser?.id ||
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+
+    const entryIds = commissionEntries
+      .filter((entry) => {
+        if (entry.crewUserId !== payoutCrewId) return false;
+        const entryDate = new Date(entry.entryDate);
+        const start = new Date(payoutStartDate);
+        const end = new Date(payoutEndDate);
+        return entryDate >= start && entryDate <= end;
+      })
+      .map((entry) => entry.id);
+
+    const result = await neonDbClient.createCrewPayout({
+      crewUserId: payoutCrewId,
+      periodStart: payoutStartDate,
+      periodEnd: payoutEndDate,
+      totalAmount: amount,
+      status: payoutStatus,
+      createdBy,
+      entryIds,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Payout recorded",
+        description: "Payout history updated.",
+      });
+      setPayoutAmount("");
+      loadPayouts();
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to record payout",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdatePayoutStatus = async (payoutId: string, status: string) => {
+    const result = await neonDbClient.updateCrewPayoutStatus(payoutId, status);
+    if (result.success) {
+      toast({
+        title: "Payout status updated",
+        description: `Payout marked as ${status}.`,
+      });
+      loadPayouts();
+    } else {
+      toast({
+        title: "Failed to update payout status",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       if (!userRole || isAuthLoading) return; // Don't load data until auth is complete
