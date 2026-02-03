@@ -1821,6 +1821,88 @@ export default function EnhancedCrewDashboard() {
               })}
             </div>
           </TabsContent>
+
+          <TabsContent value="payroll" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Weekly Payroll Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {payrollLoading && (
+                  <p className="text-sm text-muted-foreground">Loading payroll...</p>
+                )}
+                {!payrollLoading && !payrollSummary && (
+                  <p className="text-sm text-muted-foreground">
+                    No payroll data available yet.
+                  </p>
+                )}
+                {payrollSummary && (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="rounded-lg border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">
+                          Total Revenue
+                        </p>
+                        <p className="text-2xl font-semibold">
+                          ₱{Number(payrollSummary.totalRevenue || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">
+                          Commission Total
+                        </p>
+                        <p className="text-2xl font-semibold">
+                          ₱{Number(payrollSummary.totalCommission || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">
+                          Bookings Counted
+                        </p>
+                        <p className="text-2xl font-semibold">
+                          {payrollSummary.totalBookings || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border p-4">
+                      <p className="text-sm font-medium">Pay Period</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(payrollSummary.period.startDate).toLocaleDateString()} -{' '}
+                        {new Date(payrollSummary.period.endDate).toLocaleDateString()} (Paid on{' '}
+                        {new Date(payrollSummary.period.payoutDate).toLocaleDateString()})
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Service Breakdown</p>
+                      <div className="grid gap-2">
+                        {payrollSummary.breakdown?.map((item: any) => (
+                          <div
+                            key={item.serviceType}
+                            className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                          >
+                            <div>
+                              <p className="font-medium">{item.serviceType}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {item.bookingCount} bookings · {item.rate}% rate
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                ₱{Number(item.commission || 0).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                ₱{Number(item.totalRevenue || 0).toFixed(2)} revenue
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
