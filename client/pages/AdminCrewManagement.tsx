@@ -455,6 +455,9 @@ export default function AdminCrewManagement() {
     );
   }, [computedAutoPayoutAmount]);
 
+  const payoutBonusAmount = Number(payoutBonus) || 0;
+  const payoutTotalAmount = autoPayoutAmount + payoutBonusAmount;
+
   const handleCreatePayout = async () => {
     const baseAmount = Number(payoutAmount);
     const bonusAmount = Number(payoutBonus) || 0;
