@@ -1470,6 +1470,102 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCommissionRates(): Promise<{
+    success: boolean;
+    rates?: Array<{ serviceType: string; rate: number; isActive: boolean }>;
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission rates fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async upsertCommissionRate(
+    serviceType: string,
+    rate: number,
+  ): Promise<{ success: boolean; rate?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serviceType, rate }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission rate update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewPayroll(params: {
+    userId: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ success: boolean; payroll?: any; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams({ userId: params.userId });
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/payroll?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payroll fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createDailyIncome(payload: {
+    branch: string;
+    incomeDate: string;
+    amount: number;
+    recordedBy: string;
+    notes?: string;
+  }): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/daily-income`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Daily income create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getBranches(): Promise<{
     success: boolean;
     branches?: any[];
