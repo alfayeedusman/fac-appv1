@@ -5,77 +5,137 @@ import * as schema from "./schema";
 // Initialize the database connection
 let sql: any;
 let db: any;
+let lastConnectionAttempt = 0;
+const CONNECTION_RETRY_DELAY = 5000; // 5 seconds between reconnection attempts
+const MAX_RETRY_ATTEMPTS = 3;
 
-// Function to initialize database connection
-export function initializeDatabase() {
-  if (db && sql) {
-    return db; // Already initialized
+// Function to initialize database connection with retry logic
+export async function initializeDatabase(forceReconnect = false) {
+  // Prevent rapid retry attempts
+  const now = Date.now();
+  if (
+    db &&
+    sql &&
+    !forceReconnect &&
+    now - lastConnectionAttempt < CONNECTION_RETRY_DELAY
+  ) {
+    return db;
   }
 
+  lastConnectionAttempt = now;
+
   try {
-    // Get database URL from environment variables
     const databaseUrl =
       process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
     if (!databaseUrl) {
-      console.error(
-        "❌ CRITICAL: No database URL found in environment variables",
+      throw new Error(
+        "Database URL not configured. Please set NEON_DATABASE_URL or DATABASE_URL environment variable.",
       );
-      console.error("   Expected: NEON_DATABASE_URL or DATABASE_URL");
-      console.error(
-        "   Available env vars:",
-        Object.keys(process.env).filter(
-          (k) => k.includes("DATABASE") || k.includes("NEON"),
-        ),
-      );
-      return null;
     }
 
     console.log("🔄 Initializing database connection...");
-    sql = neon(databaseUrl);
+
+    // Configure Neon with options
+    sql = neon(databaseUrl, {
+      fetchOptions: {
+        cache: "no-store",
+      },
+    });
+
     db = drizzle(sql, { schema });
 
-    console.log("✅ Neon database connection initialized successfully");
+    // Test the connection immediately
+    await sql`SELECT 1 as test`;
+
+    console.log("✅ Neon database connection initialized and verified");
     return db;
   } catch (error) {
     console.error("❌ Failed to initialize database connection:", error);
-    if (error instanceof Error) {
-      console.error("   Error message:", error.message);
-      console.error("   Stack:", error.stack);
-    }
-    return null;
+
+    // Clear the connection so next attempt will retry
+    sql = null;
+    db = null;
+
+    throw error;
   }
 }
 
-// Initialize on module load
-initializeDatabase();
-
-// Get database instance
-export function getDatabase() {
-  if (!db) {
-    return initializeDatabase();
-  }
-  return db;
-}
-
-// Test database connection
-export async function testConnection() {
+// Test and auto-reconnect if needed
+export async function testConnection(
+  autoReconnect = true,
+  retryCount = 0,
+) {
   try {
-    const database = getDatabase();
-    if (!database) {
-      throw new Error("Database not initialized");
+    if (!db || !sql) {
+      if (autoReconnect) {
+        console.log("🔄 No connection found, attempting to reconnect...");
+        await initializeDatabase(true);
+        return true;
+      }
+      return false;
     }
 
-    // Simple test query
-    const result = await sql`SELECT 1 as test`;
-    console.log("✅ Database connection test successful:", result);
+    // Actually test the connection
+    await sql`SELECT 1 as test`;
     return true;
   } catch (error) {
     console.error("❌ Database connection test failed:", error);
+
+    if (autoReconnect && retryCount < MAX_RETRY_ATTEMPTS) {
+      console.log(
+        `🔄 Attempting to reconnect (attempt ${retryCount + 1}/${MAX_RETRY_ATTEMPTS})...`,
+      );
+      try {
+        await initializeDatabase(true);
+        return true;
+      } catch (retryError) {
+        console.error("❌ Reconnection failed:", retryError);
+        return retryCount < MAX_RETRY_ATTEMPTS - 1
+          ? await testConnection(autoReconnect, retryCount + 1)
+          : false;
+      }
+    }
+
     return false;
   }
 }
 
-// Export the database instance
+// Get database with automatic reconnection
+export async function getDatabase() {
+  if (!db) {
+    await initializeDatabase();
+  }
+  return db;
+}
+
+// Check if database is connected
+export function isConnected(): boolean {
+  return !!db && !!sql;
+}
+
+// Close database connection
+export async function closeConnection() {
+  try {
+    if (sql) {
+      sql = null;
+    }
+    if (db) {
+      db = null;
+    }
+    console.log("✅ Database connection closed");
+  } catch (error) {
+    console.error("❌ Error closing database connection:", error);
+  }
+}
+
+// Initialize on module load with error handling
+initializeDatabase().catch((err) => {
+  console.error("❌ Initial database connection failed:", err);
+  console.warn(
+    "⚠️ Server starting but database connection will be retried on first request",
+  );
+});
+
 export { db, sql };
 export default getDatabase;
