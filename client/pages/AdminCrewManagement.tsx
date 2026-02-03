@@ -307,6 +307,20 @@ export default function AdminCrewManagement() {
     }
   };
 
+  const loadCrewGroups = async () => {
+    try {
+      setCrewGroupsLoading(true);
+      const result = await neonDbClient.getCrewGroups();
+      if (result.success) {
+        setCrewGroups(result.groups || []);
+      }
+    } catch (error) {
+      console.error("Failed to load crew groups:", error);
+    } finally {
+      setCrewGroupsLoading(false);
+    }
+  };
+
   const loadCommissionEntries = async () => {
     try {
       setCommissionEntriesLoading(true);
