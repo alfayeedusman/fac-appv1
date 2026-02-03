@@ -109,6 +109,10 @@ export default function EnhancedCrewDashboard() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [payrollSummary, setPayrollSummary] = useState<any>(null);
   const [payrollLoading, setPayrollLoading] = useState(false);
+  const [commissionEntries, setCommissionEntries] = useState<any[]>([]);
+  const [commissionEntriesLoading, setCommissionEntriesLoading] = useState(false);
+  const [payoutHistory, setPayoutHistory] = useState<any[]>([]);
+  const [payoutHistoryLoading, setPayoutHistoryLoading] = useState(false);
 
   useEffect(() => {
     loadCrewData();
