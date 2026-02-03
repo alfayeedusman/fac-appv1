@@ -305,6 +305,7 @@ export default function AdminCrewManagement() {
 
       setStats(crewStats);
       setRecentActivity(crewActivity);
+      loadCommissionRates();
 
       toast({
         title: "Data Refreshed",
