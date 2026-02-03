@@ -206,6 +206,53 @@ export default function EnhancedCrewDashboard() {
     }
   };
 
+  const getCurrentPayPeriod = () => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  };
+
+  const loadManualCommissionData = async (userId: string) => {
+    try {
+      setCommissionEntriesLoading(true);
+      setPayoutHistoryLoading(true);
+      const { start, end } = getCurrentPayPeriod();
+
+      const [entriesResult, payoutsResult] = await Promise.all([
+        neonDbClient.getCommissionEntries({
+          crewUserId: userId,
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        }),
+        neonDbClient.getCrewPayouts({ crewUserId: userId }),
+      ]);
+
+      if (entriesResult.success) {
+        setCommissionEntries(entriesResult.entries || []);
+      } else {
+        setCommissionEntries([]);
+      }
+
+      if (payoutsResult.success) {
+        setPayoutHistory(payoutsResult.payouts || []);
+      } else {
+        setPayoutHistory([]);
+      }
+    } catch (error) {
+      console.error('Error loading manual commission data:', error);
+      setCommissionEntries([]);
+      setPayoutHistory([]);
+    } finally {
+      setCommissionEntriesLoading(false);
+      setPayoutHistoryLoading(false);
+    }
+  };
+
   const startLocationTracking = () => {
     // Check for geolocation support
     if (!isGeolocationSupported()) {
