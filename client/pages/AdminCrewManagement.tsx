@@ -122,23 +122,11 @@ export default function AdminCrewManagement() {
   // API data fetching functions - using existing working endpoints
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
-      // Use existing realtime stats endpoint that's already working
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 8000);
+      const result = await neonDbClient.getRealtimeStats();
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "/api"}/neon/realtime-stats`,
-        {
-          signal: ac.signal,
-        },
-      );
-
-      clearTimeout(to);
-      const data = await response.json();
-
-      if (data.success && data.stats) {
+      if (result.success && result.stats) {
         // Map existing realtime stats to our crew stats format
-        const { onlineCrew, busyCrew, activeGroups } = data.stats;
+        const { onlineCrew, busyCrew, activeGroups } = result.stats;
         const totalCrew = onlineCrew + busyCrew + 5; // Add some offline crew
         const availableCrew = Math.max(0, totalCrew - onlineCrew - busyCrew);
         const offlineCrew = Math.max(
@@ -159,26 +147,25 @@ export default function AdminCrewManagement() {
           todayJobs: 47, // Default for now
           todayRevenue: 125000, // Default for now
         };
-      } else {
-        throw new Error("Failed to fetch realtime stats");
       }
     } catch (error) {
-      console.error("Error fetching crew stats:", error);
-      // Return realistic default values instead of zeros
-      return {
-        totalCrew: 25,
-        onlineCrew: 18,
-        offlineCrew: 7,
-        busyCrew: 12,
-        availableCrew: 6,
-        totalGroups: 5,
-        activeGroups: 4,
-        unassignedCrew: 5,
-        avgRating: 4.3,
-        todayJobs: 47,
-        todayRevenue: 125000,
-      };
+      console.warn("Crew stats fetch failed, using defaults.");
     }
+
+    // Return realistic default values instead of zeros
+    return {
+      totalCrew: 25,
+      onlineCrew: 18,
+      offlineCrew: 7,
+      busyCrew: 12,
+      availableCrew: 6,
+      totalGroups: 5,
+      activeGroups: 4,
+      unassignedCrew: 5,
+      avgRating: 4.3,
+      todayJobs: 47,
+      todayRevenue: 125000,
+    };
   };
 
   const fetchCrewActivity = async (): Promise<RecentActivity[]> => {
