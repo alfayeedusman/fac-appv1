@@ -522,7 +522,12 @@ export default function AdminCrewManagement() {
 
       setStats(crewStats);
       setRecentActivity(crewActivity);
-      loadCommissionRates();
+      await Promise.all([
+        loadCommissionRates(),
+        loadCrewMembers(),
+        loadCommissionEntries(),
+        loadPayouts(),
+      ]);
 
       toast({
         title: "Data Refreshed",
