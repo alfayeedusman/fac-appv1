@@ -1137,7 +1137,9 @@ class NeonDatabaseClient {
     }
   }
 
-  async getServicePackages(): Promise<{
+  async getServicePackages(options?: {
+    includeInactive?: boolean;
+  }): Promise<{
     success: boolean;
     packages?: any[];
     error?: string;
@@ -1150,7 +1152,12 @@ class NeonDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/packages`, {
+      const url = new URL(`${this.baseUrl}/packages`);
+      if (options?.includeInactive) {
+        url.searchParams.set("includeInactive", "true");
+      }
+
+      const response = await fetch(url.toString(), {
         signal: ac.signal,
       });
 
@@ -1163,6 +1170,97 @@ class NeonDatabaseClient {
         console.warn("Packages fetch timed out");
       }
       return { success: false, packages: [] };
+    }
+  }
+
+  async createServicePackage(packageData: {
+    name: string;
+    description?: string;
+    category?: string;
+    type?: string;
+    basePrice: number;
+    durationType?: string;
+    duration?: string;
+    hours?: number;
+    startDate?: string;
+    endDate?: string;
+    features?: string[];
+    banner?: string;
+    active?: boolean;
+  }): Promise<{ success: boolean; package?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(packageData),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Create package failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateServicePackage(
+    id: string,
+    updates: Partial<{
+      name: string;
+      description: string;
+      category: string;
+      type: string;
+      basePrice: number;
+      durationType: string;
+      duration: string;
+      hours: number;
+      startDate: string;
+      endDate: string;
+      features: string[];
+      banner: string;
+      active: boolean;
+    }>,
+  ): Promise<{ success: boolean; package?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Update package failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async deleteServicePackage(
+    id: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Delete package failed:", error);
+      return { success: false, error: error.message };
     }
   }
 
