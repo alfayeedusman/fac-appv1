@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { validateEnvironment, getDatabaseInfo } from "./utils/validateEnvironment";
 
 // Import routes
 import demoRoutes from "./routes/demo";
@@ -20,6 +21,19 @@ import * as branchesApi from "./routes/branches-api";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Validate environment configuration on startup
+const envValidation = validateEnvironment();
+if (envValidation.valid) {
+  const dbInfo = getDatabaseInfo();
+  console.log("📊 Database Configuration:", {
+    host: dbInfo.host,
+    database: dbInfo.database,
+    username: dbInfo.username,
+    isPooler: dbInfo.isPooler,
+    ssl: dbInfo.ssl,
+  });
+}
 
 export const createServer = () => {
   const app = express();
