@@ -1821,6 +1821,101 @@ export const debugHashPassword: RequestHandler = async (req, res) => {
   }
 };
 
+// ADMIN: Force re-hash all passwords (admin only)
+export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
+  try {
+    console.log("⚠️ ADMIN: Force re-hashing all passwords...");
+
+    const bcrypt = await import("bcryptjs");
+    const { eq } = await import("drizzle-orm");
+
+    // Define all test user passwords
+    const userPasswords: Record<string, string> = {
+      "superadmin@fayeedautocare.com": "SuperAdmin2024!",
+      "admin.fayeed@gmail.com": "FayeedSuper123!",
+      "manager.tumaga@fayeedautocare.com": "TumagaAdmin2024!",
+      "manager.boalan@fayeedautocare.com": "BoalanAdmin2024!",
+      "cashier.tumaga@fayeedautocare.com": "Cashier123!",
+      "john.doe@gmail.com": "Customer123!",
+      "maria.santos@gmail.com": "Maria2024!",
+      "carlos.reyes@gmail.com": "Carlos123!",
+      "anna.lopez@gmail.com": "Anna2024!",
+      "premium.customer1@example.com": "Premium123!",
+      "premium.customer2@example.com": "Premium456!",
+      "vip.customer@example.com": "VIP789!",
+      "basic.customer@example.com": "Basic123!",
+      "free.customer@example.com": "Free123!",
+      "test.admin@example.com": "TestAdmin123!",
+      "test.manager@example.com": "TestManager123!",
+      "test.cashier@example.com": "TestCashier123!",
+    };
+
+    const db = await import("../database/connection");
+    const schema = await import("../database/schema");
+    const users = await db.getDatabase();
+
+    if (!users) {
+      return res.status(500).json({
+        success: false,
+        error: "Database not connected",
+      });
+    }
+
+    // Fetch all users
+    const allUsers = await users
+      .select()
+      .from(schema.default.users);
+
+    let updated = 0;
+    const results: any[] = [];
+
+    for (const user of allUsers) {
+      const newPassword = userPasswords[user.email];
+      if (newPassword) {
+        try {
+          console.log(`   → Hashing password for ${user.email}`);
+          const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+          await users
+            .update(schema.default.users)
+            .set({ password: hashedPassword })
+            .where(eq(schema.default.users.id, user.id));
+
+          updated++;
+          results.push({
+            email: user.email,
+            updated: true,
+            newHashLength: hashedPassword.length,
+          });
+          console.log(`   ✅ Updated ${user.email}`);
+        } catch (err) {
+          console.error(`   ❌ Error updating ${user.email}:`, err);
+          results.push({
+            email: user.email,
+            updated: false,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    }
+
+    console.log(`✅ Force re-hashed ${updated} user passwords`);
+
+    return res.json({
+      success: true,
+      message: `Force re-hashed ${updated} user passwords`,
+      updated,
+      results,
+    });
+  } catch (error) {
+    console.error("❌ ADMIN: Error force re-hashing passwords", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 // Service packages endpoints
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
