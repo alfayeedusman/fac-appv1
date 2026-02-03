@@ -10,6 +10,7 @@ import StickyHeader from "@/components/StickyHeader";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminHeatMap from "@/components/AdminHeatMap";
 import CrewGroupManagement from "@/components/CrewGroupManagement";
+import { neonDbClient } from "@/services/neonDatabaseService";
 import {
   Users,
   MapPin,
