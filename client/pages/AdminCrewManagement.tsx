@@ -276,6 +276,7 @@ export default function AdminCrewManagement() {
 
         setStats(crewStats);
         setRecentActivity(crewActivity);
+        loadCommissionRates();
         console.log("✅ Crew management data loaded successfully");
       } catch (error) {
         console.error("Error loading crew management data:", error);
