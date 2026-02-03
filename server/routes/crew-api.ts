@@ -554,6 +554,175 @@ export const getCrewPayroll: RequestHandler = async (req, res) => {
   }
 };
 
+export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!neonDbService.db) {
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available",
+      });
+    }
+
+    const db = neonDbService.db;
+    const referenceDate = new Date();
+    const window = getPayrollWindow(referenceDate);
+
+    const start = startDate ? new Date(startDate as string) : window.start;
+    const end = endDate ? new Date(endDate as string) : window.end;
+
+    const commissionRates = await db
+      .select()
+      .from(schema.crewCommissionRates)
+      .where(eq(schema.crewCommissionRates.isActive, true));
+
+    const rateMap = new Map<string, number>();
+    commissionRates.forEach((rate) => {
+      rateMap.set(rate.serviceType.toLowerCase(), Number(rate.rate) || 0);
+    });
+
+    const crewProfiles = await db
+      .select({
+        userId: schema.crewMembers.userId,
+        fullName: schema.users.fullName,
+        commissionRate: schema.crewMembers.commissionRate,
+      })
+      .from(schema.crewMembers)
+      .innerJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id))
+      .where(eq(schema.users.role, "crew"));
+
+    const crewProfileMap = new Map(
+      crewProfiles.map((profile) => [profile.userId, profile]),
+    );
+
+    const bookings = await db
+      .select({
+        id: schema.bookings.id,
+        service: schema.bookings.service,
+        category: schema.bookings.category,
+        totalPrice: schema.bookings.totalPrice,
+        completedAt: schema.bookings.completedAt,
+        assignedCrew: schema.bookings.assignedCrew,
+      })
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.status, "completed"),
+          gte(schema.bookings.completedAt, start),
+          lte(schema.bookings.completedAt, end),
+        ),
+      );
+
+    let totalCommission = 0;
+    let totalRevenue = 0;
+
+    const crewSummary: Record<
+      string,
+      {
+        crewId: string;
+        crewName: string;
+        totalRevenue: number;
+        totalCommission: number;
+        totalBookings: number;
+      }
+    > = {};
+
+    const breakdown: Record<
+      string,
+      {
+        serviceType: string;
+        bookingCount: number;
+        totalRevenue: number;
+        totalCommission: number;
+      }
+    > = {};
+
+    bookings.forEach((booking) => {
+      const revenue = Number(booking.totalPrice) || 0;
+      totalRevenue += revenue;
+
+      const serviceKey =
+        booking.service || booking.category || "Unspecified Service";
+      const normalizedKey = serviceKey.toLowerCase();
+
+      let assignedCrew: string[] = [];
+      if (Array.isArray(booking.assignedCrew)) {
+        assignedCrew = booking.assignedCrew as string[];
+      } else if (typeof booking.assignedCrew === "string") {
+        try {
+          assignedCrew = JSON.parse(booking.assignedCrew);
+        } catch (e) {
+          assignedCrew = [];
+        }
+      }
+
+      assignedCrew.forEach((crewId) => {
+        const profile = crewProfileMap.get(crewId);
+        const fallbackRate = Number(profile?.commissionRate || 0);
+        const rate =
+          rateMap.get(normalizedKey) ||
+          rateMap.get((booking.category || "").toLowerCase()) ||
+          fallbackRate;
+        const commission = (revenue * rate) / 100;
+
+        totalCommission += commission;
+
+        if (!crewSummary[crewId]) {
+          crewSummary[crewId] = {
+            crewId,
+            crewName: profile?.fullName || "Unknown Crew",
+            totalRevenue: 0,
+            totalCommission: 0,
+            totalBookings: 0,
+          };
+        }
+
+        crewSummary[crewId].totalRevenue += revenue;
+        crewSummary[crewId].totalCommission += commission;
+        crewSummary[crewId].totalBookings += 1;
+
+        if (!breakdown[serviceKey]) {
+          breakdown[serviceKey] = {
+            serviceType: serviceKey,
+            bookingCount: 0,
+            totalRevenue: 0,
+            totalCommission: 0,
+          };
+        }
+
+        breakdown[serviceKey].bookingCount += 1;
+        breakdown[serviceKey].totalRevenue += revenue;
+        breakdown[serviceKey].totalCommission += commission;
+      });
+    });
+
+    res.json({
+      success: true,
+      summary: {
+        period: {
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        },
+        totalBookings: bookings.length,
+        totalRevenue,
+        totalCommission,
+        crewCount: Object.keys(crewSummary).length,
+        crew: Object.values(crewSummary).sort(
+          (a, b) => b.totalCommission - a.totalCommission,
+        ),
+        breakdown: Object.values(breakdown),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching crew commission summary:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch crew commission summary",
+    });
+  }
+};
+
 // Seed crew data (for development/testing)
 export const seedCrew: RequestHandler = async (req, res) => {
   try {
