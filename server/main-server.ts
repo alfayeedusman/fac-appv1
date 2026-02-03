@@ -17,9 +17,13 @@ import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { migrate } from "./database/migrate";
 import * as branchesApi from "./routes/branches-api";
+import { validateEnvironment } from "./utils/validateEnvironment";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Validate environment on startup
+validateEnvironment();
 
 export const createServer = () => {
   const app = express();
