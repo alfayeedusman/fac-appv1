@@ -301,18 +301,25 @@ export default function SubscriptionRequestCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowReceipt(true)}
+                onClick={() => hasReceipt && setShowReceipt(true)}
+                disabled={!hasReceipt}
                 className="flex items-center space-x-1"
               >
                 <Eye className="h-4 w-4" />
-                <span>View</span>
+                <span>{hasReceipt ? "View" : "Not Available"}</span>
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>File: {request.receipt.fileName}</p>
-              <p>Size: {formatFileSize(request.receipt.fileSize)}</p>
-              <p>Uploaded: {formatDate(request.receipt.uploadDate)}</p>
-            </div>
+            {hasReceipt ? (
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>File: {request.receipt?.fileName}</p>
+                <p>Size: {formatFileSize(request.receipt?.fileSize || 0)}</p>
+                <p>Uploaded: {formatDate(request.receipt?.uploadDate || "")}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No receipt uploaded for this request yet.
+              </p>
+            )}
           </div>
 
           {/* Review Information */}
