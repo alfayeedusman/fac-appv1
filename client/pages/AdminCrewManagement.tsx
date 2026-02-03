@@ -167,83 +167,40 @@ export default function AdminCrewManagement() {
   // API data fetching functions - using existing working endpoints
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
-      const result = await neonDbClient.getRealtimeStats();
-
+      const result = await neonDbClient.getCrewStats();
       if (result.success && result.stats) {
-        // Map existing realtime stats to our crew stats format
-        const { onlineCrew, busyCrew, activeGroups } = result.stats;
-        const totalCrew = onlineCrew + busyCrew + 5; // Add some offline crew
-        const availableCrew = Math.max(0, totalCrew - onlineCrew - busyCrew);
-        const offlineCrew = Math.max(
-          0,
-          totalCrew - onlineCrew - busyCrew - availableCrew,
-        );
-
-        return {
-          totalCrew,
-          onlineCrew,
-          busyCrew,
-          availableCrew,
-          offlineCrew,
-          totalGroups: activeGroups + 2, // Add some inactive groups
-          activeGroups,
-          unassignedCrew: Math.max(0, totalCrew - (onlineCrew + busyCrew)),
-          avgRating: 4.3, // Default rating
-          todayJobs: 47, // Default for now
-          todayRevenue: 125000, // Default for now
-        };
+        return result.stats as CrewStats;
       }
     } catch (error) {
-      console.warn("Crew stats fetch failed, using defaults.");
+      console.warn("Crew stats fetch failed.");
     }
 
-    // Return realistic default values instead of zeros
     return {
-      totalCrew: 25,
-      onlineCrew: 18,
-      offlineCrew: 7,
-      busyCrew: 12,
-      availableCrew: 6,
-      totalGroups: 5,
-      activeGroups: 4,
-      unassignedCrew: 5,
-      avgRating: 4.3,
-      todayJobs: 47,
-      todayRevenue: 125000,
+      totalCrew: 0,
+      onlineCrew: 0,
+      offlineCrew: 0,
+      busyCrew: 0,
+      availableCrew: 0,
+      totalGroups: 0,
+      activeGroups: 0,
+      unassignedCrew: 0,
+      avgRating: 0,
+      todayJobs: 0,
+      todayRevenue: 0,
     };
   };
 
   const fetchCrewActivity = async (): Promise<RecentActivity[]> => {
-    // For now, return sample activity data - we can connect this to real data later
-    return [
-      {
-        id: "1",
-        type: "status_change",
-        crewId: "crew-1",
-        crewName: "John Santos",
-        message: "Changed status from Available to Busy",
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        severity: "info",
-      },
-      {
-        id: "2",
-        type: "assignment",
-        crewId: "crew-2",
-        crewName: "Maria Garcia",
-        message: "Accepted new assignment #BK-2024-0145",
-        timestamp: new Date(Date.now() - 600000).toISOString(),
-        severity: "success",
-      },
-      {
-        id: "3",
-        type: "location_update",
-        crewId: "crew-3",
-        crewName: "Carlos Reyes",
-        message: "Location updated - Makati City",
-        timestamp: new Date(Date.now() - 900000).toISOString(),
-        severity: "info",
-      },
-    ];
+    try {
+      const result = await neonDbClient.getCrewActivity({ limit: 10 });
+      if (result.success && result.activities) {
+        return result.activities as RecentActivity[];
+      }
+    } catch (error) {
+      console.warn("Crew activity fetch failed.");
+    }
+
+    return [];
   };
 
   const commissionStatusOptions = [
