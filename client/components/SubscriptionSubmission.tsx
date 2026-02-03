@@ -26,7 +26,6 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
-import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "./NotificationModal";
 import { neonDbClient } from "@/services/neonDatabaseService";
 
@@ -156,24 +155,6 @@ export default function SubscriptionSubmission({
     setIsSubmitting(true);
 
     try {
-      // Simulate file upload and create receipt data
-      // Clean up any existing object URL first
-      if (receiptObjectUrlRef.current) {
-        URL.revokeObjectURL(receiptObjectUrlRef.current);
-      }
-
-      // Create new object URL and store reference for cleanup
-      const objectUrl = URL.createObjectURL(receiptFile);
-      receiptObjectUrlRef.current = objectUrl;
-
-      const receipt = {
-        id: `RCP${Date.now()}`,
-        imageUrl: objectUrl,
-        fileName: receiptFile.name,
-        uploadDate: new Date().toISOString(),
-        fileSize: receiptFile.size,
-      };
-
       const selectedPkg = packages.find((p) => p.id === selectedPackage);
       if (!selectedPkg) return;
 
@@ -199,29 +180,9 @@ export default function SubscriptionSubmission({
         return;
       }
 
-      // Also create subscription request in localStorage for admin approval flow
-      const request = addSubscriptionRequest({
-        userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
-        userEmail,
-        userName,
-        userPhone: userPhone || undefined,
-        packageType: selectedPkg.name as any,
-        packagePrice: `${selectedPkg.price}/${selectedPkg.period}`,
-        paymentMethod: paymentMethod as any,
-        paymentDetails: {
-          ...paymentDetails,
-          amount: `${selectedPkg.price}.00`,
-        },
-        receipt,
-        status: "pending",
-        customerStatus: "active",
-        subscriptionId: upgradeResult.subscription?.id, // Store backend subscription ID
-      });
-
-      // Show success notification
       notificationManager.success(
         "Request Submitted! 🎉",
-        `Your subscription request has been submitted successfully!\n\nRequest ID: ${request.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
+        `Your subscription request has been submitted successfully!\n\nRequest ID: ${upgradeResult.subscription?.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
         { autoClose: 6000 },
       );
 
