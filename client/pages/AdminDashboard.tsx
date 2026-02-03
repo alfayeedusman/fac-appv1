@@ -220,6 +220,10 @@ export default function AdminDashboard() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [crewCommissionSummary, setCrewCommissionSummary] =
+    useState<CrewCommissionSummary | null>(null);
+  const [crewCommissionLoading, setCrewCommissionLoading] = useState(false);
+
   const [realtimeStats, setRealtimeStats] = useState({
     onlineCrew: 0,
     busyCrew: 0,
