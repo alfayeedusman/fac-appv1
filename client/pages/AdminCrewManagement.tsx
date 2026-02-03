@@ -355,7 +355,7 @@ export default function AdminCrewManagement() {
       amount,
       notes: commissionEntryNotes || undefined,
       recordedBy,
-      status: commissionEntryStatus,
+      status: "pending",
     });
 
     if (result.success) {
