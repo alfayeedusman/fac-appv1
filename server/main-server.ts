@@ -166,6 +166,10 @@ export const createServer = () => {
   app.get("/api/neon/settings", neonApiRoutes.getSettings);
   app.put("/api/neon/settings", neonApiRoutes.updateSetting);
 
+  // Daily income endpoints
+  app.get("/api/neon/daily-income", neonApiRoutes.getDailyIncome);
+  app.post("/api/neon/daily-income", neonApiRoutes.createDailyIncome);
+
   // Ads endpoints
   app.get("/api/neon/ads", neonApiRoutes.getAds);
   app.post("/api/neon/ads", neonApiRoutes.createAd);
