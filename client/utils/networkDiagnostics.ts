@@ -190,7 +190,7 @@ export const networkDiagnostics = new NetworkDiagnostics();
 // Helper functions for compatibility
 export async function testApiConnectivity(): Promise<{
   apiReachable: boolean;
-  neonConnected: boolean;
+  supabaseConnected: boolean;
   registrationEndpoint: boolean;
   details?: string;
 }> {
