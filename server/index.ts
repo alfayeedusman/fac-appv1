@@ -375,7 +375,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
     app.listen(PORT, () => {
       console.log(`🚀 FAC Server running on port ${PORT}`);
-      console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
+      console.log(
+        `📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`,
+      );
       console.log(`🏠 Home: http://localhost:${PORT}/`);
 
       // Initialize database and seed data on server startup
