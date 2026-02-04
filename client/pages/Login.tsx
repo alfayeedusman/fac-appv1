@@ -1,25 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
-import {
-  Eye,
-  EyeOff,
-  Smartphone,
-  Mail,
-  Lock,
-  Zap,
-  ArrowLeft,
-  CheckCircle,
-  Calendar,
-} from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn } from "lucide-react";
 import { authService } from "@/services/authService";
-import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 export default function Login() {
   const navigate = useNavigate();
