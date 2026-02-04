@@ -35,6 +35,7 @@ export async function initializeDatabase(forceReconnect = false) {
     }
 
     console.log("🔄 Initializing database connection...");
+    console.log("📝 Database URL being used:", databaseUrl.substring(0, 50) + "...");
 
     sql = postgres(databaseUrl, {
       ssl: { rejectUnauthorized: false },
