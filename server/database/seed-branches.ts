@@ -125,6 +125,11 @@ export async function seedBranches() {
 }
 
 async function seedBranchUsers(db: any, branches: any[]) {
+  if (!db) {
+    console.warn("⚠️ Database not connected, skipping user seeding");
+    return;
+  }
+
   try {
     console.log("👥 Seeding users for branches...");
 
