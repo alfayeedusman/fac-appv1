@@ -109,8 +109,7 @@ const AppComponent = () => {
               <Routes>
                 <Route path="/test" element={<TestPage />} />
                 <Route path="/" element={<Index />} />
-                <Route path="/auth/login" element={<SimpleLogin />} />
-                <Route path="/simple-login" element={<SimpleLogin />} />
+                <Route path="/login" element={<SimpleLogin />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/credential-setup" element={<CredentialSetup />} />
