@@ -1021,7 +1021,7 @@ export default function EnhancedInventoryManagement() {
   const handleDebugConnection = async () => {
     try {
       console.log('🔍 Starting database debug...');
-      const debugResult = await neonDbClient.debugConnection();
+      const debugResult = await supabaseDbClient.debugConnection();
 
       const message = `
 Base URL: ${debugResult.baseUrl}
