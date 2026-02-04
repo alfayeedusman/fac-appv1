@@ -226,7 +226,7 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
   try {
     // Check if database URL is configured
     const databaseUrl =
-      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+      process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
     if (!databaseUrl) {
       return res.json({
         success: false,
@@ -270,7 +270,7 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
 export const diagnoseDatabase: RequestHandler = async (req, res) => {
   try {
     const databaseUrl =
-      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+      process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
     // Check environment
     const checks = {
