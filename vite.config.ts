@@ -43,22 +43,20 @@ function expressPlugin(): Plugin {
       server.middlewares.use(app);
 
       // Add fallback middleware to serve index.html for SPA routing
-      return () => {
-        server.middlewares.use((req, res, next) => {
-          // Skip if it's an API route
-          if (req.path.startsWith("/api/")) {
-            return next();
-          }
+      server.middlewares.use((req, res, next) => {
+        // Skip if it's an API route
+        if (req.path.startsWith("/api/")) {
+          return next();
+        }
 
-          // For non-API routes, serve index.html and let React Router handle it
-          if (!req.path.match(/\.[^.]*$/)) {
-            // If path doesn't have a file extension, serve index.html
-            req.url = "/index.html";
-          }
+        // For non-API routes, serve index.html and let React Router handle it
+        if (!req.path.match(/\.[^.]*$/)) {
+          // If path doesn't have a file extension, serve index.html
+          req.url = "/index.html";
+        }
 
-          next();
-        });
-      };
+        next();
+      });
     },
   };
 }
