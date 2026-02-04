@@ -1,11 +1,12 @@
 import express, { RequestHandler } from 'express';
-import { neon } from '@neondatabase/serverless';
+import { getSqlClient } from '../database/connection';
 
 const router = express.Router();
 
-// Initialize Neon SQL client
-const DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || '';
-const sql = DATABASE_URL ? neon(DATABASE_URL) : null as any;
+// Get SQL client on demand
+async function getSql() {
+  return await getSqlClient();
+}
 
 // ============= CUSTOMER LEVELS ENDPOINTS =============
 
