@@ -55,7 +55,6 @@
     "express",
     "cors",
     "drizzle-orm",
-    "@neondatabase/serverless",
     "postgres",
     "bcryptjs",
     "firebase-admin",
