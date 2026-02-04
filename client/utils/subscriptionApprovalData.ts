@@ -1,7 +1,5 @@
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
-import { supabaseDbClient } from "@/services/supabaseDatabaseService";
-
 export interface PaymentReceipt {
   id: string;
   imageUrl: string;
