@@ -50,20 +50,14 @@ function expressPlugin(): Plugin {
       setTimeout(async () => {
         try {
           const { migrate } = await import("./server/database/migrate.js");
-          const { seedBranches } = await import("./server/database/seed-branches.js");
-          const { seedUsers } = await import("./server/database/seed-users.js");
 
           console.log("🔄 Initializing database and running migrations...");
           await migrate();
           console.log("✅ Database initialization and migrations completed successfully");
 
-          console.log("🏪 Auto-seeding branch data...");
-          await seedBranches();
-          console.log("✅ Branch seeding completed successfully");
-
-          console.log("👥 Auto-seeding user data...");
-          await seedUsers();
-          console.log("✅ User seeding completed successfully");
+          // Skip additional seeding - the migrate() function already handles initial data
+          // seedBranches() and seedUsers() have schema mismatches and will cause server errors
+          console.log("🌱 Core database initialization complete");
         } catch (error) {
           console.error("❌ Database initialization failed:", error);
         }
