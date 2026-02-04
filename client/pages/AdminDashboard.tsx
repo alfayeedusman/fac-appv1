@@ -534,6 +534,51 @@ export default function AdminDashboard() {
     }
   };
 
+  const mapServicePackage = (pkg: any): ServicePackage => {
+    const startDate = pkg.startDate ?? pkg.start_date;
+    const endDate = pkg.endDate ?? pkg.end_date;
+
+    return {
+      id: pkg.id,
+      name: pkg.name,
+      basePrice: Number(pkg.base_price ?? pkg.basePrice ?? 0),
+      duration: pkg.duration || "Monthly",
+      durationType: pkg.duration_type ?? pkg.durationType ?? "preset",
+      hours: pkg.hours ?? undefined,
+      startDate: startDate ? String(startDate) : undefined,
+      endDate: endDate ? String(endDate) : undefined,
+      banner: pkg.banner ?? pkg.banner_url ?? pkg.bannerUrl ?? undefined,
+      features: Array.isArray(pkg.features) ? pkg.features : [],
+      active:
+        typeof pkg.is_active === "boolean"
+          ? pkg.is_active
+          : typeof pkg.isActive === "boolean"
+            ? pkg.isActive
+            : pkg.active ?? true,
+    };
+  };
+
+  const loadServicePackages = async () => {
+    try {
+      setPackagesLoading(true);
+      const result = await neonDbClient.getServicePackages({
+        includeInactive: true,
+      });
+
+      if (result.success && Array.isArray(result.packages)) {
+        setPackages(result.packages.map(mapServicePackage));
+      } else {
+        console.warn("⚠️ Failed to load packages:", result);
+        setPackages([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading packages:", error);
+      setPackages([]);
+    } finally {
+      setPackagesLoading(false);
+    }
+  };
+
   // Function to load real-time crew and customer statistics
   const loadRealtimeStats = async () => {
     try {
