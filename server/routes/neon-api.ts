@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 import {
   initializeDatabase,
   testConnection,
@@ -243,7 +243,7 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
     let stats = null;
     if (isConnected) {
       try {
-        stats = await neonDbService.getStats();
+        stats = await supabaseDbService.getStats();
       } catch (statsError) {
         // Silently fail - don't log
       }
@@ -306,7 +306,7 @@ export const diagnoseDatabase: RequestHandler = async (req, res) => {
 
     // Check if users table exists and get user counts
     try {
-      const allUsers = await neonDbService.getAllUsers();
+      const allUsers = await supabaseDbService.getAllUsers();
       checks.tablesExist = true;
       checks.hasUsers = allUsers.length > 0;
       checks.usersCount = allUsers.length;
@@ -350,7 +350,7 @@ export const loginUser: RequestHandler = async (req, res) => {
       contentType: req.headers["content-type"],
       time: new Date().toISOString(),
       nodeEnv: process.env.NODE_ENV,
-      dbConnected: !!neonDbService["db"],
+      dbConnected: !!supabaseDbService["db"],
     });
 
     if (!email || !password) {
@@ -367,7 +367,7 @@ export const loginUser: RequestHandler = async (req, res) => {
     let user;
     try {
       console.log("🔐 Attempting to fetch user from database...");
-      user = await neonDbService.getUserByEmail(email);
+      user = await supabaseDbService.getUserByEmail(email);
       if (user) {
         console.log("✅ User found in database", {
           email: user.email,
@@ -413,7 +413,7 @@ export const loginUser: RequestHandler = async (req, res) => {
     let isValidPassword = false;
     try {
       console.log("🔐 Starting password verification...");
-      isValidPassword = await neonDbService.verifyPassword(email, password);
+      isValidPassword = await supabaseDbService.verifyPassword(email, password);
       console.log("🔐 Password verification result", {
         email,
         isValid: isValidPassword,
@@ -448,7 +448,7 @@ export const loginUser: RequestHandler = async (req, res) => {
 
     // Update last login
     try {
-      await neonDbService.updateUser(user.id, { lastLoginAt: new Date() });
+      await supabaseDbService.updateUser(user.id, { lastLoginAt: new Date() });
     } catch (updateErr) {
       console.warn("⚠️ Failed to update last login:", updateErr);
       // Continue - this is not critical
@@ -463,7 +463,7 @@ export const loginUser: RequestHandler = async (req, res) => {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     try {
-      await neonDbService.createUserSession(
+      await supabaseDbService.createUserSession(
         userWithoutPassword.id,
         sessionToken,
         expiresAt,
@@ -511,7 +511,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
 
     // Check if user already exists
-    const existingUser = await neonDbService.getUserByEmail(userData.email);
+    const existingUser = await supabaseDbService.getUserByEmail(userData.email);
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -522,7 +522,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     // Create user (excluding subscriptionPackage from user data)
     const { subscriptionPackage: _ignore, ...userDataWithoutPackage } =
       userData;
-    const user = await neonDbService.createUser(userDataWithoutPackage);
+    const user = await supabaseDbService.createUser(userDataWithoutPackage);
 
     console.log("✅ User created:", user.id);
 
@@ -534,7 +534,7 @@ export const registerUser: RequestHandler = async (req, res) => {
           "📦 Creating subscription for package:",
           subscriptionPackage,
         );
-        subscription = await neonDbService.createSubscription({
+        subscription = await supabaseDbService.createSubscription({
           userId: user.id,
           packageId: subscriptionPackage,
           status: "pending",
@@ -592,7 +592,7 @@ export const getSlotAvailability: RequestHandler = async (req, res) => {
       });
     }
 
-    const availability = await neonDbService.getSlotAvailability(
+    const availability = await supabaseDbService.getSlotAvailability(
       String(date),
       String(timeSlot),
       String(branch),
@@ -740,7 +740,7 @@ export const createBooking: RequestHandler = async (req, res) => {
       timeSlot,
       branch,
     });
-    const availability = await neonDbService.getSlotAvailability(
+    const availability = await supabaseDbService.getSlotAvailability(
       date,
       timeSlot,
       branch,
@@ -754,11 +754,11 @@ export const createBooking: RequestHandler = async (req, res) => {
       });
     }
 
-    const booking = await neonDbService.createBooking(req.body);
+    const booking = await supabaseDbService.createBooking(req.body);
 
     // Create notification for new booking
     try {
-      await neonDbService.createSystemNotification({
+      await supabaseDbService.createSystemNotification({
         type: "new_booking",
         title: "🎯 New Booking Received",
         message: `New booking created: ${booking.service} on ${booking.date}`,
@@ -852,7 +852,7 @@ export const getBookings: RequestHandler = async (req, res) => {
     // Get current user's details if filtering by branch access is needed
     let currentUser = null;
     if (userEmail) {
-      currentUser = await neonDbService.getUserByEmail(userEmail as string);
+      currentUser = await supabaseDbService.getUserByEmail(userEmail as string);
     }
 
     // Check if user can view all branches
@@ -864,20 +864,20 @@ export const getBookings: RequestHandler = async (req, res) => {
 
     if (userId) {
       // Get bookings for specific user
-      bookings = await neonDbService.getBookingsByUserId(userId as string);
+      bookings = await supabaseDbService.getBookingsByUserId(userId as string);
     } else if (branch && branch !== "all") {
       // Filter by specific branch
       if (status) {
-        bookings = await neonDbService.getBookingsByBranchAndStatus(
+        bookings = await supabaseDbService.getBookingsByBranchAndStatus(
           branch as string,
           status as string,
         );
       } else {
-        bookings = await neonDbService.getBookingsByBranch(branch as string);
+        bookings = await supabaseDbService.getBookingsByBranch(branch as string);
       }
     } else if (status) {
       // Filter by status
-      let allBookings = await neonDbService.getBookingsByStatus(
+      let allBookings = await supabaseDbService.getBookingsByStatus(
         status as string,
       );
 
@@ -891,7 +891,7 @@ export const getBookings: RequestHandler = async (req, res) => {
       }
     } else {
       // Get all bookings
-      let allBookings = await neonDbService.getAllBookings();
+      let allBookings = await supabaseDbService.getAllBookings();
 
       // Apply branch restriction if user can't view all branches
       if (!canViewAll && currentUser) {
@@ -930,14 +930,14 @@ export const logoutUser: RequestHandler = async (req, res) => {
     }
     const token = authHeader.split(" ")[1];
 
-    const session = await neonDbService.getSessionByToken(token);
+    const session = await supabaseDbService.getSessionByToken(token);
     if (!session) {
       return res
         .status(400)
         .json({ success: false, error: "Session not found" });
     }
 
-    await neonDbService.deactivateSession(token);
+    await supabaseDbService.deactivateSession(token);
 
     res.json({ success: true, message: "Logged out successfully" });
   } catch (error) {
@@ -958,10 +958,10 @@ export const revokeSession: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Admin Authorization required" });
     }
     const callerToken = authHeader.split(" ")[1];
-    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    const callerSession = await supabaseDbService.getSessionByToken(callerToken);
     if (!callerSession)
       return res.status(403).json({ success: false, error: "Invalid session" });
-    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    const callerUser = await supabaseDbService.getUserById(callerSession.userId);
     if (
       !callerUser ||
       !["admin", "superadmin", "manager"].includes(callerUser.role)
@@ -978,17 +978,17 @@ export const revokeSession: RequestHandler = async (req, res) => {
     };
 
     if (sessionToken) {
-      await neonDbService.deactivateSession(sessionToken);
+      await supabaseDbService.deactivateSession(sessionToken);
       return res.json({ success: true, message: "Session token revoked" });
     }
 
     if (sessionId) {
-      await neonDbService.deactivateSessionById(sessionId);
+      await supabaseDbService.deactivateSessionById(sessionId);
       return res.json({ success: true, message: "Session id revoked" });
     }
 
     if (userId) {
-      await neonDbService.deactivateSessionsByUserId(userId);
+      await supabaseDbService.deactivateSessionsByUserId(userId);
       return res.json({
         success: true,
         message: "All sessions for user revoked",
@@ -1016,10 +1016,10 @@ export const getSessions: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Admin Authorization required" });
     }
     const callerToken = authHeader.split(" ")[1];
-    const callerSession = await neonDbService.getSessionByToken(callerToken);
+    const callerSession = await supabaseDbService.getSessionByToken(callerToken);
     if (!callerSession)
       return res.status(403).json({ success: false, error: "Invalid session" });
-    const callerUser = await neonDbService.getUserById(callerSession.userId);
+    const callerUser = await supabaseDbService.getUserById(callerSession.userId);
     if (
       !callerUser ||
       !["admin", "superadmin", "manager"].includes(callerUser.role)
@@ -1033,7 +1033,7 @@ export const getSessions: RequestHandler = async (req, res) => {
       userId?: string;
       activeOnly?: string;
     };
-    const sessions = await neonDbService.getSessions({
+    const sessions = await supabaseDbService.getSessions({
       userId,
       activeOnly: activeOnly === "true",
     });
@@ -1041,7 +1041,7 @@ export const getSessions: RequestHandler = async (req, res) => {
     // Attach basic user info
     const sessionsWithUser = await Promise.all(
       sessions.map(async (s: any) => {
-        const user = await neonDbService.getUserById(s.userId);
+        const user = await supabaseDbService.getUserById(s.userId);
         return {
           ...s,
           userEmail: user?.email || null,
@@ -1262,7 +1262,7 @@ export const updateBooking: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const booking = await neonDbService.updateBooking(id, updates);
+    const booking = await supabaseDbService.updateBooking(id, updates);
 
     res.json({
       success: true,
@@ -1290,7 +1290,7 @@ export const getNotifications: RequestHandler = async (req, res) => {
       });
     }
 
-    const notifications = await neonDbService.getNotificationsForUser(
+    const notifications = await supabaseDbService.getNotificationsForUser(
       userId as string,
       userRole as string,
     );
@@ -1313,7 +1313,7 @@ export const markNotificationRead: RequestHandler = async (req, res) => {
     const { notificationId } = req.params;
     const { userId } = req.body;
 
-    await neonDbService.markNotificationAsRead(notificationId, userId);
+    await supabaseDbService.markNotificationAsRead(notificationId, userId);
 
     res.json({
       success: true,
@@ -1331,7 +1331,7 @@ export const markNotificationRead: RequestHandler = async (req, res) => {
 // Admin settings endpoints
 export const getSettings: RequestHandler = async (req, res) => {
   try {
-    const settings = await neonDbService.getAllSettings();
+    const settings = await supabaseDbService.getAllSettings();
     res.json({
       success: true,
       settings,
@@ -1349,7 +1349,7 @@ export const updateSetting: RequestHandler = async (req, res) => {
   try {
     const { key, value, description, category } = req.body;
 
-    const setting = await neonDbService.setSetting(
+    const setting = await supabaseDbService.setSetting(
       key,
       value,
       description,
@@ -1439,7 +1439,7 @@ export const getDailyIncome: RequestHandler = async (req, res) => {
 // Ads endpoints
 export const getAds: RequestHandler = async (req, res) => {
   try {
-    const ads = await neonDbService.getActiveAds();
+    const ads = await supabaseDbService.getActiveAds();
     res.json({
       success: true,
       ads,
@@ -1455,7 +1455,7 @@ export const getAds: RequestHandler = async (req, res) => {
 
 export const createAd: RequestHandler = async (req, res) => {
   try {
-    const ad = await neonDbService.createAd(req.body);
+    const ad = await supabaseDbService.createAd(req.body);
 
     res.status(201).json({
       success: true,
@@ -1476,7 +1476,7 @@ export const dismissAd: RequestHandler = async (req, res) => {
     const { adId } = req.params;
     const { userEmail } = req.body;
 
-    await neonDbService.dismissAd(adId, userEmail);
+    await supabaseDbService.dismissAd(adId, userEmail);
 
     res.json({
       success: true,
@@ -1495,7 +1495,7 @@ export const dismissAd: RequestHandler = async (req, res) => {
 export const getDatabaseStats: RequestHandler = async (req, res) => {
   try {
     const period = (req.query.period as string) || "monthly";
-    const stats = await neonDbService.getStats(period);
+    const stats = await supabaseDbService.getStats(period);
     res.json({
       success: true,
       stats,
@@ -1512,7 +1512,7 @@ export const getDatabaseStats: RequestHandler = async (req, res) => {
 // Real-time crew and customer stats endpoint
 export const getRealtimeStats: RequestHandler = async (req, res) => {
   try {
-    const realtimeStats = await neonDbService.getRealtimeStats();
+    const realtimeStats = await supabaseDbService.getRealtimeStats();
     res.json({
       success: true,
       stats: realtimeStats,
@@ -1530,7 +1530,7 @@ export const getRealtimeStats: RequestHandler = async (req, res) => {
 export const getFacMapStats: RequestHandler = async (req, res) => {
   try {
     console.log("📊 Getting FAC MAP stats...");
-    const facMapStats = await neonDbService.getFacMapStats();
+    const facMapStats = await supabaseDbService.getFacMapStats();
     console.log(
       "✅ FAC MAP stats retrieved:",
       JSON.stringify(facMapStats, null, 2),
@@ -1565,9 +1565,9 @@ export const getAnalyticsData: RequestHandler = async (req, res) => {
     let bookings: any[] = [];
 
     try {
-      stats = await neonDbService.getStats((timeFilter as string) || "monthly");
-      users = await neonDbService.getAllUsers();
-      bookings = await neonDbService.getAllBookings();
+      stats = await supabaseDbService.getStats((timeFilter as string) || "monthly");
+      users = await supabaseDbService.getAllUsers();
+      bookings = await supabaseDbService.getAllBookings();
     } catch (dbError) {
       console.warn("⚠️ Analytics fallback: database unavailable", dbError);
     }
@@ -1712,7 +1712,7 @@ export const debugLogin: RequestHandler = async (req, res) => {
     const { email, password } = req.body;
     console.log("🔍 DEBUG: Testing login with", { email });
 
-    const user = await neonDbService.getUserByEmail(email);
+    const user = await supabaseDbService.getUserByEmail(email);
     if (!user) {
       console.error("❌ DEBUG: User not found:", email);
       return res.json({
@@ -1729,7 +1729,7 @@ export const debugLogin: RequestHandler = async (req, res) => {
       passwordLength: user.password?.length,
     });
 
-    const isValidPassword = await neonDbService.verifyPassword(email, password);
+    const isValidPassword = await supabaseDbService.verifyPassword(email, password);
     console.log("🔐 DEBUG: Password verification result:", isValidPassword);
 
     return res.json({
@@ -1754,7 +1754,7 @@ export const debugLogin: RequestHandler = async (req, res) => {
 export const getAllUsers: RequestHandler = async (req, res) => {
   try {
     console.log("👥 Getting all users...");
-    const users = await neonDbService.getAllUsers();
+    const users = await supabaseDbService.getAllUsers();
     console.log("✅ Users retrieved:", users.length, "users found");
     res.json({ success: true, users });
   } catch (error) {
@@ -1767,7 +1767,7 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 export const getCustomers: RequestHandler = async (req, res) => {
   try {
     console.log("🛒 Getting customer users...");
-    const allUsers = await neonDbService.getAllUsers();
+    const allUsers = await supabaseDbService.getAllUsers();
     const customers = allUsers.filter((user) => user.role === "user");
     console.log("✅ Customers retrieved:", customers.length, "customers found");
     res.json({ success: true, users: customers });
@@ -1781,7 +1781,7 @@ export const getCustomers: RequestHandler = async (req, res) => {
 export const getStaffUsers: RequestHandler = async (req, res) => {
   try {
     console.log("👨‍💼 Getting staff users...");
-    const allUsers = await neonDbService.getAllUsers();
+    const allUsers = await supabaseDbService.getAllUsers();
     const staff = allUsers.filter((user) => user.role !== "user");
     console.log("✅ Staff retrieved:", staff.length, "staff members found");
     res.json({ success: true, users: staff });
@@ -1819,7 +1819,7 @@ export const createStaffUser: RequestHandler = async (req, res) => {
       crewSkills: permissions || [],
     };
 
-    const user = await neonDbService.createUser(userData);
+    const user = await supabaseDbService.createUser(userData);
     console.log("✅ Staff user created:", user.id);
     res.json({ success: true, user });
   } catch (error) {
@@ -1848,7 +1848,7 @@ export const getBranches: RequestHandler = async (req, res) => {
       });
     }
 
-    const branches = await neonDbService.getBranches();
+    const branches = await supabaseDbService.getBranches();
     branchesCache = {
       branches: branches || [],
       expiresAt: Date.now() + BRANCHES_CACHE_TTL * 1000,
@@ -1865,7 +1865,7 @@ export const seedBranchesEndpoint: RequestHandler = async (req, res) => {
     console.log("🌱 Seeding branches...");
     const { seedBranches } = await import("../database/seed-branches.js");
     await seedBranches();
-    const branches = await neonDbService.getBranches();
+    const branches = await supabaseDbService.getBranches();
     res.json({
       success: true,
       message: "Branches seeded successfully",
@@ -1895,7 +1895,7 @@ export const debugPasswordVerification: RequestHandler = async (req, res) => {
     console.log("🔍 DEBUG: Starting password verification check...");
 
     // Fetch user
-    const user = await neonDbService.getUserByEmail(email);
+    const user = await supabaseDbService.getUserByEmail(email);
 
     if (!user) {
       return res.status(404).json({
@@ -1964,7 +1964,7 @@ export const debugPasswordVerification: RequestHandler = async (req, res) => {
 export const debugListUsers: RequestHandler = async (req, res) => {
   try {
     console.log("🔍 DEBUG: Fetching all users...");
-    const users = await neonDbService.getAllUsers();
+    const users = await supabaseDbService.getAllUsers();
 
     const usersList = users.map((user: any) => ({
       email: user.email,
@@ -2136,7 +2136,7 @@ export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
 export const getServicePackages: RequestHandler = async (req, res) => {
   try {
     const includeInactive = req.query.includeInactive === "true";
-    const packages = await neonDbService.getServicePackages({
+    const packages = await supabaseDbService.getServicePackages({
       includeInactive,
     });
     res.json({
@@ -2155,7 +2155,7 @@ export const getServicePackages: RequestHandler = async (req, res) => {
 export const createServicePackage: RequestHandler = async (req, res) => {
   try {
     const payload = req.body || {};
-    const created = await neonDbService.createServicePackage({
+    const created = await supabaseDbService.createServicePackage({
       name: payload.name,
       description: payload.description,
       category: payload.category || "subscription",
@@ -2242,7 +2242,7 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
     if (payload.priority !== undefined)
       updates.priority = Number(payload.priority);
 
-    const updated = await neonDbService.updateServicePackage(id, updates);
+    const updated = await supabaseDbService.updateServicePackage(id, updates);
 
     res.json({
       success: true,
@@ -2261,7 +2261,7 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
 export const deleteServicePackage: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    await neonDbService.deleteServicePackage(id);
+    await supabaseDbService.deleteServicePackage(id);
     res.json({
       success: true,
       message: "Service package deleted successfully",
@@ -2278,7 +2278,7 @@ export const deleteServicePackage: RequestHandler = async (req, res) => {
 // Gamification levels endpoints
 export const getCustomerLevels: RequestHandler = async (req, res) => {
   try {
-    const levels = await neonDbService.getCustomerLevels();
+    const levels = await supabaseDbService.getCustomerLevels();
     res.json({
       success: true,
       levels: levels || [],
@@ -2295,7 +2295,7 @@ export const getCustomerLevels: RequestHandler = async (req, res) => {
 // POS categories endpoints
 export const getPOSCategories: RequestHandler = async (req, res) => {
   try {
-    const categories = await neonDbService.getPOSCategories();
+    const categories = await supabaseDbService.getPOSCategories();
     res.json({
       success: true,
       categories: categories || [],
@@ -2314,7 +2314,7 @@ export const getPOSCategories: RequestHandler = async (req, res) => {
 // Inventory items endpoints
 export const getInventoryItems: RequestHandler = async (req, res) => {
   try {
-    const items = await neonDbService.getInventoryItems();
+    const items = await supabaseDbService.getInventoryItems();
     res.json({
       success: true,
       items: items || [],
@@ -2330,7 +2330,7 @@ export const getInventoryItems: RequestHandler = async (req, res) => {
 
 export const createInventoryItem: RequestHandler = async (req, res) => {
   try {
-    const item = await neonDbService.createInventoryItem(req.body);
+    const item = await supabaseDbService.createInventoryItem(req.body);
     res.status(201).json({
       success: true,
       item,
@@ -2361,7 +2361,7 @@ export const createInventoryItem: RequestHandler = async (req, res) => {
 export const updateInventoryItem: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await neonDbService.updateInventoryItem(id, req.body);
+    const item = await supabaseDbService.updateInventoryItem(id, req.body);
     res.json({
       success: true,
       item,
@@ -2391,7 +2391,7 @@ export const updateInventoryItem: RequestHandler = async (req, res) => {
 export const deleteInventoryItem: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    await neonDbService.deleteInventoryItem(id);
+    await supabaseDbService.deleteInventoryItem(id);
     res.json({
       success: true,
       message: "Inventory item deleted successfully",
@@ -2421,7 +2421,7 @@ export const deleteInventoryItem: RequestHandler = async (req, res) => {
 export const getStockMovements: RequestHandler = async (req, res) => {
   try {
     const { itemId, limit } = req.query;
-    const movements = await neonDbService.getStockMovements(
+    const movements = await supabaseDbService.getStockMovements(
       itemId as string,
       limit ? parseInt(limit as string) : undefined,
     );
@@ -2440,7 +2440,7 @@ export const getStockMovements: RequestHandler = async (req, res) => {
 
 export const createStockMovement: RequestHandler = async (req, res) => {
   try {
-    const movement = await neonDbService.createStockMovement(req.body);
+    const movement = await supabaseDbService.createStockMovement(req.body);
     res.status(201).json({
       success: true,
       movement,
@@ -2470,7 +2470,7 @@ export const createStockMovement: RequestHandler = async (req, res) => {
 // Suppliers endpoints
 export const getSuppliers: RequestHandler = async (req, res) => {
   try {
-    const suppliers = await neonDbService.getSuppliers();
+    const suppliers = await supabaseDbService.getSuppliers();
     res.json({
       success: true,
       suppliers: suppliers || [],
@@ -2486,7 +2486,7 @@ export const getSuppliers: RequestHandler = async (req, res) => {
 
 export const createSupplier: RequestHandler = async (req, res) => {
   try {
-    const supplier = await neonDbService.createSupplier(req.body);
+    const supplier = await supabaseDbService.createSupplier(req.body);
     res.status(201).json({
       success: true,
       supplier,
@@ -2504,7 +2504,7 @@ export const createSupplier: RequestHandler = async (req, res) => {
 export const updateSupplier: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const supplier = await neonDbService.updateSupplier(id, req.body);
+    const supplier = await supabaseDbService.updateSupplier(id, req.body);
     res.json({
       success: true,
       supplier,
@@ -2522,7 +2522,7 @@ export const updateSupplier: RequestHandler = async (req, res) => {
 export const deleteSupplier: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    await neonDbService.deleteSupplier(id);
+    await supabaseDbService.deleteSupplier(id);
     res.json({
       success: true,
       message: "Supplier deleted successfully",
@@ -2539,7 +2539,7 @@ export const deleteSupplier: RequestHandler = async (req, res) => {
 // Inventory analytics endpoints
 export const getInventoryAnalytics: RequestHandler = async (req, res) => {
   try {
-    const analytics = await neonDbService.getInventoryAnalytics();
+    const analytics = await supabaseDbService.getInventoryAnalytics();
     res.json({
       success: true,
       analytics,
@@ -2555,7 +2555,7 @@ export const getInventoryAnalytics: RequestHandler = async (req, res) => {
 
 export const getLowStockItems: RequestHandler = async (req, res) => {
   try {
-    const items = await neonDbService.getLowStockItems();
+    const items = await supabaseDbService.getLowStockItems();
     res.json({
       success: true,
       items: items || [],
@@ -2886,7 +2886,7 @@ export const updateUserStatus: RequestHandler = async (req, res) => {
       });
     }
 
-    const updatedUser = await neonDbService.updateUser(userId, {
+    const updatedUser = await supabaseDbService.updateUser(userId, {
       isActive,
     });
 
@@ -2912,7 +2912,7 @@ export const getSubscriptions: RequestHandler = async (req, res) => {
 
     console.log("📋 Fetching subscriptions...", { status, userId });
 
-    const subscriptions = await neonDbService.getSubscriptions({
+    const subscriptions = await supabaseDbService.getSubscriptions({
       status: status as string,
       userId: userId as string,
     });
@@ -2962,7 +2962,7 @@ export const createSubscriptionUpgrade: RequestHandler = async (req, res) => {
     }
 
     // Create subscription in database
-    const subscription = await neonDbService.createSubscription({
+    const subscription = await supabaseDbService.createSubscription({
       userId,
       packageId,
       status: "pending",
@@ -3009,7 +3009,7 @@ export const approveSubscriptionUpgrade: RequestHandler = async (
     }
 
     // Update subscription status in database
-    const result = await neonDbService.updateSubscriptionStatus(
+    const result = await supabaseDbService.updateSubscriptionStatus(
       subscriptionId,
       status,
     );
@@ -3062,7 +3062,7 @@ export const createXenditSubscriptionPlan: RequestHandler = async (
     const xenditPlanId = `plan_${subscriptionId}_${Date.now()}`;
 
     // Update subscription with Xendit plan ID
-    // This would require adding a method to neonDbService
+    // This would require adding a method to supabaseDbService
     // For now, just return success
     res.json({
       success: true,
