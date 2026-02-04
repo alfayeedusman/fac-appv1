@@ -1,7 +1,8 @@
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/neonDatabaseService';
 import { toast } from '@/hooks/use-toast';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 
-// Helper to migrate existing localStorage data to Neon database
+// Helper to migrate existing localStorage data to Supabase database
 export class DataMigrationHelper {
   private static instance: DataMigrationHelper;
   
@@ -53,14 +54,14 @@ export class DataMigrationHelper {
     return summary;
   }
 
-  // Migrate all localStorage data to Neon database
+  // Migrate all localStorage data to Supabase database
   async migrateAllData(): Promise<{ success: boolean; migrated: number; errors: string[] }> {
     const errors: string[] = [];
     let migrated = 0;
 
     try {
       // Check database connection
-      const connectionTest = await neonDbClient.testConnection();
+      const connectionTest = await supabaseDbClient.testConnection();
       if (!connectionTest.connected) {
         throw new Error('Database not connected');
       }
@@ -89,7 +90,7 @@ export class DataMigrationHelper {
       const users = this.getLocalStorageData('fac_users');
       for (const user of users) {
         try {
-          const result = await neonDbClient.register({
+          const result = await supabaseDbClient.register({
             email: user.email,
             password: user.password,
             fullName: user.fullName,
@@ -123,7 +124,7 @@ export class DataMigrationHelper {
       const bookings = this.getLocalStorageData('fac_bookings');
       for (const booking of bookings) {
         try {
-          const result = await neonDbClient.createBooking({
+          const result = await supabaseDbClient.createBooking({
             userId: booking.userId,
             guestInfo: booking.guestInfo,
             type: booking.type || 'registered',
@@ -175,7 +176,7 @@ export class DataMigrationHelper {
       const settings = this.getLocalStorageData('admin_settings');
       for (const setting of settings) {
         try {
-          const result = await neonDbClient.updateSetting(
+          const result = await supabaseDbClient.updateSetting(
             setting.key,
             setting.value,
             setting.description,
@@ -201,7 +202,7 @@ export class DataMigrationHelper {
       const ads = this.getLocalStorageData('fayeed_ads');
       for (const ad of ads) {
         try {
-          const result = await neonDbClient.createAd({
+          const result = await supabaseDbClient.createAd({
             title: ad.title,
             content: ad.content,
             imageUrl: ad.imageUrl,
@@ -253,7 +254,7 @@ export class DataMigrationHelper {
 
     toast({
       title: 'LocalStorage Cleared',
-      description: 'All data has been migrated to Neon database and localStorage has been cleared.',
+      description: 'All data has been migrated to Supabase database and localStorage has been cleared.',
     });
   }
 
@@ -273,7 +274,7 @@ export class DataMigrationHelper {
 
     toast({
       title: 'Local Data Found',
-      description: `Found local data: ${summaryText}. Use the Migration section in Database Setup to migrate to Neon database.`,
+      description: `Found local data: ${summaryText}. Use the Migration section in Database Setup to migrate to Supabase database.`,
     });
 
     return true;
