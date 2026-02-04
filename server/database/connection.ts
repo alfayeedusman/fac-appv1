@@ -103,14 +103,24 @@ export async function testConnection(
 // Get database with automatic reconnection
 export async function getDatabase() {
   if (!db) {
-    await initializeDatabase();
+    try {
+      await initializeDatabase();
+    } catch (error) {
+      console.warn("⚠️ Database initialization failed:", error);
+      return null;
+    }
   }
   return db;
 }
 
 export async function getSqlClient() {
   if (!sql) {
-    await initializeDatabase();
+    try {
+      await initializeDatabase();
+    } catch (error) {
+      console.warn("⚠️ Database initialization failed:", error);
+      return null;
+    }
   }
   return sql;
 }
