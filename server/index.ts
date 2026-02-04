@@ -351,9 +351,9 @@ export const createServer = async () => {
   app.use("/api/cms", cmsApiRoutes);
   console.log("🎨 CMS API routes registered successfully");
 
-  // Serve React admin app for everything that's NOT an API route
-  // Only in production mode - in development, Vite handles the React app
+  // Development vs Production handling
   if (process.env.NODE_ENV === "production") {
+    // Production: Serve built React app
     const reactBuildPath = path.join(__dirname, "../dist/spa");
     app.use(express.static(reactBuildPath));
 
@@ -365,9 +365,19 @@ export const createServer = async () => {
       }
       res.sendFile(path.join(reactBuildPath, "index.html"));
     });
+  } else {
+    // Development: Let Vite serve React, but handle non-API 404s
+    // Add a middleware that passes through non-API requests to Vite
+    app.use((req, res, next) => {
+      // Only handle API routes that weren't matched
+      if (req.path.startsWith("/api/")) {
+        // API route wasn't handled - return 404
+        return res.status(404).json({ error: "API endpoint not found" });
+      }
+      // For all other routes (HTML pages, assets), pass to Vite
+      next();
+    });
   }
-  // In development, don't add any catch-all routes - let Vite's own middleware handle it
-  // Just have Vite serve index.html as a fallback via its configuration
 
   return app;
 };
