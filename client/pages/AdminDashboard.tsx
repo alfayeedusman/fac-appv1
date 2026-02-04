@@ -686,6 +686,11 @@ export default function AdminDashboard() {
         .then(() => console.log("✅ loadRealCustomers completed"))
         .catch((error) => console.error("❌ loadRealCustomers failed:", error));
 
+      // Load service packages
+      loadServicePackages().catch((error) =>
+        console.error("❌ loadServicePackages failed:", error),
+      );
+
       // Load system notifications
       loadSystemNotifications();
 
