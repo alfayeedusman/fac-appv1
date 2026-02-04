@@ -108,6 +108,7 @@ const AppComponent = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/test" element={<TestPage />} />
+                <Route path="/simple-login" element={<SimpleLogin />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={
                   <ErrorBoundary>
