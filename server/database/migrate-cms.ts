@@ -1,6 +1,13 @@
-import { neon } from '@neondatabase/serverless';
+import { getSqlClient } from './connection';
 
-const sql = neon(process.env.DATABASE_URL!);
+let sql: any = null;
+
+async function getSql() {
+  if (!sql) {
+    sql = await getSqlClient();
+  }
+  return sql;
+}
 
 export async function migrateCMSTables() {
   console.log('🎨 Starting CMS database migration...');
