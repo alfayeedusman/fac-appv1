@@ -364,9 +364,6 @@ export const createServer = async () => {
     res.sendFile(path.join(reactBuildPath, "index.html"));
   });
 
-  // Error handling middleware (must be last)
-  app.use(errorHandler);
-
   return app;
 };
 
