@@ -5,153 +5,176 @@ import * as schema from "./schema";
 // Initialize the database connection
 let sql: any;
 let db: any;
+let connectionFailed = false;
 let lastConnectionAttempt = 0;
-const CONNECTION_RETRY_DELAY = 5000; // 5 seconds between reconnection attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const CONNECTION_RETRY_DELAY = 30000; // 30 seconds between reconnection attempts
 
-// Function to initialize database connection with retry logic
-export async function initializeDatabase(forceReconnect = false) {
-  // Prevent rapid retry attempts
-  const now = Date.now();
-  if (
-    db &&
-    sql &&
-    !forceReconnect &&
-    now - lastConnectionAttempt < CONNECTION_RETRY_DELAY
-  ) {
+// Track if we're currently attempting a connection
+let isConnecting = false;
+
+// Function to initialize database connection - NO RETRIES, SAFE
+export async function initializeDatabase(forceReconnect = false): Promise<typeof db | null> {
+  // If we already have a connection and not forcing reconnect, return it
+  if (db && sql && !forceReconnect) {
     return db;
   }
 
+  // Prevent rapid retry attempts
+  const now = Date.now();
+  if (connectionFailed && !forceReconnect && now - lastConnectionAttempt < CONNECTION_RETRY_DELAY) {
+    console.log("⏳ Skipping connection attempt - too soon after last failure");
+    return null;
+  }
+
+  // Prevent concurrent connection attempts
+  if (isConnecting) {
+    console.log("⏳ Connection attempt already in progress");
+    return null;
+  }
+
+  isConnecting = true;
   lastConnectionAttempt = now;
 
   try {
-    const databaseUrl =
-      process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+    const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
     if (!databaseUrl) {
-      throw new Error(
-        "Database URL not configured. Please set SUPABASE_DATABASE_URL or DATABASE_URL environment variable.",
-      );
+      console.error("❌ Database URL not configured. Please set SUPABASE_DATABASE_URL environment variable.");
+      connectionFailed = true;
+      isConnecting = false;
+      return null;
     }
 
     console.log("🔄 Initializing database connection...");
-    console.log("📝 Database URL being used:", databaseUrl.substring(0, 50) + "...");
+    console.log("📝 Database URL:", databaseUrl.substring(0, 50) + "...");
 
+    // Create postgres client with timeout
     sql = postgres(databaseUrl, {
       ssl: { rejectUnauthorized: false },
       prepare: false,
+      connect_timeout: 10, // 10 second connection timeout
+      idle_timeout: 20, // Close idle connections after 20 seconds
+      max_lifetime: 60 * 30, // Max connection lifetime 30 minutes
     });
 
     db = drizzle(sql, { schema });
 
-    // Test the connection immediately
-    await sql`SELECT 1 as test`;
+    // Test the connection with a timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Connection test timeout")), 10000);
+    });
+
+    await Promise.race([sql`SELECT 1 as test`, timeoutPromise]);
 
     console.log("✅ Supabase database connection initialized and verified");
+    connectionFailed = false;
+    isConnecting = false;
     return db;
   } catch (error) {
-    console.error("❌ Failed to initialize database connection:", error);
+    console.error("❌ Failed to initialize database connection:", error instanceof Error ? error.message : error);
 
-    // Clear the connection so next attempt will retry
+    // Clean up failed connection
+    try {
+      if (sql) {
+        await sql.end();
+      }
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+
     sql = null;
     db = null;
+    connectionFailed = true;
+    isConnecting = false;
 
-    throw error;
+    // Return null instead of throwing - NEVER throw from this function
+    return null;
   }
 }
 
-// Test and auto-reconnect if needed
-export async function testConnection(
-  autoReconnect = true,
-  retryCount = 0,
-) {
+// Simple connection test - NO RETRIES, NO RECURSION, SAFE
+export async function testConnection(): Promise<boolean> {
   try {
+    // If we don't have a connection, try once to initialize
     if (!db || !sql) {
-      if (autoReconnect) {
-        console.log("🔄 No connection found, attempting to reconnect...");
-        try {
-          await initializeDatabase(true);
-          return true;
-        } catch (error) {
-          console.warn("⚠️ Reconnection attempt failed:", error);
-          return false;
-        }
-      }
-      return false;
+      const result = await initializeDatabase();
+      return result !== null;
     }
 
-    // Actually test the connection
-    await sql`SELECT 1 as test`;
+    // Test existing connection with timeout
+    const timeoutPromise = new Promise<boolean>((_, reject) => {
+      setTimeout(() => reject(new Error("Connection test timeout")), 5000);
+    });
+
+    await Promise.race([sql`SELECT 1 as test`, timeoutPromise]);
     return true;
   } catch (error) {
-    console.error("❌ Database connection test failed:", error);
-
-    if (autoReconnect && retryCount < MAX_RETRY_ATTEMPTS) {
-      console.log(
-        `🔄 Attempting to reconnect (attempt ${retryCount + 1}/${MAX_RETRY_ATTEMPTS})...`,
-      );
-      try {
-        await initializeDatabase(true);
-        return true;
-      } catch (retryError) {
-        console.error("❌ Reconnection failed:", retryError);
-        return retryCount < MAX_RETRY_ATTEMPTS - 1
-          ? await testConnection(autoReconnect, retryCount + 1)
-          : false;
-      }
-    }
-
+    console.warn("⚠️ Database connection test failed:", error instanceof Error ? error.message : error);
+    
+    // Mark connection as failed and clear it
+    sql = null;
+    db = null;
+    connectionFailed = true;
+    
     return false;
   }
 }
 
-// Get database with automatic reconnection
-export async function getDatabase() {
-  if (!db) {
-    try {
-      await initializeDatabase();
-    } catch (error) {
-      console.warn("⚠️ Database initialization failed:", error);
-      return null;
-    }
+// Get database with automatic initialization (returns null if unavailable)
+export async function getDatabase(): Promise<typeof db | null> {
+  if (db) {
+    return db;
   }
-  return db;
+
+  try {
+    return await initializeDatabase();
+  } catch (error) {
+    console.warn("⚠️ Database unavailable:", error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 
-export async function getSqlClient() {
-  if (!sql) {
-    try {
-      await initializeDatabase();
-    } catch (error) {
-      console.warn("⚠️ Database initialization failed:", error);
-      return null;
-    }
+// Get SQL client (returns null if unavailable)
+export async function getSqlClient(): Promise<typeof sql | null> {
+  if (sql) {
+    return sql;
   }
-  return sql;
+
+  try {
+    await initializeDatabase();
+    return sql;
+  } catch (error) {
+    console.warn("⚠️ Database unavailable:", error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 
 // Check if database is connected
 export function isConnected(): boolean {
-  return !!db && !!sql;
+  return !!db && !!sql && !connectionFailed;
 }
 
-// Close database connection
-export async function closeConnection() {
+// Check if connection has failed
+export function hasConnectionFailed(): boolean {
+  return connectionFailed;
+}
+
+// Close database connection safely
+export async function closeConnection(): Promise<void> {
   try {
     if (sql) {
-      sql = null;
+      await sql.end();
     }
-    if (db) {
-      db = null;
-    }
-    console.log("✅ Database connection closed");
   } catch (error) {
-    console.error("❌ Error closing database connection:", error);
+    console.warn("⚠️ Error closing database connection:", error);
+  } finally {
+    sql = null;
+    db = null;
+    connectionFailed = false;
+    console.log("✅ Database connection closed");
   }
 }
 
-// Database will be initialized lazily on first use
-// This prevents crashes if the database is unavailable at startup
-
+// Export for direct access (may be null)
 export { db, sql };
 export default getDatabase;
