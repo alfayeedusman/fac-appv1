@@ -43,7 +43,7 @@ import {
   UserPlus,
   User as UserIcon,
 } from "lucide-react";
-import { neonDbClient, User } from "@/services/neonDatabaseService";
+import { supabaseDbClient, User } from "@/services/supabaseDatabaseService";
 import Swal from "sweetalert2";
 
 // Role definitions with permissions
@@ -208,7 +208,7 @@ export default function AdminUserManagement() {
     try {
       setLoading(true);
       console.log("👨‍💼 Loading staff users...");
-      const result = await neonDbClient.getStaffUsers();
+      const result = await supabaseDbClient.getStaffUsers();
 
       if (result.success && result.users) {
         console.log("✅ Staff users loaded:", result.users);
@@ -263,7 +263,7 @@ export default function AdminUserManagement() {
     }
 
     try {
-      const result = await neonDbClient.createStaffUser(newUser);
+      const result = await supabaseDbClient.createStaffUser(newUser);
 
       if (result.success) {
         await Swal.fire({

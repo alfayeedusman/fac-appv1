@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import StickyHeader from "@/components/StickyHeader";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminHeatMap from "@/components/AdminHeatMap";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import {
   Users,
   MapPin,
@@ -166,7 +166,7 @@ export default function AdminCrewManagement() {
   // API data fetching functions - using existing working endpoints
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
-      const result = await neonDbClient.getCrewStats();
+      const result = await supabaseDbClient.getCrewStats();
       if (result.success && result.stats) {
         return result.stats as CrewStats;
       }
@@ -191,7 +191,7 @@ export default function AdminCrewManagement() {
 
   const fetchCrewActivity = async (): Promise<RecentActivity[]> => {
     try {
-      const result = await neonDbClient.getCrewActivity({ limit: 10 });
+      const result = await supabaseDbClient.getCrewActivity({ limit: 10 });
       if (result.success && result.activities) {
         return result.activities as RecentActivity[];
       }
@@ -220,7 +220,7 @@ export default function AdminCrewManagement() {
   const loadCommissionRates = async () => {
     try {
       setCommissionLoading(true);
-      const result = await neonDbClient.getCommissionRates();
+      const result = await supabaseDbClient.getCommissionRates();
       if (result.success) {
         setCommissionRates(result.rates || []);
       }
@@ -242,7 +242,7 @@ export default function AdminCrewManagement() {
       return;
     }
 
-    const result = await neonDbClient.upsertCommissionRate(
+    const result = await supabaseDbClient.upsertCommissionRate(
       commissionServiceType,
       rate,
     );
@@ -265,7 +265,7 @@ export default function AdminCrewManagement() {
   };
 
   const loadCrewMembers = async () => {
-    const result = await neonDbClient.getCrewList();
+    const result = await supabaseDbClient.getCrewList();
     if (result.success) {
       setCrewMembers(result.crew || []);
     }
@@ -274,7 +274,7 @@ export default function AdminCrewManagement() {
   const loadCrewGroups = async () => {
     try {
       setCrewGroupsLoading(true);
-      const result = await neonDbClient.getCrewGroups();
+      const result = await supabaseDbClient.getCrewGroups();
       if (result.success) {
         setCrewGroups(result.groups || []);
       }
@@ -288,7 +288,7 @@ export default function AdminCrewManagement() {
   const loadCommissionEntries = async () => {
     try {
       setCommissionEntriesLoading(true);
-      const result = await neonDbClient.getCommissionEntries({});
+      const result = await supabaseDbClient.getCommissionEntries({});
       if (result.success) {
         setCommissionEntries(result.entries || []);
       }
@@ -302,7 +302,7 @@ export default function AdminCrewManagement() {
   const loadPayouts = async () => {
     try {
       setPayoutsLoading(true);
-      const result = await neonDbClient.getCrewPayouts({});
+      const result = await supabaseDbClient.getCrewPayouts({});
       if (result.success) {
         setPayouts(result.payouts || []);
       }
@@ -332,7 +332,7 @@ export default function AdminCrewManagement() {
       localStorage.getItem("userEmail") ||
       "unknown";
 
-    const result = await neonDbClient.createCommissionEntry({
+    const result = await supabaseDbClient.createCommissionEntry({
       crewUserId: commissionCrewId,
       entryDate: commissionEntryDate,
       amount,
@@ -361,7 +361,7 @@ export default function AdminCrewManagement() {
   const handleSeedCrew = async () => {
     try {
       setIsSeedingCrew(true);
-      const result = await neonDbClient.seedCrew();
+      const result = await supabaseDbClient.seedCrew();
       if (result.success) {
         toast({
           title: "Sample crew added",
@@ -390,7 +390,7 @@ export default function AdminCrewManagement() {
     entryId: string,
     status: string,
   ) => {
-    const result = await neonDbClient.updateCommissionEntryStatus(
+    const result = await supabaseDbClient.updateCommissionEntryStatus(
       entryId,
       status,
     );
@@ -490,7 +490,7 @@ export default function AdminCrewManagement() {
 
     const entryIds = eligiblePayoutEntries.map((entry) => entry.id);
 
-    const result = await neonDbClient.createCrewPayout({
+    const result = await supabaseDbClient.createCrewPayout({
       crewUserId: payoutCrewId,
       periodStart: payoutStartDate,
       periodEnd: payoutEndDate,
@@ -519,7 +519,7 @@ export default function AdminCrewManagement() {
   };
 
   const handleUpdatePayoutStatus = async (payoutId: string, status: string) => {
-    const result = await neonDbClient.updateCrewPayoutStatus(payoutId, status);
+    const result = await supabaseDbClient.updateCrewPayoutStatus(payoutId, status);
     if (result.success) {
       toast({
         title: "Payout status updated",
@@ -537,7 +537,7 @@ export default function AdminCrewManagement() {
 
   const handleAssignCrewGroup = async (groupId: string | null) => {
     if (!selectedCrewId) return;
-    const result = await neonDbClient.updateCrewGroupAssignment({
+    const result = await supabaseDbClient.updateCrewGroupAssignment({
       userId: selectedCrewId,
       groupId,
     });
@@ -559,7 +559,7 @@ export default function AdminCrewManagement() {
 
   const handleAssignWashBay = async (washBay: string | null) => {
     if (!selectedCrewId) return;
-    const result = await neonDbClient.updateCrewWashBayAssignment({
+    const result = await supabaseDbClient.updateCrewWashBayAssignment({
       userId: selectedCrewId,
       washBay,
     });

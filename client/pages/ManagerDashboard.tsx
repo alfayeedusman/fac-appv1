@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import {
   Calendar,
   Clock,
@@ -215,7 +215,7 @@ export default function ManagerDashboard() {
 
     try {
       setDailyIncomeLoading(true);
-      const result = await neonDbClient.createDailyIncome({
+      const result = await supabaseDbClient.createDailyIncome({
         branch,
         incomeDate: dailyIncomeDate,
         amount,

@@ -47,7 +47,7 @@ import {
   getMemberPerks,
   initializeCMSData,
 } from "@/utils/cmsData";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface WashLog {
   id: string;
@@ -170,9 +170,9 @@ export default function Dashboard() {
       const email = userEmail;
 
       // Try backend first
-      const connected = neonDbClient.getConnectionStatus();
+      const connected = supabaseDbClient.getConnectionStatus();
       if (connected && email) {
-        const res = await neonDbClient.getBookings({
+        const res = await supabaseDbClient.getBookings({
           userEmail: email,
           userRole: role,
         });

@@ -103,7 +103,7 @@ import {
   getAllBookings,
   type SystemNotification,
 } from "@/utils/databaseSchema";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import realtimeService from "@/services/realtimeService";
 import { toast } from "@/hooks/use-toast";
 import Swal from "sweetalert2";
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
       setStatsLoading(true);
       console.log("📊 Loading real stats for period:", period);
 
-      const result = await neonDbClient.getStats(period);
+      const result = await supabaseDbClient.getStats(period);
       console.log("📈 Stats result:", result);
 
       if (result.success && result.stats) {
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
     try {
       setCrewCommissionLoading(true);
       const { startDate, endDate } = getDateRangeForFilter(period);
-      const result = await neonDbClient.getCrewCommissionSummary({
+      const result = await supabaseDbClient.getCrewCommissionSummary({
         startDate,
         endDate,
       });
@@ -430,7 +430,7 @@ export default function AdminDashboard() {
 
     try {
       setDailyIncomeLoading(true);
-      const result = await neonDbClient.createDailyIncome({
+      const result = await supabaseDbClient.createDailyIncome({
         branch,
         incomeDate: dailyIncomeDate,
         amount,
@@ -471,12 +471,12 @@ export default function AdminDashboard() {
       console.log("������ Loading customers from database...");
 
       // Ensure database connection is ready
-      const connectionStatus = neonDbClient.getConnectionStatus();
+      const connectionStatus = supabaseDbClient.getConnectionStatus();
       console.log("🔗 Database connection status:", connectionStatus);
 
       if (!connectionStatus) {
         console.log("⚠️ Database not connected, attempting to connect...");
-        const connected = await neonDbClient.testConnection();
+        const connected = await supabaseDbClient.testConnection();
         console.log("🔗 Connection test result:", connected);
         if (!connected.connected) {
           console.warn("⚠️ Database connection failed, showing empty list");
@@ -485,7 +485,7 @@ export default function AdminDashboard() {
         }
       }
 
-      const result = await neonDbClient.getCustomers();
+      const result = await supabaseDbClient.getCustomers();
       console.log("👥 Customer load result:", result);
 
       if (result.success && result.users) {
@@ -561,7 +561,7 @@ export default function AdminDashboard() {
   const loadServicePackages = async () => {
     try {
       setPackagesLoading(true);
-      const result = await neonDbClient.getServicePackages({
+      const result = await supabaseDbClient.getServicePackages({
         includeInactive: true,
       });
 
@@ -585,7 +585,7 @@ export default function AdminDashboard() {
       setRealtimeLoading(true);
       console.log("📡 Loading realtime stats...");
 
-      const result = await neonDbClient.getRealtimeStats();
+      const result = await supabaseDbClient.getRealtimeStats();
       console.log("🔄 Realtime stats result:", result);
 
       if (result.success && result.stats) {
@@ -871,7 +871,7 @@ export default function AdminDashboard() {
 
     if (!result.isConfirmed) return;
 
-    const response = await neonDbClient.deleteServicePackage(pkg.id);
+    const response = await supabaseDbClient.deleteServicePackage(pkg.id);
     if (response.success) {
       setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
       Swal.fire({
@@ -923,7 +923,7 @@ export default function AdminDashboard() {
     };
 
     if (packageModalMode === "add") {
-      const result = await neonDbClient.createServicePackage(payload);
+      const result = await supabaseDbClient.createServicePackage(payload);
       if (result.success) {
         if (result.package) {
           setPackages((prev) => [mapServicePackage(result.package), ...prev]);
@@ -946,7 +946,7 @@ export default function AdminDashboard() {
         });
       }
     } else if (currentPackage) {
-      const result = await neonDbClient.updateServicePackage(
+      const result = await supabaseDbClient.updateServicePackage(
         currentPackage.id,
         payload,
       );

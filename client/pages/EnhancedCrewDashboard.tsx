@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StickyHeader from '@/components/StickyHeader';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import { cn } from '@/lib/utils';
 import {
   getGeolocationErrorDetails,
@@ -193,7 +193,7 @@ export default function EnhancedCrewDashboard() {
   const loadPayroll = async (userId: string) => {
     try {
       setPayrollLoading(true);
-      const result = await neonDbClient.getCrewPayroll({ userId });
+      const result = await supabaseDbClient.getCrewPayroll({ userId });
       if (result.success) {
         setPayrollSummary(result.payroll);
       } else {
@@ -225,12 +225,12 @@ export default function EnhancedCrewDashboard() {
       const { start, end } = getCurrentPayPeriod();
 
       const [entriesResult, payoutsResult] = await Promise.all([
-        neonDbClient.getCommissionEntries({
+        supabaseDbClient.getCommissionEntries({
           crewUserId: userId,
           startDate: start.toISOString(),
           endDate: end.toISOString(),
         }),
-        neonDbClient.getCrewPayouts({ crewUserId: userId }),
+        supabaseDbClient.getCrewPayouts({ crewUserId: userId }),
       ]);
 
       if (entriesResult.success) {

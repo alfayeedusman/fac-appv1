@@ -65,7 +65,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { receiptPrintService } from "@/services/receiptPrintService";
 import Swal from "sweetalert2";
 import { Upload, Download } from "lucide-react";
@@ -251,7 +251,7 @@ export default function AdminSettings() {
   const loadUsers = async () => {
     try {
       setUsersLoading(true);
-      const result = await neonDbClient.getStaffUsers();
+      const result = await supabaseDbClient.getStaffUsers();
       if (result.success && result.users) {
         setUsers(result.users);
       } else {
@@ -319,7 +319,7 @@ export default function AdminSettings() {
           contactNumber: userForm.phoneNumber,
           branchLocation: "Main",
         };
-        const result = await neonDbClient.createStaffUser(newUser);
+        const result = await supabaseDbClient.createStaffUser(newUser);
         if (result.success) {
           toast({ title: "Success", description: "User created successfully" });
           setShowUserDialog(false);
