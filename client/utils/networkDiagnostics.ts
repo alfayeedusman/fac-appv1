@@ -196,12 +196,12 @@ export async function testApiConnectivity(): Promise<{
 }> {
   const results = await networkDiagnostics.runDiagnostics();
   const healthTest = results.find((r) => r.test === "Health Endpoint");
-  const neonTest = results.find((r) => r.test === "Neon Database Test");
+  const supabaseTest = results.find((r) => r.test === "Supabase Database Test");
   const regTest = results.find((r) => r.test === "Registration Endpoint");
 
   return {
     apiReachable: healthTest?.success || false,
-    neonConnected: neonTest?.success || false,
+    supabaseConnected: supabaseTest?.success || false,
     registrationEndpoint: regTest?.success || false,
     details: networkDiagnostics.getFormattedResults(),
   };
