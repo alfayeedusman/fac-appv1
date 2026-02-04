@@ -18,12 +18,23 @@ const dbConfig = {
   reconnect: true,
 };
 
-let pool: mysql.Pool;
+let pool: mysql.Pool | null = null;
 
-try {
-  pool = mysql.createPool(dbConfig);
-} catch (error) {
-  console.error("Database connection failed:", error);
+// Only initialize pool if database credentials are explicitly provided
+const hasDbCredentials =
+  process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME;
+
+if (hasDbCredentials) {
+  try {
+    pool = mysql.createPool(dbConfig);
+    console.log("✅ Realtime database pool initialized");
+  } catch (error) {
+    console.error("Database connection failed:", error);
+  }
+} else {
+  console.log(
+    "⚠️ Realtime API: Database credentials not configured - running in degraded mode",
+  );
 }
 
 // Validation schemas
