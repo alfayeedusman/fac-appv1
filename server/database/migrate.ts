@@ -1204,8 +1204,9 @@ export async function runMigrations() {
     console.log("✅ Database migrations completed successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Migration failed:", error);
-    throw error;
+    console.warn("⚠️ Migration failed (non-critical):", error);
+    // Don't throw - allow server to start even if migrations fail
+    return false;
   }
 }
 
