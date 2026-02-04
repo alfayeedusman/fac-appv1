@@ -554,7 +554,7 @@ export default function AdminDashboard() {
           ? pkg.is_active
           : typeof pkg.isActive === "boolean"
             ? pkg.isActive
-            : pkg.active ?? true,
+            : (pkg.active ?? true),
     };
   };
 
@@ -954,9 +954,7 @@ export default function AdminDashboard() {
         if (result.package) {
           const updatedPackage = mapServicePackage(result.package);
           setPackages((prev) =>
-            prev.map((p) =>
-              p.id === currentPackage.id ? updatedPackage : p,
-            ),
+            prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
           );
         } else {
           await loadServicePackages();
@@ -1668,7 +1666,9 @@ export default function AdminDashboard() {
                           {crewCommissionLoading ? (
                             <div className="animate-pulse">Loading...</div>
                           ) : (
-                            formatCurrency(crewCommissionSummary?.totalCommission || 0)
+                            formatCurrency(
+                              crewCommissionSummary?.totalCommission || 0,
+                            )
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
@@ -1996,7 +1996,8 @@ export default function AdminDashboard() {
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {crew.totalBookings} jobs •{" "}
-                                      {formatCurrency(crew.totalRevenue)} revenue
+                                      {formatCurrency(crew.totalRevenue)}{" "}
+                                      revenue
                                     </p>
                                   </div>
                                   <div className="text-right">
@@ -2269,9 +2270,7 @@ export default function AdminDashboard() {
 
               <Card className="glass border-border shadow-xl">
                 <CardHeader>
-                  <CardTitle className="text-xl">
-                    Daily Income Entry
-                  </CardTitle>
+                  <CardTitle className="text-xl">Daily Income Entry</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-3">
@@ -2835,7 +2834,6 @@ export default function AdminDashboard() {
               <AdminUserManagement />
             </div>
           )}
-
 
           {activeTab === "database" && (
             <div className="space-y-6">

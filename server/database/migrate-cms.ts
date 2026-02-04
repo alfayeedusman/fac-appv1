@@ -1,4 +1,4 @@
-import { getSqlClient } from './connection';
+import { getSqlClient } from "./connection";
 
 let sql: any = null;
 
@@ -10,7 +10,7 @@ async function getSql() {
 }
 
 export async function migrateCMSTables() {
-  console.log('🎨 Starting CMS database migration...');
+  console.log("🎨 Starting CMS database migration...");
 
   try {
     const dbSql = await getSql();
@@ -34,7 +34,7 @@ export async function migrateCMSTables() {
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
-    console.log('✅ homepage_content table created');
+    console.log("✅ homepage_content table created");
 
     // Create cms_content_history table
     await dbSql`
@@ -50,7 +50,7 @@ export async function migrateCMSTables() {
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
-    console.log('✅ cms_content_history table created');
+    console.log("✅ cms_content_history table created");
 
     // Create cms_settings table
     await dbSql`
@@ -65,7 +65,7 @@ export async function migrateCMSTables() {
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
-    console.log('✅ cms_settings table created');
+    console.log("✅ cms_settings table created");
 
     // Create indexes for better performance
     await dbSql`
@@ -83,12 +83,12 @@ export async function migrateCMSTables() {
       ON cms_settings(setting_key);
     `;
 
-    console.log('✅ CMS indexes created');
+    console.log("✅ CMS indexes created");
 
-    console.log('🎉 CMS database migration completed successfully!');
+    console.log("🎉 CMS database migration completed successfully!");
     return true;
   } catch (error) {
-    console.error('❌ CMS migration error:', error);
+    console.error("❌ CMS migration error:", error);
     throw error;
   }
 }
@@ -97,11 +97,11 @@ export async function migrateCMSTables() {
 if (require.main === module) {
   migrateCMSTables()
     .then(() => {
-      console.log('✅ CMS Migration completed');
+      console.log("✅ CMS Migration completed");
       process.exit(0);
     })
     .catch((error) => {
-      console.error('❌ CMS Migration failed:', error);
+      console.error("❌ CMS Migration failed:", error);
       process.exit(1);
     });
 }

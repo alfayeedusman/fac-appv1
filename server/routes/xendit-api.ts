@@ -570,7 +570,13 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             title: "Payment Received",
             message: `Payment received for booking ${updatedBooking.confirmationCode || bookingId}. Amount: ₱${updatedBooking.totalPrice}`,
             priority: "high",
-            targetRoles: ["admin", "superadmin", "manager", "dispatcher", "cashier"],
+            targetRoles: [
+              "admin",
+              "superadmin",
+              "manager",
+              "dispatcher",
+              "cashier",
+            ],
             targetUsers: [],
             data: {
               bookingId,

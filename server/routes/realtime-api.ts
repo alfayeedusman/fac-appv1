@@ -748,12 +748,10 @@ router.post("/pusher/auth", async (req, res) => {
       try {
         const session = await supabaseDbService.getSessionByToken(token);
         if (!session || !session.isActive) {
-          return res
-            .status(403)
-            .json({
-              success: false,
-              error: "Invalid or inactive session token",
-            });
+          return res.status(403).json({
+            success: false,
+            error: "Invalid or inactive session token",
+          });
         }
         const expiresAt = new Date(session.expiresAt);
         if (expiresAt < new Date()) {

@@ -13,7 +13,9 @@ const CONNECTION_RETRY_DELAY = 10000; // 10 seconds between reconnection attempt
 let isConnecting = false;
 
 // Function to initialize database connection - NO RETRIES, SAFE
-export async function initializeDatabase(forceReconnect = false): Promise<typeof db | null> {
+export async function initializeDatabase(
+  forceReconnect = false,
+): Promise<typeof db | null> {
   // If we already have a connection and not forcing reconnect, return it
   if (db && sql && !forceReconnect) {
     return db;
@@ -21,7 +23,11 @@ export async function initializeDatabase(forceReconnect = false): Promise<typeof
 
   // Prevent rapid retry attempts
   const now = Date.now();
-  if (connectionFailed && !forceReconnect && now - lastConnectionAttempt < CONNECTION_RETRY_DELAY) {
+  if (
+    connectionFailed &&
+    !forceReconnect &&
+    now - lastConnectionAttempt < CONNECTION_RETRY_DELAY
+  ) {
     console.log("⏳ Skipping connection attempt - too soon after last failure");
     return null;
   }
@@ -36,10 +42,13 @@ export async function initializeDatabase(forceReconnect = false): Promise<typeof
   lastConnectionAttempt = now;
 
   try {
-    const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+    const databaseUrl =
+      process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
     if (!databaseUrl) {
-      console.error("❌ Database URL not configured. Please set SUPABASE_DATABASE_URL environment variable.");
+      console.error(
+        "❌ Database URL not configured. Please set SUPABASE_DATABASE_URL environment variable.",
+      );
       connectionFailed = true;
       isConnecting = false;
       return null;
@@ -71,7 +80,10 @@ export async function initializeDatabase(forceReconnect = false): Promise<typeof
     isConnecting = false;
     return db;
   } catch (error) {
-    console.error("❌ Failed to initialize database connection:", error instanceof Error ? error.message : error);
+    console.error(
+      "❌ Failed to initialize database connection:",
+      error instanceof Error ? error.message : error,
+    );
 
     // Clean up failed connection
     try {
@@ -109,13 +121,16 @@ export async function testConnection(): Promise<boolean> {
     await Promise.race([sql`SELECT 1 as test`, timeoutPromise]);
     return true;
   } catch (error) {
-    console.warn("⚠️ Database connection test failed:", error instanceof Error ? error.message : error);
-    
+    console.warn(
+      "⚠️ Database connection test failed:",
+      error instanceof Error ? error.message : error,
+    );
+
     // Mark connection as failed and clear it
     sql = null;
     db = null;
     connectionFailed = true;
-    
+
     return false;
   }
 }
@@ -129,7 +144,10 @@ export async function getDatabase(): Promise<typeof db | null> {
   try {
     return await initializeDatabase();
   } catch (error) {
-    console.warn("⚠️ Database unavailable:", error instanceof Error ? error.message : error);
+    console.warn(
+      "⚠️ Database unavailable:",
+      error instanceof Error ? error.message : error,
+    );
     return null;
   }
 }
@@ -144,7 +162,10 @@ export async function getSqlClient(): Promise<typeof sql | null> {
     await initializeDatabase();
     return sql;
   } catch (error) {
-    console.warn("⚠️ Database unavailable:", error instanceof Error ? error.message : error);
+    console.warn(
+      "⚠️ Database unavailable:",
+      error instanceof Error ? error.message : error,
+    );
     return null;
   }
 }

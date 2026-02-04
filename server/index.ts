@@ -8,7 +8,10 @@ process.on("unhandledRejection", (reason, promise) => {
 process.on("uncaughtException", (error) => {
   console.error("⚠️ Uncaught Exception:", error);
   // Don't exit for connection errors - keep server running
-  if (error.message?.includes("ECONNREFUSED") || error.message?.includes("connect")) {
+  if (
+    error.message?.includes("ECONNREFUSED") ||
+    error.message?.includes("connect")
+  ) {
     console.log("🔄 Continuing despite connection error...");
     return;
   }
@@ -105,7 +108,9 @@ export function createServer() {
       res.setHeader("Expires", "0");
     }
     // Cache static assets with versioning for 1 year
-    else if (/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(req.path)) {
+    else if (
+      /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(req.path)
+    ) {
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     }
     // Default: no caching for dynamic content
@@ -363,23 +368,29 @@ export function createServer() {
     "/api/neon/crew/:userId/wash-bay",
     crewApiRoutes.updateCrewWashBayAssignment,
   );
-  app.get(
-    "/api/neon/crew/commission-rates",
-    crewApiRoutes.getCommissionRates,
-  );
+  app.get("/api/neon/crew/commission-rates", crewApiRoutes.getCommissionRates);
   app.post(
     "/api/neon/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,
   );
-  app.get("/api/neon/crew/commission-entries", crewApiRoutes.getCommissionEntries);
-  app.post("/api/neon/crew/commission-entries", crewApiRoutes.createCommissionEntry);
+  app.get(
+    "/api/neon/crew/commission-entries",
+    crewApiRoutes.getCommissionEntries,
+  );
+  app.post(
+    "/api/neon/crew/commission-entries",
+    crewApiRoutes.createCommissionEntry,
+  );
   app.put(
     "/api/neon/crew/commission-entries/:id/status",
     crewApiRoutes.updateCommissionEntryStatus,
   );
   app.get("/api/neon/crew/payouts", crewApiRoutes.getCrewPayouts);
   app.post("/api/neon/crew/payouts", crewApiRoutes.createCrewPayout);
-  app.put("/api/neon/crew/payouts/:id/status", crewApiRoutes.updateCrewPayoutStatus);
+  app.put(
+    "/api/neon/crew/payouts/:id/status",
+    crewApiRoutes.updateCrewPayoutStatus,
+  );
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
   app.get(
     "/api/neon/crew/commission-summary",

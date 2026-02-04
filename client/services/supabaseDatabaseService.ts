@@ -152,18 +152,19 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  const timerHandle = typeof setTimeout === "function"
-    ? setTimeout(() => {
-        if (cleared) return;
-        try {
-          if (!controller?.signal?.aborted) {
-            controller?.abort?.();
+  const timerHandle =
+    typeof setTimeout === "function"
+      ? setTimeout(() => {
+          if (cleared) return;
+          try {
+            if (!controller?.signal?.aborted) {
+              controller?.abort?.();
+            }
+          } catch (e) {
+            console.warn("Error aborting request:", e);
           }
-        } catch (e) {
-          console.warn("Error aborting request:", e);
-        }
-      }, timeoutMs)
-    : null;
+        }, timeoutMs)
+      : null;
 
   return {
     clearTimeout: () => {
@@ -1146,9 +1147,7 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async getServicePackages(options?: {
-    includeInactive?: boolean;
-  }): Promise<{
+  async getServicePackages(options?: { includeInactive?: boolean }): Promise<{
     success: boolean;
     packages?: any[];
     error?: string;
@@ -1681,7 +1680,11 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async getCrewList(): Promise<{ success: boolean; crew?: any[]; error?: string }> {
+  async getCrewList(): Promise<{
+    success: boolean;
+    crew?: any[];
+    error?: string;
+  }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
@@ -1698,7 +1701,11 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async getCrewStats(): Promise<{ success: boolean; stats?: any; error?: string }> {
+  async getCrewStats(): Promise<{
+    success: boolean;
+    stats?: any;
+    error?: string;
+  }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
@@ -1737,7 +1744,11 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async getCrewGroups(): Promise<{ success: boolean; groups?: any[]; error?: string }> {
+  async getCrewGroups(): Promise<{
+    success: boolean;
+    groups?: any[];
+    error?: string;
+  }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
@@ -1762,12 +1773,15 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/${params.userId}/group`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: params.groupId || null }),
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/crew/${params.userId}/group`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupId: params.groupId || null }),
+          signal: ac.signal,
+        },
+      );
       timeoutHandler.clearTimeout();
       return await response.json();
     } catch (error: any) {
@@ -1785,12 +1799,15 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/${params.userId}/wash-bay`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ washBay: params.washBay || null }),
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/crew/${params.userId}/wash-bay`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ washBay: params.washBay || null }),
+          signal: ac.signal,
+        },
+      );
       timeoutHandler.clearTimeout();
       return await response.json();
     } catch (error: any) {
@@ -1800,7 +1817,11 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async seedCrew(): Promise<{ success: boolean; message?: string; error?: string }> {
+  async seedCrew(): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 12000);
@@ -1875,17 +1896,23 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async updateCommissionEntryStatus(id: string, status: string): Promise<{ success: boolean; entry?: any; error?: string }> {
+  async updateCommissionEntryStatus(
+    id: string,
+    status: string,
+  ): Promise<{ success: boolean; entry?: any; error?: string }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/commission-entries/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-entries/${id}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+          signal: ac.signal,
+        },
+      );
       timeoutHandler.clearTimeout();
       return await response.json();
     } catch (error: any) {
@@ -1946,17 +1973,23 @@ class SupabaseDatabaseClient {
     }
   }
 
-  async updateCrewPayoutStatus(id: string, status: string): Promise<{ success: boolean; payout?: any; error?: string }> {
+  async updateCrewPayoutStatus(
+    id: string,
+    status: string,
+  ): Promise<{ success: boolean; payout?: any; error?: string }> {
     await this.ensureConnection();
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/payouts/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-        signal: ac.signal,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/crew/payouts/${id}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+          signal: ac.signal,
+        },
+      );
       timeoutHandler.clearTimeout();
       return await response.json();
     } catch (error: any) {
@@ -2155,14 +2188,11 @@ class SupabaseDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(
-        `${this.baseUrl}/branches/${branchId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
+      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
       const result = await response.json();
       return result;
     } catch (error) {
@@ -2182,13 +2212,10 @@ class SupabaseDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(
-        `${this.baseUrl}/branches/${branchId}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
       const result = await response.json();
       return result;
     } catch (error) {

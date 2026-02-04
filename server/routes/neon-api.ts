@@ -35,7 +35,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
     baseUrl: "/api",
     catalog: {
       dashboard: [
-        { method: "GET", path: "/api/neon/stats", description: "Dashboard stats" },
+        {
+          method: "GET",
+          path: "/api/neon/stats",
+          description: "Dashboard stats",
+        },
         {
           method: "GET",
           path: "/api/neon/realtime-stats",
@@ -106,7 +110,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
         },
       ],
       crew: [
-        { method: "GET", path: "/api/neon/crew/list", description: "Crew list" },
+        {
+          method: "GET",
+          path: "/api/neon/crew/list",
+          description: "Crew list",
+        },
         {
           method: "GET",
           path: "/api/neon/crew/commission-entries",
@@ -130,14 +138,30 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
       ],
       users: [
         { method: "GET", path: "/api/neon/users", description: "All users" },
-        { method: "GET", path: "/api/neon/customers", description: "Customers" },
+        {
+          method: "GET",
+          path: "/api/neon/customers",
+          description: "Customers",
+        },
         { method: "GET", path: "/api/neon/staff", description: "Staff" },
-        { method: "POST", path: "/api/neon/staff", description: "Create staff" },
+        {
+          method: "POST",
+          path: "/api/neon/staff",
+          description: "Create staff",
+        },
       ],
       bookings: [
         { method: "GET", path: "/api/neon/bookings", description: "Bookings" },
-        { method: "POST", path: "/api/neon/bookings", description: "Create booking" },
-        { method: "PUT", path: "/api/neon/bookings/:id", description: "Update booking" },
+        {
+          method: "POST",
+          path: "/api/neon/bookings",
+          description: "Create booking",
+        },
+        {
+          method: "PUT",
+          path: "/api/neon/bookings/:id",
+          description: "Update booking",
+        },
       ],
       inventory: [
         {
@@ -473,7 +497,8 @@ export const loginUser: RequestHandler = async (req, res) => {
       } else {
         return res.status(401).json({
           success: false,
-          error: "Account not found. Available demo accounts: superadmin@fayeedautocare.com, admin@fayeedautocare.com",
+          error:
+            "Account not found. Available demo accounts: superadmin@fayeedautocare.com, admin@fayeedautocare.com",
         });
       }
     }
@@ -498,7 +523,10 @@ export const loginUser: RequestHandler = async (req, res) => {
       let isValidPassword = false;
       try {
         console.log("🔐 Starting password verification...");
-        isValidPassword = await supabaseDbService.verifyPassword(email, password);
+        isValidPassword = await supabaseDbService.verifyPassword(
+          email,
+          password,
+        );
         console.log("🔐 Password verification result", {
           email,
           isValid: isValidPassword,
@@ -961,7 +989,9 @@ export const getBookings: RequestHandler = async (req, res) => {
           status as string,
         );
       } else {
-        bookings = await supabaseDbService.getBookingsByBranch(branch as string);
+        bookings = await supabaseDbService.getBookingsByBranch(
+          branch as string,
+        );
       }
     } else if (status) {
       // Filter by status
@@ -1046,10 +1076,13 @@ export const revokeSession: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Admin Authorization required" });
     }
     const callerToken = authHeader.split(" ")[1];
-    const callerSession = await supabaseDbService.getSessionByToken(callerToken);
+    const callerSession =
+      await supabaseDbService.getSessionByToken(callerToken);
     if (!callerSession)
       return res.status(403).json({ success: false, error: "Invalid session" });
-    const callerUser = await supabaseDbService.getUserById(callerSession.userId);
+    const callerUser = await supabaseDbService.getUserById(
+      callerSession.userId,
+    );
     if (
       !callerUser ||
       !["admin", "superadmin", "manager"].includes(callerUser.role)
@@ -1104,10 +1137,13 @@ export const getSessions: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Admin Authorization required" });
     }
     const callerToken = authHeader.split(" ")[1];
-    const callerSession = await supabaseDbService.getSessionByToken(callerToken);
+    const callerSession =
+      await supabaseDbService.getSessionByToken(callerToken);
     if (!callerSession)
       return res.status(403).json({ success: false, error: "Invalid session" });
-    const callerUser = await supabaseDbService.getUserById(callerSession.userId);
+    const callerUser = await supabaseDbService.getUserById(
+      callerSession.userId,
+    );
     if (
       !callerUser ||
       !["admin", "superadmin", "manager"].includes(callerUser.role)
@@ -1501,10 +1537,14 @@ export const getDailyIncome: RequestHandler = async (req, res) => {
       filters.push(eq(schema.dailyIncome.branch, branch as string));
     }
     if (startDate) {
-      filters.push(gte(schema.dailyIncome.incomeDate, new Date(startDate as string)));
+      filters.push(
+        gte(schema.dailyIncome.incomeDate, new Date(startDate as string)),
+      );
     }
     if (endDate) {
-      filters.push(lte(schema.dailyIncome.incomeDate, new Date(endDate as string)));
+      filters.push(
+        lte(schema.dailyIncome.incomeDate, new Date(endDate as string)),
+      );
     }
 
     const db = await getDatabase();
@@ -1653,7 +1693,9 @@ export const getAnalyticsData: RequestHandler = async (req, res) => {
     let bookings: any[] = [];
 
     try {
-      stats = await supabaseDbService.getStats((timeFilter as string) || "monthly");
+      stats = await supabaseDbService.getStats(
+        (timeFilter as string) || "monthly",
+      );
       users = await supabaseDbService.getAllUsers();
       bookings = await supabaseDbService.getAllBookings();
     } catch (dbError) {
@@ -1817,7 +1859,10 @@ export const debugLogin: RequestHandler = async (req, res) => {
       passwordLength: user.password?.length,
     });
 
-    const isValidPassword = await supabaseDbService.verifyPassword(email, password);
+    const isValidPassword = await supabaseDbService.verifyPassword(
+      email,
+      password,
+    );
     console.log("🔐 DEBUG: Password verification result:", isValidPassword);
 
     return res.json({
@@ -2096,7 +2141,10 @@ export const debugHashPassword: RequestHandler = async (req, res) => {
     }
 
     const bcrypt = await import("bcryptjs");
-    console.log("🔍 DEBUG: Hashing password:", password.substring(0, 3) + "****");
+    console.log(
+      "🔍 DEBUG: Hashing password:",
+      password.substring(0, 3) + "****",
+    );
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -2166,9 +2214,7 @@ export const adminForceRehashPasswords: RequestHandler = async (req, res) => {
     }
 
     // Fetch all users
-    const allUsers = await users
-      .select()
-      .from(schema.users);
+    const allUsers = await users.select().from(schema.users);
 
     let updated = 0;
     const results: any[] = [];
@@ -2256,11 +2302,12 @@ export const createServicePackage: RequestHandler = async (req, res) => {
       startDate: payload.startDate ? new Date(payload.startDate) : null,
       endDate: payload.endDate ? new Date(payload.endDate) : null,
       features: Array.isArray(payload.features) ? payload.features : [],
-      bannerUrl: payload.banner || payload.bannerUrl || payload.banner_url || null,
+      bannerUrl:
+        payload.banner || payload.bannerUrl || payload.banner_url || null,
       isActive:
         typeof payload.active === "boolean"
           ? payload.active
-          : payload.isActive ?? true,
+          : (payload.isActive ?? true),
       isPopular: payload.isPopular ?? false,
       isFeatured: payload.isFeatured ?? false,
       color: payload.color,
@@ -2297,7 +2344,10 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
       updates.basePrice = Number(payload.basePrice ?? payload.base_price);
     }
     if (payload.currency !== undefined) updates.currency = payload.currency;
-    if (payload.durationType !== undefined || payload.duration_type !== undefined) {
+    if (
+      payload.durationType !== undefined ||
+      payload.duration_type !== undefined
+    ) {
       updates.durationType = payload.durationType || payload.duration_type;
     }
     if (payload.duration !== undefined) updates.duration = payload.duration;
@@ -2318,14 +2368,16 @@ export const updateServicePackage: RequestHandler = async (req, res) => {
       payload.bannerUrl !== undefined ||
       payload.banner_url !== undefined
     ) {
-      updates.bannerUrl = payload.banner || payload.bannerUrl || payload.banner_url;
+      updates.bannerUrl =
+        payload.banner || payload.bannerUrl || payload.banner_url;
     }
     if (typeof payload.active === "boolean" || payload.isActive !== undefined) {
       updates.isActive =
         typeof payload.active === "boolean" ? payload.active : payload.isActive;
     }
     if (payload.isPopular !== undefined) updates.isPopular = payload.isPopular;
-    if (payload.isFeatured !== undefined) updates.isFeatured = payload.isFeatured;
+    if (payload.isFeatured !== undefined)
+      updates.isFeatured = payload.isFeatured;
     if (payload.color !== undefined) updates.color = payload.color;
     if (payload.priority !== undefined)
       updates.priority = Number(payload.priority);
@@ -3076,10 +3128,7 @@ export const createSubscriptionUpgrade: RequestHandler = async (req, res) => {
 };
 
 // Admin approves subscription upgrade
-export const approveSubscriptionUpgrade: RequestHandler = async (
-  req,
-  res,
-) => {
+export const approveSubscriptionUpgrade: RequestHandler = async (req, res) => {
   try {
     const { subscriptionId } = req.params;
     const { status = "active" } = req.body;

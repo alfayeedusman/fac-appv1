@@ -1,5 +1,5 @@
-import express, { RequestHandler } from 'express';
-import { getSqlClient } from '../database/connection';
+import express, { RequestHandler } from "express";
+import { getSqlClient } from "../database/connection";
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ async function getSql() {
 export const getBranches: RequestHandler = async (req, res) => {
   try {
     const { city, isActive, type, search } = req.query;
-    
+
     let query = `SELECT * FROM branches WHERE 1=1`;
     const params: any[] = [];
     let paramIndex = 1;
@@ -27,7 +27,7 @@ export const getBranches: RequestHandler = async (req, res) => {
 
     if (isActive !== undefined) {
       query += ` AND is_active = $${paramIndex}`;
-      params.push(isActive === 'true');
+      params.push(isActive === "true");
       paramIndex++;
     }
 
@@ -49,13 +49,13 @@ export const getBranches: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      branches: branches || []
+      branches: branches || [],
     });
   } catch (error: any) {
-    console.error('Get branches error:', error);
+    console.error("Get branches error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch branches'
+      error: "Failed to fetch branches",
     });
   }
 };
@@ -74,19 +74,19 @@ export const getBranchById: RequestHandler = async (req, res) => {
     if (!branches || branches.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
     res.json({
       success: true,
-      branch: branches[0]
+      branch: branches[0],
     });
   } catch (error: any) {
-    console.error('Get branch error:', error);
+    console.error("Get branch error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch branch'
+      error: "Failed to fetch branch",
     });
   }
 };
@@ -105,19 +105,19 @@ export const getBranchByCode: RequestHandler = async (req, res) => {
     if (!branches || branches.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
     res.json({
       success: true,
-      branch: branches[0]
+      branch: branches[0],
     });
   } catch (error: any) {
-    console.error('Get branch by code error:', error);
+    console.error("Get branch by code error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch branch'
+      error: "Failed to fetch branch",
     });
   }
 };
@@ -126,10 +126,31 @@ export const getBranchByCode: RequestHandler = async (req, res) => {
 export const createBranch: RequestHandler = async (req, res) => {
   try {
     const {
-      name, code, type, address, city, state, postalCode, country,
-      phone, email, latitude, longitude, timezone, managerName, managerPhone,
-      capacity, services, specializations, operatingHours, hasWifi,
-      hasParking, hasWaitingArea, has24HourService, images, logoUrl
+      name,
+      code,
+      type,
+      address,
+      city,
+      state,
+      postalCode,
+      country,
+      phone,
+      email,
+      latitude,
+      longitude,
+      timezone,
+      managerName,
+      managerPhone,
+      capacity,
+      services,
+      specializations,
+      operatingHours,
+      hasWifi,
+      hasParking,
+      hasWaitingArea,
+      has24HourService,
+      images,
+      logoUrl,
     } = req.body;
 
     // Check if branch code already exists
@@ -140,7 +161,7 @@ export const createBranch: RequestHandler = async (req, res) => {
     if (existingBranch && existingBranch.length > 0) {
       return res.status(409).json({
         success: false,
-        error: 'Branch code already exists'
+        error: "Branch code already exists",
       });
     }
 
@@ -155,10 +176,10 @@ export const createBranch: RequestHandler = async (req, res) => {
         has_parking, has_waiting_area, has_24_hour_service, images, logo_url,
         created_at, updated_at
       ) VALUES (
-        ${branchId}, ${name}, ${code}, ${type || 'full_service'}, ${address},
-        ${city}, ${state || null}, ${postalCode || null}, ${country || 'Philippines'},
+        ${branchId}, ${name}, ${code}, ${type || "full_service"}, ${address},
+        ${city}, ${state || null}, ${postalCode || null}, ${country || "Philippines"},
         ${phone || null}, ${email || null}, ${latitude || null}, ${longitude || null},
-        ${timezone || 'Asia/Manila'}, ${managerName || null}, ${managerPhone || null},
+        ${timezone || "Asia/Manila"}, ${managerName || null}, ${managerPhone || null},
         ${capacity || 10}, ${JSON.stringify(services || [])}, 
         ${JSON.stringify(specializations || [])}, ${JSON.stringify(operatingHours || {})},
         ${hasWifi !== undefined ? hasWifi : true}, ${hasParking !== undefined ? hasParking : true},
@@ -171,13 +192,13 @@ export const createBranch: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       branch: result[0],
-      message: 'Branch created successfully'
+      message: "Branch created successfully",
     });
   } catch (error: any) {
-    console.error('Create branch error:', error);
+    console.error("Create branch error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create branch'
+      error: "Failed to create branch",
     });
   }
 };
@@ -194,25 +215,34 @@ export const updateBranch: RequestHandler = async (req, res) => {
     updateFields.updatedAt = new Date();
 
     // Convert arrays to JSON strings for database storage
-    if (updateFields.services) updateFields.services = JSON.stringify(updateFields.services);
-    if (updateFields.specializations) updateFields.specializations = JSON.stringify(updateFields.specializations);
-    if (updateFields.operatingHours) updateFields.operatingHours = JSON.stringify(updateFields.operatingHours);
-    if (updateFields.images) updateFields.images = JSON.stringify(updateFields.images);
+    if (updateFields.services)
+      updateFields.services = JSON.stringify(updateFields.services);
+    if (updateFields.specializations)
+      updateFields.specializations = JSON.stringify(
+        updateFields.specializations,
+      );
+    if (updateFields.operatingHours)
+      updateFields.operatingHours = JSON.stringify(updateFields.operatingHours);
+    if (updateFields.images)
+      updateFields.images = JSON.stringify(updateFields.images);
 
     // Build dynamic update query
     const updateKeys = Object.keys(updateFields);
     const updateValues = Object.values(updateFields);
-    
+
     if (updateKeys.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No fields to update'
+        error: "No fields to update",
       });
     }
 
-    const setClause = updateKeys.map((key, index) => 
-      `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${index + 2}`
-    ).join(', ');
+    const setClause = updateKeys
+      .map(
+        (key, index) =>
+          `${key.replace(/([A-Z])/g, "_$1").toLowerCase()} = $${index + 2}`,
+      )
+      .join(", ");
 
     const query = `
       UPDATE branches 
@@ -226,20 +256,20 @@ export const updateBranch: RequestHandler = async (req, res) => {
     if (!result || result.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
     res.json({
       success: true,
       branch: result[0],
-      message: 'Branch updated successfully'
+      message: "Branch updated successfully",
     });
   } catch (error: any) {
-    console.error('Update branch error:', error);
+    console.error("Update branch error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to update branch'
+      error: "Failed to update branch",
     });
   }
 };
@@ -257,7 +287,7 @@ export const deleteBranch: RequestHandler = async (req, res) => {
     if (branch && branch.length > 0 && branch[0].is_main_branch) {
       return res.status(400).json({
         success: false,
-        error: 'Cannot delete the main branch'
+        error: "Cannot delete the main branch",
       });
     }
 
@@ -271,19 +301,19 @@ export const deleteBranch: RequestHandler = async (req, res) => {
     if (!result || result.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
     res.json({
       success: true,
-      message: 'Branch deleted successfully'
+      message: "Branch deleted successfully",
     });
   } catch (error: any) {
-    console.error('Delete branch error:', error);
+    console.error("Delete branch error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to delete branch'
+      error: "Failed to delete branch",
     });
   }
 };
@@ -296,7 +326,7 @@ export const getNearbyBranches: RequestHandler = async (req, res) => {
     if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
-        error: 'Latitude and longitude are required'
+        error: "Latitude and longitude are required",
       });
     }
 
@@ -318,13 +348,13 @@ export const getNearbyBranches: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      branches: branches || []
+      branches: branches || [],
     });
   } catch (error: any) {
-    console.error('Get nearby branches error:', error);
+    console.error("Get nearby branches error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch nearby branches'
+      error: "Failed to fetch nearby branches",
     });
   }
 };
@@ -333,7 +363,7 @@ export const getNearbyBranches: RequestHandler = async (req, res) => {
 export const getBranchStats: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const { period = '30' } = req.query; // days
+    const { period = "30" } = req.query; // days
 
     // Get basic branch info
     const branch = await sql`
@@ -343,7 +373,7 @@ export const getBranchStats: RequestHandler = async (req, res) => {
     if (!branch || branch.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
@@ -380,14 +410,14 @@ export const getBranchStats: RequestHandler = async (req, res) => {
       stats: {
         bookings: bookingStats[0] || {},
         crew: crewStats[0] || {},
-        period: `${period} days`
-      }
+        period: `${period} days`,
+      },
     });
   } catch (error: any) {
-    console.error('Get branch stats error:', error);
+    console.error("Get branch stats error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch branch statistics'
+      error: "Failed to fetch branch statistics",
     });
   }
 };
@@ -407,35 +437,37 @@ export const getBranchHours: RequestHandler = async (req, res) => {
     if (!branch || branch.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Branch not found'
+        error: "Branch not found",
       });
     }
 
     const operatingHours = branch[0].operating_hours || {};
-    const timezone = branch[0].timezone || 'Asia/Manila';
+    const timezone = branch[0].timezone || "Asia/Manila";
 
     // Get day of week for the specified date
     const targetDate = date ? new Date(date as string) : new Date();
-    const dayOfWeek = targetDate.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      timeZone: timezone 
-    }).toLowerCase();
+    const dayOfWeek = targetDate
+      .toLocaleDateString("en-US", {
+        weekday: "long",
+        timeZone: timezone,
+      })
+      .toLowerCase();
 
     const dayHours = operatingHours[dayOfWeek] || null;
 
     res.json({
       success: true,
-      date: targetDate.toISOString().split('T')[0],
+      date: targetDate.toISOString().split("T")[0],
       dayOfWeek,
       hours: dayHours,
       timezone,
-      isOpen: dayHours && !dayHours.closed
+      isOpen: dayHours && !dayHours.closed,
     });
   } catch (error: any) {
-    console.error('Get branch hours error:', error);
+    console.error("Get branch hours error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch branch hours'
+      error: "Failed to fetch branch hours",
     });
   }
 };

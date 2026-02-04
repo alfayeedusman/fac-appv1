@@ -14,7 +14,7 @@ const DB_OPTIONAL_PATHS = [
   "/neon/test",
   "/neon/init",
   "/neon/diagnose",
-  "/neon/login",  // Login can use demo mode
+  "/neon/login", // Login can use demo mode
   "/api-catalog",
 ];
 
@@ -22,10 +22,16 @@ const DB_OPTIONAL_PATHS = [
  * Ensures database is initialized before processing any request
  * This middleware runs automatically and allows graceful degradation
  */
-export const ensureDatabaseInitialized: RequestHandler = async (req, res, next) => {
+export const ensureDatabaseInitialized: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   try {
     // Always bypass for certain paths
-    const shouldBypass = DB_OPTIONAL_PATHS.some(path => req.path.includes(path));
+    const shouldBypass = DB_OPTIONAL_PATHS.some((path) =>
+      req.path.includes(path),
+    );
     if (shouldBypass) {
       return next();
     }
@@ -43,14 +49,16 @@ export const ensureDatabaseInitialized: RequestHandler = async (req, res, next) 
 
     // If currently initializing, wait briefly then continue
     if (dbInitializing) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return next();
     }
 
     // Attempt initialization
     dbInitializing = true;
     initAttempts++;
-    console.log(`🔄 Database initialization attempt ${initAttempts}/${MAX_INIT_ATTEMPTS}...`);
+    console.log(
+      `🔄 Database initialization attempt ${initAttempts}/${MAX_INIT_ATTEMPTS}...`,
+    );
 
     try {
       const isConnected = await testConnection();
@@ -60,7 +68,9 @@ export const ensureDatabaseInitialized: RequestHandler = async (req, res, next) 
         lastInitError = null;
         console.log("✅ Database initialized successfully");
       } else {
-        console.warn("⚠️ Database connection not available - continuing in degraded mode");
+        console.warn(
+          "⚠️ Database connection not available - continuing in degraded mode",
+        );
         lastInitError = new Error("Database connection unavailable");
       }
     } catch (error) {

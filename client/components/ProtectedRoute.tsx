@@ -61,7 +61,10 @@ export default function ProtectedRoute({
       }
 
       // Check role-based access using the improved role checking
-      if (!authService.hasRole(requiredRole) && !authService.hasAnyRole([requiredRole])) {
+      if (
+        !authService.hasRole(requiredRole) &&
+        !authService.hasAnyRole([requiredRole])
+      ) {
         // Check role hierarchy for access
         const roleHierarchy = {
           user: 1,
@@ -74,8 +77,10 @@ export default function ProtectedRoute({
           superadmin: 5,
         };
 
-        const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy];
-        const userLevel = roleHierarchy[currentUser.role as keyof typeof roleHierarchy];
+        const requiredLevel =
+          roleHierarchy[requiredRole as keyof typeof roleHierarchy];
+        const userLevel =
+          roleHierarchy[currentUser.role as keyof typeof roleHierarchy];
 
         if (!userLevel || userLevel < requiredLevel) {
           toast({

@@ -298,7 +298,8 @@ export default function AdminSidebar({
                         {userRole === "superadmin" ? (
                           <>
                             <Shield className="h-2 lg:h-3 w-2 lg:w-3 mr-1" />
-                            <span className="hidden sm:inline">SUPER </span>ADMIN
+                            <span className="hidden sm:inline">SUPER </span>
+                            ADMIN
                           </>
                         ) : (
                           <>
@@ -373,7 +374,9 @@ export default function AdminSidebar({
 
                     {!isCollapsed && (
                       <div className="flex-1 text-left min-w-0">
-                        <div className="font-medium text-xs lg:text-sm truncate">{item.label}</div>
+                        <div className="font-medium text-xs lg:text-sm truncate">
+                          {item.label}
+                        </div>
                       </div>
                     )}
 

@@ -155,10 +155,13 @@ const buildLevelPayload = (level: CustomerLevel) => ({
 
 export const getGamificationLevels = async (): Promise<CustomerLevel[]> => {
   try {
-    const response = await fetch(`${gamificationBaseUrl}/levels?isActive=true`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `${gamificationBaseUrl}/levels?isActive=true`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
 
     const data = await response.json();
     if (!response.ok || !data?.success) {
@@ -277,7 +280,9 @@ export const getUserProgress = async (
     currentLevel: currentLevel.id,
     totalBookings: points,
     completedBookings: points,
-    nextLevelBookings: nextLevel ? Math.max(0, nextLevel.minBookings - points) : 0,
+    nextLevelBookings: nextLevel
+      ? Math.max(0, nextLevel.minBookings - points)
+      : 0,
     earnedRewards: currentLevel.rewards,
     badges: [currentLevel.id],
     rank: calculateUserRank(currentLevel.id, resolvedLevels),
@@ -343,4 +348,5 @@ export const getLevelProgress = (
   return { current, next, progress };
 };
 
-export const getDefaultGamificationLevels = (): CustomerLevel[] => defaultLevels;
+export const getDefaultGamificationLevels = (): CustomerLevel[] =>
+  defaultLevels;

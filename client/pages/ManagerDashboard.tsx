@@ -1,17 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import StickyHeader from '@/components/StickyHeader';
-import { supabaseDbClient } from '@/services/supabaseDatabaseService';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import StickyHeader from "@/components/StickyHeader";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import {
   Calendar,
   Clock,
@@ -33,14 +45,14 @@ import {
   Download,
   Settings,
   LogOut,
-  Bell
-} from 'lucide-react';
+  Bell,
+} from "lucide-react";
 import {
   getAllBookings,
   updateBookingStatus,
   getUserSystemNotifications,
-  markSystemNotificationAsRead
-} from '@/utils/databaseSchema';
+  markSystemNotificationAsRead,
+} from "@/utils/databaseSchema";
 
 interface Booking {
   id: string;
@@ -56,10 +68,10 @@ interface Booking {
   date: string;
   timeSlot: string;
   branch: string;
-  serviceType: 'branch' | 'home';
+  serviceType: "branch" | "home";
   totalPrice: number;
   paymentMethod: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+  status: "pending" | "approved" | "rejected" | "completed" | "cancelled";
   createdAt: string;
   notes?: string;
 }
@@ -75,26 +87,28 @@ interface Customer {
   carType?: string;
   totalBookings: number;
   lastBooking?: string;
-  status: 'active' | 'inactive' | 'blocked';
+  status: "active" | "inactive" | "blocked";
 }
 
 export default function ManagerDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('bookings');
+  const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [messageText, setMessageText] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [messageText, setMessageText] = useState("");
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [dailyIncomeDate, setDailyIncomeDate] = useState(
-    () => new Date().toISOString().split('T')[0]
+    () => new Date().toISOString().split("T")[0],
   );
-  const [dailyIncomeAmount, setDailyIncomeAmount] = useState('');
-  const [dailyIncomeNotes, setDailyIncomeNotes] = useState('');
+  const [dailyIncomeAmount, setDailyIncomeAmount] = useState("");
+  const [dailyIncomeNotes, setDailyIncomeNotes] = useState("");
   const [dailyIncomeLoading, setDailyIncomeLoading] = useState(false);
 
   // Load data on component mount
@@ -112,44 +126,49 @@ export default function ManagerDashboard() {
   const loadNotifications = () => {
     try {
       const userEmail = localStorage.getItem("userEmail") || "";
-      const systemNotifications = getUserSystemNotifications(userEmail, 'manager');
+      const systemNotifications = getUserSystemNotifications(
+        userEmail,
+        "manager",
+      );
 
       // Convert system notifications to UI format
-      const formattedNotifications = systemNotifications.map(notification => ({
-        id: notification.id,
-        type: notification.type,
-        title: notification.title,
-        message: notification.message,
-        timestamp: new Date(notification.createdAt),
-        read: notification.readBy.some(r => r.userId === userEmail),
-        priority: notification.priority,
-        data: notification.data,
-      }));
+      const formattedNotifications = systemNotifications.map(
+        (notification) => ({
+          id: notification.id,
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          timestamp: new Date(notification.createdAt),
+          read: notification.readBy.some((r) => r.userId === userEmail),
+          priority: notification.priority,
+          data: notification.data,
+        }),
+      );
 
       setNotifications(formattedNotifications);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error("Error loading notifications:", error);
     }
   };
 
   const loadBookings = () => {
     try {
-      const allBookings = getAllBookings().map(booking => ({
+      const allBookings = getAllBookings().map((booking) => ({
         ...booking,
-        customerName: booking.guestInfo ?
-          `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` :
-          'Registered Customer',
-        customerEmail: booking.guestInfo?.email || 'N/A',
-        customerPhone: booking.guestInfo?.phone || 'N/A',
-        customerAddress: 'N/A', // This would need to be added to the booking schema if needed
-        plateNumber: booking.plateNumber || 'N/A',
-        status: booking.status || 'pending',
+        customerName: booking.guestInfo
+          ? `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`
+          : "Registered Customer",
+        customerEmail: booking.guestInfo?.email || "N/A",
+        customerPhone: booking.guestInfo?.phone || "N/A",
+        customerAddress: "N/A", // This would need to be added to the booking schema if needed
+        plateNumber: booking.plateNumber || "N/A",
+        status: booking.status || "pending",
         createdAt: booking.createdAt || new Date().toISOString(),
       }));
 
       setBookings(allBookings);
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error("Error loading bookings:", error);
       toast({
         title: "Error",
         description: "Failed to load bookings",
@@ -160,13 +179,19 @@ export default function ManagerDashboard() {
 
   const loadCustomers = () => {
     try {
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+      const registeredUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]",
+      );
+      const userBookings = JSON.parse(
+        localStorage.getItem("userBookings") || "[]",
+      );
 
       const customerList = registeredUsers
-        .filter((user: any) => user.role === 'user')
+        .filter((user: any) => user.role === "user")
         .map((user: any) => {
-          const customerBookings = userBookings.filter((booking: any) => booking.email === user.email);
+          const customerBookings = userBookings.filter(
+            (booking: any) => booking.email === user.email,
+          );
           return {
             id: user.id,
             fullName: user.fullName,
@@ -177,14 +202,17 @@ export default function ManagerDashboard() {
             carPlateNumber: user.carPlateNumber,
             carType: user.carType,
             totalBookings: customerBookings.length,
-            lastBooking: customerBookings.length > 0 ? customerBookings[customerBookings.length - 1].date : undefined,
-            status: 'active',
+            lastBooking:
+              customerBookings.length > 0
+                ? customerBookings[customerBookings.length - 1].date
+                : undefined,
+            status: "active",
           };
         });
 
       setCustomers(customerList);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      console.error("Error loading customers:", error);
       toast({
         title: "Error",
         description: "Failed to load customers",
@@ -197,21 +225,21 @@ export default function ManagerDashboard() {
     const amount = Number(dailyIncomeAmount);
     if (!amount || amount <= 0) {
       toast({
-        title: 'Invalid amount',
-        description: 'Enter a daily income amount greater than zero.',
-        variant: 'destructive',
+        title: "Invalid amount",
+        description: "Enter a daily income amount greater than zero.",
+        variant: "destructive",
       });
       return;
     }
 
-    const currentUser = localStorage.getItem('currentUser');
+    const currentUser = localStorage.getItem("currentUser");
     const parsedUser = currentUser ? JSON.parse(currentUser) : null;
     const recordedBy =
       parsedUser?.id ||
-      localStorage.getItem('userId') ||
-      localStorage.getItem('userEmail') ||
-      'unknown';
-    const branch = parsedUser?.branchLocation || 'Main Branch';
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+    const branch = parsedUser?.branchLocation || "Main Branch";
 
     try {
       setDailyIncomeLoading(true);
@@ -225,41 +253,49 @@ export default function ManagerDashboard() {
 
       if (result.success) {
         toast({
-          title: 'Daily income saved',
+          title: "Daily income saved",
           description: `Recorded ₱${amount.toFixed(2)} for ${branch}.`,
         });
-        setDailyIncomeAmount('');
-        setDailyIncomeNotes('');
+        setDailyIncomeAmount("");
+        setDailyIncomeNotes("");
       } else {
         toast({
-          title: 'Failed to save income',
-          description: result.error || 'Please try again.',
-          variant: 'destructive',
+          title: "Failed to save income",
+          description: result.error || "Please try again.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Daily income submit failed:', error);
+      console.error("Daily income submit failed:", error);
       toast({
-        title: 'Failed to save income',
-        description: 'Please try again.',
-        variant: 'destructive',
+        title: "Failed to save income",
+        description: "Please try again.",
+        variant: "destructive",
       });
     } finally {
       setDailyIncomeLoading(false);
     }
   };
 
-  const updateBookingStatusManager = (bookingId: string, status: 'approved' | 'rejected', notes?: string) => {
+  const updateBookingStatusManager = (
+    bookingId: string,
+    status: "approved" | "rejected",
+    notes?: string,
+  ) => {
     try {
       // Use the database schema function to update booking status
-      const success = updateBookingStatus(bookingId, status === 'approved' ? 'confirmed' : 'cancelled', notes);
+      const success = updateBookingStatus(
+        bookingId,
+        status === "approved" ? "confirmed" : "cancelled",
+        notes,
+      );
 
       if (success) {
         // Reload bookings
         loadBookings();
 
         // Send notification to customer
-        const booking = bookings.find(b => b.id === bookingId);
+        const booking = bookings.find((b) => b.id === bookingId);
         if (booking) {
           sendNotificationToCustomer(booking, status, notes);
         }
@@ -276,7 +312,7 @@ export default function ManagerDashboard() {
         });
       }
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error("Error updating booking status:", error);
       toast({
         title: "Error",
         description: "Failed to update booking status",
@@ -285,32 +321,37 @@ export default function ManagerDashboard() {
     }
   };
 
-  const sendNotificationToCustomer = (booking: Booking, status: string, notes?: string) => {
+  const sendNotificationToCustomer = (
+    booking: Booking,
+    status: string,
+    notes?: string,
+  ) => {
     try {
       const notification = {
         id: `booking_${booking.id}_${Date.now()}`,
-        type: 'booking',
-        title: `Booking ${status === 'approved' ? 'Approved' : 'Rejected'}`,
-        message: status === 'approved' 
-          ? `Your booking for ${booking.service} on ${booking.date} has been approved!`
-          : `Your booking for ${booking.service} on ${booking.date} has been rejected. ${notes ? `Reason: ${notes}` : ''}`,
+        type: "booking",
+        title: `Booking ${status === "approved" ? "Approved" : "Rejected"}`,
+        message:
+          status === "approved"
+            ? `Your booking for ${booking.service} on ${booking.date} has been approved!`
+            : `Your booking for ${booking.service} on ${booking.date} has been rejected. ${notes ? `Reason: ${notes}` : ""}`,
         timestamp: new Date().toISOString(),
         read: false,
-        actionUrl: '/my-bookings',
-        actionText: 'View Bookings',
+        actionUrl: "/my-bookings",
+        actionText: "View Bookings",
       };
 
       // Add to customer notifications
       const customerNotifications = JSON.parse(
-        localStorage.getItem(`notifications_${booking.customerEmail}`) || '[]'
+        localStorage.getItem(`notifications_${booking.customerEmail}`) || "[]",
       );
       customerNotifications.unshift(notification);
       localStorage.setItem(
         `notifications_${booking.customerEmail}`,
-        JSON.stringify(customerNotifications)
+        JSON.stringify(customerNotifications),
       );
     } catch (error) {
-      console.error('Error sending notification:', error);
+      console.error("Error sending notification:", error);
     }
   };
 
@@ -320,33 +361,33 @@ export default function ManagerDashboard() {
     try {
       const message = {
         id: `msg_${Date.now()}`,
-        type: 'message',
-        title: 'Message from Manager',
+        type: "message",
+        title: "Message from Manager",
         message: messageText,
         timestamp: new Date().toISOString(),
         read: false,
-        from: 'manager',
+        from: "manager",
       };
 
       // Add to customer notifications
       const customerNotifications = JSON.parse(
-        localStorage.getItem(`notifications_${customer.email}`) || '[]'
+        localStorage.getItem(`notifications_${customer.email}`) || "[]",
       );
       customerNotifications.unshift(message);
       localStorage.setItem(
         `notifications_${customer.email}`,
-        JSON.stringify(customerNotifications)
+        JSON.stringify(customerNotifications),
       );
 
-      setMessageText('');
+      setMessageText("");
       setIsMessageDialogOpen(false);
-      
+
       toast({
         title: "Success",
         description: "Message sent to customer",
       });
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
         description: "Failed to send message",
@@ -357,44 +398,53 @@ export default function ManagerDashboard() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/login');
+    navigate("/login");
   };
 
-  const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.service.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesSearch =
+      booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.service.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || booking.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      completed: 'bg-blue-100 text-blue-800',
-      cancelled: 'bg-gray-100 text-gray-800',
+      pending: "bg-yellow-100 text-yellow-800",
+      approved: "bg-green-100 text-green-800",
+      rejected: "bg-red-100 text-red-800",
+      completed: "bg-blue-100 text-blue-800",
+      cancelled: "bg-gray-100 text-gray-800",
     };
-    return <Badge className={styles[status as keyof typeof styles] || styles.pending}>{status}</Badge>;
+    return (
+      <Badge
+        className={styles[status as keyof typeof styles] || styles.pending}
+      >
+        {status}
+      </Badge>
+    );
   };
 
   const stats = {
     totalBookings: bookings.length,
-    pendingBookings: bookings.filter(b => b.status === 'pending').length,
-    approvedBookings: bookings.filter(b => b.status === 'approved').length,
+    pendingBookings: bookings.filter((b) => b.status === "pending").length,
+    approvedBookings: bookings.filter((b) => b.status === "approved").length,
     totalCustomers: customers.length,
   };
 
   return (
     <div className="min-h-screen bg-background">
       <StickyHeader />
-      
+
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -416,7 +466,7 @@ export default function ManagerDashboard() {
                 onClick={() => {
                   // Mark all notifications as read
                   const userEmail = localStorage.getItem("userEmail") || "";
-                  notifications.forEach(notification => {
+                  notifications.forEach((notification) => {
                     if (!notification.read) {
                       markSystemNotificationAsRead(notification.id, userEmail);
                     }
@@ -431,16 +481,18 @@ export default function ManagerDashboard() {
                 className="relative"
               >
                 <Bell className="h-4 w-4" />
-                {notifications.filter(n => !n.read).length > 0 && (
+                {notifications.filter((n) => !n.read).length > 0 && (
                   <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs h-5 w-5 rounded-full p-0 flex items-center justify-center">
-                    {notifications.filter(n => !n.read).length > 9 ? "9+" : notifications.filter(n => !n.read).length}
+                    {notifications.filter((n) => !n.read).length > 9
+                      ? "9+"
+                      : notifications.filter((n) => !n.read).length}
                   </Badge>
                 )}
               </Button>
             </div>
 
             <Button
-              onClick={() => navigate('/dispatcher-dashboard')}
+              onClick={() => navigate("/dispatcher-dashboard")}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -448,7 +500,11 @@ export default function ManagerDashboard() {
               Dispatcher View
             </Button>
 
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
@@ -497,7 +553,7 @@ export default function ManagerDashboard() {
                 disabled={dailyIncomeLoading}
                 className="btn-futuristic"
               >
-                {dailyIncomeLoading ? 'Saving...' : 'Save Daily Income'}
+                {dailyIncomeLoading ? "Saving..." : "Save Daily Income"}
               </Button>
             </div>
           </CardContent>
@@ -510,7 +566,9 @@ export default function ManagerDashboard() {
               <div className="flex items-center">
                 <Calendar className="h-8 w-8 text-blue-500" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Bookings</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Bookings
+                  </p>
                   <p className="text-2xl font-bold">{stats.totalBookings}</p>
                 </div>
               </div>
@@ -521,7 +579,9 @@ export default function ManagerDashboard() {
               <div className="flex items-center">
                 <Clock className="h-8 w-8 text-yellow-500" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Pending
+                  </p>
                   <p className="text-2xl font-bold">{stats.pendingBookings}</p>
                 </div>
               </div>
@@ -532,7 +592,9 @@ export default function ManagerDashboard() {
               <div className="flex items-center">
                 <CheckCircle className="h-8 w-8 text-green-500" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Approved</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Approved
+                  </p>
                   <p className="text-2xl font-bold">{stats.approvedBookings}</p>
                 </div>
               </div>
@@ -543,7 +605,9 @@ export default function ManagerDashboard() {
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-purple-500" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Customers</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Customers
+                  </p>
                   <p className="text-2xl font-bold">{stats.totalCustomers}</p>
                 </div>
               </div>
@@ -552,7 +616,11 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="bookings" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -584,7 +652,10 @@ export default function ManagerDashboard() {
                   </div>
                   <div>
                     <Label>Filter by Status</Label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                    >
                       <SelectTrigger className="w-48">
                         <SelectValue />
                       </SelectTrigger>
@@ -604,12 +675,17 @@ export default function ManagerDashboard() {
             {/* Bookings List */}
             <div className="grid gap-4">
               {filteredBookings.map((booking) => (
-                <Card key={booking.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={booking.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="grid md:grid-cols-3 gap-4 flex-1">
                         <div>
-                          <h3 className="font-semibold text-lg">{booking.customerName}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {booking.customerName}
+                          </h3>
                           <p className="text-sm text-muted-foreground flex items-center">
                             <Mail className="h-4 w-4 mr-1" />
                             {booking.customerEmail}
@@ -627,19 +703,29 @@ export default function ManagerDashboard() {
                           </p>
                           <p className="text-sm text-muted-foreground flex items-center">
                             <MapPin className="h-4 w-4 mr-1" />
-                            {booking.serviceType === 'home' ? 'Home Service' : booking.branch}
+                            {booking.serviceType === "home"
+                              ? "Home Service"
+                              : booking.branch}
                           </p>
                         </div>
                         <div>
-                          <p className="font-semibold text-fac-orange-500">₱{booking.totalPrice.toLocaleString()}</p>
-                          <p className="text-sm text-muted-foreground">{booking.paymentMethod}</p>
+                          <p className="font-semibold text-fac-orange-500">
+                            ₱{booking.totalPrice.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {booking.paymentMethod}
+                          </p>
                           {getStatusBadge(booking.status)}
                         </div>
                       </div>
                       <div className="flex flex-col gap-2 ml-4">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedBooking(booking)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedBooking(booking)}
+                            >
                               <Eye className="h-4 w-4 mr-1" />
                               View
                             </Button>
@@ -652,34 +738,84 @@ export default function ManagerDashboard() {
                               <div className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">
                                   <div>
-                                    <h4 className="font-semibold mb-2">Customer Information</h4>
-                                    <p><strong>Name:</strong> {selectedBooking.customerName}</p>
-                                    <p><strong>Email:</strong> {selectedBooking.customerEmail}</p>
-                                    <p><strong>Phone:</strong> {selectedBooking.customerPhone}</p>
-                                    <p><strong>Address:</strong> {selectedBooking.customerAddress}</p>
+                                    <h4 className="font-semibold mb-2">
+                                      Customer Information
+                                    </h4>
+                                    <p>
+                                      <strong>Name:</strong>{" "}
+                                      {selectedBooking.customerName}
+                                    </p>
+                                    <p>
+                                      <strong>Email:</strong>{" "}
+                                      {selectedBooking.customerEmail}
+                                    </p>
+                                    <p>
+                                      <strong>Phone:</strong>{" "}
+                                      {selectedBooking.customerPhone}
+                                    </p>
+                                    <p>
+                                      <strong>Address:</strong>{" "}
+                                      {selectedBooking.customerAddress}
+                                    </p>
                                   </div>
                                   <div>
-                                    <h4 className="font-semibold mb-2">Service Details</h4>
-                                    <p><strong>Service:</strong> {selectedBooking.service}</p>
-                                    <p><strong>Vehicle:</strong> {selectedBooking.vehicleType} {selectedBooking.vehicleSize}</p>
-                                    <p><strong>Plate:</strong> {selectedBooking.plateNumber}</p>
-                                    <p><strong>Date:</strong> {selectedBooking.date}</p>
-                                    <p><strong>Time:</strong> {selectedBooking.timeSlot}</p>
-                                    <p><strong>Location:</strong> {selectedBooking.serviceType === 'home' ? 'Home Service' : selectedBooking.branch}</p>
-                                    <p><strong>Price:</strong> ₱{selectedBooking.totalPrice.toLocaleString()}</p>
+                                    <h4 className="font-semibold mb-2">
+                                      Service Details
+                                    </h4>
+                                    <p>
+                                      <strong>Service:</strong>{" "}
+                                      {selectedBooking.service}
+                                    </p>
+                                    <p>
+                                      <strong>Vehicle:</strong>{" "}
+                                      {selectedBooking.vehicleType}{" "}
+                                      {selectedBooking.vehicleSize}
+                                    </p>
+                                    <p>
+                                      <strong>Plate:</strong>{" "}
+                                      {selectedBooking.plateNumber}
+                                    </p>
+                                    <p>
+                                      <strong>Date:</strong>{" "}
+                                      {selectedBooking.date}
+                                    </p>
+                                    <p>
+                                      <strong>Time:</strong>{" "}
+                                      {selectedBooking.timeSlot}
+                                    </p>
+                                    <p>
+                                      <strong>Location:</strong>{" "}
+                                      {selectedBooking.serviceType === "home"
+                                        ? "Home Service"
+                                        : selectedBooking.branch}
+                                    </p>
+                                    <p>
+                                      <strong>Price:</strong> ₱
+                                      {selectedBooking.totalPrice.toLocaleString()}
+                                    </p>
                                   </div>
                                 </div>
-                                {selectedBooking.status === 'pending' && (
+                                {selectedBooking.status === "pending" && (
                                   <div className="flex gap-2">
                                     <Button
-                                      onClick={() => updateBookingStatusManager(selectedBooking.id, 'approved')}
+                                      onClick={() =>
+                                        updateBookingStatusManager(
+                                          selectedBooking.id,
+                                          "approved",
+                                        )
+                                      }
                                       className="bg-green-500 hover:bg-green-600"
                                     >
                                       <CheckCircle className="h-4 w-4 mr-1" />
                                       Approve
                                     </Button>
                                     <Button
-                                      onClick={() => updateBookingStatusManager(selectedBooking.id, 'rejected')}
+                                      onClick={() =>
+                                        updateBookingStatusManager(
+                                          selectedBooking.id,
+                                          "rejected",
+                                        )
+                                      }
                                       variant="destructive"
                                     >
                                       <XCircle className="h-4 w-4 mr-1" />
@@ -691,12 +827,17 @@ export default function ManagerDashboard() {
                             )}
                           </DialogContent>
                         </Dialog>
-                        
-                        {booking.status === 'pending' && (
+
+                        {booking.status === "pending" && (
                           <div className="flex gap-1">
                             <Button
                               size="sm"
-                              onClick={() => updateBookingStatusManager(booking.id, 'approved')}
+                              onClick={() =>
+                                updateBookingStatusManager(
+                                  booking.id,
+                                  "approved",
+                                )
+                              }
                               className="bg-green-500 hover:bg-green-600 px-2"
                             >
                               <CheckCircle className="h-4 w-4" />
@@ -704,7 +845,12 @@ export default function ManagerDashboard() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => updateBookingStatusManager(booking.id, 'rejected')}
+                              onClick={() =>
+                                updateBookingStatusManager(
+                                  booking.id,
+                                  "rejected",
+                                )
+                              }
                               className="px-2"
                             >
                               <XCircle className="h-4 w-4" />
@@ -742,12 +888,17 @@ export default function ManagerDashboard() {
             {/* Customers List */}
             <div className="grid gap-4">
               {filteredCustomers.map((customer) => (
-                <Card key={customer.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={customer.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="grid md:grid-cols-3 gap-4 flex-1">
                         <div>
-                          <h3 className="font-semibold text-lg">{customer.fullName}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {customer.fullName}
+                          </h3>
                           <p className="text-sm text-muted-foreground flex items-center">
                             <Mail className="h-4 w-4 mr-1" />
                             {customer.email}
@@ -770,21 +921,31 @@ export default function ManagerDashboard() {
                           )}
                         </div>
                         <div>
-                          <p className="font-medium">{customer.totalBookings} bookings</p>
+                          <p className="font-medium">
+                            {customer.totalBookings} bookings
+                          </p>
                           {customer.lastBooking && (
                             <p className="text-sm text-muted-foreground">
                               Last: {customer.lastBooking}
                             </p>
                           )}
-                          <Badge className="bg-green-100 text-green-800">{customer.status}</Badge>
+                          <Badge className="bg-green-100 text-green-800">
+                            {customer.status}
+                          </Badge>
                         </div>
                       </div>
                       <div className="flex flex-col gap-2 ml-4">
-                        <Dialog open={isMessageDialogOpen && selectedCustomer?.id === customer.id} onOpenChange={setIsMessageDialogOpen}>
+                        <Dialog
+                          open={
+                            isMessageDialogOpen &&
+                            selectedCustomer?.id === customer.id
+                          }
+                          onOpenChange={setIsMessageDialogOpen}
+                        >
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => setSelectedCustomer(customer)}
                             >
                               <MessageSquare className="h-4 w-4 mr-1" />
@@ -793,24 +954,35 @@ export default function ManagerDashboard() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Send Message to {customer.fullName}</DialogTitle>
+                              <DialogTitle>
+                                Send Message to {customer.fullName}
+                              </DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
                                 <Label>Message</Label>
                                 <Textarea
                                   value={messageText}
-                                  onChange={(e) => setMessageText(e.target.value)}
+                                  onChange={(e) =>
+                                    setMessageText(e.target.value)
+                                  }
                                   placeholder="Type your message here..."
                                   className="min-h-24"
                                 />
                               </div>
                               <div className="flex gap-2">
-                                <Button onClick={() => sendMessageToCustomer(customer)}>
+                                <Button
+                                  onClick={() =>
+                                    sendMessageToCustomer(customer)
+                                  }
+                                >
                                   <Send className="h-4 w-4 mr-1" />
                                   Send Message
                                 </Button>
-                                <Button variant="outline" onClick={() => setIsMessageDialogOpen(false)}>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setIsMessageDialogOpen(false)}
+                                >
                                   Cancel
                                 </Button>
                               </div>

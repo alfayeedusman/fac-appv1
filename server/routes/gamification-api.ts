@@ -1,5 +1,5 @@
-import express, { RequestHandler } from 'express';
-import { getSqlClient } from '../database/connection';
+import express, { RequestHandler } from "express";
+import { getSqlClient } from "../database/connection";
 
 const router = express.Router();
 
@@ -14,13 +14,13 @@ async function getSql() {
 export const getCustomerLevels: RequestHandler = async (req, res) => {
   try {
     const { isActive } = req.query;
-    
+
     let query = `SELECT * FROM customer_levels WHERE 1=1`;
     const params: any[] = [];
 
     if (isActive !== undefined) {
       query += ` AND is_active = $1`;
-      params.push(isActive === 'true');
+      params.push(isActive === "true");
     }
 
     query += ` ORDER BY min_points ASC, sort_order ASC`;
@@ -29,13 +29,13 @@ export const getCustomerLevels: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      levels: levels || []
+      levels: levels || [],
     });
   } catch (error: any) {
-    console.error('Get customer levels error:', error);
+    console.error("Get customer levels error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch customer levels'
+      error: "Failed to fetch customer levels",
     });
   }
 };
@@ -73,9 +73,9 @@ export const createCustomerLevel: RequestHandler = async (req, res) => {
         ${levelId}, ${name}, ${description}, ${minPoints}, ${maxPoints || null},
         ${discountPercentage || 0}, ${priority || 0},
         ${JSON.stringify(specialPerks || [])}, ${badgeIcon || null},
-        ${badgeColor || '#6B7280'}, ${levelColor || '#F97316'},
-        ${gradient || levelColor || 'from-gray-400 to-gray-600'},
-        ${badgeShape || 'circle'}, ${badgePattern || 'solid'},
+        ${badgeColor || "#6B7280"}, ${levelColor || "#F97316"},
+        ${gradient || levelColor || "from-gray-400 to-gray-600"},
+        ${badgeShape || "circle"}, ${badgePattern || "solid"},
         ${isActive ?? true},
         ${sortOrder || 0}, NOW(), NOW()
       ) RETURNING *
@@ -84,13 +84,13 @@ export const createCustomerLevel: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       level: result[0],
-      message: 'Customer level created successfully'
+      message: "Customer level created successfully",
     });
   } catch (error: any) {
-    console.error('Create customer level error:', error);
+    console.error("Create customer level error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create customer level'
+      error: "Failed to create customer level",
     });
   }
 };
@@ -111,17 +111,20 @@ export const updateCustomerLevel: RequestHandler = async (req, res) => {
 
     const updateKeys = Object.keys(updateFields);
     const updateValues = Object.values(updateFields);
-    
+
     if (updateKeys.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No fields to update'
+        error: "No fields to update",
       });
     }
 
-    const setClause = updateKeys.map((key, index) => 
-      `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${index + 2}`
-    ).join(', ');
+    const setClause = updateKeys
+      .map(
+        (key, index) =>
+          `${key.replace(/([A-Z])/g, "_$1").toLowerCase()} = $${index + 2}`,
+      )
+      .join(", ");
 
     const query = `
       UPDATE customer_levels 
@@ -135,20 +138,20 @@ export const updateCustomerLevel: RequestHandler = async (req, res) => {
     if (!result || result.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Customer level not found'
+        error: "Customer level not found",
       });
     }
 
     res.json({
       success: true,
       level: result[0],
-      message: 'Customer level updated successfully'
+      message: "Customer level updated successfully",
     });
   } catch (error: any) {
-    console.error('Update customer level error:', error);
+    console.error("Update customer level error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to update customer level'
+      error: "Failed to update customer level",
     });
   }
 };
@@ -166,7 +169,7 @@ export const getUserLevel: RequestHandler = async (req, res) => {
     if (!user || user.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: "User not found",
       });
     }
 
@@ -185,13 +188,13 @@ export const getUserLevel: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       userPoints,
-      currentLevel: level[0] || null
+      currentLevel: level[0] || null,
     });
   } catch (error: any) {
-    console.error('Get user level error:', error);
+    console.error("Get user level error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch user level'
+      error: "Failed to fetch user level",
     });
   }
 };
@@ -202,7 +205,7 @@ export const getUserLevel: RequestHandler = async (req, res) => {
 export const getAchievements: RequestHandler = async (req, res) => {
   try {
     const { category, isActive } = req.query;
-    
+
     let query = `SELECT * FROM achievements WHERE 1=1`;
     const params: any[] = [];
     let paramIndex = 1;
@@ -215,7 +218,7 @@ export const getAchievements: RequestHandler = async (req, res) => {
 
     if (isActive !== undefined) {
       query += ` AND is_active = $${paramIndex}`;
-      params.push(isActive === 'true');
+      params.push(isActive === "true");
       paramIndex++;
     }
 
@@ -225,13 +228,13 @@ export const getAchievements: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      achievements: achievements || []
+      achievements: achievements || [],
     });
   } catch (error: any) {
-    console.error('Get achievements error:', error);
+    console.error("Get achievements error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch achievements'
+      error: "Failed to fetch achievements",
     });
   }
 };
@@ -240,8 +243,18 @@ export const getAchievements: RequestHandler = async (req, res) => {
 export const createAchievement: RequestHandler = async (req, res) => {
   try {
     const {
-      name, description, category, type, targetValue, requirementData,
-      pointsReward, badgeIcon, badgeColor, isRepeatable, validFrom, validUntil
+      name,
+      description,
+      category,
+      type,
+      targetValue,
+      requirementData,
+      pointsReward,
+      badgeIcon,
+      badgeColor,
+      isRepeatable,
+      validFrom,
+      validUntil,
     } = req.body;
 
     const achievementId = `ach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -254,7 +267,7 @@ export const createAchievement: RequestHandler = async (req, res) => {
       ) VALUES (
         ${achievementId}, ${name}, ${description}, ${category}, ${type},
         ${targetValue || null}, ${JSON.stringify(requirementData || {})},
-        ${pointsReward || 0}, ${badgeIcon || null}, ${badgeColor || '#10B981'},
+        ${pointsReward || 0}, ${badgeIcon || null}, ${badgeColor || "#10B981"},
         ${isRepeatable || false}, ${validFrom || null}, ${validUntil || null},
         NOW(), NOW()
       ) RETURNING *
@@ -263,13 +276,13 @@ export const createAchievement: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       achievement: result[0],
-      message: 'Achievement created successfully'
+      message: "Achievement created successfully",
     });
   } catch (error: any) {
-    console.error('Create achievement error:', error);
+    console.error("Create achievement error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create achievement'
+      error: "Failed to create achievement",
     });
   }
 };
@@ -291,7 +304,7 @@ export const getUserAchievements: RequestHandler = async (req, res) => {
 
     if (completed !== undefined) {
       query += ` AND ua.completed = $2`;
-      params.push(completed === 'true');
+      params.push(completed === "true");
     }
 
     query += ` ORDER BY ua.completed_at DESC NULLS LAST, ua.created_at DESC`;
@@ -300,13 +313,13 @@ export const getUserAchievements: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      achievements: userAchievements || []
+      achievements: userAchievements || [],
     });
   } catch (error: any) {
-    console.error('Get user achievements error:', error);
+    console.error("Get user achievements error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch user achievements'
+      error: "Failed to fetch user achievements",
     });
   }
 };
@@ -335,7 +348,7 @@ export const awardAchievement: RequestHandler = async (req, res) => {
       return res.json({
         success: true,
         userAchievement: result[0],
-        message: 'Achievement progress updated'
+        message: "Achievement progress updated",
       });
     }
 
@@ -354,13 +367,13 @@ export const awardAchievement: RequestHandler = async (req, res) => {
     res.status(201).json({
       success: true,
       userAchievement: result[0],
-      message: 'Achievement awarded successfully'
+      message: "Achievement awarded successfully",
     });
   } catch (error: any) {
-    console.error('Award achievement error:', error);
+    console.error("Award achievement error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to award achievement'
+      error: "Failed to award achievement",
     });
   }
 };
@@ -378,7 +391,7 @@ export const completeAchievement: RequestHandler = async (req, res) => {
     if (!achievement || achievement.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Achievement not found'
+        error: "Achievement not found",
       });
     }
 
@@ -395,7 +408,7 @@ export const completeAchievement: RequestHandler = async (req, res) => {
     if (!result || result.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User achievement not found'
+        error: "User achievement not found",
       });
     }
 
@@ -434,13 +447,13 @@ export const completeAchievement: RequestHandler = async (req, res) => {
       success: true,
       userAchievement: result[0],
       pointsEarned: pointsReward,
-      message: 'Achievement completed successfully'
+      message: "Achievement completed successfully",
     });
   } catch (error: any) {
-    console.error('Complete achievement error:', error);
+    console.error("Complete achievement error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to complete achievement'
+      error: "Failed to complete achievement",
     });
   }
 };
@@ -481,7 +494,7 @@ export const getLoyaltyTransactions: RequestHandler = async (req, res) => {
     }
 
     const countResult = await sql(countQuery, countParams);
-    const totalCount = parseInt(countResult[0]?.count || '0');
+    const totalCount = parseInt(countResult[0]?.count || "0");
 
     res.json({
       success: true,
@@ -490,14 +503,15 @@ export const getLoyaltyTransactions: RequestHandler = async (req, res) => {
         total: totalCount,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
-        hasMore: (parseInt(offset as string) + parseInt(limit as string)) < totalCount
-      }
+        hasMore:
+          parseInt(offset as string) + parseInt(limit as string) < totalCount,
+      },
     });
   } catch (error: any) {
-    console.error('Get loyalty transactions error:', error);
+    console.error("Get loyalty transactions error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch loyalty transactions'
+      error: "Failed to fetch loyalty transactions",
     });
   }
 };
@@ -505,12 +519,19 @@ export const getLoyaltyTransactions: RequestHandler = async (req, res) => {
 // Add loyalty points (manual transaction)
 export const addLoyaltyPoints: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount, description, referenceType, referenceId, processedBy } = req.body;
+    const {
+      userId,
+      amount,
+      description,
+      referenceType,
+      referenceId,
+      processedBy,
+    } = req.body;
 
     if (!userId || !amount) {
       return res.status(400).json({
         success: false,
-        error: 'User ID and amount are required'
+        error: "User ID and amount are required",
       });
     }
 
@@ -522,7 +543,7 @@ export const addLoyaltyPoints: RequestHandler = async (req, res) => {
     if (!user || user.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: "User not found",
       });
     }
 
@@ -543,8 +564,8 @@ export const addLoyaltyPoints: RequestHandler = async (req, res) => {
         id, user_id, type, amount, description, reference_type, reference_id,
         balance_before, balance_after, processed_by, created_at
       ) VALUES (
-        ${transactionId}, ${userId}, 'earned', ${amount}, ${description || 'Manual points addition'},
-        ${referenceType || 'manual'}, ${referenceId || null}, ${currentBalance}, ${newBalance},
+        ${transactionId}, ${userId}, 'earned', ${amount}, ${description || "Manual points addition"},
+        ${referenceType || "manual"}, ${referenceId || null}, ${currentBalance}, ${newBalance},
         ${processedBy || null}, NOW()
       ) RETURNING *
     `;
@@ -553,13 +574,13 @@ export const addLoyaltyPoints: RequestHandler = async (req, res) => {
       success: true,
       transaction: result[0],
       newBalance,
-      message: 'Loyalty points added successfully'
+      message: "Loyalty points added successfully",
     });
   } catch (error: any) {
-    console.error('Add loyalty points error:', error);
+    console.error("Add loyalty points error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to add loyalty points'
+      error: "Failed to add loyalty points",
     });
   }
 };
@@ -567,12 +588,13 @@ export const addLoyaltyPoints: RequestHandler = async (req, res) => {
 // Redeem loyalty points
 export const redeemLoyaltyPoints: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount, description, referenceType, referenceId } = req.body;
+    const { userId, amount, description, referenceType, referenceId } =
+      req.body;
 
     if (!userId || !amount || amount <= 0) {
       return res.status(400).json({
         success: false,
-        error: 'Valid user ID and positive amount are required'
+        error: "Valid user ID and positive amount are required",
       });
     }
 
@@ -584,7 +606,7 @@ export const redeemLoyaltyPoints: RequestHandler = async (req, res) => {
     if (!user || user.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: "User not found",
       });
     }
 
@@ -593,7 +615,7 @@ export const redeemLoyaltyPoints: RequestHandler = async (req, res) => {
     if (currentBalance < amount) {
       return res.status(400).json({
         success: false,
-        error: 'Insufficient loyalty points'
+        error: "Insufficient loyalty points",
       });
     }
 
@@ -613,8 +635,8 @@ export const redeemLoyaltyPoints: RequestHandler = async (req, res) => {
         id, user_id, type, amount, description, reference_type, reference_id,
         balance_before, balance_after, created_at
       ) VALUES (
-        ${transactionId}, ${userId}, 'redeemed', ${amount}, ${description || 'Points redemption'},
-        ${referenceType || 'redemption'}, ${referenceId || null}, ${currentBalance}, ${newBalance},
+        ${transactionId}, ${userId}, 'redeemed', ${amount}, ${description || "Points redemption"},
+        ${referenceType || "redemption"}, ${referenceId || null}, ${currentBalance}, ${newBalance},
         NOW()
       ) RETURNING *
     `;
@@ -623,13 +645,13 @@ export const redeemLoyaltyPoints: RequestHandler = async (req, res) => {
       success: true,
       transaction: result[0],
       newBalance,
-      message: 'Loyalty points redeemed successfully'
+      message: "Loyalty points redeemed successfully",
     });
   } catch (error: any) {
-    console.error('Redeem loyalty points error:', error);
+    console.error("Redeem loyalty points error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to redeem loyalty points'
+      error: "Failed to redeem loyalty points",
     });
   }
 };
@@ -647,7 +669,7 @@ export const getGamificationDashboard: RequestHandler = async (req, res) => {
     if (!user || user.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: "User not found",
       });
     }
 
@@ -708,14 +730,14 @@ export const getGamificationDashboard: RequestHandler = async (req, res) => {
         nextLevel: nextLevel[0] || null,
         recentAchievements: recentAchievements || [],
         progressAchievements: progressAchievements || [],
-        recentTransactions: recentTransactions || []
-      }
+        recentTransactions: recentTransactions || [],
+      },
     });
   } catch (error: any) {
-    console.error('Get gamification dashboard error:', error);
+    console.error("Get gamification dashboard error:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch gamification dashboard'
+      error: "Failed to fetch gamification dashboard",
     });
   }
 };

@@ -62,7 +62,9 @@ export const createServer = () => {
       res.setHeader("Expires", "0");
     }
     // Cache static assets with versioning for 1 year
-    else if (/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(req.path)) {
+    else if (
+      /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(req.path)
+    ) {
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     }
     // Default: no caching for dynamic content
@@ -92,9 +94,7 @@ export const createServer = () => {
   });
 
   // Import health check middleware
-  const { ensureDbConnection } = await import(
-    "./middleware/dbHealthCheck"
-  );
+  const { ensureDbConnection } = await import("./middleware/dbHealthCheck");
 
   // API Routes
   app.use("/api", demoRoutes);
@@ -121,11 +121,7 @@ export const createServer = () => {
   );
 
   // Auth endpoints with database health check (critical routes)
-  app.post(
-    "/api/neon/auth/login",
-    ensureDbConnection,
-    neonApiRoutes.loginUser,
-  );
+  app.post("/api/neon/auth/login", ensureDbConnection, neonApiRoutes.loginUser);
   app.post(
     "/api/neon/auth/register",
     ensureDbConnection,
@@ -241,23 +237,29 @@ export const createServer = () => {
     "/api/neon/crew/:userId/wash-bay",
     crewApiRoutes.updateCrewWashBayAssignment,
   );
-  app.get(
-    "/api/neon/crew/commission-rates",
-    crewApiRoutes.getCommissionRates,
-  );
+  app.get("/api/neon/crew/commission-rates", crewApiRoutes.getCommissionRates);
   app.post(
     "/api/neon/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,
   );
-  app.get("/api/neon/crew/commission-entries", crewApiRoutes.getCommissionEntries);
-  app.post("/api/neon/crew/commission-entries", crewApiRoutes.createCommissionEntry);
+  app.get(
+    "/api/neon/crew/commission-entries",
+    crewApiRoutes.getCommissionEntries,
+  );
+  app.post(
+    "/api/neon/crew/commission-entries",
+    crewApiRoutes.createCommissionEntry,
+  );
   app.put(
     "/api/neon/crew/commission-entries/:id/status",
     crewApiRoutes.updateCommissionEntryStatus,
   );
   app.get("/api/neon/crew/payouts", crewApiRoutes.getCrewPayouts);
   app.post("/api/neon/crew/payouts", crewApiRoutes.createCrewPayout);
-  app.put("/api/neon/crew/payouts/:id/status", crewApiRoutes.updateCrewPayoutStatus);
+  app.put(
+    "/api/neon/crew/payouts/:id/status",
+    crewApiRoutes.updateCrewPayoutStatus,
+  );
   app.get("/api/neon/crew/payroll", crewApiRoutes.getCrewPayroll);
   app.get(
     "/api/neon/crew/commission-summary",
@@ -362,7 +364,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
           (!process.env.SUPABASE_DATABASE_URL && !process.env.DATABASE_URL);
 
         if (skipDbInit) {
-          console.log("⚠️ Skipping database migrations and seeding (DB init disabled).");
+          console.log(
+            "⚠️ Skipping database migrations and seeding (DB init disabled).",
+          );
           return;
         }
 

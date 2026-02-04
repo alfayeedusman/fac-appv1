@@ -1,15 +1,22 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { toast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Shield, Key, User, RefreshCw } from 'lucide-react';
-import { authService } from '@/services/authService';
-import { supabaseDbClient } from '@/services/supabaseDatabaseService';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import {
+  CheckCircle,
+  XCircle,
+  Shield,
+  Key,
+  User,
+  RefreshCw,
+} from "lucide-react";
+import { authService } from "@/services/authService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLoginTest() {
   const [isTestingDatabase, setIsTestingDatabase] = useState(false);
@@ -17,13 +24,13 @@ export default function AdminLoginTest() {
   const [databaseResults, setDatabaseResults] = useState<any>(null);
   const [sessionInfo, setSessionInfo] = useState<any>(null);
   const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const navigate = useNavigate();
 
   // Only show in development mode
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Alert>
@@ -39,19 +46,19 @@ export default function AdminLoginTest() {
   const testDatabaseState = async () => {
     setIsTestingDatabase(true);
     setDatabaseResults(null);
-    
+
     try {
-      console.log('🔍 Testing database state...');
-      
+      console.log("🔍 Testing database state...");
+
       // Test 1: Database connection
       const connectionTest = await supabaseDbClient.testConnection();
-      
+
       // Test 2: Initialize database
       const initResult = await supabaseDbClient.initialize();
-      
+
       // Test 3: Check stats without exposing user details
       const statsResult = await supabaseDbClient.getStats();
-      
+
       setDatabaseResults({
         connection: connectionTest,
         initialization: initResult,
@@ -59,25 +66,24 @@ export default function AdminLoginTest() {
           userCount: statsResult?.totalUsers || 0,
           bookingCount: statsResult?.totalBookings || 0,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       toast({
-        title: '✅ Database Test Complete',
-        description: 'Check results below',
+        title: "✅ Database Test Complete",
+        description: "Check results below",
       });
-      
     } catch (error: any) {
-      console.error('Database test error:', error);
+      console.error("Database test error:", error);
       setDatabaseResults({
-        error: error.message || 'Database test failed',
-        timestamp: new Date().toISOString()
+        error: error.message || "Database test failed",
+        timestamp: new Date().toISOString(),
       });
-      
+
       toast({
-        title: '❌ Database Test Failed',
-        description: error.message || 'Database test failed',
-        variant: 'destructive',
+        title: "❌ Database Test Failed",
+        description: error.message || "Database test failed",
+        variant: "destructive",
       });
     } finally {
       setIsTestingDatabase(false);
@@ -87,53 +93,54 @@ export default function AdminLoginTest() {
   const performLogin = async () => {
     if (!credentials.email || !credentials.password) {
       toast({
-        title: 'Missing Credentials',
-        description: 'Please enter both email and password',
-        variant: 'destructive',
+        title: "Missing Credentials",
+        description: "Please enter both email and password",
+        variant: "destructive",
       });
       return;
     }
 
     setIsLoggingIn(true);
-    
+
     try {
-      console.log('🚀 Performing login...');
-      
+      console.log("🚀 Performing login...");
+
       const result = await authService.login(credentials);
-      
+
       if (result.success && result.user) {
         // Update session info
         const sessionInfo = authService.getSessionInfo();
         setSessionInfo(sessionInfo);
-        
+
         toast({
-          title: '🎉 Login Successful!',
+          title: "🎉 Login Successful!",
           description: `Welcome ${result.user.fullName}! Redirecting to dashboard...`,
         });
-        
+
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
-          if (result.user.role === 'superadmin' || result.user.role === 'admin') {
-            navigate('/admin-dashboard');
+          if (
+            result.user.role === "superadmin" ||
+            result.user.role === "admin"
+          ) {
+            navigate("/admin-dashboard");
           } else {
-            navigate('/dashboard');
+            navigate("/dashboard");
           }
         }, 2000);
-        
       } else {
         toast({
-          title: '❌ Login Failed',
-          description: result.error || 'Login failed',
-          variant: 'destructive',
+          title: "❌ Login Failed",
+          description: result.error || "Login failed",
+          variant: "destructive",
         });
       }
-      
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       toast({
-        title: '❌ Login Error',
-        description: error.message || 'Login failed',
-        variant: 'destructive',
+        title: "❌ Login Error",
+        description: error.message || "Login failed",
+        variant: "destructive",
       });
     } finally {
       setIsLoggingIn(false);
@@ -144,17 +151,17 @@ export default function AdminLoginTest() {
     const sessionInfo = authService.getSessionInfo();
     const currentUser = authService.getCurrentUser();
     const isAuthenticated = authService.isAuthenticated();
-    
+
     setSessionInfo({
       ...sessionInfo,
       currentUser,
       isAuthenticated,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       performLogin();
     }
   };
@@ -193,29 +200,38 @@ export default function AdminLoginTest() {
               Refresh Status
             </Button>
           </div>
-          
+
           {sessionInfo && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Authenticated:</Label>
-                <Badge variant={sessionInfo.isAuthenticated ? "default" : "destructive"}>
+                <Badge
+                  variant={
+                    sessionInfo.isAuthenticated ? "default" : "destructive"
+                  }
+                >
                   {sessionInfo.isAuthenticated ? "Yes" : "No"}
                 </Badge>
               </div>
-              
+
               {sessionInfo.currentUser && (
                 <>
                   <div className="flex items-center gap-2">
                     <Label>User:</Label>
-                    <span>{sessionInfo.currentUser.fullName} ({sessionInfo.currentUser.email})</span>
+                    <span>
+                      {sessionInfo.currentUser.fullName} (
+                      {sessionInfo.currentUser.email})
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label>Role:</Label>
-                    <Badge variant="secondary">{sessionInfo.currentUser.role}</Badge>
+                    <Badge variant="secondary">
+                      {sessionInfo.currentUser.role}
+                    </Badge>
                   </div>
                 </>
               )}
-              
+
               {sessionInfo.loginTime && (
                 <div className="flex items-center gap-2">
                   <Label>Login Time:</Label>
@@ -224,12 +240,16 @@ export default function AdminLoginTest() {
                   </span>
                 </div>
               )}
-              
+
               {sessionInfo.hoursRemaining !== undefined && (
                 <div className="flex items-center gap-2">
                   <Label>Session Valid:</Label>
-                  <Badge variant={sessionInfo.isValid ? "default" : "destructive"}>
-                    {sessionInfo.isValid ? `${sessionInfo.hoursRemaining.toFixed(1)} hours remaining` : "Expired"}
+                  <Badge
+                    variant={sessionInfo.isValid ? "default" : "destructive"}
+                  >
+                    {sessionInfo.isValid
+                      ? `${sessionInfo.hoursRemaining.toFixed(1)} hours remaining`
+                      : "Expired"}
                   </Badge>
                 </div>
               )}
@@ -247,8 +267,8 @@ export default function AdminLoginTest() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={testDatabaseState} 
+          <Button
+            onClick={testDatabaseState}
             disabled={isTestingDatabase}
             className="mb-4"
           >
@@ -259,13 +279,15 @@ export default function AdminLoginTest() {
             )}
             Test Database & Seeding
           </Button>
-          
+
           {databaseResults && (
             <Alert>
               <AlertDescription>
                 <div className="space-y-2">
                   {databaseResults.error ? (
-                    <div className="text-red-600">❌ Error: {databaseResults.error}</div>
+                    <div className="text-red-600">
+                      ❌ Error: {databaseResults.error}
+                    </div>
                   ) : (
                     <>
                       <div className="flex items-center gap-2">
@@ -276,7 +298,7 @@ export default function AdminLoginTest() {
                           <XCircle className="h-4 w-4 text-red-500" />
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <span>Initialization:</span>
                         {databaseResults.initialization?.success ? (
@@ -285,17 +307,20 @@ export default function AdminLoginTest() {
                           <XCircle className="h-4 w-4 text-red-500" />
                         )}
                       </div>
-                      
+
                       {databaseResults.stats && (
                         <div className="mt-2 text-sm">
                           <div>Users: {databaseResults.stats.userCount}</div>
-                          <div>Bookings: {databaseResults.stats.bookingCount}</div>
+                          <div>
+                            Bookings: {databaseResults.stats.bookingCount}
+                          </div>
                         </div>
                       )}
                     </>
                   )}
                   <div className="text-xs text-muted-foreground">
-                    Tested at: {new Date(databaseResults.timestamp).toLocaleString()}
+                    Tested at:{" "}
+                    {new Date(databaseResults.timestamp).toLocaleString()}
                   </div>
                 </div>
               </AlertDescription>
@@ -320,28 +345,32 @@ export default function AdminLoginTest() {
                 id="email"
                 type="email"
                 value={credentials.email}
-                onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                onChange={(e) =>
+                  setCredentials({ ...credentials, email: e.target.value })
+                }
                 onKeyPress={handleKeyPress}
                 placeholder="Enter admin email"
                 className="mt-1"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={credentials.password}
-                onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                onChange={(e) =>
+                  setCredentials({ ...credentials, password: e.target.value })
+                }
                 onKeyPress={handleKeyPress}
                 placeholder="Enter password"
                 className="mt-1"
               />
             </div>
-            
-            <Button 
-              onClick={performLogin} 
+
+            <Button
+              onClick={performLogin}
               disabled={isLoggingIn}
               className="w-full"
             >
@@ -353,11 +382,12 @@ export default function AdminLoginTest() {
               Login & Go to Dashboard
             </Button>
           </div>
-          
+
           <Alert className="mt-4">
             <AlertDescription>
               <div className="text-sm text-muted-foreground">
-                Enter your configured admin credentials. Credentials are not hardcoded for security.
+                Enter your configured admin credentials. Credentials are not
+                hardcoded for security.
               </div>
             </AlertDescription>
           </Alert>

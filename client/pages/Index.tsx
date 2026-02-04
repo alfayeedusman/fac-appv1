@@ -473,11 +473,7 @@ export default function Index() {
           {content.hero.ctaButtons
             .filter((button) => button.enabled)
             .map((button, index) => (
-              <Link
-                key={button.id}
-                to={button.link}
-                className="block"
-              >
+              <Link key={button.id} to={button.link} className="block">
                 <Button className={getButtonVariantClass(button.variant)}>
                   <span className="flex items-center justify-center">
                     {button.variant === "primary" && (

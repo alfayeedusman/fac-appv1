@@ -121,9 +121,17 @@ const fetchSubscriptions = async (params?: {
   status?: SubscriptionRequest["status"] | "all";
   userId?: string;
 }) => {
-  const statuses = params?.status && params.status !== "all"
-    ? [mapStatusToSubscription(params.status)]
-    : ["pending", "under_review", "active", "rejected", "cancelled", "expired"];
+  const statuses =
+    params?.status && params.status !== "all"
+      ? [mapStatusToSubscription(params.status)]
+      : [
+          "pending",
+          "under_review",
+          "active",
+          "rejected",
+          "cancelled",
+          "expired",
+        ];
 
   const results = await Promise.all(
     statuses.map((status) =>

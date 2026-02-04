@@ -13,7 +13,10 @@ export async function runMigrations() {
     try {
       sql = await getSqlClient();
     } catch (error) {
-      console.warn("⚠️ Database connection unavailable, skipping migrations:", error);
+      console.warn(
+        "⚠️ Database connection unavailable, skipping migrations:",
+        error,
+      );
       return false;
     }
 
@@ -251,7 +254,10 @@ export async function runMigrations() {
       `;
       console.log("✅ password column converted to TEXT type");
     } catch (error: any) {
-      if (error.message?.includes("already text type") || error.message?.includes("no conversion")) {
+      if (
+        error.message?.includes("already text type") ||
+        error.message?.includes("no conversion")
+      ) {
         console.log("✅ password column is already TEXT type");
       } else {
         console.warn(
@@ -1219,12 +1225,16 @@ export async function seedInitialData() {
       sql = await getSqlClient();
       db = await getDatabase();
     } catch (error) {
-      console.warn("⚠️ Database not initialized, skipping initial data seeding");
+      console.warn(
+        "⚠️ Database not initialized, skipping initial data seeding",
+      );
       return false;
     }
 
     if (!db || !sql) {
-      console.warn("⚠️ Database not initialized, skipping initial data seeding");
+      console.warn(
+        "⚠️ Database not initialized, skipping initial data seeding",
+      );
       return false;
     }
 

@@ -41,8 +41,8 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       .where(
         and(
           eq(schema.crewStatus.status, "online"),
-          sql`${schema.crewStatus.endedAt} IS NULL`
-        )
+          sql`${schema.crewStatus.endedAt} IS NULL`,
+        ),
       );
 
     const [busyCrewResult] = await db
@@ -51,8 +51,8 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       .where(
         and(
           eq(schema.crewStatus.status, "busy"),
-          sql`${schema.crewStatus.endedAt} IS NULL`
-        )
+          sql`${schema.crewStatus.endedAt} IS NULL`,
+        ),
       );
 
     const [availableCrewResult] = await db
@@ -61,8 +61,8 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       .where(
         and(
           eq(schema.crewStatus.status, "available"),
-          sql`${schema.crewStatus.endedAt} IS NULL`
-        )
+          sql`${schema.crewStatus.endedAt} IS NULL`,
+        ),
       );
 
     // Get total groups
@@ -84,21 +84,21 @@ export const getCrewStats: RequestHandler = async (req, res) => {
             WHERE cm.crew_group_id = ${schema.crewGroups.id}
             AND cs.status IN ('online', 'busy')
             AND cs.ended_at IS NULL
-          )`
-        )
+          )`,
+        ),
       );
 
     // Get average crew rating
     const [avgRatingResult] = await db
-      .select({ 
-        avgRating: avg(schema.users.crewRating)
+      .select({
+        avgRating: avg(schema.users.crewRating),
       })
       .from(schema.users)
       .where(
         and(
           eq(schema.users.role, "crew"),
-          sql`${schema.users.crewRating} IS NOT NULL`
-        )
+          sql`${schema.users.crewRating} IS NOT NULL`,
+        ),
       );
 
     // Get today's completed bookings
@@ -114,29 +114,32 @@ export const getCrewStats: RequestHandler = async (req, res) => {
         and(
           eq(schema.bookings.status, "completed"),
           gte(schema.bookings.completedAt, today),
-          sql`${schema.bookings.completedAt} < ${tomorrow}`
-        )
+          sql`${schema.bookings.completedAt} < ${tomorrow}`,
+        ),
       );
 
     // Calculate today's revenue from completed bookings
     const [todayRevenueResult] = await db
-      .select({ 
-        revenue: sql<number>`COALESCE(SUM(${schema.bookings.totalPrice}), 0)`
+      .select({
+        revenue: sql<number>`COALESCE(SUM(${schema.bookings.totalPrice}), 0)`,
       })
       .from(schema.bookings)
       .where(
         and(
           eq(schema.bookings.status, "completed"),
           gte(schema.bookings.completedAt, today),
-          sql`${schema.bookings.completedAt} < ${tomorrow}`
-        )
+          sql`${schema.bookings.completedAt} < ${tomorrow}`,
+        ),
       );
 
     const totalCrew = Number(totalCrewResult.count || 0);
     const onlineCrew = Number(onlineCrewResult.count || 0);
     const busyCrew = Number(busyCrewResult.count || 0);
     const availableCrew = Number(availableCrewResult.count || 0);
-    const offlineCrew = Math.max(0, totalCrew - onlineCrew - busyCrew - availableCrew);
+    const offlineCrew = Math.max(
+      0,
+      totalCrew - onlineCrew - busyCrew - availableCrew,
+    );
 
     const stats = {
       totalCrew,
@@ -147,21 +150,22 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       totalGroups: totalGroupsResult.count,
       activeGroups: activeGroupsResult.count,
       unassignedCrew: Number(unassignedCrewResult.count || 0),
-      avgRating: avgRatingResult.avgRating ? parseFloat(String(avgRatingResult.avgRating)) : 0,
+      avgRating: avgRatingResult.avgRating
+        ? parseFloat(String(avgRatingResult.avgRating))
+        : 0,
       todayJobs: todayJobsResult.count,
-      todayRevenue: Number(todayRevenueResult.revenue) || 0
+      todayRevenue: Number(todayRevenueResult.revenue) || 0,
     };
 
     res.json({
       success: true,
-      stats
+      stats,
     });
-
   } catch (error) {
     console.error("Error fetching crew stats:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to fetch crew statistics"
+      error: "Failed to fetch crew statistics",
     });
   }
 };
@@ -181,35 +185,37 @@ export const getCrewActivity: RequestHandler = async (req, res) => {
         status: schema.crewStatus.status,
         startedAt: schema.crewStatus.startedAt,
         crewName: schema.users.fullName,
-        type: sql<string>`'status_change'`
+        type: sql<string>`'status_change'`,
       })
       .from(schema.crewStatus)
-      .innerJoin(schema.crewMembers, eq(schema.crewStatus.crewId, schema.crewMembers.id))
+      .innerJoin(
+        schema.crewMembers,
+        eq(schema.crewStatus.crewId, schema.crewMembers.id),
+      )
       .innerJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id))
       .orderBy(desc(schema.crewStatus.startedAt))
       .limit(limit);
 
     // Transform to activity format
-    const activities = recentStatusChanges.map(change => ({
+    const activities = recentStatusChanges.map((change) => ({
       id: change.id,
-      type: 'status_change' as const,
+      type: "status_change" as const,
       crewId: change.crewId,
       crewName: change.crewName,
       message: `Changed status to ${change.status}`,
       timestamp: change.startedAt.toISOString(),
-      severity: change.status === 'offline' ? 'warning' : 'info'
+      severity: change.status === "offline" ? "warning" : "info",
     }));
 
     res.json({
       success: true,
-      activities
+      activities,
     });
-
   } catch (error) {
     console.error("Error fetching crew activity:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to fetch crew activity"
+      error: "Failed to fetch crew activity",
     });
   }
 };
@@ -237,28 +243,31 @@ export const getCrewList: RequestHandler = async (req, res) => {
         groupId: schema.crewMembers.crewGroupId,
         commissionRate: schema.crewMembers.commissionRate,
         washBay: schema.crewMembers.washBay,
-        currentStatus: schema.crewStatus.status
+        currentStatus: schema.crewStatus.status,
       })
       .from(schema.users)
-      .leftJoin(schema.crewMembers, eq(schema.users.id, schema.crewMembers.userId))
-      .leftJoin(schema.crewStatus, 
+      .leftJoin(
+        schema.crewMembers,
+        eq(schema.users.id, schema.crewMembers.userId),
+      )
+      .leftJoin(
+        schema.crewStatus,
         and(
           eq(schema.crewMembers.id, schema.crewStatus.crewId),
-          sql`${schema.crewStatus.endedAt} IS NULL`
-        )
+          sql`${schema.crewStatus.endedAt} IS NULL`,
+        ),
       )
       .where(eq(schema.users.role, "crew"));
 
     res.json({
       success: true,
-      crew: crewList
+      crew: crewList,
     });
-
   } catch (error) {
     console.error("Error fetching crew list:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to fetch crew list"
+      error: "Failed to fetch crew list",
     });
   }
 };
@@ -269,7 +278,7 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
     if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
-        error: "Database connection not available"
+        error: "Database connection not available",
       });
     }
 
@@ -284,7 +293,7 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
         color: schema.crewGroups.colorCode,
         status: schema.crewGroups.status,
         createdAt: schema.crewGroups.createdAt,
-        leaderName: schema.users.fullName
+        leaderName: schema.users.fullName,
       })
       .from(schema.crewGroups)
       .leftJoin(schema.users, eq(schema.crewGroups.leaderId, schema.users.id))
@@ -299,35 +308,38 @@ export const getCrewGroups: RequestHandler = async (req, res) => {
             userId: schema.crewMembers.userId,
             employeeId: schema.crewMembers.employeeId,
             fullName: schema.users.fullName,
-            status: schema.crewStatus.status
+            status: schema.crewStatus.status,
           })
           .from(schema.crewMembers)
-          .innerJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id))
-          .leftJoin(schema.crewStatus, 
+          .innerJoin(
+            schema.users,
+            eq(schema.crewMembers.userId, schema.users.id),
+          )
+          .leftJoin(
+            schema.crewStatus,
             and(
               eq(schema.crewMembers.id, schema.crewStatus.crewId),
-              sql`${schema.crewStatus.endedAt} IS NULL`
-            )
+              sql`${schema.crewStatus.endedAt} IS NULL`,
+            ),
           )
           .where(eq(schema.crewMembers.crewGroupId, group.id));
 
         return {
           ...group,
-          members
+          members,
         };
-      })
+      }),
     );
 
     res.json({
       success: true,
-      groups: groupsWithMembers
+      groups: groupsWithMembers,
     });
-
   } catch (error) {
     console.error("Error fetching crew groups:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to fetch crew groups"
+      error: "Failed to fetch crew groups",
     });
   }
 };
@@ -551,9 +563,9 @@ export const getCrewPayroll: RequestHandler = async (req, res) => {
           eq(schema.bookings.status, "completed"),
           gte(schema.bookings.completedAt, start),
           lte(schema.bookings.completedAt, end),
-          sql`COALESCE(${schema.bookings.assignedCrew}, '[]'::jsonb) @> ${JSON.stringify([
-            userId,
-          ])}::jsonb`,
+          sql`COALESCE(${schema.bookings.assignedCrew}, '[]'::jsonb) @> ${JSON.stringify(
+            [userId],
+          )}::jsonb`,
         ),
       );
 
@@ -623,7 +635,12 @@ export const getCrewPayroll: RequestHandler = async (req, res) => {
   }
 };
 
-const COMMISSION_STATUSES = ["pending", "approved", "released", "disputed"] as const;
+const COMMISSION_STATUSES = [
+  "pending",
+  "approved",
+  "released",
+  "disputed",
+] as const;
 
 type CommissionStatus = (typeof COMMISSION_STATUSES)[number];
 
@@ -641,16 +658,30 @@ export const getCommissionEntries: RequestHandler = async (req, res) => {
 
     const conditions = [] as any[];
     if (crewUserId) {
-      conditions.push(eq(schema.crewCommissionEntries.crewUserId, crewUserId as string));
+      conditions.push(
+        eq(schema.crewCommissionEntries.crewUserId, crewUserId as string),
+      );
     }
     if (status) {
-      conditions.push(eq(schema.crewCommissionEntries.status, status as string));
+      conditions.push(
+        eq(schema.crewCommissionEntries.status, status as string),
+      );
     }
     if (startDate) {
-      conditions.push(gte(schema.crewCommissionEntries.entryDate, new Date(startDate as string)));
+      conditions.push(
+        gte(
+          schema.crewCommissionEntries.entryDate,
+          new Date(startDate as string),
+        ),
+      );
     }
     if (endDate) {
-      conditions.push(lte(schema.crewCommissionEntries.entryDate, new Date(endDate as string)));
+      conditions.push(
+        lte(
+          schema.crewCommissionEntries.entryDate,
+          new Date(endDate as string),
+        ),
+      );
     }
 
     let query = db
@@ -668,7 +699,10 @@ export const getCommissionEntries: RequestHandler = async (req, res) => {
         crewName: schema.users.fullName,
       })
       .from(schema.crewCommissionEntries)
-      .leftJoin(schema.users, eq(schema.crewCommissionEntries.crewUserId, schema.users.id))
+      .leftJoin(
+        schema.users,
+        eq(schema.crewCommissionEntries.crewUserId, schema.users.id),
+      )
       .orderBy(desc(schema.crewCommissionEntries.entryDate));
 
     if (conditions.length > 0) {
@@ -688,9 +722,16 @@ export const getCommissionEntries: RequestHandler = async (req, res) => {
 
 export const createCommissionEntry: RequestHandler = async (req, res) => {
   try {
-    const { crewUserId, entryDate, amount, notes, recordedBy, status } = req.body;
+    const { crewUserId, entryDate, amount, notes, recordedBy, status } =
+      req.body;
 
-    if (!crewUserId || !entryDate || amount === undefined || amount === null || !recordedBy) {
+    if (
+      !crewUserId ||
+      !entryDate ||
+      amount === undefined ||
+      amount === null ||
+      !recordedBy
+    ) {
       return res.status(400).json({
         success: false,
         error: "crewUserId, entryDate, amount, and recordedBy are required",
@@ -804,11 +845,16 @@ export const getCrewPayouts: RequestHandler = async (req, res) => {
         crewName: schema.users.fullName,
       })
       .from(schema.crewPayouts)
-      .leftJoin(schema.users, eq(schema.crewPayouts.crewUserId, schema.users.id))
+      .leftJoin(
+        schema.users,
+        eq(schema.crewPayouts.crewUserId, schema.users.id),
+      )
       .orderBy(desc(schema.crewPayouts.periodEnd));
 
     if (crewUserId) {
-      query = query.where(eq(schema.crewPayouts.crewUserId, crewUserId as string)) as typeof query;
+      query = query.where(
+        eq(schema.crewPayouts.crewUserId, crewUserId as string),
+      ) as typeof query;
     }
 
     const payouts = await query;
@@ -824,13 +870,27 @@ export const getCrewPayouts: RequestHandler = async (req, res) => {
 
 export const createCrewPayout: RequestHandler = async (req, res) => {
   try {
-    const { crewUserId, periodStart, periodEnd, totalAmount, status, createdBy, entryIds } =
-      req.body;
+    const {
+      crewUserId,
+      periodStart,
+      periodEnd,
+      totalAmount,
+      status,
+      createdBy,
+      entryIds,
+    } = req.body;
 
-    if (!crewUserId || !periodStart || !periodEnd || totalAmount === undefined || !createdBy) {
+    if (
+      !crewUserId ||
+      !periodStart ||
+      !periodEnd ||
+      totalAmount === undefined ||
+      !createdBy
+    ) {
       return res.status(400).json({
         success: false,
-        error: "crewUserId, periodStart, periodEnd, totalAmount, and createdBy are required",
+        error:
+          "crewUserId, periodStart, periodEnd, totalAmount, and createdBy are required",
       });
     }
 
@@ -971,12 +1031,15 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       .from(schema.users)
       .where(eq(schema.users.role, "crew"));
 
-    const crewProfileMap = new Map<string, {
-      userId: string;
-      fullName?: string | null;
-      crewName?: string | null;
-      commissionRate?: string | number | null;
-    }>();
+    const crewProfileMap = new Map<
+      string,
+      {
+        userId: string;
+        fullName?: string | null;
+        crewName?: string | null;
+        commissionRate?: string | number | null;
+      }
+    >();
 
     crewProfiles.forEach((profile) => {
       crewProfileMap.set(profile.userId, profile);
@@ -1158,14 +1221,13 @@ export const seedCrew: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Crew data seeded successfully"
+      message: "Crew data seeded successfully",
     });
-
   } catch (error) {
     console.error("Error seeding crew data:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to seed crew data"
+      error: "Failed to seed crew data",
     });
   }
 };

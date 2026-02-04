@@ -666,9 +666,7 @@ class NeonDatabaseService {
           .update(schema.users)
           .set({
             subscriptionStatus: userSubscriptionStatus,
-            subscriptionExpiry: new Date(
-              Date.now() + 30 * 24 * 60 * 60 * 1000,
-            ), // 30 days from now
+            subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
             updatedAt: new Date(),
           })
           .where(eq(schema.users.id, userId));
@@ -984,9 +982,7 @@ class NeonDatabaseService {
         break;
     }
 
-    const [userCount] = await db
-      .select({ count: count() })
-      .from(schema.users);
+    const [userCount] = await db.select({ count: count() }).from(schema.users);
 
     const [bookingCount] = await db
       .select({ count: count() })
@@ -1546,11 +1542,11 @@ class NeonDatabaseService {
       const packages = await query.orderBy(
         desc(schema.servicePackages.isFeatured),
         desc(schema.servicePackages.isPopular),
-        asc(schema.servicePackages.name)
+        asc(schema.servicePackages.name),
       );
 
       console.log(
-        `✅ Service packages retrieved: ${packages.length} packages found`
+        `✅ Service packages retrieved: ${packages.length} packages found`,
       );
       return packages || [];
     } catch (error) {
@@ -1645,7 +1641,7 @@ class NeonDatabaseService {
       isFeatured: boolean;
       color: string;
       priority: number;
-    }>
+    }>,
   ) {
     try {
       if (!this.db) throw new Error("Database not initialized");

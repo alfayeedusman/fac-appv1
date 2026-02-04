@@ -4,8 +4,7 @@ export function validateEnvironment() {
   const warnings: string[] = [];
 
   // Check for database URL
-  const databaseUrl =
-    process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
   if (!databaseUrl) {
     errors.push(
@@ -27,10 +26,7 @@ export function validateEnvironment() {
     }
 
     // Check for connection pooler
-    if (
-      !databaseUrl.includes("-pooler") &&
-      databaseUrl.includes("neon.tech")
-    ) {
+    if (!databaseUrl.includes("-pooler") && databaseUrl.includes("neon.tech")) {
       warnings.push(
         "⚠️ WARNING: Not using Neon connection pooler (-pooler). Consider adding -pooler to hostname for better connection management.",
       );
@@ -57,7 +53,9 @@ export function validateEnvironment() {
     console.error("=".repeat(60) + "\n");
 
     if (process.env.NODE_ENV === "production") {
-      console.error("❌ FATAL: Cannot start in production with configuration errors");
+      console.error(
+        "❌ FATAL: Cannot start in production with configuration errors",
+      );
       process.exit(1);
     }
   }
@@ -87,7 +85,9 @@ export function validateEnvironment() {
     );
     console.log(
       "   SSL:",
-      databaseUrl.includes("sslmode=require") ? "✅ Required" : "⚠️ Not required",
+      databaseUrl.includes("sslmode=require")
+        ? "✅ Required"
+        : "⚠️ Not required",
     );
   }
 

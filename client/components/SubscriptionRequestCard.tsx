@@ -420,10 +420,10 @@ export default function SubscriptionRequestCard({
                 />
               </div>
               <div className="text-sm text-muted-foreground">
-                <p>File size: {formatFileSize(request.receipt?.fileSize || 0)}</p>
                 <p>
-                  Uploaded: {formatDate(request.receipt?.uploadDate || "")}
+                  File size: {formatFileSize(request.receipt?.fileSize || 0)}
                 </p>
+                <p>Uploaded: {formatDate(request.receipt?.uploadDate || "")}</p>
               </div>
             </div>
           </DialogContent>

@@ -51,7 +51,10 @@ import {
   generateTimeSlots,
   isSlotAvailable,
 } from "@/utils/adminConfig";
-import { supabaseDbClient, type Booking } from "@/services/supabaseDatabaseService";
+import {
+  supabaseDbClient,
+  type Booking,
+} from "@/services/supabaseDatabaseService";
 import {
   getCarWashServices,
   calculateServicePrice,
@@ -1198,7 +1201,8 @@ export default function StepperBooking({
         receiptUrl: bookingPayload.receiptUrl ? "[File present]" : undefined,
       });
 
-      const bookingResult = await supabaseDbClient.createBooking(bookingPayload);
+      const bookingResult =
+        await supabaseDbClient.createBooking(bookingPayload);
       console.log("📥 Booking response:", bookingResult);
 
       if (!bookingResult.success || !bookingResult.booking) {
@@ -1407,7 +1411,10 @@ export default function StepperBooking({
               const userId = localStorage.getItem("userId");
               if (!userId) return;
 
-              const result = await supabaseDbClient.addUserVehicle(userId, vehicle);
+              const result = await supabaseDbClient.addUserVehicle(
+                userId,
+                vehicle,
+              );
               if (result.success && result.vehicle) {
                 setSavedVehicles([...savedVehicles, result.vehicle]);
                 setSelectedVehicleId(result.vehicle.id);

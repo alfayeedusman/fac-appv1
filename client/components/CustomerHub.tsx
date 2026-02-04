@@ -129,7 +129,10 @@ export default function CustomerHub() {
       const response = await fetch("/api/neon/packages");
       const data = await response.json();
       if (data.success && Array.isArray(data.packages)) {
-        console.log("✅ Packages loaded from Package Studio:", data.packages.length);
+        console.log(
+          "✅ Packages loaded from Package Studio:",
+          data.packages.length,
+        );
         setAvailablePackages(data.packages);
       } else {
         console.warn("⚠️ Failed to load packages:", data);
@@ -445,7 +448,9 @@ export default function CustomerHub() {
 
     try {
       // Get the selected package details
-      const selectedPackage = availablePackages.find((p) => p.id === selectedPlan);
+      const selectedPackage = availablePackages.find(
+        (p) => p.id === selectedPlan,
+      );
       if (!selectedPackage) {
         toast({
           title: "Error",
@@ -1127,15 +1132,17 @@ export default function CustomerHub() {
                           </p>
                         )}
                         <ul className="space-y-2 text-sm">
-                          {features.slice(0, 4).map((feature: any, idx: number) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-2 text-muted-foreground"
-                            >
-                              <span className="text-green-600 mt-1">✓</span>
-                              {feature}
-                            </li>
-                          ))}
+                          {features
+                            .slice(0, 4)
+                            .map((feature: any, idx: number) => (
+                              <li
+                                key={idx}
+                                className="flex items-start gap-2 text-muted-foreground"
+                              >
+                                <span className="text-green-600 mt-1">✓</span>
+                                {feature}
+                              </li>
+                            ))}
                         </ul>
                       </div>
                     );

@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { supabaseDbService } from '../services/supabaseDatabaseService.js';
+import { Router } from "express";
+import { supabaseDbService } from "../services/supabaseDatabaseService.js";
 
 const router = Router();
 
-console.log('🎨 CMS: CMS API routes module loaded successfully');
+console.log("🎨 CMS: CMS API routes module loaded successfully");
 
 // Default homepage content structure
 const defaultHomepageContent = {
@@ -13,7 +13,8 @@ const defaultHomepageContent = {
     mainTitle: "Smart Auto Care",
     highlightedTitle: "for Modern Drivers",
     subtitle: "Premium Quality • Affordable Prices",
-    description: "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
+    description:
+      "Experience the future of car care with our advanced technology and expert service in Zamboanga City",
     features: [
       {
         id: "feature1",
@@ -65,13 +66,15 @@ const defaultHomepageContent = {
     badge: "Our Services",
     title: "Premium Auto Care",
     highlightedTitle: "",
-    description: "Professional services designed to keep your vehicle in perfect condition",
+    description:
+      "Professional services designed to keep your vehicle in perfect condition",
     items: [
       {
         id: "service1",
         icon: "Car",
         title: "Car & Motor Wash",
-        description: "Premium cleaning with eco-friendly products for a spotless finish",
+        description:
+          "Premium cleaning with eco-friendly products for a spotless finish",
         gradient: "from-fac-orange-500 to-fac-orange-600",
         enabled: true,
       },
@@ -87,7 +90,8 @@ const defaultHomepageContent = {
         id: "service3",
         icon: "Sparkles",
         title: "Headlight Restoration",
-        description: "Crystal clear headlights for enhanced visibility and safety",
+        description:
+          "Crystal clear headlights for enhanced visibility and safety",
         gradient: "from-blue-500 to-blue-600",
         enabled: true,
       },
@@ -107,13 +111,15 @@ const defaultHomepageContent = {
     highlightedTitle: "",
     vision: {
       title: "Our Vision",
-      content: "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
+      content:
+        "To become Zamboanga's most trusted auto care brand, delivering premium quality services at affordable prices for every car owner.",
       icon: "Crown",
       gradient: "from-fac-orange-500 to-fac-orange-600",
     },
     mission: {
       title: "Our Mission",
-      content: "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
+      content:
+        "Committed to excellence in auto detailing and protection, treating every vehicle with care while exceeding customer expectations.",
       icon: "Star",
       gradient: "from-purple-500 to-purple-600",
     },
@@ -157,16 +163,16 @@ const defaultHomepageContent = {
  * Get current homepage content
  * GET /api/cms/homepage
  */
-router.get('/homepage', async (req, res) => {
+router.get("/homepage", async (req, res) => {
   try {
-    console.log('🎨 CMS: Getting homepage content...');
-    
+    console.log("🎨 CMS: Getting homepage content...");
+
     if (!supabaseDbService.db) {
-      console.log('🎨 CMS: Database not available, returning default content');
+      console.log("🎨 CMS: Database not available, returning default content");
       return res.json({
         success: true,
         data: defaultHomepageContent,
-        message: "Using default content (database not available)"
+        message: "Using default content (database not available)",
       });
     }
 
@@ -174,17 +180,16 @@ router.get('/homepage', async (req, res) => {
     res.json({
       success: true,
       data: defaultHomepageContent,
-      message: "Default content loaded successfully"
+      message: "Default content loaded successfully",
     });
-
   } catch (error) {
-    console.error('🎨 CMS: Error getting homepage content:', error);
-    
+    console.error("🎨 CMS: Error getting homepage content:", error);
+
     // Return default content on error
     res.json({
       success: true,
       data: defaultHomepageContent,
-      message: "Using default content (error occurred)"
+      message: "Using default content (error occurred)",
     });
   }
 });
@@ -193,30 +198,33 @@ router.get('/homepage', async (req, res) => {
  * Save homepage content
  * POST /api/cms/homepage
  */
-router.post('/homepage', async (req, res) => {
+router.post("/homepage", async (req, res) => {
   try {
-    console.log('🎨 CMS: Saving homepage content...');
-    
+    console.log("🎨 CMS: Saving homepage content...");
+
     if (!supabaseDbService.db) {
       return res.status(503).json({
         success: false,
-        error: "Database not available"
+        error: "Database not available",
       });
     }
 
     const { content, userId, userName } = req.body;
-    
+
     if (!content) {
       return res.status(400).json({
         success: false,
-        error: "Content is required"
+        error: "Content is required",
       });
     }
 
     // For now, just return success
     // TODO: Implement actual database saving
-    console.log('🎨 CMS: Content would be saved for user:', userId || 'unknown');
-    
+    console.log(
+      "🎨 CMS: Content would be saved for user:",
+      userId || "unknown",
+    );
+
     res.json({
       success: true,
       data: {
@@ -224,14 +232,13 @@ router.post('/homepage', async (req, res) => {
         version: "1.0.0",
         publishedAt: new Date().toISOString(),
       },
-      message: "Homepage content saved successfully"
+      message: "Homepage content saved successfully",
     });
-
   } catch (error) {
-    console.error('🎨 CMS: Error saving homepage content:', error);
+    console.error("🎨 CMS: Error saving homepage content:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to save homepage content"
+      error: "Failed to save homepage content",
     });
   }
 });
@@ -240,20 +247,19 @@ router.post('/homepage', async (req, res) => {
  * Get content history
  * GET /api/cms/history
  */
-router.get('/history', async (req, res) => {
+router.get("/history", async (req, res) => {
   try {
-    console.log('🎨 CMS: Getting content history...');
-    
+    console.log("🎨 CMS: Getting content history...");
+
     res.json({
       success: true,
-      data: []
+      data: [],
     });
-
   } catch (error) {
-    console.error('🎨 CMS: Error getting content history:', error);
+    console.error("🎨 CMS: Error getting content history:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to get content history"
+      error: "Failed to get content history",
     });
   }
 });
@@ -262,11 +268,11 @@ router.get('/history', async (req, res) => {
  * Initialize default content (Admin only)
  * POST /api/cms/initialize
  */
-router.post('/initialize', async (req, res) => {
+router.post("/initialize", async (req, res) => {
   try {
-    console.log('🎨 CMS: Initializing CMS content...');
-    
-    const { userId = 'system', userName = 'System' } = req.body;
+    console.log("🎨 CMS: Initializing CMS content...");
+
+    const { userId = "system", userName = "System" } = req.body;
 
     res.json({
       success: true,
@@ -274,14 +280,13 @@ router.post('/initialize', async (req, res) => {
         id: `init_${Date.now()}`,
         version: "1.0.0",
       },
-      message: "CMS content initialized successfully"
+      message: "CMS content initialized successfully",
     });
-
   } catch (error) {
-    console.error('🎨 CMS: Error initializing CMS content:', error);
+    console.error("🎨 CMS: Error initializing CMS content:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to initialize CMS content"
+      error: "Failed to initialize CMS content",
     });
   }
 });

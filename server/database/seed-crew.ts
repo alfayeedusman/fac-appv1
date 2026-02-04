@@ -244,7 +244,6 @@ export async function seedCrewData() {
     console.log("✅ Crew statuses created");
 
     console.log("🎉 Crew data seeding completed successfully!");
-
   } catch (error) {
     console.error("❌ Error seeding crew data:", error);
     throw error;

@@ -94,7 +94,8 @@ export default function AdminCrewManagement() {
   const [crewGroups, setCrewGroups] = useState<any[]>([]);
   const [crewGroupsLoading, setCrewGroupsLoading] = useState(false);
   const [commissionEntries, setCommissionEntries] = useState<any[]>([]);
-  const [commissionEntriesLoading, setCommissionEntriesLoading] = useState(false);
+  const [commissionEntriesLoading, setCommissionEntriesLoading] =
+    useState(false);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [payoutsLoading, setPayoutsLoading] = useState(false);
 
@@ -446,12 +447,16 @@ export default function AdminCrewManagement() {
 
   const selectedCrewGroup = useMemo(() => {
     if (!selectedCrew?.groupId) return null;
-    return crewGroups.find((group) => group.id === selectedCrew.groupId) || null;
+    return (
+      crewGroups.find((group) => group.id === selectedCrew.groupId) || null
+    );
   }, [crewGroups, selectedCrew]);
 
   const filteredCommissionEntries = useMemo(() => {
     if (!selectedCrewId) return commissionEntries;
-    return commissionEntries.filter((entry) => entry.crewUserId === selectedCrewId);
+    return commissionEntries.filter(
+      (entry) => entry.crewUserId === selectedCrewId,
+    );
   }, [commissionEntries, selectedCrewId]);
 
   const filteredPayouts = useMemo(() => {
@@ -471,7 +476,12 @@ export default function AdminCrewManagement() {
     const baseAmount = Number(payoutAmount) || 0;
     const bonusAmount = Number(payoutBonus) || 0;
     const totalAmount = baseAmount + bonusAmount;
-    if (!payoutCrewId || !payoutStartDate || !payoutEndDate || totalAmount <= 0) {
+    if (
+      !payoutCrewId ||
+      !payoutStartDate ||
+      !payoutEndDate ||
+      totalAmount <= 0
+    ) {
       toast({
         title: "Missing payout details",
         description: "Select crew, period, and amount.",
@@ -519,7 +529,10 @@ export default function AdminCrewManagement() {
   };
 
   const handleUpdatePayoutStatus = async (payoutId: string, status: string) => {
-    const result = await supabaseDbClient.updateCrewPayoutStatus(payoutId, status);
+    const result = await supabaseDbClient.updateCrewPayoutStatus(
+      payoutId,
+      status,
+    );
     if (result.success) {
       toast({
         title: "Payout status updated",
@@ -544,7 +557,9 @@ export default function AdminCrewManagement() {
     if (result.success) {
       toast({
         title: "Crew group updated",
-        description: groupId ? "Group assignment saved." : "Crew unassigned from group.",
+        description: groupId
+          ? "Group assignment saved."
+          : "Crew unassigned from group.",
       });
       loadCrewMembers();
       loadCrewGroups();
@@ -566,7 +581,9 @@ export default function AdminCrewManagement() {
     if (result.success) {
       toast({
         title: "Wash bay updated",
-        description: washBay ? "Wash bay assignment saved." : "Wash bay cleared.",
+        description: washBay
+          ? "Wash bay assignment saved."
+          : "Wash bay cleared.",
       });
       loadCrewMembers();
     } else {
@@ -1126,7 +1143,8 @@ export default function AdminCrewManagement() {
                   <div>
                     <CardTitle>Quick Commission Entry</CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Add a crew commission in seconds. Status defaults to pending.
+                      Add a crew commission in seconds. Status defaults to
+                      pending.
                     </p>
                   </div>
                   <Button
@@ -1135,13 +1153,16 @@ export default function AdminCrewManagement() {
                     onClick={handleSeedCrew}
                     disabled={isSeedingCrew}
                   >
-                    {isSeedingCrew ? "Adding sample crew..." : "Add Sample Crew"}
+                    {isSeedingCrew
+                      ? "Adding sample crew..."
+                      : "Add Sample Crew"}
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {crewMembers.length === 0 && (
                     <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                      No crew accounts yet. Add sample crew accounts to test commission entry.
+                      No crew accounts yet. Add sample crew accounts to test
+                      commission entry.
                     </div>
                   )}
                   <div className="grid gap-4 md:grid-cols-3">
@@ -1170,7 +1191,9 @@ export default function AdminCrewManagement() {
                         min="0"
                         step="0.01"
                         value={commissionEntryAmount}
-                        onChange={(e) => setCommissionEntryAmount(e.target.value)}
+                        onChange={(e) =>
+                          setCommissionEntryAmount(e.target.value)
+                        }
                         placeholder="500"
                       />
                       <div className="flex flex-wrap gap-2">
@@ -1180,7 +1203,9 @@ export default function AdminCrewManagement() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => setCommissionEntryAmount(String(amount))}
+                            onClick={() =>
+                              setCommissionEntryAmount(String(amount))
+                            }
                           >
                             ₱{amount}
                           </Button>
@@ -1229,7 +1254,9 @@ export default function AdminCrewManagement() {
                       <Label>Notes (optional)</Label>
                       <Input
                         value={commissionEntryNotes}
-                        onChange={(e) => setCommissionEntryNotes(e.target.value)}
+                        onChange={(e) =>
+                          setCommissionEntryNotes(e.target.value)
+                        }
                         placeholder="e.g., Extra detailing bonus"
                       />
                     </div>
@@ -1244,14 +1271,18 @@ export default function AdminCrewManagement() {
                 <CardHeader>
                   <CardTitle>Crew Profile & Assignments</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Select a crew member to view their commissions, rates, and assignments.
+                    Select a crew member to view their commissions, rates, and
+                    assignments.
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Selected Crew</Label>
-                      <Select value={selectedCrewId} onValueChange={setSelectedCrewId}>
+                      <Select
+                        value={selectedCrewId}
+                        onValueChange={setSelectedCrewId}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Choose crew" />
                         </SelectTrigger>
@@ -1382,8 +1413,8 @@ export default function AdminCrewManagement() {
                               {entry.crewName || "Crew"}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {new Date(entry.entryDate).toLocaleDateString()} · ₱
-                              {Number(entry.amount || 0).toFixed(2)}
+                              {new Date(entry.entryDate).toLocaleDateString()} ·
+                              ₱{Number(entry.amount || 0).toFixed(2)}
                             </p>
                             {entry.notes && (
                               <p className="text-xs text-muted-foreground mt-1">
@@ -1395,7 +1426,10 @@ export default function AdminCrewManagement() {
                             <Select
                               value={entry.status}
                               onValueChange={(value) =>
-                                handleUpdateCommissionEntryStatus(entry.id, value)
+                                handleUpdateCommissionEntryStatus(
+                                  entry.id,
+                                  value,
+                                )
                               }
                             >
                               <SelectTrigger className="w-36">
@@ -1425,7 +1459,10 @@ export default function AdminCrewManagement() {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Crew Member</Label>
-                      <Select value={payoutCrewId} onValueChange={setPayoutCrewId}>
+                      <Select
+                        value={payoutCrewId}
+                        onValueChange={setPayoutCrewId}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select crew" />
                         </SelectTrigger>
@@ -1491,7 +1528,10 @@ export default function AdminCrewManagement() {
                     </div>
                     <div className="space-y-2">
                       <Label>Status</Label>
-                      <Select value={payoutStatus} onValueChange={setPayoutStatus}>
+                      <Select
+                        value={payoutStatus}
+                        onValueChange={setPayoutStatus}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -1527,9 +1567,12 @@ export default function AdminCrewManagement() {
                               {payout.crewName || "Crew"}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {new Date(payout.periodStart).toLocaleDateString()} -{" "}
-                              {new Date(payout.periodEnd).toLocaleDateString()} · ₱
-                              {Number(payout.totalAmount || 0).toFixed(2)}
+                              {new Date(
+                                payout.periodStart,
+                              ).toLocaleDateString()}{" "}
+                              -{" "}
+                              {new Date(payout.periodEnd).toLocaleDateString()}{" "}
+                              · ₱{Number(payout.totalAmount || 0).toFixed(2)}
                             </p>
                           </div>
                           <Select
@@ -1697,7 +1740,9 @@ export default function AdminCrewManagement() {
                       <Input
                         placeholder="Service type (e.g., Premium Wash)"
                         value={commissionServiceType}
-                        onChange={(e) => setCommissionServiceType(e.target.value)}
+                        onChange={(e) =>
+                          setCommissionServiceType(e.target.value)
+                        }
                       />
                       <Input
                         type="number"
@@ -1733,7 +1778,9 @@ export default function AdminCrewManagement() {
                               {rate.isActive ? "Active" : "Inactive"}
                             </p>
                           </div>
-                          <Badge variant="outline">{Number(rate.rate).toFixed(2)}%</Badge>
+                          <Badge variant="outline">
+                            {Number(rate.rate).toFixed(2)}%
+                          </Badge>
                         </div>
                       ))}
                     </div>

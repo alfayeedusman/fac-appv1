@@ -49,17 +49,19 @@ export default function BranchFilter({
       const result = await supabaseDbClient.getBranches();
       if (result.success && result.branches) {
         // Filter active branches only
-        const activeBranches = result.branches.filter((b: Branch) => b.isActive);
-        
+        const activeBranches = result.branches.filter(
+          (b: Branch) => b.isActive,
+        );
+
         // If user can't view all branches, filter to show only their branch
         if (!canViewAllBranches && userBranch) {
           const userBranchData = activeBranches.filter(
-            (b: Branch) => b.name === userBranch || b.code === userBranch
+            (b: Branch) => b.name === userBranch || b.code === userBranch,
           );
           setBranches(userBranchData);
-          
+
           // Auto-select user's branch if not already selected
-          if (userBranchData.length > 0 && (!value || value === 'all')) {
+          if (userBranchData.length > 0 && (!value || value === "all")) {
             onChange(userBranchData[0].name);
           }
         } else {
@@ -79,9 +81,15 @@ export default function BranchFilter({
         <Building2 className="h-4 w-4 text-muted-foreground" />
         {label}
       </Label>
-      <Select value={value} onValueChange={onChange} disabled={disabled || loading}>
+      <Select
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled || loading}
+      >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={loading ? "Loading branches..." : "Select branch"} />
+          <SelectValue
+            placeholder={loading ? "Loading branches..." : "Select branch"}
+          />
         </SelectTrigger>
         <SelectContent>
           {showAllOption && canViewAllBranches && (
@@ -107,7 +115,7 @@ export default function BranchFilter({
           ))}
         </SelectContent>
       </Select>
-      
+
       {!canViewAllBranches && userBranch && (
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <MapPin className="h-3 w-3" />
