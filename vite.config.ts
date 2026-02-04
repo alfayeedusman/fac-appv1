@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    middlewareMode: true, // Use middleware mode so Express handles all routing
+    middlewareMode: false,
   },
   build: {
     outDir: "dist/spa",
@@ -34,23 +34,17 @@ export default defineConfig(({ mode }) => ({
 }));
 
 function expressPlugin(): Plugin {
-  let viteDevServer: any;
-
   return {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
-    configReady(env) {
-      // Store reference to Vite dev server when config is ready
-    },
     async configureServer(server) {
-      viteDevServer = server;
       const app = await createServer();
 
-      // Add Vite's dev middleware to Express so it can serve React files
-      app.use(server.middlewares);
+      // Add Express app as middleware to Vite's dev server
+      // Express will handle API routes and fallback to Vite for everything else
+      server.middlewares.use(app);
 
-      // Return the configured app to replace Vite's server
-      return app;
+      // Return nothing - just using Vite's dev server with Express middleware
     },
   };
 }
