@@ -1,112 +1,81 @@
 import { RequestHandler } from "express";
-import { testConnection } from "../database/connection";
-import { migrate } from "../database/migrate";
+import { testConnection, hasConnectionFailed } from "../database/connection";
 
 // Global initialization state
 let dbInitialized = false;
 let dbInitializing = false;
 let lastInitError: Error | null = null;
-let lastInitAttempt = 0;
-const RETRY_DELAY = 5000; // 5 seconds between retries
+let initAttempts = 0;
+const MAX_INIT_ATTEMPTS = 3;
+
+// Paths that don't require database
+const DB_OPTIONAL_PATHS = [
+  "/health",
+  "/neon/test",
+  "/neon/init",
+  "/neon/diagnose",
+  "/neon/login",  // Login can use demo mode
+  "/api-catalog",
+];
 
 /**
  * Ensures database is initialized before processing any request
- * This middleware runs automatically on first request to any API endpoint
+ * This middleware runs automatically and allows graceful degradation
  */
-export const ensureDatabaseInitialized: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
+export const ensureDatabaseInitialized: RequestHandler = async (req, res, next) => {
   try {
-    const bypassPaths = ["/health", "/neon/test", "/neon/init", "/neon/diagnose"];
-    if (bypassPaths.includes(req.path)) {
+    // Always bypass for certain paths
+    const shouldBypass = DB_OPTIONAL_PATHS.some(path => req.path.includes(path));
+    if (shouldBypass) {
       return next();
     }
 
-    // Skip if already initialized
+    // If already initialized, continue
     if (dbInitialized) {
       return next();
     }
 
-    // Prevent multiple simultaneous initialization attempts
-    if (dbInitializing) {
-      console.log("⏳ Database initialization in progress, waiting...");
-      // Wait a bit for initialization to complete
-      let retries = 0;
-      while (dbInitializing && retries < 30) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        retries++;
-      }
-
-      if (dbInitialized) {
-        console.log("✅ Database initialized by concurrent request");
-        return next();
-      }
-
-      if (lastInitError) {
-        console.error("❌ Database initialization failed");
-        return res.status(503).json({
-          success: false,
-          error: "Database service unavailable",
-          message: "Database failed to initialize",
-        });
-      }
+    // If we've tried too many times, just continue with degraded mode
+    if (initAttempts >= MAX_INIT_ATTEMPTS && hasConnectionFailed()) {
+      console.log("⚠️ Database unavailable - continuing in degraded mode");
+      return next();
     }
 
-    // Start initialization
+    // If currently initializing, wait briefly then continue
+    if (dbInitializing) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return next();
+    }
+
+    // Attempt initialization
     dbInitializing = true;
-    console.log("🔄 Starting database initialization...");
+    initAttempts++;
+    console.log(`🔄 Database initialization attempt ${initAttempts}/${MAX_INIT_ATTEMPTS}...`);
 
     try {
-      // Test connection first
-      console.log("🔌 Testing database connection...");
       const isConnected = await testConnection();
 
-      if (!isConnected) {
-        throw new Error(
-          "Database connection failed. Check SUPABASE_DATABASE_URL environment variable.",
-        );
+      if (isConnected) {
+        dbInitialized = true;
+        lastInitError = null;
+        console.log("✅ Database initialized successfully");
+      } else {
+        console.warn("⚠️ Database connection not available - continuing in degraded mode");
+        lastInitError = new Error("Database connection unavailable");
       }
-
-      console.log("✅ Database connection successful");
-
-      // Run migrations
-      console.log("📊 Running database migrations...");
-      await migrate();
-      console.log("✅ Database migrations completed");
-
-      dbInitialized = true;
-      lastInitError = null;
-      console.log(
-        "✅ Database fully initialized and ready for requests at:",
-        new Date().toISOString(),
-      );
-      dbInitializing = false;
-
-      next();
     } catch (error) {
-      dbInitializing = false;
       lastInitError = error instanceof Error ? error : new Error(String(error));
-
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      console.error("❌ Database initialization failed:", errorMessage);
-
-      // Return error response
-      return res.status(503).json({
-        success: false,
-        error: "Database initialization failed",
-        message: errorMessage,
-        timestamp: new Date().toISOString(),
-      });
+      console.warn("⚠️ Database initialization failed:", lastInitError.message);
+    } finally {
+      dbInitializing = false;
     }
+
+    // Always continue - let routes handle the missing database
+    next();
   } catch (error) {
-    console.error("❌ Unexpected error in dbInitializer middleware:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Internal server error",
-    });
+    console.error("❌ Unexpected error in dbInitializer:", error);
+    // Still continue - don't block the server
+    next();
   }
 };
 
@@ -117,34 +86,49 @@ export function getInitializationStatus() {
   return {
     initialized: dbInitialized,
     initializing: dbInitializing,
+    attempts: initAttempts,
+    maxAttempts: MAX_INIT_ATTEMPTS,
     lastError: lastInitError?.message || null,
+    connectionFailed: hasConnectionFailed(),
   };
 }
 
 /**
  * Force re-initialization (useful for testing)
  */
-export async function forceReinitialize() {
+export async function forceReinitialize(): Promise<boolean> {
   console.log("🔄 Force re-initializing database...");
   dbInitialized = false;
   dbInitializing = true;
+  initAttempts = 0;
 
   try {
     const isConnected = await testConnection();
-    if (!isConnected) {
-      throw new Error("Database connection failed");
+    if (isConnected) {
+      dbInitialized = true;
+      lastInitError = null;
+      console.log("✅ Force re-initialization successful");
+      return true;
+    } else {
+      lastInitError = new Error("Database connection failed");
+      console.warn("⚠️ Force re-initialization failed: connection unavailable");
+      return false;
     }
-
-    await migrate();
-    dbInitialized = true;
-    lastInitError = null;
-    console.log("✅ Force re-initialization successful");
-    return true;
   } catch (error) {
     lastInitError = error instanceof Error ? error : new Error(String(error));
-    console.error("❌ Force re-initialization failed:", error);
+    console.error("❌ Force re-initialization error:", error);
     return false;
   } finally {
     dbInitializing = false;
   }
+}
+
+/**
+ * Reset initialization state (for testing)
+ */
+export function resetInitializationState() {
+  dbInitialized = false;
+  dbInitializing = false;
+  lastInitError = null;
+  initAttempts = 0;
 }
