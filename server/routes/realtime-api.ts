@@ -475,8 +475,10 @@ router.post("/jobs/update", async (req, res) => {
 
 // Get active jobs with locations
 router.get("/jobs/active", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(`
@@ -553,8 +555,10 @@ router.get("/jobs/active", async (req, res) => {
 
 // Get dashboard statistics
 router.get("/dashboard/stats", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Get current statistics
@@ -622,6 +626,8 @@ import { triggerPusherEvent } from "../services/pusherService";
 
 // Send real-time message
 router.post("/messages/send", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const {
       job_id,
@@ -635,7 +641,7 @@ router.post("/messages/send", async (req, res) => {
       priority,
     } = req.body;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [result] = await connection.execute(
@@ -717,11 +723,13 @@ router.post("/messages/send", async (req, res) => {
 
 // Get recent messages
 router.get("/messages/:recipientType/:recipientId", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const { recipientType, recipientId } = req.params;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(
@@ -867,8 +875,10 @@ router.post("/pusher/auth", async (req, res) => {
 // ============================================================================
 
 router.get("/health", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.execute("SELECT 1");
