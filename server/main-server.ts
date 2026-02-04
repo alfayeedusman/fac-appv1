@@ -369,48 +369,50 @@ export const createServer = async () => {
 
 // Only start server if this file is run directly
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const app = await createServer();
-  const PORT = process.env.PORT || 3000;
+  (async () => {
+    const app = await createServer();
+    const PORT = process.env.PORT || 3000;
 
-  app.listen(PORT, () => {
-    console.log(`🚀 FAC Server running on port ${PORT}`);
-    console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
-    console.log(`🏠 Home: http://localhost:${PORT}/`);
+    app.listen(PORT, () => {
+      console.log(`🚀 FAC Server running on port ${PORT}`);
+      console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
+      console.log(`🏠 Home: http://localhost:${PORT}/`);
 
-    // Initialize database and seed data on server startup
-    setTimeout(async () => {
-      try {
-        const skipDbInit =
-          process.env.SKIP_MIGRATIONS === "true" ||
-          process.env.DISABLE_MIGRATIONS === "true" ||
-          (!process.env.SUPABASE_DATABASE_URL && !process.env.DATABASE_URL);
+      // Initialize database and seed data on server startup
+      setTimeout(async () => {
+        try {
+          const skipDbInit =
+            process.env.SKIP_MIGRATIONS === "true" ||
+            process.env.DISABLE_MIGRATIONS === "true" ||
+            (!process.env.SUPABASE_DATABASE_URL && !process.env.DATABASE_URL);
 
-        if (skipDbInit) {
+          if (skipDbInit) {
+            console.log(
+              "⚠️ Skipping database migrations and seeding (DB init disabled).",
+            );
+            return;
+          }
+
+          console.log("🔄 Initializing database and running migrations...");
+          await migrate();
           console.log(
-            "⚠️ Skipping database migrations and seeding (DB init disabled).",
+            "✅ Database initialization and migrations completed successfully",
           );
-          return;
+
+          console.log("🏪 Auto-seeding branch data...");
+          await seedBranches();
+          console.log("✅ Branch seeding completed successfully");
+
+          console.log("👥 Auto-seeding user data...");
+          await seedUsers();
+          console.log("✅ User seeding completed successfully");
+        } catch (error) {
+          console.error("❌ Initialization failed:", error);
+          console.log(
+            "⚠️ Server is running but database may not be properly initialized",
+          );
         }
-
-        console.log("🔄 Initializing database and running migrations...");
-        await migrate();
-        console.log(
-          "✅ Database initialization and migrations completed successfully",
-        );
-
-        console.log("🏪 Auto-seeding branch data...");
-        await seedBranches();
-        console.log("✅ Branch seeding completed successfully");
-
-        console.log("👥 Auto-seeding user data...");
-        await seedUsers();
-        console.log("✅ User seeding completed successfully");
-      } catch (error) {
-        console.error("❌ Initialization failed:", error);
-        console.log(
-          "⚠️ Server is running but database may not be properly initialized",
-        );
-      }
-    }, 1000);
-  });
+      }, 1000);
+    });
+  })();
 }
