@@ -135,13 +135,8 @@ export async function closeConnection() {
   }
 }
 
-// Initialize on module load with error handling
-initializeDatabase().catch((err) => {
-  console.error("❌ Initial database connection failed:", err);
-  console.warn(
-    "⚠️ Server starting but database connection will be retried on first request",
-  );
-});
+// Database will be initialized lazily on first use
+// This prevents crashes if the database is unavailable at startup
 
 export { db, sql };
 export default getDatabase;
