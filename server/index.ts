@@ -220,83 +220,83 @@ export function createServer() {
   // Supabase Database API Routes
   app.post("/api/supabase/init", neonApiRoutes.initializeSupabaseDB);
   app.get("/api/supabase/test", neonApiRoutes.testSupabaseConnection);
-  app.get("/api/neon/diagnose", neonApiRoutes.diagnoseDatabase);
-  app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
-  app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
-  app.get("/api/neon/fac-map-stats", neonApiRoutes.getFacMapStats);
+  app.get("/api/supabase/diagnose", neonApiRoutes.diagnoseDatabase);
+  app.get("/api/supabase/stats", neonApiRoutes.getDatabaseStats);
+  app.get("/api/supabase/realtime-stats", neonApiRoutes.getRealtimeStats);
+  app.get("/api/supabase/fac-map-stats", neonApiRoutes.getFacMapStats);
 
   // Auth endpoints
-  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
-  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
-  app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
-  app.post("/api/neon/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
+  app.post("/api/supabase/auth/login", neonApiRoutes.loginUser);
+  app.post("/api/supabase/auth/register", neonApiRoutes.registerUser);
+  app.post("/api/supabase/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
+  app.post("/api/supabase/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
 
   // Session management (admin)
-  app.post("/api/neon/sessions/revoke", neonApiRoutes.revokeSession);
-  app.get("/api/neon/sessions", neonApiRoutes.getSessions);
+  app.post("/api/supabase/sessions/revoke", neonApiRoutes.revokeSession);
+  app.get("/api/supabase/sessions", neonApiRoutes.getSessions);
 
   // Booking endpoints
-  app.post("/api/neon/bookings", neonApiRoutes.createBooking);
-  app.get("/api/neon/bookings", neonApiRoutes.getBookings);
-  app.get("/api/neon/bookings/availability", neonApiRoutes.getSlotAvailability);
+  app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
+  app.get("/api/supabase/bookings", neonApiRoutes.getBookings);
+  app.get("/api/supabase/bookings/availability", neonApiRoutes.getSlotAvailability);
   app.get(
-    "/api/neon/bookings/garage-settings",
+    "/api/supabase/bookings/garage-settings",
     neonApiRoutes.getGarageSettings,
   );
-  app.put("/api/neon/bookings/:id", neonApiRoutes.updateBooking);
+  app.put("/api/supabase/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints
-  app.get("/api/neon/subscriptions", neonApiRoutes.getSubscriptions);
+  app.get("/api/supabase/subscriptions", neonApiRoutes.getSubscriptions);
   app.post(
-    "/api/neon/subscriptions/upgrade",
+    "/api/supabase/subscriptions/upgrade",
     neonApiRoutes.createSubscriptionUpgrade,
   );
   app.put(
-    "/api/neon/subscriptions/:subscriptionId/approve",
+    "/api/supabase/subscriptions/:subscriptionId/approve",
     neonApiRoutes.approveSubscriptionUpgrade,
   );
   app.post(
-    "/api/neon/subscriptions/create-plan",
+    "/api/supabase/subscriptions/create-plan",
     neonApiRoutes.createXenditSubscriptionPlan,
   );
   app.post(
-    "/api/neon/subscriptions/process-renewal",
+    "/api/supabase/subscriptions/process-renewal",
     neonApiRoutes.processSubscriptionRenewal,
   );
 
   // Notification endpoints
-  app.get("/api/neon/notifications", neonApiRoutes.getNotifications);
+  app.get("/api/supabase/notifications", neonApiRoutes.getNotifications);
   app.put(
-    "/api/neon/notifications/:notificationId/read",
+    "/api/supabase/notifications/:notificationId/read",
     neonApiRoutes.markNotificationRead,
   );
 
   // Admin settings endpoints
-  app.get("/api/neon/settings", neonApiRoutes.getSettings);
-  app.put("/api/neon/settings", neonApiRoutes.updateSetting);
-  app.get("/api/neon/admin/api-catalog", neonApiRoutes.getApiCatalog);
+  app.get("/api/supabase/settings", neonApiRoutes.getSettings);
+  app.put("/api/supabase/settings", neonApiRoutes.updateSetting);
+  app.get("/api/supabase/admin/api-catalog", neonApiRoutes.getApiCatalog);
 
   // Daily income endpoints
-  app.get("/api/neon/daily-income", neonApiRoutes.getDailyIncome);
-  app.post("/api/neon/daily-income", neonApiRoutes.createDailyIncome);
+  app.get("/api/supabase/daily-income", neonApiRoutes.getDailyIncome);
+  app.post("/api/supabase/daily-income", neonApiRoutes.createDailyIncome);
 
   // Ads endpoints
-  app.get("/api/neon/ads", neonApiRoutes.getAds);
-  app.post("/api/neon/ads", neonApiRoutes.createAd);
-  app.post("/api/neon/ads/:adId/dismiss", neonApiRoutes.dismissAd);
+  app.get("/api/supabase/ads", neonApiRoutes.getAds);
+  app.post("/api/supabase/ads", neonApiRoutes.createAd);
+  app.post("/api/supabase/ads/:adId/dismiss", neonApiRoutes.dismissAd);
 
   // New features endpoints
-  app.get("/api/neon/branches", neonApiRoutes.getBranches);
-  app.post("/api/neon/branches/seed", neonApiRoutes.seedBranchesEndpoint);
-  app.post("/api/neon/branches", branchesApiRoutes.createBranch);
-  app.put("/api/neon/branches/:id", branchesApiRoutes.updateBranch);
-  app.delete("/api/neon/branches/:id", branchesApiRoutes.deleteBranch);
-  app.get("/api/neon/packages", neonApiRoutes.getServicePackages);
-  app.post("/api/neon/packages", neonApiRoutes.createServicePackage);
-  app.put("/api/neon/packages/:id", neonApiRoutes.updateServicePackage);
-  app.delete("/api/neon/packages/:id", neonApiRoutes.deleteServicePackage);
-  app.get("/api/neon/gamification/levels", neonApiRoutes.getCustomerLevels);
-  app.get("/api/neon/pos/categories", neonApiRoutes.getPOSCategories);
+  app.get("/api/supabase/branches", neonApiRoutes.getBranches);
+  app.post("/api/supabase/branches/seed", neonApiRoutes.seedBranchesEndpoint);
+  app.post("/api/supabase/branches", branchesApiRoutes.createBranch);
+  app.put("/api/supabase/branches/:id", branchesApiRoutes.updateBranch);
+  app.delete("/api/supabase/branches/:id", branchesApiRoutes.deleteBranch);
+  app.get("/api/supabase/packages", neonApiRoutes.getServicePackages);
+  app.post("/api/supabase/packages", neonApiRoutes.createServicePackage);
+  app.put("/api/supabase/packages/:id", neonApiRoutes.updateServicePackage);
+  app.delete("/api/supabase/packages/:id", neonApiRoutes.deleteServicePackage);
+  app.get("/api/supabase/gamification/levels", neonApiRoutes.getCustomerLevels);
+  app.get("/api/supabase/pos/categories", neonApiRoutes.getPOSCategories);
 
   // Analytics endpoints
   app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
