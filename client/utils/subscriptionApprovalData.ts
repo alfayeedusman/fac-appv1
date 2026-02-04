@@ -1,5 +1,7 @@
 import { neonDbClient } from "@/services/neonDatabaseService";
 
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
+
 export interface PaymentReceipt {
   id: string;
   imageUrl: string;
