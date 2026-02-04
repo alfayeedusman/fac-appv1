@@ -106,14 +106,8 @@ class SupabaseDatabaseService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     const db = await this.ensureConnection();
-<<<<<<< HEAD:server/services/neonDatabaseService.ts
-    
-    if (!db) {
-      console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
-=======
 
     if (!db) {
->>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw new Error(
         "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
       );
@@ -142,19 +136,10 @@ class SupabaseDatabaseService {
       console.error("❌ Error fetching user from database", {
         email,
         error: error instanceof Error ? error.message : String(error),
-<<<<<<< HEAD:server/services/neonDatabaseService.ts
-        dbConnected: !!db,
-      });
-      
-      // Handle connection errors
-      this.handleConnectionError(error);
-      
-=======
       });
 
       // If it's a connection error, reset connection for next attempt
       this.handleConnectionError(error);
->>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw error;
     }
   }
