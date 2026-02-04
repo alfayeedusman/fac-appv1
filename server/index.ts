@@ -397,9 +397,19 @@ export function createServer() {
   // Initialize database and seed data on server startup
   setTimeout(async () => {
     try {
+      const skipDbInit =
+        process.env.SKIP_MIGRATIONS === "true" ||
+        process.env.DISABLE_MIGRATIONS === "true" ||
+        (!process.env.NEON_DATABASE_URL && !process.env.DATABASE_URL);
+
       logInit("Initializing database and running migrations...");
       await import("./database/migrate").then((m) => m.migrate());
       logInit("Database initialization and migrations completed successfully");
+
+      if (skipDbInit) {
+        logInit("Skipping branch/user seeding (DB init disabled).");
+        return;
+      }
 
       logInit("Auto-seeding branch data...");
       await seedBranches();
