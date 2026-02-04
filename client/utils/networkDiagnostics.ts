@@ -16,7 +16,7 @@ export class NetworkDiagnostics {
     this.results = [];
 
     await this.testHealthEndpoint();
-    await this.testNeonConnection();
+    await this.testSupabaseConnection();
     await this.testRegistrationEndpoint();
     await this.testCORS();
 
