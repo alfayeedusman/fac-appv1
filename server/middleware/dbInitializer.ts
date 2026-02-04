@@ -65,7 +65,7 @@ export const ensureDatabaseInitialized: RequestHandler = async (
 
       if (!isConnected) {
         throw new Error(
-          "Database connection failed. Check NEON_DATABASE_URL environment variable.",
+          "Database connection failed. Check SUPABASE_DATABASE_URL environment variable.",
         );
       }
 
