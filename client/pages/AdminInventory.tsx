@@ -61,7 +61,7 @@ import {
 } from "lucide-react";
 import StickyHeader from "@/components/StickyHeader";
 import { swalHelpers } from "@/utils/swalHelpers";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "@/components/AdminSidebar";
 import CarWashServiceManager from "@/components/CarWashServiceManager";
@@ -208,11 +208,11 @@ export default function AdminInventory() {
       // Load all data concurrently
       const [itemsRes, movementsRes, suppliersRes, analyticsRes, lowStockRes] =
         await Promise.all([
-          neonDbClient.getInventoryItems(),
-          neonDbClient.getStockMovements(),
-          neonDbClient.getSuppliers(),
-          neonDbClient.getInventoryAnalytics(),
-          neonDbClient.getLowStockItems(),
+          supabaseDbClient.getInventoryItems(),
+          supabaseDbClient.getStockMovements(),
+          supabaseDbClient.getSuppliers(),
+          supabaseDbClient.getInventoryAnalytics(),
+          supabaseDbClient.getLowStockItems(),
         ]);
 
       if (itemsRes.success) setInventoryItems(itemsRes.items || []);
@@ -263,7 +263,7 @@ export default function AdminInventory() {
         "Creating new inventory item...",
       );
 
-      const result = await neonDbClient.createInventoryItem(newItem);
+      const result = await supabaseDbClient.createInventoryItem(newItem);
 
       swalHelpers.close();
 
@@ -353,7 +353,7 @@ export default function AdminInventory() {
       try {
         swalHelpers.showLoading("Updating Product", "Saving changes...");
 
-        const result = await neonDbClient.updateInventoryItem(
+        const result = await supabaseDbClient.updateInventoryItem(
           item.id,
           formData,
         );
@@ -390,7 +390,7 @@ export default function AdminInventory() {
           "Removing from inventory...",
         );
 
-        const result = await neonDbClient.deleteInventoryItem(item.id);
+        const result = await supabaseDbClient.deleteInventoryItem(item.id);
 
         swalHelpers.close();
 
@@ -448,7 +448,7 @@ export default function AdminInventory() {
           "Adjusting inventory levels...",
         );
 
-        const result = await neonDbClient.updateInventoryStock(
+        const result = await supabaseDbClient.updateInventoryStock(
           item.id,
           formData.newStock,
           formData.reason,
@@ -500,7 +500,7 @@ export default function AdminInventory() {
     try {
       swalHelpers.showLoading("Adding Supplier", "Creating new supplier...");
 
-      const result = await neonDbClient.createSupplier(newSupplier);
+      const result = await supabaseDbClient.createSupplier(newSupplier);
 
       swalHelpers.close();
 
