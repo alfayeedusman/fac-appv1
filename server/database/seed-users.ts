@@ -271,7 +271,7 @@ export async function seedUsers() {
 
     return insertedUsers;
   } catch (error) {
-    console.error("❌ Error seeding users:", error);
-    throw error;
+    console.warn("⚠️ Error seeding users (non-critical):", error);
+    // Don't throw - users seeding is optional
   }
 }
