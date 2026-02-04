@@ -299,82 +299,82 @@ export function createServer() {
   app.get("/api/supabase/pos/categories", neonApiRoutes.getPOSCategories);
 
   // Analytics endpoints
-  app.get("/api/neon/analytics", neonApiRoutes.getAnalyticsData);
+  app.get("/api/supabase/analytics", neonApiRoutes.getAnalyticsData);
 
   // Voucher endpoints
-  app.get("/api/neon/vouchers", neonApiRoutes.getVouchers);
-  app.post("/api/neon/vouchers/validate", neonApiRoutes.validateVoucher);
-  app.post("/api/neon/vouchers/redeem", neonApiRoutes.redeemVoucher);
+  app.get("/api/supabase/vouchers", neonApiRoutes.getVouchers);
+  app.post("/api/supabase/vouchers/validate", neonApiRoutes.validateVoucher);
+  app.post("/api/supabase/vouchers/redeem", neonApiRoutes.redeemVoucher);
 
   // Xendit Payment endpoints - TEST
-  app.get("/api/neon/payment/xendit/test", (req, res) => {
+  app.get("/api/supabase/payment/xendit/test", (req, res) => {
     res.json({ success: true, message: "Xendit routes are working!" });
   });
 
   // Explicitly handle OPTIONS for CORS preflight on all xendit endpoints
-  app.options("/api/neon/payment/xendit/*", cors());
+  app.options("/api/supabase/payment/xendit/*", cors());
 
   app.post(
-    "/api/neon/payment/xendit/create-invoice",
+    "/api/supabase/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
   );
   app.get(
-    "/api/neon/payment/xendit/methods",
+    "/api/supabase/payment/xendit/methods",
     xenditApiRoutes.listPaymentMethods,
   );
   app.post(
-    "/api/neon/payment/xendit/create-subscription-invoice",
+    "/api/supabase/payment/xendit/create-subscription-invoice",
     xenditApiRoutes.createSubscriptionInvoice,
   );
-  app.post("/api/neon/payment/xendit/charge", xenditApiRoutes.chargeCard);
+  app.post("/api/supabase/payment/xendit/charge", xenditApiRoutes.chargeCard);
   app.post(
-    "/api/neon/payment/xendit/confirm-offline",
+    "/api/supabase/payment/xendit/confirm-offline",
     xenditApiRoutes.confirmOfflinePayment,
   );
-  app.post("/api/neon/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
+  app.post("/api/supabase/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
   app.get(
-    "/api/neon/payment/xendit/invoice-status/:id",
+    "/api/supabase/payment/xendit/invoice-status/:id",
     xenditApiRoutes.getInvoiceStatus,
   );
   app.get(
-    "/api/neon/payment/xendit/booking-status/:bookingId",
+    "/api/supabase/payment/xendit/booking-status/:bookingId",
     xenditApiRoutes.checkBookingPaymentStatus,
   );
   app.get(
-    "/api/neon/payment/xendit/subscription-status/:subscriptionId",
+    "/api/supabase/payment/xendit/subscription-status/:subscriptionId",
     xenditApiRoutes.checkSubscriptionPaymentStatus,
   );
 
   // Users endpoints
-  app.get("/api/neon/users", neonApiRoutes.getAllUsers);
-  app.get("/api/neon/customers", neonApiRoutes.getCustomers);
-  app.get("/api/neon/staff", neonApiRoutes.getStaffUsers);
-  app.post("/api/neon/staff", neonApiRoutes.createStaffUser);
-  app.put("/api/neon/users/:userId/status", neonApiRoutes.updateUserStatus);
+  app.get("/api/supabase/users", neonApiRoutes.getAllUsers);
+  app.get("/api/supabase/customers", neonApiRoutes.getCustomers);
+  app.get("/api/supabase/staff", neonApiRoutes.getStaffUsers);
+  app.post("/api/supabase/staff", neonApiRoutes.createStaffUser);
+  app.put("/api/supabase/users/:userId/status", neonApiRoutes.updateUserStatus);
 
   // Admin invite (protected by ADMIN_INVITE_SECRET header: x-admin-invite-secret)
-  app.post("/api/neon/admin/invite", adminInviteRoutes.createAdminInvite);
+  app.post("/api/supabase/admin/invite", adminInviteRoutes.createAdminInvite);
 
   // ============= CREW MANAGEMENT API =============
-  app.get("/api/neon/crew/stats", crewApiRoutes.getCrewStats);
-  app.get("/api/neon/crew/activity", crewApiRoutes.getCrewActivity);
-  app.get("/api/neon/crew/list", crewApiRoutes.getCrewList);
-  app.get("/api/neon/crew/groups", crewApiRoutes.getCrewGroups);
+  app.get("/api/supabase/crew/stats", crewApiRoutes.getCrewStats);
+  app.get("/api/supabase/crew/activity", crewApiRoutes.getCrewActivity);
+  app.get("/api/supabase/crew/list", crewApiRoutes.getCrewList);
+  app.get("/api/supabase/crew/groups", crewApiRoutes.getCrewGroups);
   app.put(
-    "/api/neon/crew/:userId/group",
+    "/api/supabase/crew/:userId/group",
     crewApiRoutes.updateCrewGroupAssignment,
   );
   app.put(
-    "/api/neon/crew/:userId/wash-bay",
+    "/api/supabase/crew/:userId/wash-bay",
     crewApiRoutes.updateCrewWashBayAssignment,
   );
-  app.get("/api/neon/crew/commission-rates", crewApiRoutes.getCommissionRates);
+  app.get("/api/supabase/crew/commission-rates", crewApiRoutes.getCommissionRates);
   app.post(
-    "/api/neon/crew/commission-rates",
+    "/api/supabase/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,
   );
   app.get(
-    "/api/neon/crew/commission-entries",
+    "/api/supabase/crew/commission-entries",
     crewApiRoutes.getCommissionEntries,
   );
   app.post(
