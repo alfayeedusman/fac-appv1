@@ -96,15 +96,33 @@ const JobUpdateSchema = z.object({
 });
 
 // ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function checkDatabaseConnection(res: express.Response): boolean {
+  if (!pool) {
+    res.status(503).json({
+      success: false,
+      error: "Database not configured",
+      message: "Realtime features are unavailable - database not initialized",
+    });
+    return false;
+  }
+  return true;
+}
+
+// ============================================================================
 // CREW LOCATION ENDPOINTS
 // ============================================================================
 
 // Update crew location
 router.post("/crew/location", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = LocationUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Insert new location record
