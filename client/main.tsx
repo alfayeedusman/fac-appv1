@@ -106,6 +106,7 @@ const AppComponent = () => {
             <ChatWidget />
             <BrowserRouter>
               <Routes>
+                <Route path="/test" element={<TestPage />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={
                   <ErrorBoundary>
