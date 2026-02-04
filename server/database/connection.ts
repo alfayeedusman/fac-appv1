@@ -1,5 +1,5 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
 // Initialize the database connection
@@ -26,21 +26,19 @@ export async function initializeDatabase(forceReconnect = false) {
 
   try {
     const databaseUrl =
-      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+      process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
     if (!databaseUrl) {
       throw new Error(
-        "Database URL not configured. Please set NEON_DATABASE_URL or DATABASE_URL environment variable.",
+        "Database URL not configured. Please set SUPABASE_DATABASE_URL or DATABASE_URL environment variable.",
       );
     }
 
     console.log("🔄 Initializing database connection...");
 
-    // Configure Neon with options
-    sql = neon(databaseUrl, {
-      fetchOptions: {
-        cache: "no-store",
-      },
+    sql = postgres(databaseUrl, {
+      ssl: { rejectUnauthorized: false },
+      prepare: false,
     });
 
     db = drizzle(sql, { schema });
@@ -48,7 +46,7 @@ export async function initializeDatabase(forceReconnect = false) {
     // Test the connection immediately
     await sql`SELECT 1 as test`;
 
-    console.log("✅ Neon database connection initialized and verified");
+    console.log("✅ Supabase database connection initialized and verified");
     return db;
   } catch (error) {
     console.error("❌ Failed to initialize database connection:", error);
@@ -107,6 +105,13 @@ export async function getDatabase() {
     await initializeDatabase();
   }
   return db;
+}
+
+export async function getSqlClient() {
+  if (!sql) {
+    await initializeDatabase();
+  }
+  return sql;
 }
 
 // Check if database is connected
