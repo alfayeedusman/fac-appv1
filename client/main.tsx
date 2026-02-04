@@ -13,6 +13,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ChatWidget from "@/components/ChatWidget";
 import { useEffect } from "react";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
 import SimpleLogin from "./pages/SimpleLogin";
 import TestPage from "./pages/TestPage";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
