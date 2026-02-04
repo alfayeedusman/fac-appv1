@@ -108,6 +108,7 @@ const AppComponent = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/test" element={<TestPage />} />
+                <Route path="/testlogin" element={<SimpleLogin />} />
                 <Route path="/test-login2" element={<SimpleLogin />} />
                 <Route path="/simple-login" element={<SimpleLogin />} />
                 <Route path="/" element={<Index />} />
