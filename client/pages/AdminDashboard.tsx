@@ -2540,101 +2540,115 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Package Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {packages.map((pkg, index) => (
-                  <Card
-                    key={pkg.id}
-                    className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardHeader className="relative z-10">
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="text-xl font-black text-foreground">
-                          {pkg.name}
-                        </span>
-                        <Badge
-                          className={`${
-                            pkg.active ? "bg-green-500" : "bg-gray-400"
-                          } text-white font-bold px-3 py-1 rounded-full`}
-                        >
-                          {pkg.active ? "ACTIVE" : "INACTIVE"}
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <div className="space-y-6">
-                        {/* Price */}
-                        <div className="flex items-center justify-between">
-                          <p className="text-3xl font-black text-fac-orange-500">
-                            {formatCurrency(pkg.basePrice)}
-                          </p>
+              {packagesLoading ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  Loading packages...
+                </div>
+              ) : packages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Package className="h-10 w-10 mb-3 opacity-60" />
+                  <p className="text-lg font-medium">No packages found</p>
+                  <p className="text-sm">
+                    Create your first package to get started.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
+                  {packages.map((pkg, index) => (
+                    <Card
+                      key={pkg.id}
+                      className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                      <CardHeader className="relative z-10">
+                        <CardTitle className="flex items-center justify-between">
+                          <span className="text-xl font-black text-foreground">
+                            {pkg.name}
+                          </span>
+                          <Badge
+                            className={`${
+                              pkg.active ? "bg-green-500" : "bg-gray-400"
+                            } text-white font-bold px-3 py-1 rounded-full`}
+                          >
+                            {pkg.active ? "ACTIVE" : "INACTIVE"}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative z-10">
+                        <div className="space-y-6">
+                          {/* Price */}
+                          <div className="flex items-center justify-between">
+                            <p className="text-3xl font-black text-fac-orange-500">
+                              {formatCurrency(pkg.basePrice)}
+                            </p>
+                            {(userRole === "superadmin" ||
+                              userRole === "admin") && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditPackage(pkg)}
+                                className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 font-bold"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                            )}
+                          </div>
+
+                          {/* Duration */}
+                          <div className="glass rounded-lg p-4">
+                            <p className="text-sm text-muted-foreground font-medium">
+                              <strong>Billing Cycle:</strong> {pkg.duration}
+                            </p>
+                          </div>
+
+                          {/* Features */}
+                          <div>
+                            <p className="text-base font-bold text-foreground mb-4">
+                              Features:
+                            </p>
+                            <div className="space-y-2">
+                              {pkg.features.map((feature, featureIndex) => (
+                                <p
+                                  key={featureIndex}
+                                  className="text-sm text-muted-foreground font-medium flex items-center"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
+                                  {feature}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
                           {(userRole === "superadmin" ||
                             userRole === "admin") && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditPackage(pkg)}
-                              className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 font-bold"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
+                            <div className="flex space-x-3 pt-4 border-t border-border">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditPackage(pkg)}
+                                className="flex-1 border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeletePackage(pkg)}
+                                className="text-red-600 border-red-500 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
                         </div>
-
-                        {/* Duration */}
-                        <div className="glass rounded-lg p-4">
-                          <p className="text-sm text-muted-foreground font-medium">
-                            <strong>Billing Cycle:</strong> {pkg.duration}
-                          </p>
-                        </div>
-
-                        {/* Features */}
-                        <div>
-                          <p className="text-base font-bold text-foreground mb-4">
-                            Features:
-                          </p>
-                          <div className="space-y-2">
-                            {pkg.features.map((feature, featureIndex) => (
-                              <p
-                                key={featureIndex}
-                                className="text-sm text-muted-foreground font-medium flex items-center"
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
-                                {feature}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        {(userRole === "superadmin" ||
-                          userRole === "admin") && (
-                          <div className="flex space-x-3 pt-4 border-t border-border">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditPackage(pkg)}
-                              className="flex-1 border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeletePackage(pkg)}
-                              className="text-red-600 border-red-500 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
