@@ -346,9 +346,9 @@ export const diagnoseDatabase: RequestHandler = async (req, res) => {
       connected: isConnected,
       checks,
       nextSteps: !checks.tablesExist
-        ? "Run migrations: POST /api/neon/init"
+        ? "Run migrations: POST /api/supabase/init"
         : !checks.superadminExists
-          ? "Seed users: POST /api/neon/init"
+          ? "Seed users: POST /api/supabase/init"
           : "Database ready!",
       timestamp: new Date().toISOString(),
     });
