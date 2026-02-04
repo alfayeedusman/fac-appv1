@@ -1,6 +1,7 @@
-import { neonDbClient } from "./neonDatabaseService";
+import { supabaseDbClient } from "./neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 export interface LoginCredentials {
   email: string;
@@ -104,7 +105,7 @@ class AuthService {
       await initializeDatabase();
       console.log("✅ Database ready, proceeding with login");
 
-      const result = await neonDbClient.login(
+      const result = await supabaseDbClient.login(
         credentials.email,
         credentials.password,
       );
@@ -181,7 +182,7 @@ class AuthService {
         subscriptionStatus: "free" as const,
       };
 
-      const result = await neonDbClient.register(registrationData);
+      const result = await supabaseDbClient.register(registrationData);
 
       if (result.success) {
         toast({
@@ -248,7 +249,7 @@ class AuthService {
 
   async checkDatabaseConnection(): Promise<boolean> {
     try {
-      const result = await neonDbClient.testConnection();
+      const result = await supabaseDbClient.testConnection();
       return result.connected;
     } catch (error) {
       console.error("Database connection check failed:", error);
