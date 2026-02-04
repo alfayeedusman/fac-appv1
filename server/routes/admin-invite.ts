@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { supabaseDbService } from "../services/supabaseDatabaseService";
 import crypto from "crypto";
 
-// POST /api/neon/admin/invite
+// POST /api/supabase/admin/invite
 // Protected by ADMIN_INVITE_SECRET header. Generates a user with a random password
 // and returns the generated credentials in the response. Intended for secure
 // administrative use only (do not expose this endpoint publicly).

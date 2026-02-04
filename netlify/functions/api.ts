@@ -70,11 +70,11 @@ export async function handler(event: any, context: any) {
         debug: process.env.NODE_ENV === "development" ? errorStack : undefined,
         timestamp: new Date().toISOString(),
         availableEndpoints: [
-          "POST /api/neon/auth/login",
-          "POST /api/neon/auth/register",
-          "GET /api/neon/test",
-          "GET /api/neon/diagnose",
-          "POST /api/neon/init",
+          "POST /api/supabase/auth/login",
+          "POST /api/supabase/auth/register",
+          "GET /api/supabase/test",
+          "GET /api/supabase/diagnose",
+          "POST /api/supabase/init",
         ],
       }),
     };
