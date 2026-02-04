@@ -484,41 +484,46 @@ export const loginUser: RequestHandler = async (req, res) => {
       return res.status(401).json(response);
     }
 
-    // Check if password exists in database
-    if (!user.password) {
-      console.error("🔐 Login failed: user has no password hash", { email });
-      return res.status(401).json({
-        success: false,
-        error: "Invalid email or password",
-      });
-    }
+    // Skip password verification for demo mode (already verified above)
+    if (!usingDemoMode) {
+      // Check if password exists in database
+      if (!user.password) {
+        console.error("🔐 Login failed: user has no password hash", { email });
+        return res.status(401).json({
+          success: false,
+          error: "Invalid email or password",
+        });
+      }
 
-    let isValidPassword = false;
-    try {
-      console.log("🔐 Starting password verification...");
-      isValidPassword = await supabaseDbService.verifyPassword(email, password);
-      console.log("🔐 Password verification result", {
-        email,
-        isValid: isValidPassword,
-      });
-    } catch (pwErr) {
-      const errorMsg = pwErr instanceof Error ? pwErr.message : String(pwErr);
-      console.error("🔐 Password verification error:", {
-        error: errorMsg,
-        email,
-        stack: pwErr instanceof Error ? pwErr.stack : undefined,
-      });
-      return res.status(500).json({
-        success: false,
-        error: "Authentication service error. Please try again.",
-        debug: process.env.NODE_ENV === "development" ? errorMsg : undefined,
-      });
-    }
+      let isValidPassword = false;
+      try {
+        console.log("🔐 Starting password verification...");
+        isValidPassword = await supabaseDbService.verifyPassword(email, password);
+        console.log("🔐 Password verification result", {
+          email,
+          isValid: isValidPassword,
+        });
+      } catch (pwErr) {
+        const errorMsg = pwErr instanceof Error ? pwErr.message : String(pwErr);
+        console.error("🔐 Password verification error:", {
+          error: errorMsg,
+          email,
+          stack: pwErr instanceof Error ? pwErr.stack : undefined,
+        });
+        return res.status(500).json({
+          success: false,
+          error: "Authentication service error. Please try again.",
+          debug: process.env.NODE_ENV === "development" ? errorMsg : undefined,
+        });
+      }
 
-    if (!isValidPassword) {
-      console.warn("🔐 Login failed: invalid password", { email });
-      const response = { success: false, error: "Invalid credentials" };
-      return res.status(401).json(response);
+      if (!isValidPassword) {
+        console.warn("🔐 Login failed: invalid password", { email });
+        const response = { success: false, error: "Invalid credentials" };
+        return res.status(401).json(response);
+      }
+    } else {
+      console.log("✅ Demo mode: skipping password verification");
     }
 
     if (!user.isActive) {
