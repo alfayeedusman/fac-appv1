@@ -78,7 +78,7 @@ import {
   CarWashService,
 } from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 // Enhanced category system
 interface ProductCategory {
