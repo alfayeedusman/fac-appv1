@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => ({
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
+  appType: 'spa', // Enable SPA fallback - serve index.html for non-existent files
 }));
 
 function expressPlugin(): Plugin {
