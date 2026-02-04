@@ -356,11 +356,21 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     // Initialize database and seed data on server startup
     setTimeout(async () => {
       try {
+        const skipDbInit =
+          process.env.SKIP_MIGRATIONS === "true" ||
+          process.env.DISABLE_MIGRATIONS === "true" ||
+          (!process.env.NEON_DATABASE_URL && !process.env.DATABASE_URL);
+
         console.log("🔄 Initializing database and running migrations...");
         await migrate();
         console.log(
           "✅ Database initialization and migrations completed successfully",
         );
+
+        if (skipDbInit) {
+          console.log("⚠️ Skipping branch/user seeding (DB init disabled).");
+          return;
+        }
 
         console.log("🏪 Auto-seeding branch data...");
         await seedBranches();
