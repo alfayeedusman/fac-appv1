@@ -47,13 +47,14 @@ function expressPlugin(): Plugin {
       // Add SPA fallback middleware AFTER Express
       // This serves index.html for any non-API route that Vite didn't handle
       server.middlewares.use((req, res, next) => {
-        // Don't handle API routes here - let Express 404 them
+        // Don't rewrite API routes
         if (req.path.startsWith("/api/")) {
           return next();
         }
 
-        // For SPA navigation routes (no file extension), serve index.html
-        if (!req.path.match(/\.[^./]*$/)) {
+        // For SPA navigation routes (no file extension and not a static asset), serve index.html
+        const hasExtension = /\.[^./]*$/.test(req.path);
+        if (!hasExtension) {
           req.url = "/index.html";
         }
 
