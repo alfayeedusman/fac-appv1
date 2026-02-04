@@ -19,6 +19,11 @@ export const ensureDatabaseInitialized: RequestHandler = async (
   next,
 ) => {
   try {
+    const bypassPaths = ["/health", "/neon/test", "/neon/init", "/neon/diagnose"];
+    if (bypassPaths.includes(req.path)) {
+      return next();
+    }
+
     // Skip if already initialized
     if (dbInitialized) {
       return next();
