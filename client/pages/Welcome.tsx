@@ -70,6 +70,8 @@ export default function Welcome() {
       navigate("/admin-dashboard");
     } else if (userRole === "manager") {
       navigate("/manager-dashboard");
+    } else if (userRole === "dispatcher") {
+      navigate("/dispatcher-dashboard");
     } else if (userRole === "cashier") {
       navigate("/pos");
     } else if (userRole === "inventory_manager") {

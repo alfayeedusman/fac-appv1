@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   redirectTo?: string;
 }
@@ -60,7 +61,10 @@ export default function ProtectedRoute({
       }
 
       // Check role-based access using the improved role checking
-      if (!authService.hasRole(requiredRole) && !authService.hasAnyRole([requiredRole])) {
+      if (
+        !authService.hasRole(requiredRole) &&
+        !authService.hasAnyRole([requiredRole])
+      ) {
         // Check role hierarchy for access
         const roleHierarchy = {
           user: 1,
@@ -68,12 +72,15 @@ export default function ProtectedRoute({
           cashier: 2,
           inventory_manager: 2,
           manager: 3,
+          dispatcher: 3,
           admin: 4,
           superadmin: 5,
         };
 
-        const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy];
-        const userLevel = roleHierarchy[currentUser.role as keyof typeof roleHierarchy];
+        const requiredLevel =
+          roleHierarchy[requiredRole as keyof typeof roleHierarchy];
+        const userLevel =
+          roleHierarchy[currentUser.role as keyof typeof roleHierarchy];
 
         if (!userLevel || userLevel < requiredLevel) {
           toast({
@@ -89,6 +96,8 @@ export default function ProtectedRoute({
             navigate("/manager-dashboard", { replace: true });
           } else if (authService.hasRole("crew")) {
             navigate("/crew-dashboard", { replace: true });
+          } else if (authService.hasRole("dispatcher")) {
+            navigate("/dispatcher-dashboard", { replace: true });
           } else if (authService.hasRole("cashier")) {
             navigate("/pos", { replace: true });
           } else if (authService.hasRole("inventory_manager")) {

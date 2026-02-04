@@ -103,7 +103,7 @@ import {
   getAllBookings,
   type SystemNotification,
 } from "@/utils/databaseSchema";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import realtimeService from "@/services/realtimeService";
 import { toast } from "@/hooks/use-toast";
 import Swal from "sweetalert2";
@@ -152,6 +152,30 @@ interface DashboardStats {
   topPackage: string;
 }
 
+interface CrewCommissionSummary {
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  totalRevenue: number;
+  totalCommission: number;
+  totalBookings: number;
+  crewCount: number;
+  crew: Array<{
+    crewId: string;
+    crewName: string;
+    totalRevenue: number;
+    totalCommission: number;
+    totalBookings: number;
+  }>;
+  breakdown?: Array<{
+    serviceType: string;
+    bookingCount: number;
+    totalRevenue: number;
+    totalCommission: number;
+  }>;
+}
+
 interface Notification {
   id: string;
   type:
@@ -196,6 +220,10 @@ export default function AdminDashboard() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [crewCommissionSummary, setCrewCommissionSummary] =
+    useState<CrewCommissionSummary | null>(null);
+  const [crewCommissionLoading, setCrewCommissionLoading] = useState(false);
+
   const [realtimeStats, setRealtimeStats] = useState({
     onlineCrew: 0,
     busyCrew: 0,
@@ -210,43 +238,8 @@ export default function AdminDashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
 
-  const [packages, setPackages] = useState<ServicePackage[]>([
-    {
-      id: "classic",
-      name: "Classic Pro",
-      basePrice: 500,
-      duration: "Weekly",
-      features: ["AI exterior wash", "Smart tire cleaning", "Basic protection"],
-      active: true,
-    },
-    {
-      id: "vip-silver",
-      name: "VIP Silver Elite",
-      basePrice: 1500,
-      duration: "Monthly",
-      features: [
-        "Premium AI wash",
-        "Interior deep clean",
-        "Paint protection",
-        "Priority booking",
-      ],
-      active: true,
-    },
-    {
-      id: "vip-gold",
-      name: "VIP Gold Ultimate",
-      basePrice: 3000,
-      duration: "Yearly",
-      features: [
-        "Unlimited AI washes",
-        "VIP concierge service",
-        "Premium detailing",
-        "Exclusive lounge access",
-        "Priority everything",
-      ],
-      active: true,
-    },
-  ]);
+  const [packages, setPackages] = useState<ServicePackage[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
 
   // Modal states
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
@@ -298,13 +291,20 @@ export default function AdminDashboard() {
 
   const [editingFeatures, setEditingFeatures] = useState("");
 
+  const [dailyIncomeAmount, setDailyIncomeAmount] = useState("");
+  const [dailyIncomeDate, setDailyIncomeDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [dailyIncomeNotes, setDailyIncomeNotes] = useState("");
+  const [dailyIncomeLoading, setDailyIncomeLoading] = useState(false);
+
   // Function to load real statistics from database
   const loadRealStats = async (period: string = timeFilter) => {
     try {
       setStatsLoading(true);
       console.log("📊 Loading real stats for period:", period);
 
-      const result = await neonDbClient.getStats(period);
+      const result = await supabaseDbClient.getStats(period);
       console.log("📈 Stats result:", result);
 
       if (result.success && result.stats) {
@@ -344,6 +344,126 @@ export default function AdminDashboard() {
     }
   };
 
+  const getDateRangeForFilter = (
+    period: "daily" | "weekly" | "monthly" | "yearly",
+  ) => {
+    const now = new Date();
+    let start = new Date(now);
+    let end = new Date(now);
+
+    switch (period) {
+      case "daily":
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "weekly":
+        start.setDate(now.getDate() - now.getDay());
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "monthly":
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "yearly":
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31);
+        end.setHours(23, 59, 59, 999);
+        break;
+      default:
+        break;
+    }
+
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+  };
+
+  const loadCrewCommissionSummary = async (
+    period: "daily" | "weekly" | "monthly" | "yearly" = timeFilter,
+  ) => {
+    try {
+      setCrewCommissionLoading(true);
+      const { startDate, endDate } = getDateRangeForFilter(period);
+      const result = await supabaseDbClient.getCrewCommissionSummary({
+        startDate,
+        endDate,
+      });
+
+      if (result.success && result.summary) {
+        setCrewCommissionSummary(result.summary);
+      } else {
+        console.warn("⚠️ Failed to load crew commission summary", result);
+        setCrewCommissionSummary(null);
+      }
+    } catch (error) {
+      console.error("Crew commission summary load failed:", error);
+      setCrewCommissionSummary(null);
+    } finally {
+      setCrewCommissionLoading(false);
+    }
+  };
+
+  const submitDailyIncome = async () => {
+    const amount = Number(dailyIncomeAmount);
+    if (!amount || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Enter a daily income amount greater than zero.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem("currentUser");
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const recordedBy =
+      parsedUser?.id ||
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+    const branch = parsedUser?.branchLocation || "Main Branch";
+
+    try {
+      setDailyIncomeLoading(true);
+      const result = await supabaseDbClient.createDailyIncome({
+        branch,
+        incomeDate: dailyIncomeDate,
+        amount,
+        recordedBy,
+        notes: dailyIncomeNotes || undefined,
+      });
+
+      if (result.success) {
+        toast({
+          title: "Daily income saved",
+          description: `Recorded ₱${amount.toFixed(2)} for ${branch}.`,
+        });
+        setDailyIncomeAmount("");
+        setDailyIncomeNotes("");
+      } else {
+        toast({
+          title: "Failed to save income",
+          description: result.error || "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Daily income submit failed:", error);
+      toast({
+        title: "Failed to save income",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDailyIncomeLoading(false);
+    }
+  };
+
   // Function to load real customer data from database
   const loadRealCustomers = async () => {
     try {
@@ -351,19 +471,21 @@ export default function AdminDashboard() {
       console.log("������ Loading customers from database...");
 
       // Ensure database connection is ready
-      const connectionStatus = neonDbClient.getConnectionStatus();
+      const connectionStatus = supabaseDbClient.getConnectionStatus();
       console.log("🔗 Database connection status:", connectionStatus);
 
       if (!connectionStatus) {
         console.log("⚠️ Database not connected, attempting to connect...");
-        const connected = await neonDbClient.testConnection();
+        const connected = await supabaseDbClient.testConnection();
         console.log("🔗 Connection test result:", connected);
         if (!connected.connected) {
-          throw new Error("Database connection failed");
+          console.warn("⚠️ Database connection failed, showing empty list");
+          setCustomers([]);
+          return;
         }
       }
 
-      const result = await neonDbClient.getCustomers();
+      const result = await supabaseDbClient.getCustomers();
       console.log("👥 Customer load result:", result);
 
       if (result.success && result.users) {
@@ -412,13 +534,58 @@ export default function AdminDashboard() {
     }
   };
 
+  const mapServicePackage = (pkg: any): ServicePackage => {
+    const startDate = pkg.startDate ?? pkg.start_date;
+    const endDate = pkg.endDate ?? pkg.end_date;
+
+    return {
+      id: pkg.id,
+      name: pkg.name,
+      basePrice: Number(pkg.base_price ?? pkg.basePrice ?? 0),
+      duration: pkg.duration || "Monthly",
+      durationType: pkg.duration_type ?? pkg.durationType ?? "preset",
+      hours: pkg.hours ?? undefined,
+      startDate: startDate ? String(startDate) : undefined,
+      endDate: endDate ? String(endDate) : undefined,
+      banner: pkg.banner ?? pkg.banner_url ?? pkg.bannerUrl ?? undefined,
+      features: Array.isArray(pkg.features) ? pkg.features : [],
+      active:
+        typeof pkg.is_active === "boolean"
+          ? pkg.is_active
+          : typeof pkg.isActive === "boolean"
+            ? pkg.isActive
+            : (pkg.active ?? true),
+    };
+  };
+
+  const loadServicePackages = async () => {
+    try {
+      setPackagesLoading(true);
+      const result = await supabaseDbClient.getServicePackages({
+        includeInactive: true,
+      });
+
+      if (result.success && Array.isArray(result.packages)) {
+        setPackages(result.packages.map(mapServicePackage));
+      } else {
+        console.warn("⚠️ Failed to load packages:", result);
+        setPackages([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading packages:", error);
+      setPackages([]);
+    } finally {
+      setPackagesLoading(false);
+    }
+  };
+
   // Function to load real-time crew and customer statistics
   const loadRealtimeStats = async () => {
     try {
       setRealtimeLoading(true);
       console.log("📡 Loading realtime stats...");
 
-      const result = await neonDbClient.getRealtimeStats();
+      const result = await supabaseDbClient.getRealtimeStats();
       console.log("🔄 Realtime stats result:", result);
 
       if (result.success && result.stats) {
@@ -458,6 +625,9 @@ export default function AdminDashboard() {
 
       // Load real statistics from database
       loadRealStats();
+
+      // Load crew commission summary
+      loadCrewCommissionSummary();
 
       // Load real-time crew and customer statistics
       loadRealtimeStats();
@@ -516,6 +686,11 @@ export default function AdminDashboard() {
         .then(() => console.log("✅ loadRealCustomers completed"))
         .catch((error) => console.error("❌ loadRealCustomers failed:", error));
 
+      // Load service packages
+      loadServicePackages().catch((error) =>
+        console.error("❌ loadServicePackages failed:", error),
+      );
+
       // Load system notifications
       loadSystemNotifications();
 
@@ -542,6 +717,7 @@ export default function AdminDashboard() {
   // Reload stats when time filter changes
   useEffect(() => {
     loadRealStats(timeFilter);
+    loadCrewCommissionSummary(timeFilter);
   }, [timeFilter]);
 
   const loadSystemNotifications = () => {
@@ -682,8 +858,8 @@ export default function AdminDashboard() {
     setIsPackageModalOpen(true);
   };
 
-  const handleDeletePackage = (pkg: ServicePackage) => {
-    Swal.fire({
+  const handleDeletePackage = async (pkg: ServicePackage) => {
+    const result = await Swal.fire({
       title: "Delete Package?",
       text: `Are you sure you want to delete ${pkg.name}?`,
       icon: "warning",
@@ -691,21 +867,31 @@ export default function AdminDashboard() {
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
-        Swal.fire({
-          title: "Deleted!",
-          text: "Package deleted successfully!",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
     });
+
+    if (!result.isConfirmed) return;
+
+    const response = await supabaseDbClient.deleteServicePackage(pkg.id);
+    if (response.success) {
+      setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
+      Swal.fire({
+        title: "Deleted!",
+        text: "Package deleted successfully!",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        title: "Delete Failed",
+        text: response.error || "Unable to delete package.",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
+    }
   };
 
-  const handleSavePackage = () => {
+  const handleSavePackage = async () => {
     if (!newPackage.name || newPackage.basePrice <= 0) {
       Swal.fire({
         title: "Validation Error",
@@ -721,43 +907,74 @@ export default function AdminDashboard() {
       .map((f) => f.trim())
       .filter((f) => f.length > 0);
 
-    if (packageModalMode === "add") {
-      const pkg: ServicePackage = {
-        id: Date.now().toString(),
-        name: newPackage.name,
-        basePrice: newPackage.basePrice,
-        duration: newPackage.duration,
-        features,
-        active: newPackage.active,
-      };
-      setPackages((prev) => [...prev, pkg]);
-      Swal.fire({
-        title: "Package Created!",
-        text: "Package created successfully!",
-        icon: "success",
-        confirmButtonColor: "#f97316",
-      });
-    } else if (currentPackage) {
-      const updatedPackage: ServicePackage = {
-        ...currentPackage,
-        name: newPackage.name,
-        basePrice: newPackage.basePrice,
-        duration: newPackage.duration,
-        features,
-        active: newPackage.active,
-      };
-      setPackages((prev) =>
-        prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
-      );
-      Swal.fire({
-        title: "Package Updated!",
-        text: "Package updated successfully!",
-        icon: "success",
-        confirmButtonColor: "#f97316",
-      });
-    }
+    const payload = {
+      name: newPackage.name,
+      basePrice: newPackage.basePrice,
+      duration: newPackage.duration,
+      durationType: newPackage.durationType,
+      hours: newPackage.durationType === "hours" ? newPackage.hours : undefined,
+      startDate:
+        newPackage.durationType === "custom" ? newPackage.startDate : undefined,
+      endDate:
+        newPackage.durationType === "custom" ? newPackage.endDate : undefined,
+      features,
+      banner: newPackage.banner,
+      active: newPackage.active,
+    };
 
-    setIsPackageModalOpen(false);
+    if (packageModalMode === "add") {
+      const result = await supabaseDbClient.createServicePackage(payload);
+      if (result.success) {
+        if (result.package) {
+          setPackages((prev) => [mapServicePackage(result.package), ...prev]);
+        } else {
+          await loadServicePackages();
+        }
+        Swal.fire({
+          title: "Package Created!",
+          text: "Package created successfully!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+        });
+        setIsPackageModalOpen(false);
+      } else {
+        Swal.fire({
+          title: "Create Failed",
+          text: result.error || "Unable to create package.",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    } else if (currentPackage) {
+      const result = await supabaseDbClient.updateServicePackage(
+        currentPackage.id,
+        payload,
+      );
+      if (result.success) {
+        if (result.package) {
+          const updatedPackage = mapServicePackage(result.package);
+          setPackages((prev) =>
+            prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
+          );
+        } else {
+          await loadServicePackages();
+        }
+        Swal.fire({
+          title: "Package Updated!",
+          text: "Package updated successfully!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+        });
+        setIsPackageModalOpen(false);
+      } else {
+        Swal.fire({
+          title: "Update Failed",
+          text: result.error || "Unable to update package.",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -930,6 +1147,10 @@ export default function AdminDashboard() {
         onTabChange={(tab) => {
           if (tab === "fac-map") {
             navigate("/admin-fac-map");
+            return;
+          }
+          if (tab === "crew") {
+            navigate("/admin-crew-management");
             return;
           }
           setActiveTab(tab);
@@ -1433,6 +1654,36 @@ export default function AdminDashboard() {
 
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => navigate("/admin-crew-management")}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Total Crew Commission
+                        </p>
+                        <div className="text-3xl font-bold text-foreground">
+                          {crewCommissionLoading ? (
+                            <div className="animate-pulse">Loading...</div>
+                          ) : (
+                            formatCurrency(
+                              crewCommissionSummary?.totalCommission || 0,
+                            )
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Selected period
+                        </p>
+                      </div>
+                      <div className="bg-emerald-500 p-3 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setActiveTab("analytics")}
                 >
                   <CardContent className="p-6">
@@ -1647,6 +1898,130 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Crew Commission Summary */}
+              <Card className="glass border-border shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-lg">
+                        <DollarSign className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground">
+                          Crew Commission Summary
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Commissions for the selected period
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => navigate("/admin-crew-management")}
+                      variant="outline"
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                    >
+                      Manage Commission Rates
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {crewCommissionLoading ? (
+                    <div className="text-sm text-muted-foreground animate-pulse">
+                      Loading commission data...
+                    </div>
+                  ) : crewCommissionSummary ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Total Commission
+                          </p>
+                          <p className="text-2xl font-bold text-emerald-600">
+                            {formatCurrency(
+                              crewCommissionSummary.totalCommission,
+                            )}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Total Revenue
+                          </p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {formatCurrency(crewCommissionSummary.totalRevenue)}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-orange-50 dark:bg-orange-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Completed Jobs
+                          </p>
+                          <p className="text-2xl font-bold text-orange-600">
+                            {crewCommissionSummary.totalBookings}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-purple-50 dark:bg-purple-950 p-4">
+                          <p className="text-xs text-muted-foreground">
+                            Active Crew
+                          </p>
+                          <p className="text-2xl font-bold text-purple-600">
+                            {crewCommissionSummary.crewCount}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-semibold text-foreground">
+                            Crew Breakdown
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            Top commissions first
+                          </p>
+                        </div>
+                        <ScrollArea className="h-48 rounded-lg border border-border p-3">
+                          <div className="space-y-3">
+                            {crewCommissionSummary.crew.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">
+                                No crew commission records for this period.
+                              </p>
+                            ) : (
+                              crewCommissionSummary.crew.map((crew) => (
+                                <div
+                                  key={crew.crewId}
+                                  className="flex items-center justify-between"
+                                >
+                                  <div>
+                                    <p className="font-medium text-foreground">
+                                      {crew.crewName}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {crew.totalBookings} jobs •{" "}
+                                      {formatCurrency(crew.totalRevenue)}{" "}
+                                      revenue
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-semibold text-emerald-600">
+                                      {formatCurrency(crew.totalCommission)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      commission
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No commission data yet for this period.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Location Summary */}
               <Card className="glass border-border shadow-xl">
@@ -1892,6 +2267,54 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              <Card className="glass border-border shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-xl">Daily Income Entry</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="daily-income-date">Date</Label>
+                      <Input
+                        id="daily-income-date"
+                        type="date"
+                        value={dailyIncomeDate}
+                        onChange={(e) => setDailyIncomeDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="daily-income-amount">Amount (₱)</Label>
+                      <Input
+                        id="daily-income-amount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={dailyIncomeAmount}
+                        onChange={(e) => setDailyIncomeAmount(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="daily-income-notes">Notes</Label>
+                      <Input
+                        id="daily-income-notes"
+                        placeholder="Optional notes"
+                        value={dailyIncomeNotes}
+                        onChange={(e) => setDailyIncomeNotes(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={submitDailyIncome}
+                      disabled={dailyIncomeLoading}
+                      className="btn-futuristic"
+                    >
+                      {dailyIncomeLoading ? "Saving..." : "Save Daily Income"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -2116,101 +2539,115 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Package Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {packages.map((pkg, index) => (
-                  <Card
-                    key={pkg.id}
-                    className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardHeader className="relative z-10">
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="text-xl font-black text-foreground">
-                          {pkg.name}
-                        </span>
-                        <Badge
-                          className={`${
-                            pkg.active ? "bg-green-500" : "bg-gray-400"
-                          } text-white font-bold px-3 py-1 rounded-full`}
-                        >
-                          {pkg.active ? "ACTIVE" : "INACTIVE"}
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <div className="space-y-6">
-                        {/* Price */}
-                        <div className="flex items-center justify-between">
-                          <p className="text-3xl font-black text-fac-orange-500">
-                            {formatCurrency(pkg.basePrice)}
-                          </p>
+              {packagesLoading ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  Loading packages...
+                </div>
+              ) : packages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Package className="h-10 w-10 mb-3 opacity-60" />
+                  <p className="text-lg font-medium">No packages found</p>
+                  <p className="text-sm">
+                    Create your first package to get started.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
+                  {packages.map((pkg, index) => (
+                    <Card
+                      key={pkg.id}
+                      className="glass border-border shadow-2xl hover-lift transition-all duration-300 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-fac-orange-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                      <CardHeader className="relative z-10">
+                        <CardTitle className="flex items-center justify-between">
+                          <span className="text-xl font-black text-foreground">
+                            {pkg.name}
+                          </span>
+                          <Badge
+                            className={`${
+                              pkg.active ? "bg-green-500" : "bg-gray-400"
+                            } text-white font-bold px-3 py-1 rounded-full`}
+                          >
+                            {pkg.active ? "ACTIVE" : "INACTIVE"}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative z-10">
+                        <div className="space-y-6">
+                          {/* Price */}
+                          <div className="flex items-center justify-between">
+                            <p className="text-3xl font-black text-fac-orange-500">
+                              {formatCurrency(pkg.basePrice)}
+                            </p>
+                            {(userRole === "superadmin" ||
+                              userRole === "admin") && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditPackage(pkg)}
+                                className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 font-bold"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                            )}
+                          </div>
+
+                          {/* Duration */}
+                          <div className="glass rounded-lg p-4">
+                            <p className="text-sm text-muted-foreground font-medium">
+                              <strong>Billing Cycle:</strong> {pkg.duration}
+                            </p>
+                          </div>
+
+                          {/* Features */}
+                          <div>
+                            <p className="text-base font-bold text-foreground mb-4">
+                              Features:
+                            </p>
+                            <div className="space-y-2">
+                              {pkg.features.map((feature, featureIndex) => (
+                                <p
+                                  key={featureIndex}
+                                  className="text-sm text-muted-foreground font-medium flex items-center"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
+                                  {feature}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
                           {(userRole === "superadmin" ||
                             userRole === "admin") && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditPackage(pkg)}
-                              className="border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50 font-bold"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
+                            <div className="flex space-x-3 pt-4 border-t border-border">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditPackage(pkg)}
+                                className="flex-1 border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeletePackage(pkg)}
+                                className="text-red-600 border-red-500 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
                         </div>
-
-                        {/* Duration */}
-                        <div className="glass rounded-lg p-4">
-                          <p className="text-sm text-muted-foreground font-medium">
-                            <strong>Billing Cycle:</strong> {pkg.duration}
-                          </p>
-                        </div>
-
-                        {/* Features */}
-                        <div>
-                          <p className="text-base font-bold text-foreground mb-4">
-                            Features:
-                          </p>
-                          <div className="space-y-2">
-                            {pkg.features.map((feature, featureIndex) => (
-                              <p
-                                key={featureIndex}
-                                className="text-sm text-muted-foreground font-medium flex items-center"
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
-                                {feature}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        {(userRole === "superadmin" ||
-                          userRole === "admin") && (
-                          <div className="flex space-x-3 pt-4 border-t border-border">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditPackage(pkg)}
-                              className="flex-1 border-fac-orange-500 text-fac-orange-500 hover:bg-fac-orange-50"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeletePackage(pkg)}
-                              className="text-red-600 border-red-500 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -2395,12 +2832,6 @@ export default function AdminDashboard() {
           {activeTab === "user-management" && (
             <div className="space-y-6">
               <AdminUserManagement />
-            </div>
-          )}
-
-          {activeTab === "crew" && (
-            <div className="space-y-6">
-              <AdminCrewManagement />
             </div>
           )}
 

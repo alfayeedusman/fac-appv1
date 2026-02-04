@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { authService } from "@/services/authService";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -97,6 +97,8 @@ export default function Login() {
             navigate("/admin-dashboard");
           } else if (result.user.role === "manager") {
             navigate("/manager-dashboard");
+          } else if (result.user.role === "dispatcher") {
+            navigate("/dispatcher-dashboard");
           } else if (result.user.role === "crew") {
             navigate("/crew-dashboard");
           } else if (result.user.role === "cashier") {
@@ -124,7 +126,7 @@ export default function Login() {
           result.error?.includes("credentials")
         ) {
           description =
-            "Invalid email or password. Please check your credentials and try again.\n\nNeed help? Contact support at support@fayeedautocare.com";
+            "Invalid email or password. Please check your credentials and try again.";
         } else if (result.error?.includes("disabled")) {
           description =
             "Your account has been disabled. Please contact support.";
@@ -134,6 +136,13 @@ export default function Login() {
         ) {
           description =
             "Service temporarily unavailable. Please try again in a few moments.";
+        } else if (
+          result.error?.includes("connect") ||
+          result.error?.includes("network") ||
+          result.error?.includes("internet")
+        ) {
+          description =
+            "Unable to connect to the server. Please check your internet connection and try again.";
         }
 
         toast({
@@ -167,10 +176,13 @@ export default function Login() {
           "Unable to connect to the authentication service. Please try again.";
       }
 
-      toast({
-        title,
-        description,
-        variant: "destructive",
+      // Use requestAnimationFrame to defer toast to next frame to avoid React reconciliation conflicts
+      requestAnimationFrame(() => {
+        toast({
+          title,
+          description,
+          variant: "destructive",
+        });
       });
     }
 

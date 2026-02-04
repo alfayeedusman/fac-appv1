@@ -187,6 +187,7 @@ export const listPaymentMethods: RequestHandler = async (req, res) => {
 
     // Try to fetch from Xendit, but always return fallback on any error
     try {
+      const url = `${XENDIT_API_URL}/invoices/available_payment_methods`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
@@ -569,7 +570,13 @@ export const handleWebhook: RequestHandler = async (req, res) => {
             title: "Payment Received",
             message: `Payment received for booking ${updatedBooking.confirmationCode || bookingId}. Amount: ₱${updatedBooking.totalPrice}`,
             priority: "high",
-            targetRoles: ["admin", "superadmin", "manager", "cashier"],
+            targetRoles: [
+              "admin",
+              "superadmin",
+              "manager",
+              "dispatcher",
+              "cashier",
+            ],
             targetUsers: [],
             data: {
               bookingId,

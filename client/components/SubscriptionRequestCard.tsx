@@ -49,6 +49,7 @@ export default function SubscriptionRequestCard({
   const [approvalNotes, setApprovalNotes] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [banReason, setBanReason] = useState("");
+  const hasReceipt = Boolean(request.receipt?.imageUrl);
 
   const getStatusColor = (status: SubscriptionRequest["status"]) => {
     switch (status) {
@@ -300,18 +301,25 @@ export default function SubscriptionRequestCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowReceipt(true)}
+                onClick={() => hasReceipt && setShowReceipt(true)}
+                disabled={!hasReceipt}
                 className="flex items-center space-x-1"
               >
                 <Eye className="h-4 w-4" />
-                <span>View</span>
+                <span>{hasReceipt ? "View" : "Not Available"}</span>
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>File: {request.receipt.fileName}</p>
-              <p>Size: {formatFileSize(request.receipt.fileSize)}</p>
-              <p>Uploaded: {formatDate(request.receipt.uploadDate)}</p>
-            </div>
+            {hasReceipt ? (
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>File: {request.receipt?.fileName}</p>
+                <p>Size: {formatFileSize(request.receipt?.fileSize || 0)}</p>
+                <p>Uploaded: {formatDate(request.receipt?.uploadDate || "")}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No receipt uploaded for this request yet.
+              </p>
+            )}
           </div>
 
           {/* Review Information */}
@@ -383,36 +391,44 @@ export default function SubscriptionRequestCard({
       </Card>
 
       {/* Receipt Modal */}
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              Payment Receipt - {request.receipt.fileName}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-              <img
-                src={request.receipt.imageUrl}
-                alt="Payment Receipt"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  console.warn(`Failed to load receipt image: ${request.receipt.imageUrl}`);
-                  e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcgOGgxME0xMCAyMGwxLTJoMi00bC0xIDJIMTB6bTQgMGgybC0xIDJIMTR6bTMtM2gtMWwtMi4yOTMtMi4yOTNhMSAxIDAgMCAwLTEuNDE0IDBMOC41ODYgMTMuMTcxYTEgMSAwIDAgMC0uMjA3LjIyOUw3IDEwaDEwbC0xIDNoLTF6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik03IDhWNmEyIDIgMCAwIDEgMi0yaDZhMiAyIDAgMCAxIDIgMnYyIiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+";
-                  e.currentTarget.className = "w-full h-full object-contain opacity-50";
-                }}
-                onLoad={() => {
-                  console.log(`Successfully loaded receipt image`);
-                }}
-              />
+      {hasReceipt && (
+        <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                Payment Receipt - {request.receipt?.fileName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                <img
+                  src={request.receipt?.imageUrl}
+                  alt="Payment Receipt"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    console.warn(
+                      `Failed to load receipt image: ${request.receipt?.imageUrl}`,
+                    );
+                    e.currentTarget.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcgOGgxME0xMCAyMGwxLTJoMi00bC0xIDJIMTB6bTQgMGgybC0xIDJIMTR6bTMtM2gtMWwtMi4yOTMtMi4yOTNhMSAxIDAgMCAwLTEuNDE0IDBMOC41ODYgMTMuMTcxYTEgMSAwIDAgMC0uMjA3LjIyOUw3IDEwaDEwbC0xIDNoLTF6IiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik03IDhWNmEyIDIgMCAwIDEgMi0yaDZhMiAyIDAgMCAxIDIgMnYyIiBzdHJva2U9IiM5Y2E3YjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+";
+                    e.currentTarget.className =
+                      "w-full h-full object-contain opacity-50";
+                  }}
+                  onLoad={() => {
+                    console.log(`Successfully loaded receipt image`);
+                  }}
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  File size: {formatFileSize(request.receipt?.fileSize || 0)}
+                </p>
+                <p>Uploaded: {formatDate(request.receipt?.uploadDate || "")}</p>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              <p>File size: {formatFileSize(request.receipt.fileSize)}</p>
-              <p>Uploaded: {formatDate(request.receipt.uploadDate)}</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Approval Modal */}
       <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>

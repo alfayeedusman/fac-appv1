@@ -78,7 +78,7 @@ import {
   CarWashService,
 } from "@/utils/carWashServices";
 import { notificationManager } from "@/components/NotificationModal";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 // Enhanced category system
 interface ProductCategory {
@@ -337,7 +337,9 @@ export default function EnhancedInventoryManagement() {
         if (Array.isArray(parsedCategories)) {
           setCategories(parsedCategories);
         } else {
-          console.warn("Invalid categories data in localStorage, using defaults");
+          console.warn(
+            "Invalid categories data in localStorage, using defaults",
+          );
           setCategories(defaultCategories);
         }
       }
@@ -370,11 +372,13 @@ export default function EnhancedInventoryManagement() {
       setCarWashServices(getCarWashServices());
       setStockMovements(getStockMovements());
       setSuppliers(getSuppliers());
-
     } catch (error) {
       console.error("Error loading inventory data:", error);
       setError("Failed to load inventory data. Please refresh the page.");
-      notificationManager.showError("Data Load Failed", "Could not load inventory data.");
+      notificationManager.showError(
+        "Data Load Failed",
+        "Could not load inventory data.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -448,7 +452,9 @@ export default function EnhancedInventoryManagement() {
         // Update existing product
         const updateData = {
           name: newProduct.name,
-          category: categories.find(c => c.id === newProduct.categoryId)?.name || "Unknown",
+          category:
+            categories.find((c) => c.id === newProduct.categoryId)?.name ||
+            "Unknown",
           description: newProduct.description,
           sku: newProduct.sku || `SKU-${Date.now()}`,
           barcode: newProduct.barcode,
@@ -465,7 +471,7 @@ export default function EnhancedInventoryManagement() {
         const updatedProduct = updateProduct(editingProductId, updateData);
         if (updatedProduct) {
           // Refresh products from storage and convert to enhanced format
-          const refreshedProducts = getProducts().map(product => ({
+          const refreshedProducts = getProducts().map((product) => ({
             ...product,
             categoryId: product.category,
             tags: [],
@@ -477,7 +483,7 @@ export default function EnhancedInventoryManagement() {
 
           notificationManager.showSuccess(
             "Product Updated!",
-            `${updatedProduct.name} has been updated successfully.`
+            `${updatedProduct.name} has been updated successfully.`,
           );
         }
         setEditingProductId(null);
@@ -485,7 +491,12 @@ export default function EnhancedInventoryManagement() {
         // Create new product using utility
         const productData = {
           name: newProduct.name,
-          category: newProduct.categoryId as "car_care" | "accessories" | "tools" | "chemicals" | "parts",
+          category: newProduct.categoryId as
+            | "car_care"
+            | "accessories"
+            | "tools"
+            | "chemicals"
+            | "parts",
           description: newProduct.description,
           sku: newProduct.sku || `SKU-${Date.now()}`,
           barcode: newProduct.barcode,
@@ -501,7 +512,7 @@ export default function EnhancedInventoryManagement() {
         const persistedProduct = addProduct(productData);
 
         // Refresh products from storage and convert to enhanced format
-        const refreshedProducts = getProducts().map(product => ({
+        const refreshedProducts = getProducts().map((product) => ({
           ...product,
           categoryId: product.category,
           tags: [],
@@ -513,7 +524,7 @@ export default function EnhancedInventoryManagement() {
 
         notificationManager.showSuccess(
           "Product Created!",
-          `${persistedProduct.name} has been added to inventory successfully.`
+          `${persistedProduct.name} has been added to inventory successfully.`,
         );
       }
 
@@ -538,7 +549,6 @@ export default function EnhancedInventoryManagement() {
       });
 
       setShowAddProductModal(false);
-
     } catch (error) {
       console.error("Error saving product:", error);
       alert("Error saving product. Please try again.");
@@ -561,7 +571,7 @@ export default function EnhancedInventoryManagement() {
       costPrice: product.costPrice || 0,
       supplier: product.supplier || "",
       location: product.location || "",
-      tags: product.tags.join(', '),
+      tags: product.tags.join(", "),
       specifications: JSON.stringify(product.specifications),
       isService: product.isService,
     });
@@ -573,7 +583,7 @@ export default function EnhancedInventoryManagement() {
       const success = deleteProduct(productId);
       if (success) {
         // Refresh products from storage
-        const refreshedProducts = getProducts().map(product => ({
+        const refreshedProducts = getProducts().map((product) => ({
           ...product,
           categoryId: product.category,
           tags: [],
@@ -582,20 +592,33 @@ export default function EnhancedInventoryManagement() {
           isService: false,
         }));
         setProducts(refreshedProducts);
-        notificationManager.showSuccess("Product Deleted", "Product removed from inventory.");
+        notificationManager.showSuccess(
+          "Product Deleted",
+          "Product removed from inventory.",
+        );
       } else {
-        notificationManager.showError("Delete Failed", "Product not found or could not be deleted.");
+        notificationManager.showError(
+          "Delete Failed",
+          "Product not found or could not be deleted.",
+        );
       }
     }
   };
 
-  const handleStockAdjustment = (productId: string, newStock: number, reason: string) => {
-    const product = products.find(p => p.id === productId);
+  const handleStockAdjustment = (
+    productId: string,
+    newStock: number,
+    reason: string,
+  ) => {
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
     // Prevent unnecessary movements for same stock level
     if (newStock === product.currentStock) {
-      notificationManager.showWarning("No Change", "Stock level is already at the specified amount.");
+      notificationManager.showWarning(
+        "No Change",
+        "Stock level is already at the specified amount.",
+      );
       return;
     }
 
@@ -604,7 +627,7 @@ export default function EnhancedInventoryManagement() {
       updateProductStock(productId, newStock, reason);
 
       // Refresh products from storage
-      const refreshedProducts = getProducts().map(product => ({
+      const refreshedProducts = getProducts().map((product) => ({
         ...product,
         categoryId: product.category,
         tags: [],
@@ -619,12 +642,14 @@ export default function EnhancedInventoryManagement() {
 
       notificationManager.showSuccess(
         "Stock Updated",
-        `${product.name} stock updated to ${newStock} units`
+        `${product.name} stock updated to ${newStock} units`,
       );
-
     } catch (error) {
       console.error("Error updating stock:", error);
-      notificationManager.showError("Update Failed", "Could not update stock level.");
+      notificationManager.showError(
+        "Update Failed",
+        "Could not update stock level.",
+      );
     }
   };
 
@@ -647,7 +672,10 @@ export default function EnhancedInventoryManagement() {
 
     const updatedCategories = [...categories, category];
     setCategories(updatedCategories);
-    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+    localStorage.setItem(
+      "fac_product_categories",
+      JSON.stringify(updatedCategories),
+    );
 
     setNewCategory({
       name: "",
@@ -691,7 +719,10 @@ export default function EnhancedInventoryManagement() {
       c.id === editingCategory.id ? updatedCategory : c,
     );
     setCategories(updatedCategories);
-    localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+    localStorage.setItem(
+      "fac_product_categories",
+      JSON.stringify(updatedCategories),
+    );
 
     setNewCategory({
       name: "",
@@ -707,16 +738,23 @@ export default function EnhancedInventoryManagement() {
 
   const handleDeleteCategory = (categoryId: string) => {
     // Check if any products use this category
-    const categoryProducts = products.filter(p => p.categoryId === categoryId);
+    const categoryProducts = products.filter(
+      (p) => p.categoryId === categoryId,
+    );
     if (categoryProducts.length > 0) {
-      alert(`Cannot delete category. ${categoryProducts.length} products are using this category. Please reassign or delete those products first.`);
+      alert(
+        `Cannot delete category. ${categoryProducts.length} products are using this category. Please reassign or delete those products first.`,
+      );
       return;
     }
 
     if (confirm("Are you sure you want to delete this category?")) {
       const updatedCategories = categories.filter((c) => c.id !== categoryId);
       setCategories(updatedCategories);
-      localStorage.setItem("fac_product_categories", JSON.stringify(updatedCategories));
+      localStorage.setItem(
+        "fac_product_categories",
+        JSON.stringify(updatedCategories),
+      );
       alert("Category deleted successfully!");
     }
   };
@@ -883,7 +921,7 @@ export default function EnhancedInventoryManagement() {
     phone: "",
     address: "",
     website: "",
-    notes: ""
+    notes: "",
   });
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
 
@@ -918,16 +956,15 @@ export default function EnhancedInventoryManagement() {
         phone: "",
         address: "",
         website: "",
-        notes: ""
+        notes: "",
       });
 
       setShowAddSupplierModal(false);
 
       notificationManager.showSuccess(
         "Supplier Added!",
-        `${persistedSupplier.name} has been added to your supplier list.`
+        `${persistedSupplier.name} has been added to your supplier list.`,
       );
-
     } catch (error) {
       console.error("Error adding supplier:", error);
       alert("Error adding supplier. Please try again.");
@@ -940,9 +977,15 @@ export default function EnhancedInventoryManagement() {
       if (success) {
         // Refresh suppliers from storage
         setSuppliers(getSuppliers());
-        notificationManager.showSuccess("Supplier Deleted", "Supplier removed from list.");
+        notificationManager.showSuccess(
+          "Supplier Deleted",
+          "Supplier removed from list.",
+        );
       } else {
-        notificationManager.showError("Delete Failed", "Supplier not found or could not be deleted.");
+        notificationManager.showError(
+          "Delete Failed",
+          "Supplier not found or could not be deleted.",
+        );
       }
     }
   };
@@ -951,21 +994,25 @@ export default function EnhancedInventoryManagement() {
   const getInventoryAnalytics = () => {
     try {
       const totalProducts = products?.length || 0;
-      const totalValue = products?.reduce((sum, p) => {
-        const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
-        const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
-        return sum + (stock * cost);
-      }, 0) || 0;
+      const totalValue =
+        products?.reduce((sum, p) => {
+          const stock = typeof p.currentStock === "number" ? p.currentStock : 0;
+          const cost = typeof p.costPrice === "number" ? p.costPrice : 0;
+          return sum + stock * cost;
+        }, 0) || 0;
 
-      const lowStockProducts = products?.filter(p =>
-        typeof p.currentStock === 'number' &&
-        typeof p.minStockLevel === 'number' &&
-        p.currentStock <= p.minStockLevel
-      ) || [];
+      const lowStockProducts =
+        products?.filter(
+          (p) =>
+            typeof p.currentStock === "number" &&
+            typeof p.minStockLevel === "number" &&
+            p.currentStock <= p.minStockLevel,
+        ) || [];
 
-      const outOfStockProducts = products?.filter(p =>
-        typeof p.currentStock === 'number' && p.currentStock === 0
-      ) || [];
+      const outOfStockProducts =
+        products?.filter(
+          (p) => typeof p.currentStock === "number" && p.currentStock === 0,
+        ) || [];
 
       const topProducts = [...(products || [])]
         .sort((a, b) => {
@@ -975,18 +1022,20 @@ export default function EnhancedInventoryManagement() {
         })
         .slice(0, 5);
 
-      const categoryBreakdown = (categories || []).map(category => {
-        const categoryProducts = (products || []).filter(p => p.categoryId === category.id);
+      const categoryBreakdown = (categories || []).map((category) => {
+        const categoryProducts = (products || []).filter(
+          (p) => p.categoryId === category.id,
+        );
         const categoryValue = categoryProducts.reduce((sum, p) => {
-          const stock = typeof p.currentStock === 'number' ? p.currentStock : 0;
-          const cost = typeof p.costPrice === 'number' ? p.costPrice : 0;
-          return sum + (stock * cost);
+          const stock = typeof p.currentStock === "number" ? p.currentStock : 0;
+          const cost = typeof p.costPrice === "number" ? p.costPrice : 0;
+          return sum + stock * cost;
         }, 0);
         return {
-          category: category.name || 'Unknown',
+          category: category.name || "Unknown",
           count: categoryProducts.length,
           value: categoryValue,
-          color: category.color || '#3B82F6'
+          color: category.color || "#3B82F6",
         };
       });
 
@@ -999,10 +1048,10 @@ export default function EnhancedInventoryManagement() {
         outOfStockProducts,
         topProducts,
         categoryBreakdown,
-        recentMovements: (stockMovements || []).slice(0, 10)
+        recentMovements: (stockMovements || []).slice(0, 10),
       };
     } catch (error) {
-      console.error('Error calculating analytics:', error);
+      console.error("Error calculating analytics:", error);
       return {
         totalProducts: 0,
         totalValue: 0,
@@ -1012,7 +1061,7 @@ export default function EnhancedInventoryManagement() {
         outOfStockProducts: [],
         topProducts: [],
         categoryBreakdown: [],
-        recentMovements: []
+        recentMovements: [],
       };
     }
   };
@@ -1020,8 +1069,8 @@ export default function EnhancedInventoryManagement() {
   // Debug function to test database connection
   const handleDebugConnection = async () => {
     try {
-      console.log('🔍 Starting database debug...');
-      const debugResult = await neonDbClient.debugConnection();
+      console.log("🔍 Starting database debug...");
+      const debugResult = await supabaseDbClient.debugConnection();
 
       const message = `
 Base URL: ${debugResult.baseUrl}
@@ -1031,9 +1080,9 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       `;
 
       alert(`Database Debug Results:\n${message}`);
-      console.log('🔍 Full debug result:', debugResult);
+      console.log("🔍 Full debug result:", debugResult);
     } catch (error) {
-      console.error('❌ Debug failed:', error);
+      console.error("❌ Debug failed:", error);
       alert(`Debug failed: ${error}`);
     }
   };
@@ -1056,12 +1105,16 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Inventory</h3>
+          <h3 className="text-lg font-medium text-red-900 mb-2">
+            Error Loading Inventory
+          </h3>
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => {
-            setError(null);
-            loadData();
-          }}>
+          <Button
+            onClick={() => {
+              setError(null);
+              loadData();
+            }}
+          >
             Try Again
           </Button>
         </div>
@@ -1085,417 +1138,418 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
         <TabsContent value="products" className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-8 w-8 text-blue-500" />
-                      <div>
-                        <p className="text-2xl font-bold">{products.length}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Total Products
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Car className="h-8 w-8 text-orange-500" />
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {carWashServices.length}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Car Services
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Settings className="h-8 w-8 text-purple-500" />
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {categories.length}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Categories
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <BarChart3 className="h-8 w-8 text-green-500" />
-                      <div>
-                        <p className="text-2xl font-bold">
-                          ₱
-                          {products
-                            .reduce(
-                              (sum, p) => sum + p.currentStock * p.costPrice,
-                              0,
-                            )
-                            .toLocaleString()}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Total Value
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
-                >
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SafeSelectItem key={category.id} value={category.id}>
-                        {typeof category.icon === 'string' ? category.icon : '📦'} {category.name}
-                      </SafeSelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={() => setShowAddProductModal(true)} className="w-full sm:w-auto">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </Button>
-                {import.meta.env.DEV && (
-                  <Button
-                    onClick={handleDebugConnection}
-                    variant="outline"
-                    size="sm"
-                    className="hidden lg:flex"
-                  >
-                    🔍 Debug DB
-                  </Button>
-                )}
-              </div>
-
-              {/* Products Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Products Inventory</CardTitle>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <div className="min-w-full">
-                    <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>SKU</TableHead>
-                        <TableHead>Stock</TableHead>
-                        <TableHead>Unit Price</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredProducts.map((product) => {
-                        const category = categories.find(
-                          (c) => c.id === product.categoryId,
-                        );
-                        return (
-                          <TableRow key={product.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">{product.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {product.description}
-                                  {getVariantDisplay(
-                                    product.categoryId,
-                                    product.variantId,
-                                  )}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                style={{
-                                  backgroundColor: category?.color,
-                                  color: "white",
-                                }}
-                              >
-                                {category?.icon} {category?.name || "Unknown"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-mono">
-                              {product.sku}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">
-                                  {product.currentStock}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Min: {product.minStockLevel}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              ₱
-                              {calculateVariantPrice(
-                                product.unitPrice,
-                                product.categoryId,
-                                product.variantId,
-                              ).toFixed(2)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  product.currentStock <= product.minStockLevel
-                                    ? "destructive"
-                                    : "default"
-                                }
-                              >
-                                {product.currentStock <= product.minStockLevel
-                                  ? "Low Stock"
-                                  : "In Stock"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEditProduct(product)}
-                                  title="Edit Product"
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDeleteProduct(product.id)}
-                                  title="Delete Product"
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Package className="h-8 w-8 text-blue-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{products.length}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total Products
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Car className="h-8 w-8 text-orange-500" />
+                  <div>
+                    <p className="text-2xl font-bold">
+                      {carWashServices.length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Car Services
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Settings className="h-8 w-8 text-purple-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{categories.length}</p>
+                    <p className="text-sm text-muted-foreground">Categories</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="h-8 w-8 text-green-500" />
+                  <div>
+                    <p className="text-2xl font-bold">
+                      ₱
+                      {products
+                        .reduce(
+                          (sum, p) => sum + p.currentStock * p.costPrice,
+                          0,
+                        )
+                        .toLocaleString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Total Value</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SafeSelectItem key={category.id} value={category.id}>
+                    {typeof category.icon === "string" ? category.icon : "📦"}{" "}
+                    {category.name}
+                  </SafeSelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => setShowAddProductModal(true)}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+            {import.meta.env.DEV && (
+              <Button
+                onClick={handleDebugConnection}
+                variant="outline"
+                size="sm"
+                className="hidden lg:flex"
+              >
+                🔍 Debug DB
+              </Button>
+            )}
+          </div>
+
+          {/* Products Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Products Inventory</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <div className="min-w-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Unit Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.map((product) => {
+                      const category = categories.find(
+                        (c) => c.id === product.categoryId,
+                      );
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {product.description}
+                                {getVariantDisplay(
+                                  product.categoryId,
+                                  product.variantId,
+                                )}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              style={{
+                                backgroundColor: category?.color,
+                                color: "white",
+                              }}
+                            >
+                              {category?.icon} {category?.name || "Unknown"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {product.sku}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">
+                                {product.currentStock}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Min: {product.minStockLevel}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            ₱
+                            {calculateVariantPrice(
+                              product.unitPrice,
+                              product.categoryId,
+                              product.variantId,
+                            ).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                product.currentStock <= product.minStockLevel
+                                  ? "destructive"
+                                  : "default"
+                              }
+                            >
+                              {product.currentStock <= product.minStockLevel
+                                ? "Low Stock"
+                                : "In Stock"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditProduct(product)}
+                                title="Edit Product"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteProduct(product.id)}
+                                title="Delete Product"
+                                className="text-red-500 hover:text-red-600"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Categories Tab */}
         <TabsContent value="categories" className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold">Product Categories</h2>
-                <Button onClick={() => setShowAddCategoryModal(true)} className="w-full sm:w-auto">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Category
-                </Button>
-              </div>
+            <h2 className="text-2xl font-bold">Product Categories</h2>
+            <Button
+              onClick={() => setShowAddCategoryModal(true)}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Category
+            </Button>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
-                {categories.map((category) => (
-                  <Card
-                    key={category.id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span style={{ color: category.color }}>
-                          {category.icon} {category.name}
-                        </span>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant="outline">
-                            {category.variants?.length || 0} variants
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+            {categories.map((category) => (
+              <Card
+                key={category.id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span style={{ color: category.color }}>
+                      {category.icon} {category.name}
+                    </span>
+                    <div className="flex gap-2 items-center">
+                      <Badge variant="outline">
+                        {category.variants?.length || 0} variants
+                      </Badge>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditCategory(category)}
+                          className="text-blue-500 hover:text-blue-600 p-1"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="text-red-500 hover:text-red-600 p-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {category.description}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {category.variants && category.variants.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-sm">Variants:</p>
+                      {category.variants.map((variant) => (
+                        <div
+                          key={variant.id}
+                          className="flex justify-between items-center text-sm"
+                        >
+                          <span>{variant.name}</span>
+                          <Badge variant="secondary">
+                            {variant.priceMultiplier}x
                           </Badge>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditCategory(category)}
-                              className="text-blue-500 hover:text-blue-600 p-1"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteCategory(category.id)}
-                              className="text-red-500 hover:text-red-600 p-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
                         </div>
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {category.description}
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      {category.variants && category.variants.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="font-medium text-sm">Variants:</p>
-                          {category.variants.map((variant) => (
-                            <div
-                              key={variant.id}
-                              className="flex justify-between items-center text-sm"
-                            >
-                              <span>{variant.name}</span>
-                              <Badge variant="secondary">
-                                {variant.priceMultiplier}x
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
         {/* Car Wash Services Tab */}
         <TabsContent value="services" className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Car Wash Services
-                  </h2>
-                  <p className="text-gray-600">
-                    Dynamic pricing based on vehicle type - Perfect for POS
-                    integration
-                  </p>
-                </div>
-                <Button
-                  onClick={() => {
-                    setNewService({
-                      name: "",
-                      description: "",
-                      basePrice: 200,
-                      duration: "30 mins",
-                      features: [""],
-                      category: "basic",
-                      isActive: true,
-                    });
-                    setServiceModalMode("add");
-                    setShowServiceModal(true);
-                  }}
-                  className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Service
-                </Button>
-              </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Car Wash Services
+              </h2>
+              <p className="text-gray-600">
+                Dynamic pricing based on vehicle type - Perfect for POS
+                integration
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setNewService({
+                  name: "",
+                  description: "",
+                  basePrice: 200,
+                  duration: "30 mins",
+                  features: [""],
+                  category: "basic",
+                  isActive: true,
+                });
+                setServiceModalMode("add");
+                setShowServiceModal(true);
+              }}
+              className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Service
+            </Button>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
-                {carWashServices.map((service) => (
-                  <Card
-                    key={service.id}
-                    className="bg-white border-gray-200 hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-gray-900 text-lg">
-                            {service.name}
-                          </CardTitle>
-                          <Badge
-                            className={
-                              service.category === "basic"
-                                ? "bg-blue-100 text-blue-700"
-                                : service.category === "premium"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : "bg-purple-100 text-purple-700"
-                            }
-                          >
-                            {service.category}
-                          </Badge>
-                        </div>
-                        <div className="flex gap-1 flex-wrap">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => showServicePricing(service)}
-                            className="text-orange-500 hover:text-orange-600 p-1 min-w-0"
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditService(service)}
-                            className="text-blue-500 hover:text-blue-600 p-1 min-w-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteService(service.id)}
-                            className="text-red-500 hover:text-red-600 p-1 min-w-0"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {service.description}
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">
-                            Base Price:
-                          </span>
-                          <span className="text-lg font-bold text-orange-600">
-                            ₱{service.basePrice}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">Duration:</span>
-                          <span className="text-sm">{service.duration}</span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full text-sm"
-                          onClick={() => showServicePricing(service)}
-                        >
-                          <Car className="h-4 w-4 mr-2" />
-                          <span className="hidden sm:inline">View Vehicle Pricing</span>
-                          <span className="sm:hidden">Pricing</span>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+            {carWashServices.map((service) => (
+              <Card
+                key={service.id}
+                className="bg-white border-gray-200 hover:shadow-lg transition-shadow"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-gray-900 text-lg">
+                        {service.name}
+                      </CardTitle>
+                      <Badge
+                        className={
+                          service.category === "basic"
+                            ? "bg-blue-100 text-blue-700"
+                            : service.category === "premium"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-purple-100 text-purple-700"
+                        }
+                      >
+                        {service.category}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => showServicePricing(service)}
+                        className="text-orange-500 hover:text-orange-600 p-1 min-w-0"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditService(service)}
+                        className="text-blue-500 hover:text-blue-600 p-1 min-w-0"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteService(service.id)}
+                        className="text-red-500 hover:text-red-600 p-1 min-w-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {service.description}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Base Price:</span>
+                      <span className="text-lg font-bold text-orange-600">
+                        ₱{service.basePrice}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Duration:</span>
+                      <span className="text-sm">{service.duration}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full text-sm"
+                      onClick={() => showServicePricing(service)}
+                    >
+                      <Car className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">
+                        View Vehicle Pricing
+                      </span>
+                      <span className="sm:hidden">Pricing</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
         {/* Other tabs remain the same... */}
         {/* Stock Movements Tab */}
@@ -1503,7 +1557,9 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold">Stock Movements</h2>
-              <p className="text-muted-foreground">Track all inventory movements and changes</p>
+              <p className="text-muted-foreground">
+                Track all inventory movements and changes
+              </p>
             </div>
           </div>
 
@@ -1540,8 +1596,16 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                             {movement.productName}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={movement.type === 'in' ? 'default' : 'destructive'}>
-                              {movement.type === 'in' ? 'Stock In' : 'Stock Out'}
+                            <Badge
+                              variant={
+                                movement.type === "in"
+                                  ? "default"
+                                  : "destructive"
+                              }
+                            >
+                              {movement.type === "in"
+                                ? "Stock In"
+                                : "Stock Out"}
                             </Badge>
                           </TableCell>
                           <TableCell>{movement.quantity}</TableCell>
@@ -1565,9 +1629,14 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold">Suppliers</h2>
-              <p className="text-muted-foreground">Manage your supplier network</p>
+              <p className="text-muted-foreground">
+                Manage your supplier network
+              </p>
             </div>
-            <Button onClick={() => setShowAddSupplierModal(true)} className="w-full sm:w-auto">
+            <Button
+              onClick={() => setShowAddSupplierModal(true)}
+              className="w-full sm:w-auto"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Supplier
             </Button>
@@ -1575,7 +1644,10 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {suppliers.map((supplier) => (
-              <Card key={supplier.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={supplier.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1612,8 +1684,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   {supplier.website && (
                     <div className="flex items-center gap-2 text-sm">
                       <Globe className="h-4 w-4 text-gray-500" />
-                      <a href={supplier.website} target="_blank" rel="noopener noreferrer"
-                         className="text-blue-500 hover:underline truncate">
+                      <a
+                        href={supplier.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline truncate"
+                      >
                         Website
                       </a>
                     </div>
@@ -1632,8 +1708,13 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
             <Card>
               <CardContent className="text-center py-12">
                 <Building className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No suppliers yet</h3>
-                <p className="text-gray-500 mb-4">Start by adding your first supplier to track your supply chain.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No suppliers yet
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Start by adding your first supplier to track your supply
+                  chain.
+                </p>
                 <Button onClick={() => setShowAddSupplierModal(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Supplier
@@ -1647,7 +1728,9 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
         <TabsContent value="analytics" className="space-y-6">
           <div>
             <h2 className="text-2xl font-bold">Inventory Analytics</h2>
-            <p className="text-muted-foreground">Comprehensive inventory insights and reports</p>
+            <p className="text-muted-foreground">
+              Comprehensive inventory insights and reports
+            </p>
           </div>
 
           {(() => {
@@ -1661,8 +1744,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                       <div className="flex items-center space-x-2">
                         <Package className="h-8 w-8 text-blue-500" />
                         <div>
-                          <p className="text-2xl font-bold">{analytics.totalProducts}</p>
-                          <p className="text-sm text-muted-foreground">Total Products</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.totalProducts}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Total Products
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -1673,8 +1760,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                       <div className="flex items-center space-x-2">
                         <DollarSign className="h-8 w-8 text-green-500" />
                         <div>
-                          <p className="text-2xl font-bold">₱{analytics.totalValue.toLocaleString()}</p>
-                          <p className="text-sm text-muted-foreground">Inventory Value</p>
+                          <p className="text-2xl font-bold">
+                            ₱{analytics.totalValue.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Inventory Value
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -1685,8 +1776,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                       <div className="flex items-center space-x-2">
                         <AlertTriangle className="h-8 w-8 text-orange-500" />
                         <div>
-                          <p className="text-2xl font-bold">{analytics.lowStockCount}</p>
-                          <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.lowStockCount}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Low Stock Items
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -1697,8 +1792,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                       <div className="flex items-center space-x-2">
                         <TrendingDown className="h-8 w-8 text-red-500" />
                         <div>
-                          <p className="text-2xl font-bold">{analytics.outOfStockCount}</p>
-                          <p className="text-sm text-muted-foreground">Out of Stock</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.outOfStockCount}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Out of Stock
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -1716,7 +1815,10 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   <CardContent>
                     <div className="space-y-4">
                       {analytics.categoryBreakdown.map((cat) => (
-                        <div key={cat.category} className="flex items-center justify-between">
+                        <div
+                          key={cat.category}
+                          className="flex items-center justify-between"
+                        >
                           <div className="flex items-center gap-3">
                             <div
                               className="w-4 h-4 rounded"
@@ -1725,8 +1827,12 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                             <span className="font-medium">{cat.category}</span>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold">{cat.count} products</div>
-                            <div className="text-sm text-muted-foreground">₱{cat.value.toLocaleString()}</div>
+                            <div className="font-bold">
+                              {cat.count} products
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              ₱{cat.value.toLocaleString()}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1757,9 +1863,13 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                           <TableBody>
                             {analytics.lowStockProducts.map((product) => (
                               <TableRow key={product.id}>
-                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell className="font-medium">
+                                  {product.name}
+                                </TableCell>
                                 <TableCell>
-                                  <Badge variant="destructive">{product.currentStock}</Badge>
+                                  <Badge variant="destructive">
+                                    {product.currentStock}
+                                  </Badge>
                                 </TableCell>
                                 <TableCell>{product.minStockLevel}</TableCell>
                                 <TableCell>
@@ -1785,19 +1895,31 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                   <CardContent>
                     <div className="space-y-4">
                       {analytics.topProducts.map((product, index) => (
-                        <div key={product.id} className="flex items-center justify-between">
+                        <div
+                          key={product.id}
+                          className="flex items-center justify-between"
+                        >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
                               {index + 1}
                             </div>
                             <div>
                               <div className="font-medium">{product.name}</div>
-                              <div className="text-sm text-muted-foreground">{product.currentStock} units</div>
+                              <div className="text-sm text-muted-foreground">
+                                {product.currentStock} units
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold">₱{((product.costPrice || 0) * product.currentStock).toLocaleString()}</div>
-                            <div className="text-sm text-muted-foreground">@₱{product.costPrice || 0} each</div>
+                            <div className="font-bold">
+                              ₱
+                              {(
+                                (product.costPrice || 0) * product.currentStock
+                              ).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              @₱{product.costPrice || 0} each
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -2325,17 +2447,24 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       </Dialog>
 
       {/* Add Product Modal */}
-      <Dialog open={showAddProductModal} onOpenChange={(open) => {
-        setShowAddProductModal(open);
-        if (!open) {
-          setEditingProductId(null);
-        }
-      }}>
+      <Dialog
+        open={showAddProductModal}
+        onOpenChange={(open) => {
+          setShowAddProductModal(open);
+          if (!open) {
+            setEditingProductId(null);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingProductId ? "Edit Product" : "Add New Product"}</DialogTitle>
+            <DialogTitle>
+              {editingProductId ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
             <DialogDescription>
-              {editingProductId ? "Update product details" : "Add a new product to your inventory with complete details"}
+              {editingProductId
+                ? "Update product details"
+                : "Add a new product to your inventory with complete details"}
             </DialogDescription>
           </DialogHeader>
 
@@ -2557,13 +2686,18 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
             </div>
 
             <div>
-              <Label htmlFor="specifications">Specifications (JSON format)</Label>
+              <Label htmlFor="specifications">
+                Specifications (JSON format)
+              </Label>
               <Textarea
                 id="specifications"
                 placeholder='{"volume": "500ml", "ph": "7.0"}'
                 value={newProduct.specifications}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, specifications: e.target.value })
+                  setNewProduct({
+                    ...newProduct,
+                    specifications: e.target.value,
+                  })
                 }
               />
             </div>
@@ -2584,7 +2718,10 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
       </Dialog>
 
       {/* Add Supplier Modal */}
-      <Dialog open={showAddSupplierModal} onOpenChange={setShowAddSupplierModal}>
+      <Dialog
+        open={showAddSupplierModal}
+        onOpenChange={setShowAddSupplierModal}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Add New Supplier</DialogTitle>
@@ -2613,7 +2750,10 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
                 placeholder="John Smith"
                 value={newSupplier.contactPerson}
                 onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
+                  setNewSupplier({
+                    ...newSupplier,
+                    contactPerson: e.target.value,
+                  })
                 }
               />
             </div>
@@ -2688,9 +2828,7 @@ Init: ${JSON.stringify(debugResult.initResults, null, 2)}
             >
               Cancel
             </Button>
-            <Button onClick={handleAddSupplier}>
-              Add Supplier
-            </Button>
+            <Button onClick={handleAddSupplier}>Add Supplier</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

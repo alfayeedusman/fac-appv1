@@ -21,7 +21,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import VoucherSuccessModal from "@/components/VoucherSuccessModal";
 import QRScanner from "@/components/QRScanner";
 import { useQRScanner } from "@/hooks/useQRScanner";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { useNavigate } from "react-router-dom";
 
 interface Voucher {
@@ -58,7 +58,7 @@ export default function Voucher() {
   useEffect(() => {
     const loadVouchers = async () => {
       setLoadingVouchers(true);
-      const result = await neonDbClient.getVouchers({
+      const result = await supabaseDbClient.getVouchers({
         audience: "registered",
         status: "active",
       });

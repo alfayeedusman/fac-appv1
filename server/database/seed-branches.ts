@@ -3,13 +3,12 @@ import { getDatabase } from "./connection";
 import * as schema from "./schema";
 
 export async function seedBranches() {
-  const db = getDatabase();
-  if (!db) {
-    console.error("❌ Database not connected");
-    return;
-  }
-
   try {
+    const db = await getDatabase();
+    if (!db) {
+      console.warn("⚠️ Database not connected, skipping branch seeding");
+      return;
+    }
     console.log("🏪 Seeding branch data...");
 
     // Check if branches already exist
@@ -121,12 +120,17 @@ export async function seedBranches() {
     // Now seed some users for these branches
     await seedBranchUsers(db, insertedBranches);
   } catch (error) {
-    console.error("❌ Error seeding branches:", error);
-    throw error;
+    console.warn("⚠️ Error seeding branches (non-critical):", error);
+    // Don't throw, just warn - database might be unavailable
   }
 }
 
 async function seedBranchUsers(db: any, branches: any[]) {
+  if (!db) {
+    console.warn("⚠️ Database not connected, skipping user seeding");
+    return;
+  }
+
   try {
     console.log("👥 Seeding users for branches...");
 

@@ -45,7 +45,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 
 interface Branch {
@@ -132,7 +132,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       setLoading(true);
       console.log("🏪 Loading branches from database...");
 
-      const result = await neonDbClient.getBranches();
+      const result = await supabaseDbClient.getBranches();
       console.log("✅ Branches loaded:", result);
 
       if (result.success && result.branches) {
@@ -237,7 +237,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
     if (newBranch.name && newBranch.address && newBranch.username) {
       try {
         // Call backend API to create branch
-        const result = await neonDbClient.createBranch({
+        const result = await supabaseDbClient.createBranch({
           name: newBranch.name,
           code: newBranch.username.toLowerCase().replace(/\s+/g, "_"),
           address: newBranch.address,
@@ -340,7 +340,7 @@ export default function BranchManagement({ userRole }: BranchManagementProps) {
       )
     ) {
       try {
-        const result = await neonDbClient.deleteBranch(branchId);
+        const result = await supabaseDbClient.deleteBranch(branchId);
 
         if (result.success) {
           setBranches((prev) =>

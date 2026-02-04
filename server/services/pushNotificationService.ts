@@ -1,39 +1,48 @@
-import admin from 'firebase-admin';
-import { neonDbService } from './neonDatabaseService';
-import * as schema from '../database/schema';
-import { eq, inArray, and } from 'drizzle-orm';
-import { createId } from '@paralleldrive/cuid2';
+import admin from "firebase-admin";
+import { supabaseDbService } from "./supabaseDatabaseService";
+import * as schema from "../database/schema";
+import { eq, inArray, and } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
   // Only attempt init if required env vars are present
-  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+  if (
+    process.env.FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY
+  ) {
     try {
       const serviceAccount = {
         type: "service_account",
         project_id: process.env.FIREBASE_PROJECT_ID,
         private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-        private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
         client_id: process.env.FIREBASE_CLIENT_ID,
         auth_uri: "https://accounts.google.com/o/oauth2/auth",
         token_uri: "https://oauth2.googleapis.com/token",
-        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        auth_provider_x509_cert_url:
+          "https://www.googleapis.com/oauth2/v1/certs",
         client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
       };
 
       admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+        credential: admin.credential.cert(
+          serviceAccount as admin.ServiceAccount,
+        ),
         projectId: process.env.FIREBASE_PROJECT_ID,
       });
 
-      console.log('✅ Firebase Admin SDK initialized successfully');
+      console.log("✅ Firebase Admin SDK initialized successfully");
     } catch (error) {
-      console.error('❌ Failed to initialize Firebase Admin SDK:', error);
-      console.log('🔧 Using mock push notification service for development');
+      console.error("❌ Failed to initialize Firebase Admin SDK:", error);
+      console.log("🔧 Using mock push notification service for development");
     }
   } else {
-    console.log('🔧 Firebase Admin SDK not configured - using mock push service');
+    console.log(
+      "🔧 Firebase Admin SDK not configured - using mock push service",
+    );
   }
 }
 
@@ -50,7 +59,7 @@ export interface PushNotificationPayload {
 }
 
 export interface NotificationTarget {
-  type: 'user' | 'users' | 'role' | 'all' | 'topic';
+  type: "user" | "users" | "role" | "all" | "topic";
   values?: string[]; // User IDs, role names, or topic names
 }
 
@@ -87,9 +96,9 @@ export class PushNotificationService {
     notificationTypes?: string[];
   }): Promise<boolean> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
-        throw new Error('Database not initialized');
+        throw new Error("Database not initialized");
       }
 
       // Check if token already exists
@@ -105,39 +114,47 @@ export class PushNotificationService {
           .update(schema.fcmTokens)
           .set({
             userId: tokenData.userId,
-            deviceType: tokenData.deviceType || 'web',
+            deviceType: tokenData.deviceType || "web",
             browserInfo: tokenData.browserInfo,
             deviceName: tokenData.deviceName,
-            notificationTypes: tokenData.notificationTypes || ['booking_updates', 'loyalty_updates', 'system'],
+            notificationTypes: tokenData.notificationTypes || [
+              "booking_updates",
+              "loyalty_updates",
+              "system",
+            ],
             isActive: true,
             lastUsed: new Date(),
             updatedAt: new Date(),
           })
           .where(eq(schema.fcmTokens.token, tokenData.token));
 
-        console.log('✅ FCM token updated successfully');
+        console.log("✅ FCM token updated successfully");
       } else {
         // Insert new token
-        await neonDbService.db.insert(schema.fcmTokens).values({
+        await supabaseDbService.db.insert(schema.fcmTokens).values({
           id: createId(),
           token: tokenData.token,
           userId: tokenData.userId,
-          deviceType: tokenData.deviceType || 'web',
+          deviceType: tokenData.deviceType || "web",
           browserInfo: tokenData.browserInfo,
           deviceName: tokenData.deviceName,
-          notificationTypes: tokenData.notificationTypes || ['booking_updates', 'loyalty_updates', 'system'],
+          notificationTypes: tokenData.notificationTypes || [
+            "booking_updates",
+            "loyalty_updates",
+            "system",
+          ],
           isActive: true,
           lastUsed: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
         });
 
-        console.log('✅ FCM token registered successfully');
+        console.log("✅ FCM token registered successfully");
       }
 
       return true;
     } catch (error) {
-      console.error('❌ Failed to register FCM token:', error);
+      console.error("❌ Failed to register FCM token:", error);
       return false;
     }
   }
@@ -147,9 +164,9 @@ export class PushNotificationService {
    */
   async unregisterToken(token: string, userId?: string): Promise<boolean> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
-        throw new Error('Database not initialized');
+        throw new Error("Database not initialized");
       }
 
       const conditions = [eq(schema.fcmTokens.token, token)];
@@ -165,10 +182,10 @@ export class PushNotificationService {
         })
         .where(and(...conditions));
 
-      console.log('✅ FCM token unregistered successfully');
+      console.log("✅ FCM token unregistered successfully");
       return true;
     } catch (error) {
-      console.error('❌ Failed to unregister FCM token:', error);
+      console.error("❌ Failed to unregister FCM token:", error);
       return false;
     }
   }
@@ -176,18 +193,20 @@ export class PushNotificationService {
   /**
    * Get FCM tokens for target users
    */
-  private async getTargetTokens(target: NotificationTarget): Promise<Array<{ token: string; userId?: string; id: string }>> {
+  private async getTargetTokens(
+    target: NotificationTarget,
+  ): Promise<Array<{ token: string; userId?: string; id: string }>> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
-        console.error('Database not initialized for getTargetTokens');
+        console.error("Database not initialized for getTargetTokens");
         return [];
       }
 
       let tokens: Array<{ token: string; userId?: string; id: string }> = [];
 
       switch (target.type) {
-        case 'user':
+        case "user":
           if (target.values && target.values.length > 0) {
             const userTokens = await db
               .select({
@@ -199,14 +218,14 @@ export class PushNotificationService {
               .where(
                 and(
                   eq(schema.fcmTokens.userId, target.values[0]),
-                  eq(schema.fcmTokens.isActive, true)
-                )
+                  eq(schema.fcmTokens.isActive, true),
+                ),
               );
             tokens = userTokens;
           }
           break;
 
-        case 'users':
+        case "users":
           if (target.values && target.values.length > 0) {
             const userTokens = await db
               .select({
@@ -218,14 +237,14 @@ export class PushNotificationService {
               .where(
                 and(
                   inArray(schema.fcmTokens.userId, target.values),
-                  eq(schema.fcmTokens.isActive, true)
-                )
+                  eq(schema.fcmTokens.isActive, true),
+                ),
               );
             tokens = userTokens;
           }
           break;
 
-        case 'role':
+        case "role":
           // This would require joining with users table to filter by role
           // For now, we'll implement a basic version
           const allTokens = await db
@@ -239,7 +258,7 @@ export class PushNotificationService {
           tokens = allTokens;
           break;
 
-        case 'all':
+        case "all":
           const allActiveTokens = await db
             .select({
               token: schema.fcmTokens.token,
@@ -252,12 +271,12 @@ export class PushNotificationService {
           break;
 
         default:
-          console.warn('Unknown target type:', target.type);
+          console.warn("Unknown target type:", target.type);
       }
 
       return tokens;
     } catch (error) {
-      console.error('❌ Failed to get target tokens:', error);
+      console.error("❌ Failed to get target tokens:", error);
       return [];
     }
   }
@@ -277,7 +296,7 @@ export class PushNotificationService {
       const targetTokens = await this.getTargetTokens(options.target);
 
       if (targetTokens.length === 0) {
-        console.warn('⚠️ No target tokens found for notification');
+        console.warn("⚠️ No target tokens found for notification");
         return {
           success: false,
           totalTargets: 0,
@@ -288,7 +307,7 @@ export class PushNotificationService {
 
       // Create notification record
       const notificationId = createId();
-      await neonDbService.db.insert(schema.pushNotifications).values({
+      await supabaseDbService.db.insert(schema.pushNotifications).values({
         id: notificationId,
         title: options.payload.title,
         body: options.payload.body,
@@ -298,7 +317,7 @@ export class PushNotificationService {
         notificationType: options.notificationType,
         data: options.payload.data,
         totalTargets: targetTokens.length,
-        status: 'sending',
+        status: "sending",
         scheduledFor: options.scheduledFor,
         createdBy: options.createdBy,
         campaign: options.campaign,
@@ -311,25 +330,27 @@ export class PushNotificationService {
 
       // Check if Firebase Admin is properly initialized
       if (!admin.apps.length) {
-        console.warn('🔧 Firebase Admin not initialized, using mock delivery');
+        console.warn("🔧 Firebase Admin not initialized, using mock delivery");
         successfulDeliveries = targetTokens.length;
-        
+
         // Create mock delivery records
         for (const tokenData of targetTokens) {
-          await neonDbService.db.insert(schema.notificationDeliveries).values({
-            id: createId(),
-            notificationId,
-            fcmTokenId: tokenData.id,
-            userId: tokenData.userId,
-            status: 'sent',
-            deliveredAt: new Date(),
-            createdAt: new Date(),
-          });
+          await supabaseDbService.db
+            .insert(schema.notificationDeliveries)
+            .values({
+              id: createId(),
+              notificationId,
+              fcmTokenId: tokenData.id,
+              userId: tokenData.userId,
+              status: "sent",
+              deliveredAt: new Date(),
+              createdAt: new Date(),
+            });
         }
       } else {
         // Prepare Firebase message
         const firebasePayload: admin.messaging.MulticastMessage = {
-          tokens: targetTokens.map(t => t.token),
+          tokens: targetTokens.map((t) => t.token),
           notification: {
             title: options.payload.title,
             body: options.payload.body,
@@ -338,39 +359,41 @@ export class PushNotificationService {
           data: {
             type: options.notificationType,
             notificationId: notificationId,
-            clickAction: options.payload.clickAction || '',
+            clickAction: options.payload.clickAction || "",
             ...options.payload.data,
           },
           webpush: {
             notification: {
               title: options.payload.title,
               body: options.payload.body,
-              icon: options.payload.icon || '/favicon.ico',
-              badge: options.payload.badge || '/favicon.ico',
+              icon: options.payload.icon || "/favicon.ico",
+              badge: options.payload.badge || "/favicon.ico",
               image: options.payload.imageUrl,
-              tag: options.payload.tag || 'default',
+              tag: options.payload.tag || "default",
               requireInteraction: true,
               actions: [
                 {
-                  action: 'view',
-                  title: 'View',
+                  action: "view",
+                  title: "View",
                 },
                 {
-                  action: 'dismiss',
-                  title: 'Dismiss',
-                }
+                  action: "dismiss",
+                  title: "Dismiss",
+                },
               ],
             },
             fcmOptions: {
-              link: options.payload.clickAction || '/',
+              link: options.payload.clickAction || "/",
             },
           },
         };
 
         // Send notification via Firebase
         try {
-          const response = await admin.messaging().sendEachForMulticast(firebasePayload);
-          
+          const response = await admin
+            .messaging()
+            .sendEachForMulticast(firebasePayload);
+
           // Process results
           for (let i = 0; i < response.responses.length; i++) {
             const result = response.responses[i];
@@ -378,42 +401,51 @@ export class PushNotificationService {
 
             if (result.success) {
               successfulDeliveries++;
-              
+
               // Record successful delivery
-              await neonDbService.db.insert(schema.notificationDeliveries).values({
-                id: createId(),
-                notificationId,
-                fcmTokenId: tokenData.id,
-                userId: tokenData.userId,
-                status: 'sent',
-                deliveredAt: new Date(),
-                createdAt: new Date(),
-              });
+              await supabaseDbService.db
+                .insert(schema.notificationDeliveries)
+                .values({
+                  id: createId(),
+                  notificationId,
+                  fcmTokenId: tokenData.id,
+                  userId: tokenData.userId,
+                  status: "sent",
+                  deliveredAt: new Date(),
+                  createdAt: new Date(),
+                });
             } else {
               failedDeliveries++;
-              
+
               // Record failed delivery
-              await neonDbService.db.insert(schema.notificationDeliveries).values({
-                id: createId(),
-                notificationId,
-                fcmTokenId: tokenData.id,
-                userId: tokenData.userId,
-                status: 'failed',
-                errorMessage: result.error?.message || 'Unknown error',
-                createdAt: new Date(),
-              });
+              await supabaseDbService.db
+                .insert(schema.notificationDeliveries)
+                .values({
+                  id: createId(),
+                  notificationId,
+                  fcmTokenId: tokenData.id,
+                  userId: tokenData.userId,
+                  status: "failed",
+                  errorMessage: result.error?.message || "Unknown error",
+                  createdAt: new Date(),
+                });
 
               // Handle token errors (invalid, expired, etc.)
-              if (result.error?.code === 'messaging/invalid-registration-token' ||
-                  result.error?.code === 'messaging/registration-token-not-registered') {
+              if (
+                result.error?.code === "messaging/invalid-registration-token" ||
+                result.error?.code ===
+                  "messaging/registration-token-not-registered"
+              ) {
                 await this.unregisterToken(tokenData.token);
               }
             }
           }
 
-          console.log(`📤 Notification sent: ${successfulDeliveries}/${targetTokens.length} successful`);
+          console.log(
+            `📤 Notification sent: ${successfulDeliveries}/${targetTokens.length} successful`,
+          );
         } catch (error) {
-          console.error('❌ Failed to send notification via Firebase:', error);
+          console.error("❌ Failed to send notification via Firebase:", error);
           failedDeliveries = targetTokens.length;
         }
       }
@@ -422,7 +454,7 @@ export class PushNotificationService {
       await db
         .update(schema.pushNotifications)
         .set({
-          status: failedDeliveries === targetTokens.length ? 'failed' : 'sent',
+          status: failedDeliveries === targetTokens.length ? "failed" : "sent",
           successfulDeliveries,
           failedDeliveries,
           sentAt: new Date(),
@@ -438,7 +470,7 @@ export class PushNotificationService {
         failedDeliveries,
       };
     } catch (error) {
-      console.error('❌ Failed to send push notification:', error);
+      console.error("❌ Failed to send push notification:", error);
       return {
         success: false,
         totalTargets: 0,
@@ -451,22 +483,27 @@ export class PushNotificationService {
   /**
    * Send booking update notification
    */
-  async sendBookingUpdateNotification(bookingId: string, userId: string, status: string, message: string): Promise<boolean> {
+  async sendBookingUpdateNotification(
+    bookingId: string,
+    userId: string,
+    status: string,
+    message: string,
+  ): Promise<boolean> {
     const result = await this.sendNotification({
-      target: { type: 'user', values: [userId] },
+      target: { type: "user", values: [userId] },
       payload: {
-        title: 'Booking Update',
+        title: "Booking Update",
         body: message,
-        icon: '/favicon.ico',
+        icon: "/favicon.ico",
         data: {
           bookingId,
           status,
           url: `/booking/${bookingId}`,
         },
         clickAction: `/booking/${bookingId}`,
-        tag: 'booking_update',
+        tag: "booking_update",
       },
-      notificationType: 'booking_update',
+      notificationType: "booking_update",
     });
 
     return result.success;
@@ -475,22 +512,27 @@ export class PushNotificationService {
   /**
    * Send loyalty points update notification
    */
-  async sendLoyaltyUpdateNotification(userId: string, points: number, transactionType: string, message: string): Promise<boolean> {
+  async sendLoyaltyUpdateNotification(
+    userId: string,
+    points: number,
+    transactionType: string,
+    message: string,
+  ): Promise<boolean> {
     const result = await this.sendNotification({
-      target: { type: 'user', values: [userId] },
+      target: { type: "user", values: [userId] },
       payload: {
-        title: 'Loyalty Points Update',
+        title: "Loyalty Points Update",
         body: message,
-        icon: '/favicon.ico',
+        icon: "/favicon.ico",
         data: {
           points: points.toString(),
           transactionType,
-          url: '/dashboard?tab=loyalty',
+          url: "/dashboard?tab=loyalty",
         },
-        clickAction: '/dashboard?tab=loyalty',
-        tag: 'loyalty_update',
+        clickAction: "/dashboard?tab=loyalty",
+        tag: "loyalty_update",
       },
-      notificationType: 'loyalty_update',
+      notificationType: "loyalty_update",
     });
 
     return result.success;
@@ -499,23 +541,28 @@ export class PushNotificationService {
   /**
    * Send achievement unlocked notification
    */
-  async sendAchievementNotification(userId: string, achievementId: string, achievementName: string, points: number): Promise<boolean> {
+  async sendAchievementNotification(
+    userId: string,
+    achievementId: string,
+    achievementName: string,
+    points: number,
+  ): Promise<boolean> {
     const result = await this.sendNotification({
-      target: { type: 'user', values: [userId] },
+      target: { type: "user", values: [userId] },
       payload: {
-        title: '🏆 Achievement Unlocked!',
+        title: "🏆 Achievement Unlocked!",
         body: `You've earned "${achievementName}" (+${points} points)`,
-        icon: '/favicon.ico',
+        icon: "/favicon.ico",
         data: {
           achievementId,
           achievementName,
           points: points.toString(),
-          url: '/dashboard?tab=achievements',
+          url: "/dashboard?tab=achievements",
         },
-        clickAction: '/dashboard?tab=achievements',
-        tag: 'achievement',
+        clickAction: "/dashboard?tab=achievements",
+        tag: "achievement",
       },
-      notificationType: 'achievement_unlocked',
+      notificationType: "achievement_unlocked",
     });
 
     return result.success;
@@ -524,20 +571,24 @@ export class PushNotificationService {
   /**
    * Send system notification to all users
    */
-  async sendSystemNotification(title: string, message: string, clickAction?: string): Promise<boolean> {
+  async sendSystemNotification(
+    title: string,
+    message: string,
+    clickAction?: string,
+  ): Promise<boolean> {
     const result = await this.sendNotification({
-      target: { type: 'all' },
+      target: { type: "all" },
       payload: {
         title,
         body: message,
-        icon: '/favicon.ico',
+        icon: "/favicon.ico",
         data: {
-          url: clickAction || '/dashboard',
+          url: clickAction || "/dashboard",
         },
-        clickAction: clickAction || '/dashboard',
-        tag: 'system',
+        clickAction: clickAction || "/dashboard",
+        tag: "system",
       },
-      notificationType: 'system_notification',
+      notificationType: "system_notification",
     });
 
     return result.success;
@@ -546,26 +597,31 @@ export class PushNotificationService {
   /**
    * Track notification interaction (click, dismiss)
    */
-  async trackNotificationInteraction(notificationId: string, action: 'clicked' | 'dismissed'): Promise<boolean> {
+  async trackNotificationInteraction(
+    notificationId: string,
+    action: "clicked" | "dismissed",
+  ): Promise<boolean> {
     try {
       const updateData: any = { updatedAt: new Date() };
-      
-      if (action === 'clicked') {
+
+      if (action === "clicked") {
         updateData.clickedAt = new Date();
-        updateData.status = 'clicked';
-      } else if (action === 'dismissed') {
+        updateData.status = "clicked";
+      } else if (action === "dismissed") {
         updateData.dismissedAt = new Date();
-        updateData.status = 'dismissed';
+        updateData.status = "dismissed";
       }
 
       await db
         .update(schema.notificationDeliveries)
         .set(updateData)
-        .where(eq(schema.notificationDeliveries.notificationId, notificationId));
+        .where(
+          eq(schema.notificationDeliveries.notificationId, notificationId),
+        );
 
       return true;
     } catch (error) {
-      console.error('❌ Failed to track notification interaction:', error);
+      console.error("❌ Failed to track notification interaction:", error);
       return false;
     }
   }

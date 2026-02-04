@@ -1,7 +1,10 @@
-import { neonDbClient } from "./neonDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
+<<<<<<< HEAD
 import LocalStorageSyncService from "./localStorageSyncService";
+=======
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
+>>>>>>> ai_main_eac8da03b891
 
 export interface LoginCredentials {
   email: string;
@@ -22,6 +25,7 @@ export interface RegisterData {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   carUnit?: string;
   carPlateNumber?: string;
@@ -104,7 +108,7 @@ class AuthService {
       await initializeDatabase();
       console.log("✅ Database ready, proceeding with login");
 
-      const result = await neonDbClient.login(
+      const result = await supabaseDbClient.login(
         credentials.email,
         credentials.password,
       );
@@ -190,7 +194,7 @@ class AuthService {
         subscriptionStatus: "free" as const,
       };
 
-      const result = await neonDbClient.register(registrationData);
+      const result = await supabaseDbClient.register(registrationData);
 
       if (result.success) {
         toast({
@@ -222,7 +226,7 @@ class AuthService {
     // Call server to invalidate session token if present
     const sessionToken = localStorage.getItem("sessionToken");
     if (sessionToken) {
-      fetch("/api/neon/auth/logout", {
+      fetch("/api/supabase/auth/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +261,7 @@ class AuthService {
 
   async checkDatabaseConnection(): Promise<boolean> {
     try {
-      const result = await neonDbClient.testConnection();
+      const result = await supabaseDbClient.testConnection();
       return result.connected;
     } catch (error) {
       console.error("Database connection check failed:", error);

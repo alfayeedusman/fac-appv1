@@ -2,7 +2,7 @@
 
 /**
  * Database Initialization Script
- * Runs migrations and seeds the Neon database
+ * Runs migrations and seeds the Supabase database
  */
 
 const path = require("path");
@@ -17,11 +17,11 @@ async function main() {
   console.log("🚀 Starting database initialization...\n");
 
   try {
-    // Check if DATABASE_URL is set
-    const dbUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+    // Check if SUPABASE_DATABASE_URL is set
+    const dbUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
     if (!dbUrl) {
       throw new Error(
-        "DATABASE_URL or NEON_DATABASE_URL environment variable is not set",
+        "SUPABASE_DATABASE_URL or DATABASE_URL environment variable is not set",
       );
     }
 

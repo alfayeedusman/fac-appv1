@@ -52,8 +52,66 @@ export const crewMembers = pgTable("crew_members", {
   emergencyContactName: varchar("emergency_contact_name", { length: 100 }),
   emergencyContactPhone: varchar("emergency_contact_phone", { length: 20 }),
   notes: text("notes"),
+  washBay: varchar("wash_bay", { length: 50 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Crew commission rates (by service type)
+export const crewCommissionRates = pgTable("crew_commission_rates", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  serviceType: varchar("service_type", { length: 255 }).notNull(),
+  rate: decimal("rate", { precision: 5, scale: 2 }).notNull().default("0.00"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Manual crew commission entries
+export const crewCommissionEntries = pgTable("crew_commission_entries", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  crewUserId: text("crew_user_id").notNull(),
+  entryDate: timestamp("entry_date").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  notes: text("notes"),
+  recordedBy: text("recorded_by").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  payoutId: text("payout_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Crew payout history
+export const crewPayouts = pgTable("crew_payouts", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  crewUserId: text("crew_user_id").notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  createdBy: text("created_by").notNull(),
+  releasedAt: timestamp("released_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Daily income entries (admin/manager input)
+export const dailyIncome = pgTable("daily_income", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  branch: varchar("branch", { length: 255 }).notNull(),
+  incomeDate: timestamp("income_date").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  recordedBy: text("recorded_by").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Real-time Crew Locations table
@@ -117,8 +175,8 @@ export const users = pgTable("users", {
     .$defaultFn(() => createId()),
   email: varchar("email", { length: 255 }).notNull().unique(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }).notNull(), // Should be hashed
-  role: varchar("role", { length: 50 }).notNull().default("user"), // 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'crew'
+  password: text("password").notNull(), // Bcrypt hash (60+ characters)
+  role: varchar("role", { length: 50 }).notNull().default("user"), // 'user' | 'admin' | 'superadmin' | 'cashier' | 'inventory_manager' | 'manager' | 'dispatcher' | 'crew'
   contactNumber: varchar("contact_number", { length: 20 }),
   address: text("address"),
   defaultAddress: text("default_address"), // For home service bookings
@@ -554,6 +612,11 @@ export const customerLevels = pgTable("customer_levels", {
   badgeIcon: varchar("badge_icon", { length: 100 }),
   badgeColor: varchar("badge_color", { length: 50 }).default("#6B7280"),
   levelColor: varchar("level_color", { length: 50 }).default("#F97316"),
+  gradient: varchar("gradient", { length: 100 }).default(
+    "from-gray-400 to-gray-600",
+  ),
+  badgeShape: varchar("badge_shape", { length: 20 }).default("circle"),
+  badgePattern: varchar("badge_pattern", { length: 20 }).default("solid"),
 
   isActive: boolean("is_active").default(true),
   sortOrder: integer("sort_order").default(0),

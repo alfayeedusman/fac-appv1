@@ -29,6 +29,7 @@ import BookingManagement from "./pages/BookingManagement";
 import BookingSuccess from "./pages/BookingSuccess";
 import BookingFailed from "./pages/BookingFailed";
 import ManageSubscription from "./pages/ManageSubscription";
+import BookingHub from "./components/BookingHub";
 import NotificationSettings from "./pages/NotificationSettings";
 import NotificationHistory from "./pages/NotificationHistory";
 import Settings from "./pages/Settings";
@@ -63,7 +64,7 @@ import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import SystemDiagnostics from "./pages/SystemDiagnostics";
-import { neonDbClient } from "./services/neonDatabaseService";
+import { supabaseDbClient } from "./services/supabaseDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
 import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
 
@@ -74,21 +75,21 @@ const queryClient = new QueryClient();
 
 const AppComponent = () => {
   useEffect(() => {
-    // Test Neon database connection on app startup (avoid triggering heavy migrations)
-    const testNeonDB = async () => {
+    // Test Supabase database connection on app startup (avoid triggering heavy migrations)
+    const testSupabaseDB = async () => {
       try {
-        const result = await neonDbClient.testConnection();
+        const result = await supabaseDbClient.testConnection();
         if (result.connected) {
-          console.log("✅ Neon database available");
+          console.log("✅ Supabase database available");
         } else {
-          console.warn("⚠️ Neon database not connected");
+          console.warn("⚠️ Supabase database not connected");
         }
       } catch (error) {
-        console.error("❌ Error during Neon database test:", error);
+        console.error("❌ Error during Supabase database test:", error);
       }
     };
 
-    testNeonDB();
+    testSupabaseDB();
   }, []);
 
   return (
@@ -369,6 +370,27 @@ const AppComponent = () => {
                   element={
                     <ProtectedRoute requiredRole="manager">
                       <ManagerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dispatcher-dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="dispatcher">
+                      <div className="min-h-screen bg-background p-6">
+                        <div className="max-w-6xl mx-auto space-y-6">
+                          <div>
+                            <h1 className="text-3xl font-bold text-foreground">
+                              Dispatcher Console
+                            </h1>
+                            <p className="text-muted-foreground">
+                              Monitor bookings, assign bays/crew, and track
+                              payments in real time.
+                            </p>
+                          </div>
+                          <BookingHub />
+                        </div>
+                      </div>
                     </ProtectedRoute>
                   }
                 />

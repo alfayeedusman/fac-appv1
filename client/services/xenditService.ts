@@ -66,30 +66,34 @@ class XenditService {
       log("💳 Creating Xendit invoice...", params);
 
       // Create invoice via backend API
-      const response = await fetch("/api/neon/payment/xendit/create-invoice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          external_id: params.externalId,
-          amount: params.amount,
-          payer_email: params.customerEmail,
-          description: params.description,
-          customer: {
-            given_names: params.customerName,
-            email: params.customerEmail,
+      const response = await fetch(
+        "/api/supabase/payment/xendit/create-invoice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          success_redirect_url:
-            params.successRedirectUrl ||
-            window.location.origin + "/booking-success",
-          failure_redirect_url:
-            params.failureRedirectUrl ||
-            window.location.origin + "/booking-failed",
-          preferred_payment_method: params.preferredPaymentMethod || undefined,
-        }),
-        signal: ac.signal,
-      });
+          body: JSON.stringify({
+            external_id: params.externalId,
+            amount: params.amount,
+            payer_email: params.customerEmail,
+            description: params.description,
+            customer: {
+              given_names: params.customerName,
+              email: params.customerEmail,
+            },
+            success_redirect_url:
+              params.successRedirectUrl ||
+              window.location.origin + "/booking-success",
+            failure_redirect_url:
+              params.failureRedirectUrl ||
+              window.location.origin + "/booking-failed",
+            preferred_payment_method:
+              params.preferredPaymentMethod || undefined,
+          }),
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(timeout);
       log("📡 Xendit API response status:", response.status);
@@ -207,7 +211,7 @@ class XenditService {
 
     try {
       // Charge card via backend API
-      const response = await fetch("/api/neon/payment/xendit/charge", {
+      const response = await fetch("/api/supabase/payment/xendit/charge", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -260,7 +264,7 @@ class XenditService {
       log("📅 Creating recurring billing plan...", params);
 
       const response = await fetch(
-        "/api/neon/payment/xendit/create-subscription",
+        "/api/supabase/payment/xendit/create-subscription",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -303,7 +307,7 @@ class XenditService {
       log("💳 Processing subscription renewal...", params);
 
       const response = await fetch(
-        "/api/neon/payment/xendit/renew-subscription",
+        "/api/supabase/payment/xendit/renew-subscription",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

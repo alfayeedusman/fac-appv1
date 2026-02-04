@@ -40,7 +40,7 @@ import {
   TrendingUpIcon,
   AlertCircle,
 } from "lucide-react";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { log, warn, error as logError } from "@/utils/logger";
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
@@ -117,6 +117,8 @@ export default function CustomerHub() {
   );
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("premium");
+  const [availablePackages, setAvailablePackages] = useState<any[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(false);
 
   // Open subscription modal with proper initialization
   const openUpgradeModal = (customer: CustomerData) => {
@@ -138,8 +140,33 @@ export default function CustomerHub() {
 
   const PAGINATION_OPTIONS = [5, 10, 25, 50, 100];
 
+  // Load service packages from Package Studio
+  const loadPackages = async () => {
+    try {
+      setPackagesLoading(true);
+      const response = await fetch("/api/supabase/packages");
+      const data = await response.json();
+      if (data.success && Array.isArray(data.packages)) {
+        console.log(
+          "✅ Packages loaded from Package Studio:",
+          data.packages.length,
+        );
+        setAvailablePackages(data.packages);
+      } else {
+        console.warn("⚠️ Failed to load packages:", data);
+        setAvailablePackages([]);
+      }
+    } catch (error) {
+      console.error("❌ Error loading packages:", error);
+      setAvailablePackages([]);
+    } finally {
+      setPackagesLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadCustomers();
+    loadPackages();
   }, []);
 
   useEffect(() => {
@@ -167,8 +194,8 @@ export default function CustomerHub() {
 
       // Fetch customers AND bookings in parallel (only once each!)
       const [customersResult, bookingsResult] = await Promise.all([
-        neonDbClient.getCustomers(),
-        neonDbClient.getBookings({
+        supabaseDbClient.getCustomers(),
+        supabaseDbClient.getBookings({
           userRole: localStorage.getItem("userRole") || "admin",
           userEmail: localStorage.getItem("userEmail") || "",
         }),
@@ -437,6 +464,7 @@ export default function CustomerHub() {
   const handleSubscriptionUpgrade = async () => {
     if (!selectedCustomer) return;
 
+<<<<<<< HEAD
     // Validate that we're actually upgrading
     if (selectedPlan === selectedCustomer.subscriptionStatus) {
       toast({
@@ -467,6 +495,39 @@ export default function CustomerHub() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to update subscription");
+=======
+    try {
+      // Get the selected package details
+      const selectedPackage = availablePackages.find(
+        (p) => p.id === selectedPlan,
+      );
+      if (!selectedPackage) {
+        toast({
+          title: "Error",
+          description: "Please select a valid package",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Call the backend to create subscription upgrade
+      const response = await supabaseDbClient.createSubscriptionUpgrade({
+        userId: selectedCustomer.id,
+        email: selectedCustomer.email,
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        finalPrice: parseInt(selectedPackage.base_price) || 0,
+        paymentMethod: "admin_assignment",
+      });
+
+      if (!response.success) {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to upgrade subscription",
+          variant: "destructive",
+        });
+        return;
+>>>>>>> ai_main_eac8da03b891
       }
 
       // Play notification sound
@@ -475,19 +536,32 @@ export default function CustomerHub() {
       // Show success toast
       toast({
         title: "✨ Upgrade Successful!",
+<<<<<<< HEAD
         description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
+=======
+        description: `${selectedCustomer.fullName} upgraded to ${selectedPackage.name} plan! 🔔`,
+>>>>>>> ai_main_eac8da03b891
       });
 
       // Update customer in list
       const updatedCustomers = customers.map((c) =>
         c.id === selectedCustomer.id
+<<<<<<< HEAD
           ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
+=======
+          ? {
+              ...c,
+              subscriptionStatus: selectedPackage.name.toLowerCase(),
+              lifecycle: "upgraded",
+            }
+>>>>>>> ai_main_eac8da03b891
           : c,
       );
       setCustomers(updatedCustomers);
       setIsSubscriptionModalOpen(false);
       setSelectedCustomer(null);
     } catch (error) {
+<<<<<<< HEAD
       logError(
         "❌ Subscription upgrade failed:",
         error instanceof Error ? error.message : String(error),
@@ -498,6 +572,13 @@ export default function CustomerHub() {
           error instanceof Error
             ? error.message
             : "Failed to upgrade subscription. Please try again.",
+=======
+      console.error("Error upgrading subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process upgrade",
+        variant: "destructive",
+>>>>>>> ai_main_eac8da03b891
       });
     }
   };
@@ -1085,79 +1166,63 @@ export default function CustomerHub() {
                 </p>
               </div>
 
-              {/* Plan Options */}
+              {/* Plan Options - From Package Studio */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  {
-                    id: "basic",
-                    name: "Basic",
-                    price: "₱500/month",
-                    features: [
-                      "5 free washes/month",
-                      "Priority booking",
-                      "Email support",
-                    ],
-                    icon: <TrendingUp className="h-6 w-6" />,
-                  },
-                  {
-                    id: "premium",
-                    name: "Premium",
-                    price: "₱1,500/month",
-                    features: [
-                      "Unlimited washes",
-                      "VIP lounge access",
-                      "Phone support",
-                      "Free detailing",
-                    ],
-                    icon: <Crown className="h-6 w-6" />,
-                    popular: true,
-                  },
-                  {
-                    id: "vip",
-                    name: "VIP",
-                    price: "₱3,000/month",
-                    features: [
-                      "Everything in Premium",
-                      "24/7 concierge",
-                      "Free premium detailing",
-                      "Priority scheduling",
-                    ],
-                    icon: <Star className="h-6 w-6 text-yellow-500" />,
-                  },
-                ].map((plan) => (
-                  <div
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPlan === plan.id
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    } ${plan.popular ? "ring-2 ring-orange-200" : ""}`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-bold text-foreground">{plan.name}</h4>
-                      {plan.popular && (
-                        <Badge className="bg-orange-500 text-white">
-                          Popular
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-lg font-bold text-orange-600 mb-3">
-                      {plan.price}
-                    </p>
-                    <ul className="space-y-2 text-sm">
-                      {plan.features.map((feature, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start gap-2 text-muted-foreground"
-                        >
-                          <span className="text-green-600 mt-1">✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                {availablePackages.length > 0 ? (
+                  availablePackages.map((plan: any) => {
+                    const features =
+                      typeof plan.features === "string"
+                        ? JSON.parse(plan.features)
+                        : plan.features || [];
+                    return (
+                      <div
+                        key={plan.id}
+                        onClick={() => setSelectedPlan(plan.id)}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                          selectedPlan === plan.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        } ${plan.is_popular ? "ring-2 ring-orange-200" : ""}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-bold text-foreground">
+                            {plan.name}
+                          </h4>
+                          {plan.is_popular && (
+                            <Badge className="bg-orange-500 text-white">
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-lg font-bold text-orange-600 mb-3">
+                          ₱{parseInt(plan.base_price) || "0"}/month
+                        </p>
+                        {plan.description && (
+                          <p className="text-xs text-muted-foreground mb-3">
+                            {plan.description}
+                          </p>
+                        )}
+                        <ul className="space-y-2 text-sm">
+                          {features
+                            .slice(0, 4)
+                            .map((feature: any, idx: number) => (
+                              <li
+                                key={idx}
+                                className="flex items-start gap-2 text-muted-foreground"
+                              >
+                                <span className="text-green-600 mt-1">✓</span>
+                                {feature}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    <p>Loading packages from Package Studio...</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
@@ -1171,10 +1236,13 @@ export default function CustomerHub() {
             </Button>
             <Button
               onClick={handleSubscriptionUpgrade}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              disabled={!selectedPlan || packagesLoading}
+              className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
             >
               <Crown className="h-4 w-4 mr-2" />
-              Upgrade to {selectedPlan}
+              Upgrade to{" "}
+              {availablePackages.find((p) => p.id === selectedPlan)?.name ||
+                selectedPlan}
             </Button>
           </DialogFooter>
         </DialogContent>

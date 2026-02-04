@@ -18,10 +18,8 @@ import {
   UserProgress,
   getUserProgress,
   getLevelProgress,
-  updateUserProgress,
   getGamificationLevels,
-  getCurrentLevel,
-  getNextLevel,
+  getDefaultGamificationLevels,
 } from "@/utils/gamificationData";
 
 interface LevelProgressProps {
@@ -47,10 +45,11 @@ export default function LevelProgress({
     loadUserProgress();
   }, [userId]);
 
-  const loadUserProgress = () => {
+  const loadUserProgress = async () => {
     try {
-      const progress = updateUserProgress(userId); // This will recalculate based on current bookings
-      const levelInfo = getLevelProgress(progress.completedBookings);
+      const levels = await getGamificationLevels();
+      const progress = await getUserProgress(userId, levels);
+      const levelInfo = getLevelProgress(progress.completedBookings, levels);
       setUserProgress(progress);
       setLevelProgress(levelInfo);
     } catch (error) {
@@ -69,14 +68,9 @@ export default function LevelProgress({
       };
       setUserProgress(defaultProgress);
 
-      const levels = getGamificationLevels();
-      const currentLevel = getCurrentLevel(0, levels);
-      const nextLevel = getNextLevel(currentLevel.id, levels);
-      setLevelProgress({
-        current: currentLevel,
-        next: nextLevel,
-        progress: 0,
-      });
+      const levels = getDefaultGamificationLevels();
+      const levelInfo = getLevelProgress(0, levels);
+      setLevelProgress(levelInfo);
     }
   };
 
@@ -108,7 +102,7 @@ export default function LevelProgress({
               {current.name} Level
             </p>
             <p className="text-xs text-muted-foreground">
-              {userProgress.completedBookings} washes
+              {userProgress.completedBookings} points
             </p>
           </div>
           {next && (
@@ -155,7 +149,7 @@ export default function LevelProgress({
                 <p className="text-2xl font-bold text-foreground">
                   {userProgress.completedBookings}
                 </p>
-                <p className="text-sm text-muted-foreground">car washes</p>
+                <p className="text-sm text-muted-foreground">points</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-3">
@@ -177,7 +171,7 @@ export default function LevelProgress({
                   <Progress value={progress} className="h-3 bg-muted" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {userProgress.nextLevelBookings} more car washes to reach{" "}
+                  {userProgress.nextLevelBookings} more points to reach{" "}
                   <span className="font-semibold text-fac-orange-500">
                     {next.name}
                   </span>

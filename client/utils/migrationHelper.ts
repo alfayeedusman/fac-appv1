@@ -1,10 +1,10 @@
-import { neonDbClient } from '@/services/neonDatabaseService';
-import { toast } from '@/hooks/use-toast';
+import { toast } from "@/hooks/use-toast";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
-// Helper to migrate existing localStorage data to Neon database
+// Helper to migrate existing localStorage data to Supabase database
 export class DataMigrationHelper {
   private static instance: DataMigrationHelper;
-  
+
   static getInstance(): DataMigrationHelper {
     if (!DataMigrationHelper.instance) {
       DataMigrationHelper.instance = new DataMigrationHelper();
@@ -15,15 +15,15 @@ export class DataMigrationHelper {
   // Check if migration is needed
   hasLocalStorageData(): boolean {
     const keys = [
-      'fac_users',
-      'fac_bookings', 
-      'system_notifications',
-      'admin_settings',
-      'fayeed_ads',
-      'fayeed_ad_dismissals'
+      "fac_users",
+      "fac_bookings",
+      "system_notifications",
+      "admin_settings",
+      "fayeed_ads",
+      "fayeed_ad_dismissals",
     ];
-    
-    return keys.some(key => {
+
+    return keys.some((key) => {
       const data = localStorage.getItem(key);
       return data && JSON.parse(data).length > 0;
     });
@@ -32,13 +32,13 @@ export class DataMigrationHelper {
   // Get migration summary
   getMigrationSummary(): { [key: string]: number } {
     const summary: { [key: string]: number } = {};
-    
+
     const dataTypes = [
-      { key: 'fac_users', label: 'Users' },
-      { key: 'fac_bookings', label: 'Bookings' },
-      { key: 'system_notifications', label: 'Notifications' },
-      { key: 'admin_settings', label: 'Settings' },
-      { key: 'fayeed_ads', label: 'Ads' },
+      { key: "fac_users", label: "Users" },
+      { key: "fac_bookings", label: "Bookings" },
+      { key: "system_notifications", label: "Notifications" },
+      { key: "admin_settings", label: "Settings" },
+      { key: "fayeed_ads", label: "Ads" },
     ];
 
     dataTypes.forEach(({ key, label }) => {
@@ -53,60 +53,71 @@ export class DataMigrationHelper {
     return summary;
   }
 
-  // Migrate all localStorage data to Neon database
-  async migrateAllData(): Promise<{ success: boolean; migrated: number; errors: string[] }> {
+  // Migrate all localStorage data to Supabase database
+  async migrateAllData(): Promise<{
+    success: boolean;
+    migrated: number;
+    errors: string[];
+  }> {
     const errors: string[] = [];
     let migrated = 0;
 
     try {
       // Check database connection
-      const connectionTest = await neonDbClient.testConnection();
+      const connectionTest = await supabaseDbClient.testConnection();
       if (!connectionTest.connected) {
-        throw new Error('Database not connected');
+        throw new Error("Database not connected");
       }
 
       // Migrate users (register them)
       await this.migrateUsers(errors, migrated);
-      
+
       // Migrate bookings
       await this.migrateBookings(errors, migrated);
-      
+
       // Migrate settings
       await this.migrateSettings(errors, migrated);
-      
+
       // Migrate ads
       await this.migrateAds(errors, migrated);
 
       return { success: errors.length === 0, migrated, errors };
     } catch (error) {
-      errors.push(`Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      errors.push(
+        `Migration failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
       return { success: false, migrated, errors };
     }
   }
 
-  private async migrateUsers(errors: string[], migrated: number): Promise<void> {
+  private async migrateUsers(
+    errors: string[],
+    migrated: number,
+  ): Promise<void> {
     try {
-      const users = this.getLocalStorageData('fac_users');
+      const users = this.getLocalStorageData("fac_users");
       for (const user of users) {
         try {
-          const result = await neonDbClient.register({
+          const result = await supabaseDbClient.register({
             email: user.email,
             password: user.password,
             fullName: user.fullName,
-            contactNumber: user.contactNumber || '',
-            address: user.address || '',
-            branchLocation: user.branchLocation || 'Main Branch',
-            role: user.role || 'user',
+            contactNumber: user.contactNumber || "",
+            address: user.address || "",
+            branchLocation: user.branchLocation || "Main Branch",
+            role: user.role || "user",
             carUnit: user.carUnit,
             carPlateNumber: user.carPlateNumber,
             carType: user.carType,
           });
-          
+
           if (result.success) {
             migrated++;
           } else {
-            if (!result.error?.includes('already exists')) {
-              errors.push(`Failed to migrate user ${user.email}: ${result.error}`);
+            if (!result.error?.includes("already exists")) {
+              errors.push(
+                `Failed to migrate user ${user.email}: ${result.error}`,
+              );
             }
           }
         } catch (error) {
@@ -118,18 +129,21 @@ export class DataMigrationHelper {
     }
   }
 
-  private async migrateBookings(errors: string[], migrated: number): Promise<void> {
+  private async migrateBookings(
+    errors: string[],
+    migrated: number,
+  ): Promise<void> {
     try {
-      const bookings = this.getLocalStorageData('fac_bookings');
+      const bookings = this.getLocalStorageData("fac_bookings");
       for (const booking of bookings) {
         try {
-          const result = await neonDbClient.createBooking({
+          const result = await supabaseDbClient.createBooking({
             userId: booking.userId,
             guestInfo: booking.guestInfo,
-            type: booking.type || 'registered',
-            category: booking.category || 'carwash',
+            type: booking.type || "registered",
+            category: booking.category || "carwash",
             service: booking.service,
-            unitType: booking.unitType || 'car',
+            unitType: booking.unitType || "car",
             unitSize: booking.unitSize,
             plateNumber: booking.plateNumber,
             vehicleModel: booking.vehicleModel,
@@ -140,11 +154,11 @@ export class DataMigrationHelper {
             estimatedDuration: booking.estimatedDuration,
             basePrice: parseFloat(booking.basePrice) || 0,
             totalPrice: parseFloat(booking.totalPrice) || 0,
-            currency: booking.currency || 'PHP',
+            currency: booking.currency || "PHP",
             paymentMethod: booking.paymentMethod,
-            paymentStatus: booking.paymentStatus || 'pending',
+            paymentStatus: booking.paymentStatus || "pending",
             receiptUrl: booking.receiptUrl,
-            status: booking.status || 'pending',
+            status: booking.status || "pending",
             notes: booking.notes,
             specialRequests: booking.specialRequests,
             pointsEarned: booking.pointsEarned || 0,
@@ -155,11 +169,13 @@ export class DataMigrationHelper {
             customerRating: booking.customerRating,
             customerFeedback: booking.customerFeedback,
           });
-          
+
           if (result.success) {
             migrated++;
           } else {
-            errors.push(`Failed to migrate booking ${booking.id}: ${result.error}`);
+            errors.push(
+              `Failed to migrate booking ${booking.id}: ${result.error}`,
+            );
           }
         } catch (error) {
           errors.push(`Error migrating booking ${booking.id}: ${error}`);
@@ -170,22 +186,27 @@ export class DataMigrationHelper {
     }
   }
 
-  private async migrateSettings(errors: string[], migrated: number): Promise<void> {
+  private async migrateSettings(
+    errors: string[],
+    migrated: number,
+  ): Promise<void> {
     try {
-      const settings = this.getLocalStorageData('admin_settings');
+      const settings = this.getLocalStorageData("admin_settings");
       for (const setting of settings) {
         try {
-          const result = await neonDbClient.updateSetting(
+          const result = await supabaseDbClient.updateSetting(
             setting.key,
             setting.value,
             setting.description,
-            setting.category
+            setting.category,
           );
-          
+
           if (result.success) {
             migrated++;
           } else {
-            errors.push(`Failed to migrate setting ${setting.key}: ${result.error}`);
+            errors.push(
+              `Failed to migrate setting ${setting.key}: ${result.error}`,
+            );
           }
         } catch (error) {
           errors.push(`Error migrating setting ${setting.key}: ${error}`);
@@ -198,10 +219,10 @@ export class DataMigrationHelper {
 
   private async migrateAds(errors: string[], migrated: number): Promise<void> {
     try {
-      const ads = this.getLocalStorageData('fayeed_ads');
+      const ads = this.getLocalStorageData("fayeed_ads");
       for (const ad of ads) {
         try {
-          const result = await neonDbClient.createAd({
+          const result = await supabaseDbClient.createAd({
             title: ad.title,
             content: ad.content,
             imageUrl: ad.imageUrl,
@@ -212,7 +233,7 @@ export class DataMigrationHelper {
             impressions: ad.impressions || 0,
             clicks: ad.clicks || 0,
           });
-          
+
           if (result.success) {
             migrated++;
           } else {
@@ -239,28 +260,29 @@ export class DataMigrationHelper {
   // Clear localStorage data after successful migration
   clearLocalStorageData(): void {
     const keys = [
-      'fac_users',
-      'fac_bookings',
-      'system_notifications', 
-      'admin_settings',
-      'fayeed_ads',
-      'fayeed_ad_dismissals'
+      "fac_users",
+      "fac_bookings",
+      "system_notifications",
+      "admin_settings",
+      "fayeed_ads",
+      "fayeed_ad_dismissals",
     ];
 
-    keys.forEach(key => {
+    keys.forEach((key) => {
       localStorage.removeItem(key);
     });
 
     toast({
-      title: 'LocalStorage Cleared',
-      description: 'All data has been migrated to Neon database and localStorage has been cleared.',
+      title: "LocalStorage Cleared",
+      description:
+        "All data has been migrated to Supabase database and localStorage has been cleared.",
     });
   }
 
   // Show migration prompt to user
   showMigrationPrompt(): boolean {
     const summary = this.getMigrationSummary();
-    const hasData = Object.values(summary).some(count => count > 0);
+    const hasData = Object.values(summary).some((count) => count > 0);
 
     if (!hasData) {
       return false;
@@ -269,11 +291,11 @@ export class DataMigrationHelper {
     const summaryText = Object.entries(summary)
       .filter(([_, count]) => count > 0)
       .map(([type, count]) => `${type}: ${count}`)
-      .join(', ');
+      .join(", ");
 
     toast({
-      title: 'Local Data Found',
-      description: `Found local data: ${summaryText}. Use the Migration section in Database Setup to migrate to Neon database.`,
+      title: "Local Data Found",
+      description: `Found local data: ${summaryText}. Use the Migration section in Database Setup to migrate to Supabase database.`,
     });
 
     return true;

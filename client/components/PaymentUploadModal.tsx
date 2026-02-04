@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Upload, CreditCard, CheckCircle, Loader } from "lucide-react";
-import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "./NotificationModal";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface PaymentUploadModalProps {
   isOpen: boolean;
@@ -49,25 +49,6 @@ export default function PaymentUploadModal({
   });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const receiptObjectUrlRef = React.useRef<string | null>(null);
-
-  // Cleanup object URLs when component unmounts or modal closes
-  React.useEffect(() => {
-    return () => {
-      if (receiptObjectUrlRef.current) {
-        URL.revokeObjectURL(receiptObjectUrlRef.current);
-        receiptObjectUrlRef.current = null;
-      }
-    };
-  }, []);
-
-  // Cleanup when modal closes
-  React.useEffect(() => {
-    if (!isOpen && receiptObjectUrlRef.current) {
-      URL.revokeObjectURL(receiptObjectUrlRef.current);
-      receiptObjectUrlRef.current = null;
-    }
-  }, [isOpen]);
 
   const paymentMethods = [
     { value: "gcash", label: "GCash" },
@@ -105,61 +86,29 @@ export default function PaymentUploadModal({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call with proper error handling
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate potential API failures
-          if (Math.random() > 0.95) {
-            reject(new Error("Network error"));
-          } else {
-            resolve(true);
-          }
-        }, 2000);
+      const userEmail = localStorage.getItem("userEmail") || "";
+
+      const upgradeResult = await supabaseDbClient.createSubscriptionUpgrade({
+        userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        email: userEmail,
+        packageId: selectedPlan,
+        packageName: selectedPlan,
+        finalPrice: Number(formData.amount),
+        paymentMethod: formData.paymentMethod,
       });
 
-      // Create subscription request using the approval system
-      // Clean up any existing object URL first
-      if (receiptObjectUrlRef.current) {
-        URL.revokeObjectURL(receiptObjectUrlRef.current);
+      if (!upgradeResult.success) {
+        notificationManager.error(
+          "Submission Failed",
+          upgradeResult.error ||
+            "There was an error processing your payment submission.",
+        );
+        return;
       }
 
-      // Create new object URL and store reference for cleanup
-      const objectUrl = URL.createObjectURL(receiptFile);
-      receiptObjectUrlRef.current = objectUrl;
-
-      const receipt = {
-        id: `RCP${Date.now()}`,
-        imageUrl: objectUrl,
-        fileName: receiptFile.name,
-        uploadDate: new Date().toISOString(),
-        fileSize: receiptFile.size,
-      };
-
-      const userEmail = localStorage.getItem("userEmail") || "";
-      const userName = userEmail.split("@")[0];
-
-      const request = addSubscriptionRequest({
-        userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
-        userEmail,
-        userName,
-        packageType: selectedPlan as any,
-        packagePrice: `₱${formData.amount}/month`,
-        paymentMethod: formData.paymentMethod as any,
-        paymentDetails: {
-          referenceNumber: formData.referenceNumber,
-          accountName: userName,
-          amount: `₱${formData.amount}.00`,
-          paymentDate: new Date().toISOString().split("T")[0],
-        },
-        receipt,
-        status: "pending",
-        customerStatus: "active",
-      });
-
-      // Show success notification
       notificationManager.success(
         "Payment Submitted Successfully! 🎉",
-        `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${request.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review. Please wait for admin approval.`,
+        `Your upgrade request has been submitted for admin approval.\n\nRequest ID: ${upgradeResult.subscription?.id}\nPackage: ${selectedPlan}\nAmount: ₱${formData.amount}\n\nYour request is now under review. Please wait for admin approval.`,
         { autoClose: 5000 },
       );
 

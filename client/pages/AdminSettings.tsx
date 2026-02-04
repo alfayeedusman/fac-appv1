@@ -65,7 +65,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { receiptPrintService } from "@/services/receiptPrintService";
 import Swal from "sweetalert2";
 import { Upload, Download } from "lucide-react";
@@ -251,7 +251,7 @@ export default function AdminSettings() {
   const loadUsers = async () => {
     try {
       setUsersLoading(true);
-      const result = await neonDbClient.getStaffUsers();
+      const result = await supabaseDbClient.getStaffUsers();
       if (result.success && result.users) {
         setUsers(result.users);
       } else {
@@ -319,7 +319,7 @@ export default function AdminSettings() {
           contactNumber: userForm.phoneNumber,
           branchLocation: "Main",
         };
-        const result = await neonDbClient.createStaffUser(newUser);
+        const result = await supabaseDbClient.createStaffUser(newUser);
         if (result.success) {
           toast({ title: "Success", description: "User created successfully" });
           setShowUserDialog(false);
@@ -391,9 +391,7 @@ export default function AdminSettings() {
 
     if (editingTax) {
       setTaxes(
-        taxes.map((t) =>
-          t.id === editingTax.id ? { ...t, ...taxForm } : t
-        )
+        taxes.map((t) => (t.id === editingTax.id ? { ...t, ...taxForm } : t)),
       );
       toast({ title: "Success", description: "Tax updated successfully" });
     } else {
@@ -410,7 +408,7 @@ export default function AdminSettings() {
 
   const handleToggleTax = (id: string) => {
     setTaxes(
-      taxes.map((t) => (t.id === id ? { ...t, isActive: !t.isActive } : t))
+      taxes.map((t) => (t.id === id ? { ...t, isActive: !t.isActive } : t)),
     );
     toast({ title: "Success", description: "Tax status updated" });
   };
@@ -501,7 +499,7 @@ export default function AdminSettings() {
     (user) =>
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.fullName &&
-        user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+        user.fullName.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   return (
@@ -566,9 +564,7 @@ export default function AdminSettings() {
       </div>
 
       {/* Printer Setup Tab */}
-      {activeTab === "printers" && (
-        <PrinterConfiguration />
-      )}
+      {activeTab === "printers" && <PrinterConfiguration />}
 
       {/* Receipt Designer Tab */}
       {activeTab === "receipt" && (
@@ -673,7 +669,9 @@ export default function AdminSettings() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="terms-text">Terms & Conditions (Optional)</Label>
+                <Label htmlFor="terms-text">
+                  Terms & Conditions (Optional)
+                </Label>
                 <Textarea
                   id="terms-text"
                   value={receiptSettings.termsText || ""}
@@ -937,7 +935,9 @@ export default function AdminSettings() {
                     {editingTax ? "Edit Tax" : "Add New Tax"}
                   </DialogTitle>
                   <DialogDescription>
-                    {editingTax ? "Update tax configuration" : "Create a new tax rate"}
+                    {editingTax
+                      ? "Update tax configuration"
+                      : "Create a new tax rate"}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -1356,17 +1356,17 @@ export default function AdminSettings() {
                                 ]?.color || "bg-gray-500"
                               }
                             >
-                              {
-                                roleDefinitions[
-                                  user.role as keyof typeof roleDefinitions
-                                ]?.name || user.role
-                              }
+                              {roleDefinitions[
+                                user.role as keyof typeof roleDefinitions
+                              ]?.name || user.role}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant={
-                                user.status === "active" ? "default" : "secondary"
+                                user.status === "active"
+                                  ? "default"
+                                  : "secondary"
                               }
                             >
                               {user.status}

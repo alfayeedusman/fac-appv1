@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 import {
   homepageContent,
   cmsContentHistory,
@@ -171,7 +171,7 @@ const defaultHomepageContent = {
  */
 router.get("/homepage", async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: defaultHomepageContent,
@@ -180,7 +180,7 @@ router.get("/homepage", async (req, res) => {
     }
 
     // Get the active homepage content
-    const [activeContent] = await neonDbService.db
+    const [activeContent] = await supabaseDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -234,7 +234,7 @@ router.get("/homepage", async (req, res) => {
  */
 router.post("/homepage", async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available",
@@ -251,7 +251,7 @@ router.post("/homepage", async (req, res) => {
     }
 
     // Get current active content for history tracking
-    const [currentContent] = await neonDbService.db
+    const [currentContent] = await supabaseDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -259,7 +259,7 @@ router.post("/homepage", async (req, res) => {
 
     // Deactivate current content
     if (currentContent) {
-      await neonDbService.db
+      await supabaseDbService.db
         .update(homepageContent)
         .set({ isActive: false })
         .where(eq(homepageContent.id, currentContent.id));
@@ -282,13 +282,13 @@ router.post("/homepage", async (req, res) => {
       updatedBy: userId || "system",
     };
 
-    const [savedContent] = await neonDbService.db
+    const [savedContent] = await supabaseDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDbService.db.insert(cmsContentHistory).values({
+    await supabaseDbService.db.insert(cmsContentHistory).values({
       contentId: savedContent.id,
       action: currentContent ? "update" : "create",
       contentSnapshot: newContentData,
@@ -323,7 +323,7 @@ router.post("/homepage", async (req, res) => {
  */
 router.get("/history", async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: [],
@@ -333,7 +333,7 @@ router.get("/history", async (req, res) => {
 
     const { limit = 20, offset = 0 } = req.query;
 
-    const history = await neonDbService.db
+    const history = await supabaseDbService.db
       .select({
         id: cmsContentHistory.id,
         contentId: cmsContentHistory.contentId,
@@ -367,7 +367,7 @@ router.get("/history", async (req, res) => {
  */
 router.post("/initialize", async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available",
@@ -377,7 +377,7 @@ router.post("/initialize", async (req, res) => {
     const { userId = "system", userName = "System" } = req.body;
 
     // Check if content already exists
-    const [existingContent] = await neonDbService.db
+    const [existingContent] = await supabaseDbService.db
       .select()
       .from(homepageContent)
       .where(eq(homepageContent.isActive, true))
@@ -400,13 +400,13 @@ router.post("/initialize", async (req, res) => {
       updatedBy: userId,
     };
 
-    const [savedContent] = await neonDbService.db
+    const [savedContent] = await supabaseDbService.db
       .insert(homepageContent)
       .values(newContentData)
       .returning();
 
     // Create history record
-    await neonDbService.db.insert(cmsContentHistory).values({
+    await supabaseDbService.db.insert(cmsContentHistory).values({
       contentId: savedContent.id,
       action: "create",
       contentSnapshot: newContentData,

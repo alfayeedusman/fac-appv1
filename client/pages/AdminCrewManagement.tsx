@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import StickyHeader from "@/components/StickyHeader";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminHeatMap from "@/components/AdminHeatMap";
-import CrewGroupManagement from "@/components/CrewGroupManagement";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import {
   Users,
   MapPin,
@@ -77,6 +85,48 @@ export default function AdminCrewManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [commissionRates, setCommissionRates] = useState<any[]>([]);
+  const [commissionServiceType, setCommissionServiceType] = useState("");
+  const [commissionRateValue, setCommissionRateValue] = useState("");
+  const [commissionLoading, setCommissionLoading] = useState(false);
+
+  const [crewMembers, setCrewMembers] = useState<any[]>([]);
+  const [crewGroups, setCrewGroups] = useState<any[]>([]);
+  const [crewGroupsLoading, setCrewGroupsLoading] = useState(false);
+  const [commissionEntries, setCommissionEntries] = useState<any[]>([]);
+  const [commissionEntriesLoading, setCommissionEntriesLoading] =
+    useState(false);
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(false);
+
+  const [commissionCrewId, setCommissionCrewId] = useState("");
+  const [selectedCrewId, setSelectedCrewId] = useState("");
+  const [commissionEntryDate, setCommissionEntryDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [commissionEntryAmount, setCommissionEntryAmount] = useState("");
+  const [commissionEntryNotes, setCommissionEntryNotes] = useState("");
+  const [isSeedingCrew, setIsSeedingCrew] = useState(false);
+
+  const [payoutCrewId, setPayoutCrewId] = useState("");
+  const [payoutStartDate, setPayoutStartDate] = useState(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    return start.toISOString().split("T")[0];
+  });
+  const [payoutEndDate, setPayoutEndDate] = useState(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return end.toISOString().split("T")[0];
+  });
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutBonus, setPayoutBonus] = useState("");
+  const [autoPayoutAmount, setAutoPayoutAmount] = useState(0);
+  const [payoutStatus, setPayoutStatus] = useState("pending");
 
   // Check authentication on mount and whenever storage changes
   useEffect(() => {
@@ -92,7 +142,7 @@ export default function AdminCrewManagement() {
         return;
       }
 
-      if (role !== "admin" && role !== "superadmin") {
+      if (role !== "admin" && role !== "superadmin" && role !== "manager") {
         console.log("❌ Insufficient permissions, redirecting to login");
         navigate("/login");
         return;
@@ -117,96 +167,432 @@ export default function AdminCrewManagement() {
   // API data fetching functions - using existing working endpoints
   const fetchCrewStats = async (): Promise<CrewStats> => {
     try {
-      // Use existing realtime stats endpoint that's already working
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 8000);
-
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "/api"}/neon/realtime-stats`,
-        {
-          signal: ac.signal,
-        },
-      );
-
-      clearTimeout(to);
-      const data = await response.json();
-
-      if (data.success && data.stats) {
-        // Map existing realtime stats to our crew stats format
-        const { onlineCrew, busyCrew, activeGroups } = data.stats;
-        const totalCrew = onlineCrew + busyCrew + 5; // Add some offline crew
-        const availableCrew = Math.max(0, totalCrew - onlineCrew - busyCrew);
-        const offlineCrew = Math.max(
-          0,
-          totalCrew - onlineCrew - busyCrew - availableCrew,
-        );
-
-        return {
-          totalCrew,
-          onlineCrew,
-          busyCrew,
-          availableCrew,
-          offlineCrew,
-          totalGroups: activeGroups + 2, // Add some inactive groups
-          activeGroups,
-          unassignedCrew: Math.max(0, totalCrew - (onlineCrew + busyCrew)),
-          avgRating: 4.3, // Default rating
-          todayJobs: 47, // Default for now
-          todayRevenue: 125000, // Default for now
-        };
-      } else {
-        throw new Error("Failed to fetch realtime stats");
+      const result = await supabaseDbClient.getCrewStats();
+      if (result.success && result.stats) {
+        return result.stats as CrewStats;
       }
     } catch (error) {
-      console.error("Error fetching crew stats:", error);
-      // Return realistic default values instead of zeros
-      return {
-        totalCrew: 25,
-        onlineCrew: 18,
-        offlineCrew: 7,
-        busyCrew: 12,
-        availableCrew: 6,
-        totalGroups: 5,
-        activeGroups: 4,
-        unassignedCrew: 5,
-        avgRating: 4.3,
-        todayJobs: 47,
-        todayRevenue: 125000,
-      };
+      console.warn("Crew stats fetch failed.");
     }
+
+    return {
+      totalCrew: 0,
+      onlineCrew: 0,
+      offlineCrew: 0,
+      busyCrew: 0,
+      availableCrew: 0,
+      totalGroups: 0,
+      activeGroups: 0,
+      unassignedCrew: 0,
+      avgRating: 0,
+      todayJobs: 0,
+      todayRevenue: 0,
+    };
   };
 
   const fetchCrewActivity = async (): Promise<RecentActivity[]> => {
-    // For now, return sample activity data - we can connect this to real data later
-    return [
-      {
-        id: "1",
-        type: "status_change",
-        crewId: "crew-1",
-        crewName: "John Santos",
-        message: "Changed status from Available to Busy",
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        severity: "info",
-      },
-      {
-        id: "2",
-        type: "assignment",
-        crewId: "crew-2",
-        crewName: "Maria Garcia",
-        message: "Accepted new assignment #BK-2024-0145",
-        timestamp: new Date(Date.now() - 600000).toISOString(),
-        severity: "success",
-      },
-      {
-        id: "3",
-        type: "location_update",
-        crewId: "crew-3",
-        crewName: "Carlos Reyes",
-        message: "Location updated - Makati City",
-        timestamp: new Date(Date.now() - 900000).toISOString(),
-        severity: "info",
-      },
-    ];
+    try {
+      const result = await supabaseDbClient.getCrewActivity({ limit: 10 });
+      if (result.success && result.activities) {
+        return result.activities as RecentActivity[];
+      }
+    } catch (error) {
+      console.warn("Crew activity fetch failed.");
+    }
+
+    return [];
+  };
+
+  const commissionStatusOptions = [
+    "pending",
+    "approved",
+    "released",
+    "disputed",
+  ];
+
+  const washBayOptions = [
+    "Wash Bay 1",
+    "Wash Bay 2",
+    "Wash Bay 3",
+    "Wash Bay 4",
+    "Wash Bay 5",
+  ];
+
+  const loadCommissionRates = async () => {
+    try {
+      setCommissionLoading(true);
+      const result = await supabaseDbClient.getCommissionRates();
+      if (result.success) {
+        setCommissionRates(result.rates || []);
+      }
+    } catch (error) {
+      console.error("Failed to load commission rates:", error);
+    } finally {
+      setCommissionLoading(false);
+    }
+  };
+
+  const handleSaveCommissionRate = async () => {
+    const rate = Number(commissionRateValue);
+    if (!commissionServiceType || !rate || rate <= 0) {
+      toast({
+        title: "Invalid commission rate",
+        description: "Enter a service type and a rate greater than zero.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await supabaseDbClient.upsertCommissionRate(
+      commissionServiceType,
+      rate,
+    );
+
+    if (result.success) {
+      toast({
+        title: "Commission rate saved",
+        description: `${commissionServiceType} set to ${rate}%`,
+      });
+      setCommissionServiceType("");
+      setCommissionRateValue("");
+      loadCommissionRates();
+    } else {
+      toast({
+        title: "Failed to save rate",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadCrewMembers = async () => {
+    const result = await supabaseDbClient.getCrewList();
+    if (result.success) {
+      setCrewMembers(result.crew || []);
+    }
+  };
+
+  const loadCrewGroups = async () => {
+    try {
+      setCrewGroupsLoading(true);
+      const result = await supabaseDbClient.getCrewGroups();
+      if (result.success) {
+        setCrewGroups(result.groups || []);
+      }
+    } catch (error) {
+      console.error("Failed to load crew groups:", error);
+    } finally {
+      setCrewGroupsLoading(false);
+    }
+  };
+
+  const loadCommissionEntries = async () => {
+    try {
+      setCommissionEntriesLoading(true);
+      const result = await supabaseDbClient.getCommissionEntries({});
+      if (result.success) {
+        setCommissionEntries(result.entries || []);
+      }
+    } catch (error) {
+      console.error("Failed to load commission entries:", error);
+    } finally {
+      setCommissionEntriesLoading(false);
+    }
+  };
+
+  const loadPayouts = async () => {
+    try {
+      setPayoutsLoading(true);
+      const result = await supabaseDbClient.getCrewPayouts({});
+      if (result.success) {
+        setPayouts(result.payouts || []);
+      }
+    } catch (error) {
+      console.error("Failed to load payouts:", error);
+    } finally {
+      setPayoutsLoading(false);
+    }
+  };
+
+  const handleAddCommissionEntry = async () => {
+    const amount = Number(commissionEntryAmount);
+    if (!commissionCrewId || !commissionEntryDate || !amount || amount <= 0) {
+      toast({
+        title: "Missing commission entry",
+        description: "Select a crew member, date, and amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem("currentUser");
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const recordedBy =
+      parsedUser?.id ||
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+
+    const result = await supabaseDbClient.createCommissionEntry({
+      crewUserId: commissionCrewId,
+      entryDate: commissionEntryDate,
+      amount,
+      notes: commissionEntryNotes || undefined,
+      recordedBy,
+      status: "pending",
+    });
+
+    if (result.success) {
+      toast({
+        title: "Commission entry added",
+        description: "Commission entry saved successfully.",
+      });
+      setCommissionEntryAmount("");
+      setCommissionEntryNotes("");
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to add commission",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSeedCrew = async () => {
+    try {
+      setIsSeedingCrew(true);
+      const result = await supabaseDbClient.seedCrew();
+      if (result.success) {
+        toast({
+          title: "Sample crew added",
+          description: "Sample crew accounts are ready for testing.",
+        });
+        await loadCrewMembers();
+      } else {
+        toast({
+          title: "Failed to add sample crew",
+          description: result.error || "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to add sample crew",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSeedingCrew(false);
+    }
+  };
+
+  const handleUpdateCommissionEntryStatus = async (
+    entryId: string,
+    status: string,
+  ) => {
+    const result = await supabaseDbClient.updateCommissionEntryStatus(
+      entryId,
+      status,
+    );
+    if (result.success) {
+      toast({
+        title: "Commission status updated",
+        description: `Entry marked as ${status}.`,
+      });
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to update status",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const eligiblePayoutEntries = useMemo(() => {
+    if (!payoutCrewId || !payoutStartDate || !payoutEndDate) return [];
+    const start = new Date(payoutStartDate);
+    const end = new Date(payoutEndDate);
+    return commissionEntries.filter((entry) => {
+      if (entry.crewUserId !== payoutCrewId) return false;
+      if (entry.payoutId) return false;
+      if (entry.status === "released") return false;
+      const entryDate = new Date(entry.entryDate);
+      return entryDate >= start && entryDate <= end;
+    });
+  }, [commissionEntries, payoutCrewId, payoutStartDate, payoutEndDate]);
+
+  const computedAutoPayoutAmount = useMemo(() => {
+    return eligiblePayoutEntries.reduce(
+      (total, entry) => total + Number(entry.amount || 0),
+      0,
+    );
+  }, [eligiblePayoutEntries]);
+
+  useEffect(() => {
+    setAutoPayoutAmount(computedAutoPayoutAmount);
+    setPayoutAmount(
+      computedAutoPayoutAmount > 0 ? computedAutoPayoutAmount.toFixed(2) : "",
+    );
+  }, [computedAutoPayoutAmount]);
+
+  const payoutBonusAmount = Number(payoutBonus) || 0;
+  const payoutTotalAmount = autoPayoutAmount + payoutBonusAmount;
+
+  const selectedCrew = useMemo(
+    () => crewMembers.find((crew) => crew.id === selectedCrewId),
+    [crewMembers, selectedCrewId],
+  );
+
+  const selectedCrewGroup = useMemo(() => {
+    if (!selectedCrew?.groupId) return null;
+    return (
+      crewGroups.find((group) => group.id === selectedCrew.groupId) || null
+    );
+  }, [crewGroups, selectedCrew]);
+
+  const filteredCommissionEntries = useMemo(() => {
+    if (!selectedCrewId) return commissionEntries;
+    return commissionEntries.filter(
+      (entry) => entry.crewUserId === selectedCrewId,
+    );
+  }, [commissionEntries, selectedCrewId]);
+
+  const filteredPayouts = useMemo(() => {
+    if (!selectedCrewId) return payouts;
+    return payouts.filter((payout) => payout.crewUserId === selectedCrewId);
+  }, [payouts, selectedCrewId]);
+
+  const commissionEmptyMessage = selectedCrewId
+    ? "No commission entries for the selected crew."
+    : "No commission entries yet.";
+
+  const payoutEmptyMessage = selectedCrewId
+    ? "No payouts recorded for the selected crew."
+    : "No payouts recorded yet.";
+
+  const handleCreatePayout = async () => {
+    const baseAmount = Number(payoutAmount) || 0;
+    const bonusAmount = Number(payoutBonus) || 0;
+    const totalAmount = baseAmount + bonusAmount;
+    if (
+      !payoutCrewId ||
+      !payoutStartDate ||
+      !payoutEndDate ||
+      totalAmount <= 0
+    ) {
+      toast({
+        title: "Missing payout details",
+        description: "Select crew, period, and amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = localStorage.getItem("currentUser");
+    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
+    const createdBy =
+      parsedUser?.id ||
+      localStorage.getItem("userId") ||
+      localStorage.getItem("userEmail") ||
+      "unknown";
+
+    const entryIds = eligiblePayoutEntries.map((entry) => entry.id);
+
+    const result = await supabaseDbClient.createCrewPayout({
+      crewUserId: payoutCrewId,
+      periodStart: payoutStartDate,
+      periodEnd: payoutEndDate,
+      totalAmount,
+      status: payoutStatus,
+      createdBy,
+      entryIds,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Payout recorded",
+        description: "Payout history updated.",
+      });
+      setPayoutAmount("");
+      setPayoutBonus("");
+      loadPayouts();
+      loadCommissionEntries();
+    } else {
+      toast({
+        title: "Failed to record payout",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdatePayoutStatus = async (payoutId: string, status: string) => {
+    const result = await supabaseDbClient.updateCrewPayoutStatus(
+      payoutId,
+      status,
+    );
+    if (result.success) {
+      toast({
+        title: "Payout status updated",
+        description: `Payout marked as ${status}.`,
+      });
+      loadPayouts();
+    } else {
+      toast({
+        title: "Failed to update payout status",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAssignCrewGroup = async (groupId: string | null) => {
+    if (!selectedCrewId) return;
+    const result = await supabaseDbClient.updateCrewGroupAssignment({
+      userId: selectedCrewId,
+      groupId,
+    });
+    if (result.success) {
+      toast({
+        title: "Crew group updated",
+        description: groupId
+          ? "Group assignment saved."
+          : "Crew unassigned from group.",
+      });
+      loadCrewMembers();
+      loadCrewGroups();
+    } else {
+      toast({
+        title: "Failed to update group",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAssignWashBay = async (washBay: string | null) => {
+    if (!selectedCrewId) return;
+    const result = await supabaseDbClient.updateCrewWashBayAssignment({
+      userId: selectedCrewId,
+      washBay,
+    });
+    if (result.success) {
+      toast({
+        title: "Wash bay updated",
+        description: washBay
+          ? "Wash bay assignment saved."
+          : "Wash bay cleared.",
+      });
+      loadCrewMembers();
+    } else {
+      toast({
+        title: "Failed to update wash bay",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -224,6 +610,13 @@ export default function AdminCrewManagement() {
 
         setStats(crewStats);
         setRecentActivity(crewActivity);
+        await Promise.all([
+          loadCommissionRates(),
+          loadCrewMembers(),
+          loadCrewGroups(),
+          loadCommissionEntries(),
+          loadPayouts(),
+        ]);
         console.log("✅ Crew management data loaded successfully");
       } catch (error) {
         console.error("Error loading crew management data:", error);
@@ -252,6 +645,13 @@ export default function AdminCrewManagement() {
 
       setStats(crewStats);
       setRecentActivity(crewActivity);
+      await Promise.all([
+        loadCommissionRates(),
+        loadCrewMembers(),
+        loadCrewGroups(),
+        loadCommissionEntries(),
+        loadPayouts(),
+      ]);
 
       toast({
         title: "Data Refreshed",
@@ -503,7 +903,7 @@ export default function AdminCrewManagement() {
             className="space-y-6"
           >
             <div className="bg-white rounded-lg shadow-sm border p-1">
-              <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
+              <TabsList className="grid w-full grid-cols-5 bg-transparent gap-1">
                 <TabsTrigger
                   value="overview"
                   className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
@@ -511,6 +911,14 @@ export default function AdminCrewManagement() {
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
                   <span className="sm:hidden">Overview</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="commissions"
+                  className="flex items-center gap-2 py-3 px-4 rounded-md data-[state=active]:bg-fac-orange-500 data-[state=active]:text-white font-medium transition-all duration-200"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Commissions</span>
+                  <span className="sm:hidden">Comms</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="groups"
@@ -728,12 +1136,517 @@ export default function AdminCrewManagement() {
               </div>
             </TabsContent>
 
+            {/* Commissions Tab */}
+            <TabsContent value="commissions" className="space-y-6">
+              <Card>
+                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle>Quick Commission Entry</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Add a crew commission in seconds. Status defaults to
+                      pending.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSeedCrew}
+                    disabled={isSeedingCrew}
+                  >
+                    {isSeedingCrew
+                      ? "Adding sample crew..."
+                      : "Add Sample Crew"}
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {crewMembers.length === 0 && (
+                    <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                      No crew accounts yet. Add sample crew accounts to test
+                      commission entry.
+                    </div>
+                  )}
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Crew Member</Label>
+                      <Select
+                        value={commissionCrewId}
+                        onValueChange={setCommissionCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Amount (₱)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={commissionEntryAmount}
+                        onChange={(e) =>
+                          setCommissionEntryAmount(e.target.value)
+                        }
+                        placeholder="500"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {[200, 500, 1000].map((amount) => (
+                          <Button
+                            key={amount}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setCommissionEntryAmount(String(amount))
+                            }
+                          >
+                            ₱{amount}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <Input
+                        type="date"
+                        value={commissionEntryDate}
+                        onChange={(e) => setCommissionEntryDate(e.target.value)}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setCommissionEntryDate(
+                              new Date().toISOString().split("T")[0],
+                            )
+                          }
+                        >
+                          Today
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            setCommissionEntryDate(
+                              yesterday.toISOString().split("T")[0],
+                            );
+                          }}
+                        >
+                          Yesterday
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Notes (optional)</Label>
+                      <Input
+                        value={commissionEntryNotes}
+                        onChange={(e) =>
+                          setCommissionEntryNotes(e.target.value)
+                        }
+                        placeholder="e.g., Extra detailing bonus"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddCommissionEntry}>
+                    Add Commission
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Crew Profile & Assignments</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select a crew member to view their commissions, rates, and
+                    assignments.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Selected Crew</Label>
+                      <Select
+                        value={selectedCrewId}
+                        onValueChange={setSelectedCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="rounded-lg border p-3 text-sm">
+                      <p className="text-xs uppercase text-muted-foreground">
+                        Commission Rate
+                      </p>
+                      <p className="text-lg font-semibold">
+                        {selectedCrew
+                          ? `${Number(selectedCrew.commissionRate || 0).toFixed(2)}%`
+                          : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedCrewGroup
+                          ? `Group: ${selectedCrewGroup.name}`
+                          : "No group assigned"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Group Assignment</Label>
+                      <Select
+                        value={selectedCrew?.groupId || "unassigned"}
+                        onValueChange={(value) =>
+                          handleAssignCrewGroup(
+                            value === "unassigned" ? null : value,
+                          )
+                        }
+                        disabled={!selectedCrewId || crewGroupsLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {crewGroups.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Wash Bay</Label>
+                      <Select
+                        value={selectedCrew?.washBay || "unassigned"}
+                        onValueChange={(value) =>
+                          handleAssignWashBay(
+                            value === "unassigned" ? null : value,
+                          )
+                        }
+                        disabled={!selectedCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign wash bay" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {washBayOptions.map((bay) => (
+                            <SelectItem key={bay} value={bay}>
+                              {bay}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-3 text-sm">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Service Rates
+                    </p>
+                    {commissionRates.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No service rates configured yet.
+                      </p>
+                    ) : (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        {commissionRates.map((rate) => (
+                          <div
+                            key={rate.id}
+                            className="flex items-center justify-between rounded-md border px-3 py-2"
+                          >
+                            <span>{rate.serviceType}</span>
+                            <span className="font-semibold">
+                              {Number(rate.rate || 0).toFixed(2)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Commission Entries</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {commissionEntriesLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading commission entries...
+                    </p>
+                  ) : filteredCommissionEntries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      {commissionEmptyMessage}
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredCommissionEntries.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {entry.crewName || "Crew"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(entry.entryDate).toLocaleDateString()} ·
+                              ₱{Number(entry.amount || 0).toFixed(2)}
+                            </p>
+                            {entry.notes && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {entry.notes}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={entry.status}
+                              onValueChange={(value) =>
+                                handleUpdateCommissionEntryStatus(
+                                  entry.id,
+                                  value,
+                                )
+                              }
+                            >
+                              <SelectTrigger className="w-36">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {commissionStatusOptions.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {status}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payout History</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Crew Member</Label>
+                      <Select
+                        value={payoutCrewId}
+                        onValueChange={setPayoutCrewId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select crew" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {crewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.id}>
+                              {crew.fullName || crew.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Auto Amount (₱)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payoutAmount}
+                        readOnly
+                        placeholder="Auto from commissions"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Eligible entries: {eligiblePayoutEntries.length}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bonus (optional)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payoutBonus}
+                        onChange={(e) => setPayoutBonus(e.target.value)}
+                        placeholder="Performance bonus"
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Total payout (auto + bonus)</span>
+                      <span className="font-semibold">
+                        ₱{payoutTotalAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Period Start</Label>
+                      <Input
+                        type="date"
+                        value={payoutStartDate}
+                        onChange={(e) => setPayoutStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Period End</Label>
+                      <Input
+                        type="date"
+                        value={payoutEndDate}
+                        onChange={(e) => setPayoutEndDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Status</Label>
+                      <Select
+                        value={payoutStatus}
+                        onValueChange={setPayoutStatus}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {commissionStatusOptions.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button onClick={handleCreatePayout}>Record Payout</Button>
+
+                  <div className="space-y-3 pt-2">
+                    {payoutsLoading ? (
+                      <p className="text-sm text-muted-foreground">
+                        Loading payouts...
+                      </p>
+                    ) : filteredPayouts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        {payoutEmptyMessage}
+                      </p>
+                    ) : (
+                      filteredPayouts.map((payout) => (
+                        <div
+                          key={payout.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {payout.crewName || "Crew"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(
+                                payout.periodStart,
+                              ).toLocaleDateString()}{" "}
+                              -{" "}
+                              {new Date(payout.periodEnd).toLocaleDateString()}{" "}
+                              · ₱{Number(payout.totalAmount || 0).toFixed(2)}
+                            </p>
+                          </div>
+                          <Select
+                            value={payout.status}
+                            onValueChange={(value) =>
+                              handleUpdatePayoutStatus(payout.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-36">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {commissionStatusOptions.map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Groups Tab */}
             <TabsContent value="groups" className="space-y-6">
-              <CrewGroupManagement
-                onGroupSelect={setSelectedGroup}
-                selectedGroupId={selectedGroup?.id}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active Crew Groups</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Groups pulled from the database.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {crewGroupsLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading groups...
+                    </p>
+                  ) : crewGroups.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No crew groups found.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {crewGroups.map((group) => (
+                        <div
+                          key={group.id}
+                          className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {group.name}
+                            </p>
+                            {group.description && (
+                              <p className="text-xs text-muted-foreground">
+                                {group.description}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Leader: {group.leaderName || "Unassigned"}
+                            </p>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Members: {group.members?.length || 0}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Heat Map Tab */}
@@ -814,6 +1727,62 @@ export default function AdminCrewManagement() {
                         </p>
                       </div>
                       <Badge variant="outline">Enabled</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Commission Rates by Service</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Input
+                        placeholder="Service type (e.g., Premium Wash)"
+                        value={commissionServiceType}
+                        onChange={(e) =>
+                          setCommissionServiceType(e.target.value)
+                        }
+                      />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Rate %"
+                        value={commissionRateValue}
+                        onChange={(e) => setCommissionRateValue(e.target.value)}
+                      />
+                      <Button
+                        onClick={handleSaveCommissionRate}
+                        disabled={commissionLoading}
+                        className="btn-futuristic"
+                      >
+                        {commissionLoading ? "Saving..." : "Save Rate"}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {commissionRates.length === 0 && !commissionLoading && (
+                        <p className="text-sm text-muted-foreground">
+                          No commission rates configured yet.
+                        </p>
+                      )}
+                      {commissionRates.map((rate) => (
+                        <div
+                          key={rate.id || rate.serviceType}
+                          className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        >
+                          <div>
+                            <p className="font-medium">{rate.serviceType}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {rate.isActive ? "Active" : "Inactive"}
+                            </p>
+                          </div>
+                          <Badge variant="outline">
+                            {Number(rate.rate).toFixed(2)}%
+                          </Badge>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

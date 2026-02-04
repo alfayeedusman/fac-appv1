@@ -76,7 +76,7 @@ export default function PaymentMethodsSelection({
           log("xendit cache parse error", e);
         }
 
-        const resp = await fetch(`/api/neon/payment/xendit/methods`);
+        const resp = await fetch(`/api/supabase/payment/xendit/methods`);
         const json = await resp.json();
         if (resp.ok && json.success) {
           setMethods(json.methods || []);
