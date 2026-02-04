@@ -311,7 +311,7 @@ class SupabaseDatabaseClient {
       }
 
       // 2) Fallback to same-origin relative API
-      const fallbackUrl = `/api/neon/test`;
+      const fallbackUrl = `/api/supabase/test`;
       try {
         const response = await tryFetch(fallbackUrl, 8000);
         if (response.ok) {
@@ -611,7 +611,7 @@ class SupabaseDatabaseClient {
           const ac2 = new AbortController();
           const timeoutHandler2 = createSafeTimeoutAbort(ac2, 10000);
           try {
-            const resp2 = await fetch(`/api/neon/auth/login`, {
+            const resp2 = await fetch(`/api/supabase/auth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
@@ -663,7 +663,7 @@ class SupabaseDatabaseClient {
           const ac4 = new AbortController();
           const timeoutHandler4 = createSafeTimeoutAbort(ac4, 10000);
           try {
-            const resp3 = await fetch(`/api/neon/auth/login`, {
+            const resp3 = await fetch(`/api/supabase/auth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
@@ -781,7 +781,7 @@ class SupabaseDatabaseClient {
       warn("⚠️ Primary registration URL failed, trying fallback...");
       // Try fallback URL
       try {
-        const fallbackUrl = `/api/neon/auth/register`;
+        const fallbackUrl = `/api/supabase/auth/register`;
         return await tryRegister(fallbackUrl);
       } catch (fallbackError) {
         logError("❌ Both registration attempts failed");
@@ -856,7 +856,7 @@ class SupabaseDatabaseClient {
     if (primary.success) return primary;
 
     // Fallback same-origin
-    const fallback = await tryCreate(`/api/neon/bookings`);
+    const fallback = await tryCreate(`/api/supabase/bookings`);
     return fallback;
   }
 
@@ -903,7 +903,7 @@ class SupabaseDatabaseClient {
       // Fallback to same-origin
       try {
         const response = await fetch(
-          `/api/neon/bookings/availability?${params}`,
+          `/api/supabase/bookings/availability?${params}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -955,7 +955,7 @@ class SupabaseDatabaseClient {
     } catch (error) {
       // Fallback to same-origin
       try {
-        const response = await fetch(`/api/neon/bookings/garage-settings`, {
+        const response = await fetch(`/api/supabase/bookings/garage-settings`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -2107,7 +2107,7 @@ class SupabaseDatabaseClient {
 
     // Try to fetch from API with timeout
     try {
-      const result = await fetchWithTimeout("/api/neon/branches", 1500);
+      const result = await fetchWithTimeout("/api/supabase/branches", 1500);
       if (
         result?.success &&
         Array.isArray(result.branches) &&
@@ -2590,7 +2590,7 @@ class SupabaseDatabaseClient {
     };
 
     const primaryUrl = makeUrl(this.baseUrl);
-    const fallbackUrl = makeUrl("/api/neon");
+    const fallbackUrl = makeUrl("/api/supabase");
 
     console.log(`🔍 Attempting fetchJsonWithFallback for path: ${path}`);
     console.log(`🎯 Primary URL: ${primaryUrl}`);
