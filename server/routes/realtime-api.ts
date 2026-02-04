@@ -187,8 +187,10 @@ router.post("/crew/location", async (req, res) => {
 
 // Get crew locations (real-time)
 router.get("/crew/locations", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Get latest location for each active crew member
