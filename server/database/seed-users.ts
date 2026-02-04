@@ -22,7 +22,7 @@ export async function seedUsers() {
     }
 
     if (!db) {
-      console.error("❌ Database not connected after retries");
+      console.warn("⚠️ Database not connected after retries, skipping user seeding");
       return;
     }
 
