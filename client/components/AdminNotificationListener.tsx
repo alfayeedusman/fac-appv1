@@ -6,6 +6,7 @@ import { log, warn } from '@/utils/logger';
 // Global notification listener for admin users
 import realtimeService from '@/services/realtimeService';
 import { addAdminNotification } from '@/utils/adminNotifications';
+import { notificationSoundService } from '@/services/notificationSoundService';
 
 export default function AdminNotificationListener() {
   const [lastCheckTime, setLastCheckTime] = useState(Date.now());
@@ -134,6 +135,11 @@ export default function AdminNotificationListener() {
 
   const playNotificationSound = (soundType: string) => {
     try {
+      if (!notificationSoundService.isNotificationEnabled()) {
+        console.log('🔇 Notification sounds disabled');
+        return;
+      }
+
       // Get notification settings
       const savedSettings = localStorage.getItem('notification_settings');
       const settings = savedSettings ? JSON.parse(savedSettings) : [
@@ -161,6 +167,12 @@ export default function AdminNotificationListener() {
       }
 
       const audioContext = new AudioContext();
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {
+          console.warn('Audio context resume blocked by browser');
+        });
+      }
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
