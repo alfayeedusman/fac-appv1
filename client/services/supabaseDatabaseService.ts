@@ -1,4 +1,4 @@
-// Client-side service to interact with Neon database via API
+// Client-side service to interact with Supabase database via API
 import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
 import { log, info, warn, error as logError } from "@/utils/logger";
