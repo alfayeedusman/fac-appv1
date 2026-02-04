@@ -7,7 +7,7 @@ let sql: any;
 let db: any;
 let connectionFailed = false;
 let lastConnectionAttempt = 0;
-const CONNECTION_RETRY_DELAY = 30000; // 30 seconds between reconnection attempts
+const CONNECTION_RETRY_DELAY = 10000; // 10 seconds between reconnection attempts
 
 // Track if we're currently attempting a connection
 let isConnecting = false;
