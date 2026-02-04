@@ -1422,8 +1422,10 @@ export async function migrate() {
   const shouldSkip =
     process.env.SKIP_MIGRATIONS === "true" ||
     process.env.DISABLE_MIGRATIONS === "true";
+  const databaseUrl =
+    process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
-  if (shouldSkip || !DATABASE_URL) {
+  if (shouldSkip || !databaseUrl) {
     console.warn(
       "⚠️ Skipping database migrations: missing database URL or migrations disabled.",
     );
