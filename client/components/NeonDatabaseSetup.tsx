@@ -24,7 +24,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import { migrationHelper } from '@/utils/migrationHelper';
 
 export default function NeonDatabaseSetup() {
@@ -46,7 +46,7 @@ export default function NeonDatabaseSetup() {
   const checkConnection = async () => {
     setConnectionStatus('connecting');
     try {
-      const result = await neonDbClient.testConnection();
+      const result = await supabaseDbClient.testConnection();
       setConnectionStatus(result.connected ? 'connected' : 'disconnected');
       setStats(result.stats || null);
       setError(null);
@@ -61,13 +61,13 @@ export default function NeonDatabaseSetup() {
     setError(null);
     
     try {
-      const success = await neonDbClient.initialize();
+      const success = await supabaseDbClient.initialize();
       if (success) {
         setConnectionStatus('connected');
         await checkConnection(); // Refresh stats
         toast({
           title: 'Database Initialized',
-          description: 'Neon database has been set up successfully!',
+          description: 'Supabase database has been set up successfully!',
         });
       } else {
         throw new Error('Database initialization failed');
@@ -100,7 +100,7 @@ export default function NeonDatabaseSetup() {
       if (result.success) {
         toast({
           title: 'Migration Successful',
-          description: `Successfully migrated ${result.migrated} items to Neon database.`,
+          description: `Successfully migrated ${result.migrated} items to Supabase database.`,
         });
 
         // Clear localStorage after successful migration
@@ -259,7 +259,7 @@ export default function NeonDatabaseSetup() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You can set up Neon database in two ways: via MCP integration (recommended) or manual setup.
+                  You can set up Supabase database in two ways: via MCP integration (recommended) or manual setup.
                 </AlertDescription>
               </Alert>
 
@@ -336,7 +336,7 @@ export default function NeonDatabaseSetup() {
                       <Alert>
                         <HardDrive className="h-4 w-4" />
                         <AlertDescription>
-                          Local data found in browser storage. Migrate to Neon database for better performance and reliability.
+                          Local data found in browser storage. Migrate to Supabase database for better performance and reliability.
                         </AlertDescription>
                       </Alert>
 
@@ -375,7 +375,7 @@ export default function NeonDatabaseSetup() {
                         <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
                           <AlertDescription>
-                            Connect to Neon database first before migrating data.
+                            Connect to Supabase database first before migrating data.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -385,7 +385,7 @@ export default function NeonDatabaseSetup() {
                       <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
                       <h3 className="font-semibold mb-2">No Local Data Found</h3>
                       <p className="text-muted-foreground">
-                        All data is already stored in the Neon database or no data exists.
+                        All data is already stored in the Supabase database or no data exists.
                       </p>
                     </div>
                   )}
@@ -431,7 +431,7 @@ export default function NeonDatabaseSetup() {
                     <div>
                       <h4 className="font-semibold mb-2">Migration Process:</h4>
                       <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Connect to Neon database</li>
+                        <li>Connect to Supabase database</li>
                         <li>Initialize database schema and tables</li>
                         <li>System automatically falls back to localStorage if database is unavailable</li>
                         <li>Existing localStorage data remains as backup</li>
