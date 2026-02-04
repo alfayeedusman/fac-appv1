@@ -352,17 +352,32 @@ export const createServer = async () => {
   console.log("🎨 CMS API routes registered successfully");
 
   // Serve React admin app for everything that's NOT an API route
-  const reactBuildPath = path.join(__dirname, "../dist/spa");
-  app.use(express.static(reactBuildPath));
+  // Only in production mode - in development, Vite handles the React app
+  if (process.env.NODE_ENV === "production") {
+    const reactBuildPath = path.join(__dirname, "../dist/spa");
+    app.use(express.static(reactBuildPath));
 
-  // Only serve React app for non-API routes
-  app.get("*", (req, res, next) => {
-    // Skip if it's an API route
-    if (req.path.startsWith("/api/")) {
-      return res.status(404).json({ error: "API endpoint not found" });
-    }
-    res.sendFile(path.join(reactBuildPath, "index.html"));
-  });
+    // Serve React app for non-API routes
+    app.get("*", (req, res, next) => {
+      // Skip if it's an API route
+      if (req.path.startsWith("/api/")) {
+        return res.status(404).json({ error: "API endpoint not found" });
+      }
+      res.sendFile(path.join(reactBuildPath, "index.html"));
+    });
+  } else {
+    // In development, let Vite handle the React app
+    // Just handle API routes
+    app.get("*", (req, res, next) => {
+      // Skip if it's an API route
+      if (req.path.startsWith("/api/")) {
+        return res.status(404).json({ error: "API endpoint not found" });
+      }
+      // In development, Vite middleware will handle this
+      // If we get here, it means Vite didn't handle it, so return 404
+      res.status(404).json({ error: "Not found" });
+    });
+  }
 
   return app;
 };
