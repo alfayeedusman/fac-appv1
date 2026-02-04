@@ -16,10 +16,10 @@ router.get("/health", async (req, res) => {
     const stats = await supabaseDbService.getStats();
     res.json({
       status: "healthy",
-      system: "neon-database",
+      system: "supabase-database",
       timestamp: new Date().toISOString(),
       services: {
-        neon: "connected",
+        supabase: "connected",
         firebase: "mock-connected",
         stats,
       },
@@ -27,7 +27,7 @@ router.get("/health", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "unhealthy",
-      system: "neon-database",
+      system: "supabase-database",
       timestamp: new Date().toISOString(),
       error: "Database connection failed",
     });
