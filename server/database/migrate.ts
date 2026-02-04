@@ -10,20 +10,44 @@ export async function runMigrations() {
   console.log("🚀 Starting database migrations...");
 
   try {
-    const sql = await getSqlClient();
+    let sql;
+    try {
+      sql = await getSqlClient();
+    } catch (error) {
+      console.warn("⚠️ Database connection unavailable, skipping migrations:", error);
+      return false;
+    }
+
     if (!sql) {
-      throw new Error("DATABASE_URL/SUPABASE_DATABASE_URL is not configured");
+      console.warn("⚠️ DATABASE_URL/SUPABASE_DATABASE_URL is not configured");
+      return false;
     }
 
     // Test connection first
-    const isConnected = await testConnection();
-    if (!isConnected) {
-      throw new Error("Database connection failed");
+    let isConnected = false;
+    try {
+      isConnected = await testConnection(false); // Don't auto-reconnect during migration
+    } catch (error) {
+      console.warn("⚠️ Database connection test failed, skipping migrations");
+      return false;
     }
 
-    const db = await getDatabase();
+    if (!isConnected) {
+      console.warn("⚠️ Database connection failed, skipping migrations");
+      return false;
+    }
+
+    let db;
+    try {
+      db = await getDatabase();
+    } catch (error) {
+      console.warn("⚠️ Database initialization failed, skipping migrations");
+      return false;
+    }
+
     if (!db) {
-      throw new Error("Database not initialized");
+      console.warn("⚠️ Database not initialized, skipping migrations");
+      return false;
     }
 
     // Create CUID2 extension if needed (for better ID generation)
