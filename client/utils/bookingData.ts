@@ -19,18 +19,18 @@ export interface BookingRecord {
   crew?: string[];
 }
 
-// DEPRECATED: Use neonDbClient.getBookings() instead
+// DEPRECATED: Use supabaseDbClient.getBookings() instead
 // This function only exists for backward compatibility and will be removed
 export const getBookings = (): BookingRecord[] => {
-  console.warn('⚠️ DEPRECATED: getBookings() from bookingData.ts is deprecated. Use neonDbClient.getBookings() instead.');
+  console.warn('⚠️ DEPRECATED: getBookings() from bookingData.ts is deprecated. Use supabaseDbClient.getBookings() instead.');
   return [];
 };
 
-// DEPRECATED: Use neonDbClient.createBooking() instead
+// DEPRECATED: Use supabaseDbClient.createBooking() instead
 export const addBooking = (
   booking: Omit<BookingRecord, "id" | "createdAt" | "status">,
 ): BookingRecord => {
-  console.warn('⚠️ DEPRECATED: addBooking() from bookingData.ts is deprecated. Use neonDbClient.createBooking() instead.');
+  console.warn('⚠️ DEPRECATED: addBooking() from bookingData.ts is deprecated. Use supabaseDbClient.createBooking() instead.');
   const newBooking: BookingRecord = {
     ...booking,
     id: `TEMP-${Date.now()}`,
@@ -40,38 +40,38 @@ export const addBooking = (
   return newBooking;
 };
 
-// DEPRECATED: Use neonDbClient.updateBooking() instead
+// DEPRECATED: Use supabaseDbClient.updateBooking() instead
 export const updateBookingStatus = (
   id: string,
   status: BookingRecord["status"],
 ): void => {
-  console.warn('⚠️ DEPRECATED: updateBookingStatus() from bookingData.ts is deprecated. Use neonDbClient.updateBooking() instead.');
+  console.warn('⚠️ DEPRECATED: updateBookingStatus() from bookingData.ts is deprecated. Use supabaseDbClient.updateBooking() instead.');
 };
 
-// DEPRECATED: Use neonDbClient.updateBooking() instead
+// DEPRECATED: Use supabaseDbClient.updateBooking() instead
 export const addBookingRating = (
   id: string,
   rating: number,
   review?: string,
 ): void => {
-  console.warn('⚠️ DEPRECATED: addBookingRating() from bookingData.ts is deprecated. Use neonDbClient.updateBooking() instead.');
+  console.warn('⚠️ DEPRECATED: addBookingRating() from bookingData.ts is deprecated. Use supabaseDbClient.updateBooking() instead.');
 };
 
-// DEPRECATED: Use neonDbClient.updateBooking() instead
+// DEPRECATED: Use supabaseDbClient.updateBooking() instead
 export const cancelBooking = (id: string): void => {
-  console.warn('⚠️ DEPRECATED: cancelBooking() from bookingData.ts is deprecated. Use neonDbClient.updateBooking() instead.');
+  console.warn('⚠️ DEPRECATED: cancelBooking() from bookingData.ts is deprecated. Use supabaseDbClient.updateBooking() instead.');
 };
 
-// DEPRECATED: Use neonDbClient.getBookings() with filter instead
+// DEPRECATED: Use supabaseDbClient.getBookings() with filter instead
 export const getBookingsByStatus = (
   status: BookingRecord["status"],
 ): BookingRecord[] => {
-  console.warn('⚠️ DEPRECATED: getBookingsByStatus() from bookingData.ts is deprecated. Use neonDbClient.getBookings() with filter instead.');
+  console.warn('⚠️ DEPRECATED: getBookingsByStatus() from bookingData.ts is deprecated. Use supabaseDbClient.getBookings() with filter instead.');
   return [];
 };
 
-// DEPRECATED: Use neonDbClient.getBookings() with limit instead
+// DEPRECATED: Use supabaseDbClient.getBookings() with limit instead
 export const getRecentBookings = (limit: number = 5): BookingRecord[] => {
-  console.warn('⚠️ DEPRECATED: getRecentBookings() from bookingData.ts is deprecated. Use neonDbClient.getBookings() with limit instead.');
+  console.warn('⚠️ DEPRECATED: getRecentBookings() from bookingData.ts is deprecated. Use supabaseDbClient.getBookings() with limit instead.');
   return [];
 };
