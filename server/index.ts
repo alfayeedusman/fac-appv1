@@ -365,19 +365,9 @@ export const createServer = async () => {
       }
       res.sendFile(path.join(reactBuildPath, "index.html"));
     });
-  } else {
-    // Development: Let Vite serve React, but handle non-API 404s
-    // Add a middleware that passes through non-API requests to Vite
-    app.use((req, res, next) => {
-      // Only handle API routes that weren't matched
-      if (req.path.startsWith("/api/")) {
-        // API route wasn't handled - return 404
-        return res.status(404).json({ error: "API endpoint not found" });
-      }
-      // For all other routes (HTML pages, assets), pass to Vite
-      next();
-    });
   }
+  // In development, Vite's appType: 'spa' configuration handles serving index.html as fallback
+  // No additional middleware needed - API routes are handled above, Vite handles everything else
 
   return app;
 };
