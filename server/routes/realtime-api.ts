@@ -266,10 +266,12 @@ router.get("/crew/locations", async (req, res) => {
 
 // Update crew status
 router.post("/crew/status", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = StatusUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.beginTransaction();
@@ -324,11 +326,13 @@ router.post("/crew/status", async (req, res) => {
 
 // Get crew status history
 router.get("/crew/:crewId/status-history", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const crewId = parseInt(req.params.crewId);
     const limit = parseInt(req.query.limit as string) || 50;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(
@@ -366,10 +370,12 @@ router.get("/crew/:crewId/status-history", async (req, res) => {
 
 // Update job status and progress
 router.post("/jobs/update", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = JobUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.beginTransaction();
