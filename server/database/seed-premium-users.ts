@@ -1,16 +1,13 @@
 import { neon } from "@neondatabase/serverless";
 import bcrypt from "bcryptjs";
-
-// Initialize Neon SQL client
-const DATABASE_URL =
-  process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "";
-const sql = DATABASE_URL ? neon(DATABASE_URL) : (null as any);
+import { getSqlClient } from "./connection";
 
 export async function seedPremiumUsers() {
   console.log("🌱 Seeding premium users and test accounts...");
 
+  const sql = await getSqlClient();
   if (!sql) {
-    console.error("❌ DATABASE_URL not configured");
+    console.error("❌ SUPABASE_DATABASE_URL not configured");
     return;
   }
 
