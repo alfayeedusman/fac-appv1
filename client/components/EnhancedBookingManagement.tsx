@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import BranchFilter from '@/components/BranchFilter';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import {
   Calendar,
   Clock,
@@ -129,7 +129,7 @@ export default function EnhancedBookingManagement({ userRole, showCrewAssignment
       const userEmail = localStorage.getItem('userEmail');
 
       // Fetch bookings from Neon database with branch filtering
-      const result = await neonDbClient.getBookings({
+      const result = await supabaseDbClient.getBookings({
         branch: branchFilter,
         userEmail: userEmail || undefined,
         userRole: userRole,

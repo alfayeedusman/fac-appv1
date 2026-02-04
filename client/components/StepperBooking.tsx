@@ -51,7 +51,7 @@ import {
   generateTimeSlots,
   isSlotAvailable,
 } from "@/utils/adminConfig";
-import { neonDbClient, type Booking } from "@/services/neonDatabaseService";
+import { supabaseDbClient, type Booking } from "@/services/supabaseDatabaseService";
 import {
   getCarWashServices,
   calculateServicePrice,
@@ -501,7 +501,7 @@ export default function StepperBooking({
       // Load saved vehicles
       setIsLoadingVehicles(true);
       try {
-        const result = await neonDbClient.getUserVehicles(userId);
+        const result = await supabaseDbClient.getUserVehicles(userId);
         if (result.success && result.vehicles) {
           setSavedVehicles(result.vehicles);
 
@@ -918,7 +918,7 @@ export default function StepperBooking({
       const userEmail = isGuest
         ? bookingData.email
         : localStorage.getItem("userEmail") || undefined;
-      const result = await neonDbClient.validateVoucher({
+      const result = await supabaseDbClient.validateVoucher({
         code: voucherInput.trim().toUpperCase(),
         bookingAmount: bookingData.totalPrice,
         userEmail,
@@ -1198,7 +1198,7 @@ export default function StepperBooking({
         receiptUrl: bookingPayload.receiptUrl ? "[File present]" : undefined,
       });
 
-      const bookingResult = await neonDbClient.createBooking(bookingPayload);
+      const bookingResult = await supabaseDbClient.createBooking(bookingPayload);
       console.log("📥 Booking response:", bookingResult);
 
       if (!bookingResult.success || !bookingResult.booking) {
@@ -1232,7 +1232,7 @@ export default function StepperBooking({
           const userEmail = isGuest
             ? bookingData.email
             : localStorage.getItem("userEmail") || undefined;
-          await neonDbClient.redeemVoucher({
+          await supabaseDbClient.redeemVoucher({
             code: bookingData.voucherCode,
             userEmail,
             bookingId: createdBooking.id,
@@ -1407,7 +1407,7 @@ export default function StepperBooking({
               const userId = localStorage.getItem("userId");
               if (!userId) return;
 
-              const result = await neonDbClient.addUserVehicle(userId, vehicle);
+              const result = await supabaseDbClient.addUserVehicle(userId, vehicle);
               if (result.success && result.vehicle) {
                 setSavedVehicles([...savedVehicles, result.vehicle]);
                 setSelectedVehicleId(result.vehicle.id);
@@ -2451,7 +2451,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
   useEffect(() => {
     const fetchGarageSettings = async () => {
       try {
-        const result = await neonDbClient.getGarageSettings();
+        const result = await supabaseDbClient.getGarageSettings();
         if (result.success && result.data) {
           setGarageSettings(result.data);
         }
@@ -2478,7 +2478,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
 
         // Fetch availability for each slot in parallel
         const promises = slots.map((slot) =>
-          neonDbClient
+          supabaseDbClient
             .getSlotAvailability(bookingData.date, slot, bookingData.branch)
             .then((result) => {
               if (result.success && result.data) {
@@ -2617,7 +2617,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
       setLoadingBranches(true);
       try {
         // Loading branches from database (silent)
-        const res = await neonDbClient.getBranches();
+        const res = await supabaseDbClient.getBranches();
         // Branches response (silent)
 
         if (
@@ -2669,7 +2669,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
     const address = window.prompt("Branch address (optional)") || undefined;
     const city = "Zamboanga City";
     try {
-      const resp = await neonDbClient.createBranch({
+      const resp = await supabaseDbClient.createBranch({
         name,
         code,
         address,
@@ -2679,7 +2679,7 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
         toast({ title: "Branch created", description: `${name} added.` });
         // reload branches - silently handle errors
         try {
-          const res = await neonDbClient.getBranches();
+          const res = await supabaseDbClient.getBranches();
           if (res.success && res.branches) {
             setBranches(
               res.branches.map((b: any) => ({

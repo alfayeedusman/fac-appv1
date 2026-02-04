@@ -40,7 +40,7 @@ import {
   TrendingUpIcon,
   AlertCircle,
 } from "lucide-react";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { log, warn, error as logError } from "@/utils/logger";
 import { formatDistanceToNow, format, differenceInDays } from "date-fns";
@@ -173,8 +173,8 @@ export default function CustomerHub() {
 
       // Fetch customers AND bookings in parallel (only once each!)
       const [customersResult, bookingsResult] = await Promise.all([
-        neonDbClient.getCustomers(),
-        neonDbClient.getBookings({
+        supabaseDbClient.getCustomers(),
+        supabaseDbClient.getBookings({
           userRole: localStorage.getItem("userRole") || "admin",
           userEmail: localStorage.getItem("userEmail") || "",
         }),
@@ -456,7 +456,7 @@ export default function CustomerHub() {
       }
 
       // Call the backend to create subscription upgrade
-      const response = await neonDbClient.createSubscriptionUpgrade({
+      const response = await supabaseDbClient.createSubscriptionUpgrade({
         userId: selectedCustomer.id,
         email: selectedCustomer.email,
         packageId: selectedPackage.id,

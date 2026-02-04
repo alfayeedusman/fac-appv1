@@ -33,7 +33,7 @@ import {
   Eye,
 } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
 import SubscriptionDetailsCard from "@/components/SubscriptionDetailsCard";
@@ -93,14 +93,14 @@ const ActiveSubscriptionsManager = () => {
       console.log("📋 Loading active subscriptions...");
 
       // Fetch subscriptions from database
-      if (!neonDbClient.getSubscriptions) {
+      if (!supabaseDbClient.getSubscriptions) {
         console.error("❌ getSubscriptions method not available");
         setIsEndpointAvailable(false);
         setSubscriptions([]);
         return;
       }
 
-      const result = await neonDbClient.getSubscriptions({ status: "active" });
+      const result = await supabaseDbClient.getSubscriptions({ status: "active" });
       console.log("📋 Subscriptions result:", result);
 
       if (result?.success === false) {

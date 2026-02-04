@@ -21,7 +21,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Upload, CreditCard, CheckCircle, Loader } from "lucide-react";
 import { notificationManager } from "./NotificationModal";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface PaymentUploadModalProps {
   isOpen: boolean;
@@ -88,7 +88,7 @@ export default function PaymentUploadModal({
     try {
       const userEmail = localStorage.getItem("userEmail") || "";
 
-      const upgradeResult = await neonDbClient.createSubscriptionUpgrade({
+      const upgradeResult = await supabaseDbClient.createSubscriptionUpgrade({
         userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
         email: userEmail,
         packageId: selectedPlan,

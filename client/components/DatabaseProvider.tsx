@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import { toast } from '@/hooks/use-toast';
 
 interface DatabaseContextType {
@@ -51,7 +51,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
           );
 
           const health = await Promise.race([
-            neonDbClient.testConnection(),
+            supabaseDbClient.testConnection(),
             timeoutPromise
           ]);
 
@@ -118,7 +118,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
   const syncServerNotifications = async () => {
     try {
       // Fetch persistent server notifications
-      const notificationsResult = await neonDbClient.getNotifications();
+      const notificationsResult = await supabaseDbClient.getNotifications();
       if (notificationsResult.success && notificationsResult.notifications) {
         // Sync server notifications to localStorage for offline access
         const currentSystemNotifications = localStorage.getItem('system_notifications');
@@ -194,7 +194,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
 
   const healthCheck = async (): Promise<boolean> => {
     try {
-      const health = await neonDbClient.testConnection();
+      const health = await supabaseDbClient.testConnection();
       const healthy = health.connected;
       setIsConnected(healthy);
       return healthy;
