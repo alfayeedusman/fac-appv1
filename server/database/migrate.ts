@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-import { neon } from "@neondatabase/serverless";
-import { getDatabase, testConnection } from "./connection";
-import { seedUsers } from "./seed-users";
-import { seedBranches } from "./seed-branches";
-=======
 import { getDatabase, getSqlClient, testConnection } from "./connection";
->>>>>>> ai_main_eac8da03b891
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
 
@@ -1584,12 +1577,6 @@ export async function seedInitialData() {
 
 // Main migration function
 export async function migrate() {
-<<<<<<< HEAD
-  await runMigrations();
-  await seedInitialData();
-  await seedUsers();
-  await seedBranches();
-=======
   const shouldSkip =
     process.env.SKIP_MIGRATIONS === "true" ||
     process.env.DISABLE_MIGRATIONS === "true";
@@ -1619,7 +1606,6 @@ export async function migrate() {
       throw error;
     }
   }
->>>>>>> ai_main_eac8da03b891
 }
 
 // Run migrations if this file is executed directly
