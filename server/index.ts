@@ -108,18 +108,6 @@ export const createServer = async () => {
   app.get("/api/supabase/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/supabase/fac-map-stats", neonApiRoutes.getFacMapStats);
 
-<<<<<<< HEAD
-  // Auth endpoints
-  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
-  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
-  app.post(
-    "/api/neon/auth/update-subscription",
-    neonApiRoutes.updateSubscription,
-  );
-  app.get("/api/neon/auth/subscription", neonApiRoutes.fetchUserSubscription);
-  app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
-  app.post("/api/neon/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
-=======
   // DEBUG endpoints (for development only)
   app.post(
     "/api/supabase/debug/password-verify",
@@ -134,7 +122,6 @@ export const createServer = async () => {
     "/api/supabase/admin/force-rehash-passwords",
     neonApiRoutes.adminForceRehashPasswords,
   );
->>>>>>> ai_main_eac8da03b891
 
   // Auth endpoints with database health check (critical routes)
   app.post(
@@ -374,35 +361,11 @@ export const createServer = async () => {
     if (req.path.startsWith("/api/")) {
       return res.status(404).json({ error: "API endpoint not found" });
     }
-<<<<<<< HEAD
-  }, 1000);
-
-  // ============= LOCALSTORAGE DATA SYNC ENDPOINTS =============
-  // User Preferences
-  app.post("/api/neon/sync/preferences", neonApiRoutes.syncUserPreferences);
-  app.get("/api/neon/sync/preferences", neonApiRoutes.getUserPreferences);
-
-  // User Notifications
-  app.post("/api/neon/sync/notifications", neonApiRoutes.syncUserNotifications);
-  app.get("/api/neon/sync/notifications", neonApiRoutes.getUserNotifications);
-
-  // Printer Configuration
-  app.post("/api/neon/sync/printer-config", neonApiRoutes.syncPrinterConfig);
-  app.get("/api/neon/sync/printer-configs", neonApiRoutes.getPrinterConfigs);
-
-  // Gamification Progress
-  app.post(
-    "/api/neon/sync/gamification",
-    neonApiRoutes.syncGamificationProgress,
-  );
-  app.get("/api/neon/sync/gamification", neonApiRoutes.getGamificationProgress);
+    res.sendFile(path.join(reactBuildPath, "index.html"));
+  });
 
   // Error handling middleware (must be last)
   app.use(errorHandler);
-=======
-    res.sendFile(path.join(reactBuildPath, "index.html"));
-  });
->>>>>>> ai_main_eac8da03b891
 
   return app;
 };
