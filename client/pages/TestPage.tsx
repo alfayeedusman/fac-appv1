@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 export default function TestPage() {
+  const [count, setCount] = useState(0);
+
   return (
     <div className="min-h-screen bg-background p-8">
       <h1 className="text-4xl font-bold text-foreground mb-4">Test Page</h1>
