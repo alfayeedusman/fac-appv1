@@ -1,15 +1,13 @@
 import { getDatabase } from "./connection";
 import * as schema from "./schema";
-import { getDatabase } from "./connection";
 
 export async function seedBranches() {
-  const db = await getDatabase();
-  if (!db) {
-    console.error("❌ Database not connected");
-    return;
-  }
-
   try {
+    const db = await getDatabase();
+    if (!db) {
+      console.warn("⚠️ Database not connected, skipping branch seeding");
+      return;
+    }
     console.log("🏪 Seeding branch data...");
 
     // Check if branches already exist
