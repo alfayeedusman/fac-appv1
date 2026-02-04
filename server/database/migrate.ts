@@ -1215,10 +1215,18 @@ export async function seedInitialData() {
   console.log("🌱 Seeding initial data...");
 
   try {
-    const sql = await getSqlClient();
-    const db = await getDatabase();
-    if (!db) {
-      throw new Error("Database not initialized");
+    let sql, db;
+    try {
+      sql = await getSqlClient();
+      db = await getDatabase();
+    } catch (error) {
+      console.warn("⚠️ Database not initialized, skipping initial data seeding");
+      return false;
+    }
+
+    if (!db || !sql) {
+      console.warn("⚠️ Database not initialized, skipping initial data seeding");
+      return false;
     }
 
     // Create or update superadmin user
