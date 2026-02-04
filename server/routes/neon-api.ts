@@ -25,8 +25,8 @@ const emitPusher = async (
 };
 
 // Simple in-memory guards to avoid repeated heavy migrations per server process
-let __NEON_DB_INITIALIZED__ = false;
-let __NEON_DB_INITIALIZING__ = false;
+let __SUPABASE_DB_INITIALIZED__ = false;
+let __SUPABASE_DB_INITIALIZING__ = false;
 
 // Admin API catalog for mobile app integration
 export const getApiCatalog: RequestHandler = async (req, res) => {
@@ -37,22 +37,22 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
       dashboard: [
         {
           method: "GET",
-          path: "/api/neon/stats",
+          path: "/api/supabase/stats",
           description: "Dashboard stats",
         },
         {
           method: "GET",
-          path: "/api/neon/realtime-stats",
+          path: "/api/supabase/realtime-stats",
           description: "Live crew/customer stats",
         },
         {
           method: "GET",
-          path: "/api/neon/analytics",
+          path: "/api/supabase/analytics",
           description: "Analytics charts data",
         },
         {
           method: "GET",
-          path: "/api/neon/crew/commission-summary",
+          path: "/api/supabase/crew/commission-summary",
           description: "Crew commission totals",
         },
       ],
@@ -187,16 +187,16 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
 };
 
 // Initialize database connection
-export const initializeNeonDB: RequestHandler = async (req, res) => {
+export const initializeSupabaseDB: RequestHandler = async (req, res) => {
   try {
-    if (__NEON_DB_INITIALIZED__) {
+    if (__SUPABASE_DB_INITIALIZED__) {
       return res.json({
         success: true,
         message: "Supabase database already initialized",
         timestamp: new Date().toISOString(),
       });
     }
-    if (__NEON_DB_INITIALIZING__) {
+    if (__SUPABASE_DB_INITIALIZING__) {
       return res.json({
         success: true,
         message: "Initialization in progress",
@@ -204,7 +204,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
       });
     }
 
-    __NEON_DB_INITIALIZING__ = true;
+    __SUPABASE_DB_INITIALIZING__ = true;
     console.log("🔄 Initializing Supabase database...");
 
     const db = await initializeDatabase();
@@ -228,7 +228,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
     // Run migrations (idempotent)
     await migrate();
 
-    __NEON_DB_INITIALIZED__ = true;
+    __SUPABASE_DB_INITIALIZED__ = true;
     res.json({
       success: true,
       message: "Supabase database initialized and migrated successfully",
@@ -241,12 +241,12 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
       error: error instanceof Error ? error.message : "Unknown error occurred",
     });
   } finally {
-    __NEON_DB_INITIALIZING__ = false;
+    __SUPABASE_DB_INITIALIZING__ = false;
   }
 };
 
 // Test database connection
-export const testNeonConnection: RequestHandler = async (req, res) => {
+export const testSupabaseConnection: RequestHandler = async (req, res) => {
   try {
     // Check if database URL is configured
     const databaseUrl =
