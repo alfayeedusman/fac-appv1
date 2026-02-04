@@ -1190,7 +1190,8 @@ export async function seedInitialData() {
   console.log("🌱 Seeding initial data...");
 
   try {
-    const db = getDatabase();
+    const sql = await getSqlClient();
+    const db = await getDatabase();
     if (!db) {
       throw new Error("Database not initialized");
     }
