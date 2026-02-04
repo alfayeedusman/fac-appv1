@@ -119,8 +119,8 @@ export async function seedBranches() {
     // Now seed some users for these branches
     await seedBranchUsers(db, insertedBranches);
   } catch (error) {
-    console.error("❌ Error seeding branches:", error);
-    throw error;
+    console.warn("⚠️ Error seeding branches (non-critical):", error);
+    // Don't throw, just warn - database might be unavailable
   }
 }
 
