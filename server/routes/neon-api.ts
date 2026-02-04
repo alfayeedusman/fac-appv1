@@ -207,7 +207,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
     __NEON_DB_INITIALIZING__ = true;
     console.log("🔄 Initializing Supabase database...");
 
-    const db = initializeDatabase();
+    const db = await initializeDatabase();
     if (!db) {
       return res.status(500).json({
         success: false,
