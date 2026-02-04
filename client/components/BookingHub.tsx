@@ -38,7 +38,7 @@ import {
   CreditCard,
   CheckCircle,
 } from "lucide-react";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -137,7 +137,7 @@ export default function BookingHub() {
   const loadBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await neonDbClient.getBookings({
+      const response = await supabaseDbClient.getBookings({
         userRole: localStorage.getItem("userRole") || "user",
         userEmail: localStorage.getItem("userEmail") || "",
       });

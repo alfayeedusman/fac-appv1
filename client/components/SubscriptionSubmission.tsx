@@ -27,7 +27,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { notificationManager } from "./NotificationModal";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface SubscriptionSubmissionProps {
   isOpen: boolean;
@@ -162,7 +162,7 @@ export default function SubscriptionSubmission({
       const packagePrice = parseInt(selectedPkg.price.replace(/[^0-9]/g, ""));
 
       // Create subscription in backend
-      const upgradeResult = await neonDbClient.createSubscriptionUpgrade({
+      const upgradeResult = await supabaseDbClient.createSubscriptionUpgrade({
         userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
         email: userEmail,
         packageId: selectedPackage,

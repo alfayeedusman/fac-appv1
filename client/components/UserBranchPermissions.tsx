@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User, Building2, Shield, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import type { User as UserType } from '@/services/neonDatabaseService';
+import type { User as UserType } from '@/services/supabaseDatabaseService';
 import BranchFilter from './BranchFilter';
 
 interface UserBranchPermissionsProps {

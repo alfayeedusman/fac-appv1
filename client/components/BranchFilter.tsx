@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { MapPin, Building2 } from "lucide-react";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface Branch {
   id: string;
@@ -46,7 +46,7 @@ export default function BranchFilter({
 
   const loadBranches = async () => {
     try {
-      const result = await neonDbClient.getBranches();
+      const result = await supabaseDbClient.getBranches();
       if (result.success && result.branches) {
         // Filter active branches only
         const activeBranches = result.branches.filter((b: Branch) => b.isActive);

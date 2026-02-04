@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Shield, Key, User, RefreshCw } from 'lucide-react';
 import { authService } from '@/services/authService';
-import { neonDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminLoginTest() {
@@ -44,13 +44,13 @@ export default function AdminLoginTest() {
       console.log('🔍 Testing database state...');
       
       // Test 1: Database connection
-      const connectionTest = await neonDbClient.testConnection();
+      const connectionTest = await supabaseDbClient.testConnection();
       
       // Test 2: Initialize database
-      const initResult = await neonDbClient.initialize();
+      const initResult = await supabaseDbClient.initialize();
       
       // Test 3: Check stats without exposing user details
-      const statsResult = await neonDbClient.getStats();
+      const statsResult = await supabaseDbClient.getStats();
       
       setDatabaseResults({
         connection: connectionTest,
