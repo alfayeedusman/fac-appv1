@@ -29,7 +29,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import BookingCard from "@/components/BookingCard";
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
-import type { Booking } from "@/services/neonDatabaseService";
+import type { Booking } from "@/services/supabaseDatabaseService";
 
 export default function BookingManagement() {
   const [bookings, setBookings] = useState<Booking[]>([]);
