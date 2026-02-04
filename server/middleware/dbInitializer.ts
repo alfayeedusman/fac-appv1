@@ -11,10 +11,10 @@ const MAX_INIT_ATTEMPTS = 3;
 // Paths that don't require database
 const DB_OPTIONAL_PATHS = [
   "/health",
-  "/neon/test",
-  "/neon/init",
-  "/neon/diagnose",
-  "/neon/login", // Login can use demo mode
+  "/supabase/test",
+  "/supabase/init",
+  "/supabase/diagnose",
+  "/supabase/auth/login", // Login can use demo mode
   "/api-catalog",
 ];
 
