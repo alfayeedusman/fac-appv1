@@ -337,6 +337,78 @@ export const diagnoseDatabase: RequestHandler = async (req, res) => {
   }
 };
 
+// Demo accounts for when database is unavailable
+const DEMO_ACCOUNTS: Record<string, any> = {
+  "superadmin@fayeedautocare.com": {
+    id: "usr_superadmin_001",
+    email: "superadmin@fayeedautocare.com",
+    fullName: "Super Admin",
+    role: "superadmin",
+    isActive: true,
+    branchLocation: "All Branches",
+    canViewAllBranches: true,
+    loyaltyPoints: 0,
+    subscriptionStatus: "free",
+  },
+  "admin@fayeedautocare.com": {
+    id: "usr_admin_001",
+    email: "admin@fayeedautocare.com",
+    fullName: "Admin User",
+    role: "admin",
+    isActive: true,
+    branchLocation: "All Branches",
+    canViewAllBranches: true,
+    loyaltyPoints: 0,
+    subscriptionStatus: "free",
+  },
+  "manager@tumaga.com": {
+    id: "usr_manager_tumaga",
+    email: "manager@tumaga.com",
+    fullName: "Juan Dela Cruz",
+    role: "manager",
+    isActive: true,
+    branchLocation: "Tumaga Branch",
+    canViewAllBranches: false,
+    loyaltyPoints: 0,
+    subscriptionStatus: "free",
+  },
+  "crew1@tumaga.com": {
+    id: "usr_crew_001",
+    email: "crew1@tumaga.com",
+    fullName: "Carlo Reyes",
+    role: "crew",
+    isActive: true,
+    branchLocation: "Tumaga Branch",
+    canViewAllBranches: false,
+    loyaltyPoints: 0,
+    subscriptionStatus: "free",
+  },
+  "customer@test.com": {
+    id: "usr_customer_001",
+    email: "customer@test.com",
+    fullName: "Maria Santos",
+    role: "user",
+    isActive: true,
+    branchLocation: "Tumaga Branch",
+    canViewAllBranches: false,
+    loyaltyPoints: 150,
+    subscriptionStatus: "basic",
+  },
+  "premium@test.com": {
+    id: "usr_premium_001",
+    email: "premium@test.com",
+    fullName: "John Dela Cruz",
+    role: "user",
+    isActive: true,
+    branchLocation: "Tumaga Branch",
+    canViewAllBranches: false,
+    loyaltyPoints: 500,
+    subscriptionStatus: "premium",
+  },
+};
+
+const DEMO_PASSWORD = "password123";
+
 // User authentication endpoints
 export const loginUser: RequestHandler = async (req, res) => {
   // Ensure JSON response headers
@@ -365,6 +437,8 @@ export const loginUser: RequestHandler = async (req, res) => {
     }
 
     let user;
+    let usingDemoMode = false;
+
     try {
       console.log("🔐 Attempting to fetch user from database...");
       user = await supabaseDbService.getUserByEmail(email);
