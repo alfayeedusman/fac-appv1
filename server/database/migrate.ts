@@ -1577,13 +1577,15 @@ export async function seedInitialData() {
 
 // Main migration function
 export async function migrate() {
+  // In production, check for skip flags; in dev, always run
+  const isDev = process.env.NODE_ENV !== "production";
   const shouldSkip =
-    process.env.SKIP_MIGRATIONS === "true" ||
-    process.env.DISABLE_MIGRATIONS === "true";
+    (!isDev && process.env.SKIP_MIGRATIONS === "true") ||
+    (!isDev && process.env.DISABLE_MIGRATIONS === "true");
   const databaseUrl =
     process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
-  console.log("🔍 Migration check - shouldSkip:", shouldSkip, "hasDbUrl:", !!databaseUrl);
+  console.log("🔍 Migration check - isDev:", isDev, "shouldSkip:", shouldSkip, "hasDbUrl:", !!databaseUrl);
 
   if (shouldSkip) {
     console.warn(
