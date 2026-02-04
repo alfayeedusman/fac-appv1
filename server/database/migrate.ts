@@ -1,4 +1,3 @@
-import { neon } from "@neondatabase/serverless";
 import { getDatabase, getSqlClient, testConnection } from "./connection";
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
