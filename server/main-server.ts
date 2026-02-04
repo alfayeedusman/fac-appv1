@@ -26,7 +26,7 @@ const __dirname = path.dirname(__filename);
 // Validate environment on startup
 validateEnvironment();
 
-export const createServer = () => {
+export const createServer = async () => {
   const app = express();
   const PORT = process.env.PORT || 3000;
 
