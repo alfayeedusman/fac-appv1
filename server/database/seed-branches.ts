@@ -1,8 +1,9 @@
 import { getDatabase } from "./connection";
 import * as schema from "./schema";
+import { getDatabase } from "./connection";
 
 export async function seedBranches() {
-  const db = getDatabase();
+  const db = await getDatabase();
   if (!db) {
     console.error("❌ Database not connected");
     return;
