@@ -34,17 +34,23 @@ export default defineConfig(({ mode }) => ({
 }));
 
 function expressPlugin(): Plugin {
+  let viteDevServer: any;
+
   return {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
+    configReady(env) {
+      // Store reference to Vite dev server when config is ready
+    },
     async configureServer(server) {
+      viteDevServer = server;
       const app = await createServer();
 
-      // Add Express app as middleware to Vite dev server
-      // This will handle all API routes before Vite's handlers
-      server.middlewares.use(app);
+      // Add Vite's dev middleware to Express so it can serve React files
+      app.use(server.middlewares);
 
-      // Vite will handle SPA fallback (serving index.html) via appType: 'spa' config
+      // Return the configured app to replace Vite's server
+      return app;
     },
   };
 }
