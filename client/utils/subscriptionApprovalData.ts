@@ -1,4 +1,4 @@
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/neonDatabaseService";
 
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
@@ -129,7 +129,7 @@ const fetchSubscriptions = async (params?: {
 
   const results = await Promise.all(
     statuses.map((status) =>
-      neonDbClient.getSubscriptions({
+      supabaseDbClient.getSubscriptions({
         status,
         userId: params?.userId,
       }),
@@ -151,8 +151,8 @@ export const getSubscriptionRequests = async (params?: {
 }): Promise<SubscriptionRequest[]> => {
   const [subscriptions, usersResult, packagesResult] = await Promise.all([
     fetchSubscriptions(params),
-    neonDbClient.getCustomers(),
-    neonDbClient.getServicePackages(),
+    supabaseDbClient.getCustomers(),
+    supabaseDbClient.getServicePackages(),
   ]);
 
   const users = usersResult.users || [];
@@ -201,7 +201,7 @@ export const updateSubscriptionRequest = async (
     return { success: true };
   }
 
-  const result = await neonDbClient.approveSubscriptionUpgrade(
+  const result = await supabaseDbClient.approveSubscriptionUpgrade(
     requestId,
     mapStatusToSubscription(updates.status),
   );
@@ -230,7 +230,7 @@ export const banCustomer = async (
   _adminEmail: string,
   _reason: string,
 ): Promise<{ success: boolean; error?: string }> => {
-  const result = await neonDbClient.updateUserStatus(userId, false);
+  const result = await supabaseDbClient.updateUserStatus(userId, false);
   return { success: result.success, error: result.error };
 };
 
@@ -238,7 +238,7 @@ export const unbanCustomer = async (
   userId: string,
   _adminEmail: string,
 ): Promise<{ success: boolean; error?: string }> => {
-  const result = await neonDbClient.updateUserStatus(userId, true);
+  const result = await supabaseDbClient.updateUserStatus(userId, true);
   return { success: result.success, error: result.error };
 };
 
@@ -258,7 +258,7 @@ export const getSubscriptionStats = async () => {
 export const getUserSubscriptionRequest = async (
   userEmail: string,
 ): Promise<SubscriptionRequest | null> => {
-  const usersResult = await neonDbClient.getCustomers();
+  const usersResult = await supabaseDbClient.getCustomers();
   const user = (usersResult.users || []).find(
     (item) => item.email === userEmail,
   );
@@ -296,7 +296,7 @@ export const getUserSubscriptionData = async (
 ): Promise<UserSubscriptionData | null> => {
   if (!userEmail) return null;
 
-  const usersResult = await neonDbClient.getCustomers();
+  const usersResult = await supabaseDbClient.getCustomers();
   const user = (usersResult.users || []).find(
     (item) => item.email === userEmail,
   );
@@ -304,8 +304,8 @@ export const getUserSubscriptionData = async (
   if (!user) return null;
 
   const [subscriptionsResult, packagesResult] = await Promise.all([
-    neonDbClient.getSubscriptions({ userId: user.id, status: "active" }),
-    neonDbClient.getServicePackages(),
+    supabaseDbClient.getSubscriptions({ userId: user.id, status: "active" }),
+    supabaseDbClient.getServicePackages(),
   ]);
 
   const subscription = subscriptionsResult.subscriptions?.[0];
