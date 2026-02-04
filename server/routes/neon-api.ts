@@ -168,7 +168,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
     if (__NEON_DB_INITIALIZED__) {
       return res.json({
         success: true,
-        message: "Neon database already initialized",
+        message: "Supabase database already initialized",
         timestamp: new Date().toISOString(),
       });
     }
@@ -181,7 +181,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
     }
 
     __NEON_DB_INITIALIZING__ = true;
-    console.log("🔄 Initializing Neon database...");
+    console.log("🔄 Initializing Supabase database...");
 
     const db = initializeDatabase();
     if (!db) {
@@ -207,7 +207,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
     __NEON_DB_INITIALIZED__ = true;
     res.json({
       success: true,
-      message: "Neon database initialized and migrated successfully",
+      message: "Supabase database initialized and migrated successfully",
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
