@@ -858,8 +858,8 @@ export default function AdminDashboard() {
     setIsPackageModalOpen(true);
   };
 
-  const handleDeletePackage = (pkg: ServicePackage) => {
-    Swal.fire({
+  const handleDeletePackage = async (pkg: ServicePackage) => {
+    const result = await Swal.fire({
       title: "Delete Package?",
       text: `Are you sure you want to delete ${pkg.name}?`,
       icon: "warning",
@@ -867,21 +867,31 @@ export default function AdminDashboard() {
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
-        Swal.fire({
-          title: "Deleted!",
-          text: "Package deleted successfully!",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
     });
+
+    if (!result.isConfirmed) return;
+
+    const response = await neonDbClient.deleteServicePackage(pkg.id);
+    if (response.success) {
+      setPackages((prev) => prev.filter((p) => p.id !== pkg.id));
+      Swal.fire({
+        title: "Deleted!",
+        text: "Package deleted successfully!",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        title: "Delete Failed",
+        text: response.error || "Unable to delete package.",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
+    }
   };
 
-  const handleSavePackage = () => {
+  const handleSavePackage = async () => {
     if (!newPackage.name || newPackage.basePrice <= 0) {
       Swal.fire({
         title: "Validation Error",
@@ -897,43 +907,76 @@ export default function AdminDashboard() {
       .map((f) => f.trim())
       .filter((f) => f.length > 0);
 
-    if (packageModalMode === "add") {
-      const pkg: ServicePackage = {
-        id: Date.now().toString(),
-        name: newPackage.name,
-        basePrice: newPackage.basePrice,
-        duration: newPackage.duration,
-        features,
-        active: newPackage.active,
-      };
-      setPackages((prev) => [...prev, pkg]);
-      Swal.fire({
-        title: "Package Created!",
-        text: "Package created successfully!",
-        icon: "success",
-        confirmButtonColor: "#f97316",
-      });
-    } else if (currentPackage) {
-      const updatedPackage: ServicePackage = {
-        ...currentPackage,
-        name: newPackage.name,
-        basePrice: newPackage.basePrice,
-        duration: newPackage.duration,
-        features,
-        active: newPackage.active,
-      };
-      setPackages((prev) =>
-        prev.map((p) => (p.id === currentPackage.id ? updatedPackage : p)),
-      );
-      Swal.fire({
-        title: "Package Updated!",
-        text: "Package updated successfully!",
-        icon: "success",
-        confirmButtonColor: "#f97316",
-      });
-    }
+    const payload = {
+      name: newPackage.name,
+      basePrice: newPackage.basePrice,
+      duration: newPackage.duration,
+      durationType: newPackage.durationType,
+      hours: newPackage.durationType === "hours" ? newPackage.hours : undefined,
+      startDate:
+        newPackage.durationType === "custom" ? newPackage.startDate : undefined,
+      endDate:
+        newPackage.durationType === "custom" ? newPackage.endDate : undefined,
+      features,
+      banner: newPackage.banner,
+      active: newPackage.active,
+    };
 
-    setIsPackageModalOpen(false);
+    if (packageModalMode === "add") {
+      const result = await neonDbClient.createServicePackage(payload);
+      if (result.success) {
+        if (result.package) {
+          setPackages((prev) => [mapServicePackage(result.package), ...prev]);
+        } else {
+          await loadServicePackages();
+        }
+        Swal.fire({
+          title: "Package Created!",
+          text: "Package created successfully!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+        });
+        setIsPackageModalOpen(false);
+      } else {
+        Swal.fire({
+          title: "Create Failed",
+          text: result.error || "Unable to create package.",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    } else if (currentPackage) {
+      const result = await neonDbClient.updateServicePackage(
+        currentPackage.id,
+        payload,
+      );
+      if (result.success) {
+        if (result.package) {
+          const updatedPackage = mapServicePackage(result.package);
+          setPackages((prev) =>
+            prev.map((p) =>
+              p.id === currentPackage.id ? updatedPackage : p,
+            ),
+          );
+        } else {
+          await loadServicePackages();
+        }
+        Swal.fire({
+          title: "Package Updated!",
+          text: "Package updated successfully!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+        });
+        setIsPackageModalOpen(false);
+      } else {
+        Swal.fire({
+          title: "Update Failed",
+          text: result.error || "Unable to update package.",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    }
   };
 
   const formatCurrency = (amount: number) => {
