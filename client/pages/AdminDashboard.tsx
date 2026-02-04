@@ -238,43 +238,8 @@ export default function AdminDashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
 
-  const [packages, setPackages] = useState<ServicePackage[]>([
-    {
-      id: "classic",
-      name: "Classic Pro",
-      basePrice: 500,
-      duration: "Weekly",
-      features: ["AI exterior wash", "Smart tire cleaning", "Basic protection"],
-      active: true,
-    },
-    {
-      id: "vip-silver",
-      name: "VIP Silver Elite",
-      basePrice: 1500,
-      duration: "Monthly",
-      features: [
-        "Premium AI wash",
-        "Interior deep clean",
-        "Paint protection",
-        "Priority booking",
-      ],
-      active: true,
-    },
-    {
-      id: "vip-gold",
-      name: "VIP Gold Ultimate",
-      basePrice: 3000,
-      duration: "Yearly",
-      features: [
-        "Unlimited AI washes",
-        "VIP concierge service",
-        "Premium detailing",
-        "Exclusive lounge access",
-        "Priority everything",
-      ],
-      active: true,
-    },
-  ]);
+  const [packages, setPackages] = useState<ServicePackage[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
 
   // Modal states
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
