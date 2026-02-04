@@ -217,9 +217,9 @@ export function createServer() {
   app.use("/api/cms", cmsApiRoutes);
   app.use("/api/pos", posApiRoutes);
 
-  // Neon Database API Routes
-  app.post("/api/neon/init", neonApiRoutes.initializeNeonDB);
-  app.get("/api/neon/test", neonApiRoutes.testNeonConnection);
+  // Supabase Database API Routes
+  app.post("/api/supabase/init", neonApiRoutes.initializeSupabaseDB);
+  app.get("/api/supabase/test", neonApiRoutes.testSupabaseConnection);
   app.get("/api/neon/diagnose", neonApiRoutes.diagnoseDatabase);
   app.get("/api/neon/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/neon/realtime-stats", neonApiRoutes.getRealtimeStats);
