@@ -169,7 +169,7 @@ export default function NeonDatabaseSetup() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <Database className="h-5 w-5 mr-2" />
-              Neon Database Setup
+              Supabase Database Setup
             </div>
             {getStatusBadge()}
           </CardTitle>
@@ -213,7 +213,7 @@ export default function NeonDatabaseSetup() {
                         <p className="text-sm font-medium">Data Source</p>
                         <p className="text-xs text-muted-foreground">
                           {connectionStatus === "connected"
-                            ? "Neon Database"
+                            ? "Supabase Database"
                             : "LocalStorage"}
                         </p>
                       </div>
@@ -308,7 +308,7 @@ export default function NeonDatabaseSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Connect to Neon via Builder.io's MCP integration for
+                    Connect to Supabase via Builder.io's MCP integration for
                     automatic setup.
                   </p>
                   <Button className="w-full" asChild>
@@ -317,7 +317,7 @@ export default function NeonDatabaseSetup() {
                       className="flex items-center justify-center"
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Connect to Neon via MCP
+                      Connect to Supabase via MCP
                     </a>
                   </Button>
                 </CardContent>
@@ -331,7 +331,7 @@ export default function NeonDatabaseSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="database-url">Neon Database URL</Label>
+                    <Label htmlFor="database-url">Supabase Database URL</Label>
                     <div className="flex gap-2">
                       <Input
                         id="database-url"
@@ -425,7 +425,7 @@ export default function NeonDatabaseSetup() {
                             )}
                             {isMigrating
                               ? "Migrating..."
-                              : "Migrate to Neon Database"}
+                              : "Migrate to Supabase Database"}
                           </Button>
                         </div>
                       )}
