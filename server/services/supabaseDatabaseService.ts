@@ -26,7 +26,8 @@ class SupabaseDatabaseService {
 
   // Add method to refresh connection when needed
   private async ensureConnection() {
-    if (!this.db || typeof this.db?.then === "function") {
+    if (!this.db) {
+      console.log("🔄 Database not available in service, refreshing connection...");
       this.db = await getDatabase();
     }
     return this.db;
@@ -36,45 +37,18 @@ class SupabaseDatabaseService {
     return this.ensureConnection();
   }
 
-  // Handle connection errors
-  private handleConnectionError(error: any) {
-    if (
-      error instanceof Error &&
-      (error.message.includes("connection") ||
-        error.message.includes("timeout") ||
-        error.message.includes("ECONNREFUSED"))
-    ) {
-      console.log(
-        "🔄 Detected connection error, resetting connection on next call",
-      );
-      this.db = null;
-    }
-  }
-
-  /**
-   * Ensure database connection is available, refresh if needed
-   * @returns Database instance
-   */
-  private async ensureConnection() {
-    if (!this.db) {
-      console.log("🔄 Database not available in service, refreshing connection...");
-      this.db = await getDatabase();
-    }
-    return this.db;
-  }
-
   /**
    * Check if error is connection-related and reset connection if needed
    */
   private handleConnectionError(error: any) {
     if (error instanceof Error) {
-      const isConnectionError = 
-        error.message.includes('connection') || 
+      const isConnectionError =
+        error.message.includes('connection') ||
         error.message.includes('timeout') ||
         error.message.includes('ECONNREFUSED') ||
         error.message.includes('ETIMEDOUT') ||
         error.message.includes('fetch failed');
-      
+
       if (isConnectionError) {
         console.log("🔄 Detected connection error, will reconnect on next call");
         this.db = null; // Force reconnection on next ensureConnection call
