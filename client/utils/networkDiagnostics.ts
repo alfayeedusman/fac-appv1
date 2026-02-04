@@ -38,7 +38,7 @@ export class NetworkDiagnostics {
         this.results.push({
           test: "Health Endpoint",
           success: true,
-          details: `Status: ${data.status}, Neon: ${data.services?.neon}`,
+          details: `Status: ${data.status}, Supabase: ${data.services?.supabase}`,
         });
       } else {
         this.results.push({
