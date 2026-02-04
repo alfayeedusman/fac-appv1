@@ -1,4 +1,4 @@
-// Client-side service to interact with Neon database via API
+// Client-side service to interact with Supabase database via API
 import { toast } from "@/hooks/use-toast";
 import { FallbackService } from "@/services/fallbackService";
 import { log, info, warn, error as logError } from "@/utils/logger";
@@ -25,6 +25,7 @@ export interface User {
     | "cashier"
     | "inventory_manager"
     | "manager"
+    | "dispatcher"
     | "crew";
   contactNumber?: string;
   address?: string;
@@ -145,9 +146,11 @@ export interface Ad {
 }
 
 // Safe timeout handler to prevent issues with AbortController
+// Handles cleanup properly to avoid race conditions
 const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
+<<<<<<< HEAD:client/services/neonDatabaseService.ts
 ) => {
   let isCleared = false;
 
@@ -168,11 +171,35 @@ const createSafeTimeoutAbort = (
     clearTimeout: () => {
       isCleared = true;
       globalThis.clearTimeout(timeoutId);
+=======
+): { clearTimeout: () => void } => {
+  let cleared = false;
+  const timerHandle =
+    typeof setTimeout === "function"
+      ? setTimeout(() => {
+          if (cleared) return;
+          try {
+            if (!controller?.signal?.aborted) {
+              controller?.abort?.();
+            }
+          } catch (e) {
+            console.warn("Error aborting request:", e);
+          }
+        }, timeoutMs)
+      : null;
+
+  return {
+    clearTimeout: () => {
+      cleared = true;
+      if (timerHandle) {
+        clearTimeout(timerHandle);
+      }
+>>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
     },
   };
 };
 
-class NeonDatabaseClient {
+class SupabaseDatabaseClient {
   private baseUrl: string;
   private isConnected = false;
   private initializationPromise: Promise<boolean> | null = null;
@@ -180,13 +207,13 @@ class NeonDatabaseClient {
   // Cache with TTL to prevent excessive API calls
   private statsCache: { data: any; timestamp: number } | null = null;
   private realtimeStatsCache: { data: any; timestamp: number } | null = null;
-  private cacheTTL = 5000; // 5 seconds cache
+  private cacheTTL = 5000; // 5 seconds cache - source map refresh
 
   constructor() {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
-    log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
+    log("🔗 SupabaseDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
       warn(
@@ -276,15 +303,22 @@ class NeonDatabaseClient {
 
       try {
         const res = await fetch(url, { signal: ac.signal });
+<<<<<<< HEAD:client/services/neonDatabaseService.ts
         timeoutHandler.clearTimeout();
         return res;
       } catch (e) {
         timeoutHandler.clearTimeout();
+=======
+        return res;
+      } catch (e) {
+>>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
         // Handle abort errors gracefully (timeout is expected behavior)
         if (e instanceof Error && e.name === "AbortError") {
           throw new Error(`Request timeout after ${timeoutMs}ms`);
         }
         throw e;
+      } finally {
+        timeoutHandler.clearTimeout();
       }
     };
 
@@ -311,7 +345,7 @@ class NeonDatabaseClient {
       }
 
       // 2) Fallback to same-origin relative API
-      const fallbackUrl = `/api/neon/test`;
+      const fallbackUrl = `/api/supabase/test`;
       try {
         const response = await tryFetch(fallbackUrl, 8000);
         if (response.ok) {
@@ -523,8 +557,21 @@ class NeonDatabaseClient {
 
         // Log detailed error info for debugging
         logError(
+<<<<<<< HEAD:client/services/neonDatabaseService.ts
           `❌ Login failed with status ${status}`,
           `Server error: ${json.error}, Debug: ${JSON.stringify(json.debug)}`,
+=======
+          `❌ Login failed with status ${status}:`,
+          JSON.stringify(
+            {
+              serverError: json.error,
+              debugInfo: json.debug,
+              serverMsg: typeof json.error === "string" ? json.error : "",
+            },
+            null,
+            2,
+          ),
+>>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
         );
 
         // Prefer server-provided public message if available
@@ -616,7 +663,7 @@ class NeonDatabaseClient {
           const ac2 = new AbortController();
           const timeoutHandler2 = createSafeTimeoutAbort(ac2, 10000);
           try {
-            const resp2 = await fetch(`/api/neon/auth/login`, {
+            const resp2 = await fetch(`/api/supabase/auth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
@@ -673,7 +720,7 @@ class NeonDatabaseClient {
           const ac4 = new AbortController();
           const timeoutHandler4 = createSafeTimeoutAbort(ac4, 10000);
           try {
-            const resp3 = await fetch(`/api/neon/auth/login`, {
+            const resp3 = await fetch(`/api/supabase/auth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
@@ -800,7 +847,7 @@ class NeonDatabaseClient {
       warn("⚠️ Primary registration URL failed, trying fallback...");
       // Try fallback URL
       try {
-        const fallbackUrl = `/api/neon/auth/register`;
+        const fallbackUrl = `/api/supabase/auth/register`;
         return await tryRegister(fallbackUrl);
       } catch (fallbackError) {
         logError("❌ Both registration attempts failed");
@@ -875,7 +922,7 @@ class NeonDatabaseClient {
     if (primary.success) return primary;
 
     // Fallback same-origin
-    const fallback = await tryCreate(`/api/neon/bookings`);
+    const fallback = await tryCreate(`/api/supabase/bookings`);
     return fallback;
   }
 
@@ -922,7 +969,7 @@ class NeonDatabaseClient {
       // Fallback to same-origin
       try {
         const response = await fetch(
-          `/api/neon/bookings/availability?${params}`,
+          `/api/supabase/bookings/availability?${params}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -974,7 +1021,7 @@ class NeonDatabaseClient {
     } catch (error) {
       // Fallback to same-origin
       try {
-        const response = await fetch(`/api/neon/bookings/garage-settings`, {
+        const response = await fetch(`/api/supabase/bookings/garage-settings`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -1163,6 +1210,244 @@ class NeonDatabaseClient {
         console.warn("⚠️ Subscriptions fetch timed out");
       }
       return { success: false, subscriptions: [] };
+    }
+  }
+
+  async getServicePackages(options?: { includeInactive?: boolean }): Promise<{
+    success: boolean;
+    packages?: any[];
+    error?: string;
+  }> {
+    if (!this.isConnected) {
+      return { success: false, packages: [] };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const url = new URL(`${this.baseUrl}/packages`);
+      if (options?.includeInactive) {
+        url.searchParams.set("includeInactive", "true");
+      }
+
+      const response = await fetch(url.toString(), {
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Database packages fetch failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("Packages fetch timed out");
+      }
+      return { success: false, packages: [] };
+    }
+  }
+
+  async createServicePackage(packageData: {
+    name: string;
+    description?: string;
+    category?: string;
+    type?: string;
+    basePrice: number;
+    durationType?: string;
+    duration?: string;
+    hours?: number;
+    startDate?: string;
+    endDate?: string;
+    features?: string[];
+    banner?: string;
+    active?: boolean;
+  }): Promise<{ success: boolean; package?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(packageData),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Create package failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateServicePackage(
+    id: string,
+    updates: Partial<{
+      name: string;
+      description: string;
+      category: string;
+      type: string;
+      basePrice: number;
+      durationType: string;
+      duration: string;
+      hours: number;
+      startDate: string;
+      endDate: string;
+      features: string[];
+      banner: string;
+      active: boolean;
+    }>,
+  ): Promise<{ success: boolean; package?: any; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Update package failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async deleteServicePackage(
+    id: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Delete package failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateUserStatus(
+    userId: string,
+    isActive: boolean,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
+    if (!this.isConnected) {
+      return { success: false };
+    }
+
+    try {
+      const ac = new AbortController();
+      const to = setTimeout(() => ac.abort(), 8000);
+
+      const response = await fetch(`${this.baseUrl}/users/${userId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive }),
+        signal: ac.signal,
+      });
+
+      clearTimeout(to);
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error("Database user status update failed:", error);
+      if (error?.name === "AbortError") {
+        console.warn("User status update timed out");
+      }
+      return { success: false };
+    }
+  }
+
+  async createSubscriptionUpgrade(upgradeData: {
+    userId: string;
+    email: string;
+    packageId: string;
+    packageName: string;
+    finalPrice: number;
+    paymentMethod?: string;
+  }): Promise<{ success: boolean; subscription?: any; error?: string }> {
+    try {
+      const url = `${this.baseUrl}/subscriptions/upgrade`;
+      console.log("📦 Creating subscription upgrade:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(upgradeData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Subscription upgrade failed:", errorData);
+        return {
+          success: false,
+          error:
+            errorData.error ||
+            `Failed to create subscription: HTTP ${response.status}`,
+        };
+      }
+
+      const result = await response.json();
+      console.log("✅ Subscription upgrade created:", result.subscription?.id);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Subscription upgrade error:", error);
+      return {
+        success: false,
+        error:
+          error.message ||
+          "Failed to create subscription. Please check your connection.",
+      };
+    }
+  }
+
+  async approveSubscriptionUpgrade(
+    subscriptionId: string,
+    status: string = "active",
+  ): Promise<{ success: boolean; subscription?: any; error?: string }> {
+    try {
+      const url = `${this.baseUrl}/subscriptions/${subscriptionId}/approve`;
+      console.log("✅ Approving subscription upgrade:", url);
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Subscription approval failed:", errorData);
+        return {
+          success: false,
+          error:
+            errorData.error ||
+            `Failed to approve subscription: HTTP ${response.status}`,
+        };
+      }
+
+      const result = await response.json();
+      console.log("✅ Subscription approved:", subscriptionId);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Subscription approval error:", error);
+      return {
+        success: false,
+        error:
+          error.message ||
+          "Failed to approve subscription. Please check your connection.",
+      };
     }
   }
 
@@ -1417,6 +1702,446 @@ class NeonDatabaseClient {
     }
   }
 
+  async getCommissionRates(): Promise<{
+    success: boolean;
+    rates?: Array<{ serviceType: string; rate: number; isActive: boolean }>;
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission rates fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async upsertCommissionRate(
+    serviceType: string,
+    rate: number,
+  ): Promise<{ success: boolean; rate?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serviceType, rate }),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission rate update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewList(): Promise<{
+    success: boolean;
+    crew?: any[];
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/list`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew list fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewStats(): Promise<{
+    success: boolean;
+    stats?: any;
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/stats`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew stats fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewActivity(params?: {
+    limit?: number;
+  }): Promise<{ success: boolean; activities?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/activity?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew activity fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewGroups(): Promise<{
+    success: boolean;
+    groups?: any[];
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/groups`, {
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew groups fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCrewGroupAssignment(params: {
+    userId: string;
+    groupId?: string | null;
+  }): Promise<{ success: boolean; crewMember?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/${params.userId}/group`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupId: params.groupId || null }),
+          signal: ac.signal,
+        },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew group update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCrewWashBayAssignment(params: {
+    userId: string;
+    washBay?: string | null;
+  }): Promise<{ success: boolean; crewMember?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/${params.userId}/wash-bay`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ washBay: params.washBay || null }),
+          signal: ac.signal,
+        },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew wash bay update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async seedCrew(): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 12000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/seed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew seed failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCommissionEntries(params: {
+    crewUserId?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }): Promise<{ success: boolean; entries?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.crewUserId) queryParams.append("crewUserId", params.crewUserId);
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+    if (params.status) queryParams.append("status", params.status);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-entries?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entries fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createCommissionEntry(payload: {
+    crewUserId: string;
+    entryDate: string;
+    amount: number;
+    notes?: string;
+    recordedBy: string;
+    status?: string;
+  }): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/commission-entries`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entry create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCommissionEntryStatus(
+    id: string,
+    status: string,
+  ): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-entries/${id}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+          signal: ac.signal,
+        },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Commission entry status update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewPayouts(params: {
+    crewUserId?: string;
+  }): Promise<{ success: boolean; payouts?: any[]; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.crewUserId) queryParams.append("crewUserId", params.crewUserId);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/payouts?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payouts fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createCrewPayout(payload: {
+    crewUserId: string;
+    periodStart: string;
+    periodEnd: string;
+    totalAmount: number;
+    createdBy: string;
+    status?: string;
+    entryIds?: string[];
+  }): Promise<{ success: boolean; payout?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/payouts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payout create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async updateCrewPayoutStatus(
+    id: string,
+    status: string,
+  ): Promise<{ success: boolean; payout?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/payouts/${id}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+          signal: ac.signal,
+        },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payout status update failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewPayroll(params: {
+    userId: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ success: boolean; payroll?: any; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams({ userId: params.userId });
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/payroll?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew payroll fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async getCrewCommissionSummary(params: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ success: boolean; summary?: any; error?: string }> {
+    await this.ensureConnection();
+    const queryParams = new URLSearchParams();
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/crew/commission-summary?${queryParams.toString()}`,
+        { signal: ac.signal },
+      );
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Crew commission summary fetch failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
+  async createDailyIncome(payload: {
+    branch: string;
+    incomeDate: string;
+    amount: number;
+    recordedBy: string;
+    notes?: string;
+  }): Promise<{ success: boolean; entry?: any; error?: string }> {
+    await this.ensureConnection();
+    const ac = new AbortController();
+    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    try {
+      const response = await fetch(`${this.baseUrl}/daily-income`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ac.signal,
+      });
+      timeoutHandler.clearTimeout();
+      return await response.json();
+    } catch (error: any) {
+      timeoutHandler.clearTimeout();
+      console.error("Daily income create failed:", error);
+      return { success: false, error: error?.message || "Network error" };
+    }
+  }
+
   async getBranches(): Promise<{
     success: boolean;
     branches?: any[];
@@ -1448,7 +2173,7 @@ class NeonDatabaseClient {
 
     // Try to fetch from API with timeout
     try {
-      const result = await fetchWithTimeout("/api/neon/branches", 1500);
+      const result = await fetchWithTimeout("/api/supabase/branches", 1500);
       if (
         result?.success &&
         Array.isArray(result.branches) &&
@@ -1485,7 +2210,7 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/neon/branches`, {
+      const response = await fetch(`${this.baseUrl}/branches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1529,14 +2254,11 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(
-        `${this.baseUrl}/neon/branches/${branchId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
+      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
       const result = await response.json();
       return result;
     } catch (error) {
@@ -1556,13 +2278,10 @@ class NeonDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(
-        `${this.baseUrl}/neon/branches/${branchId}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
       const result = await response.json();
       return result;
     } catch (error) {
@@ -1894,7 +2613,6 @@ class NeonDatabaseClient {
         const res = await fetch(url, {
           signal: ac.signal,
           headers: {
-            "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
@@ -1938,7 +2656,7 @@ class NeonDatabaseClient {
     };
 
     const primaryUrl = makeUrl(this.baseUrl);
-    const fallbackUrl = makeUrl("/api/neon");
+    const fallbackUrl = makeUrl("/api/supabase");
 
     console.log(`🔍 Attempting fetchJsonWithFallback for path: ${path}`);
     console.log(`🎯 Primary URL: ${primaryUrl}`);
@@ -2561,5 +3279,5 @@ class NeonDatabaseClient {
 }
 
 // Export singleton instance
-export const neonDbClient = new NeonDatabaseClient();
-export default neonDbClient;
+export const supabaseDbClient = new SupabaseDatabaseClient();
+export default supabaseDbClient;

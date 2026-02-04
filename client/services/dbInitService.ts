@@ -35,7 +35,7 @@ async function performInitialization(): Promise<boolean> {
   try {
     console.log("🔄 Initializing database...");
 
-    const response = await fetch("/api/neon/init", {
+    const response = await fetch("/api/supabase/init", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -110,7 +110,7 @@ export function isDatabaseInitialized(): boolean {
  */
 export async function testDatabaseConnection(): Promise<boolean> {
   try {
-    const response = await fetch("/api/neon/test", {
+    const response = await fetch("/api/supabase/test", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export async function testDatabaseConnection(): Promise<boolean> {
  */
 export async function getDatabaseDiagnostics() {
   try {
-    const response = await fetch("/api/neon/diagnose", {
+    const response = await fetch("/api/supabase/diagnose", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

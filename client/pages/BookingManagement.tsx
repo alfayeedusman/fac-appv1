@@ -28,8 +28,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNavigation from "@/components/BottomNavigation";
 import StickyHeader from "@/components/StickyHeader";
 import BookingCard from "@/components/BookingCard";
-import { neonDbClient } from "@/services/neonDatabaseService";
-import type { Booking } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
+import type { Booking } from "@/services/supabaseDatabaseService";
 
 export default function BookingManagement() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -65,7 +65,7 @@ export default function BookingManagement() {
         "userId:",
         userId,
       );
-      const result = await neonDbClient.getBookings({ userId });
+      const result = await supabaseDbClient.getBookings({ userId });
 
       if (result.success && result.bookings) {
         console.log(
@@ -97,7 +97,7 @@ export default function BookingManagement() {
 
     try {
       console.log("🔧 Running booking userId fix...");
-      const result = await neonDbClient.fixBookingUserIds();
+      const result = await supabaseDbClient.fixBookingUserIds();
 
       if (result.success) {
         alert(

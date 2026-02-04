@@ -1,7 +1,6 @@
 import { eq, and, or, desc, count, sql, lte, asc, gte, ne } from "drizzle-orm";
 import { getDatabase } from "../database/connection";
 import * as schema from "../database/schema";
-import { eq, desc, count, gte, ne, and, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -18,11 +17,38 @@ export type NewAdminSetting = typeof schema.adminSettings.$inferInsert;
 export type Ad = typeof schema.ads.$inferSelect;
 export type NewAd = typeof schema.ads.$inferInsert;
 
-class NeonDatabaseService {
+class SupabaseDatabaseService {
   private db: any;
 
   constructor() {
-    this.db = getDatabase();
+    this.db = null;
+  }
+
+  // Add method to refresh connection when needed
+  private async ensureConnection() {
+    if (!this.db || typeof this.db?.then === "function") {
+      this.db = await getDatabase();
+    }
+    return this.db;
+  }
+
+  async getDb() {
+    return this.ensureConnection();
+  }
+
+  // Handle connection errors
+  private handleConnectionError(error: any) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("connection") ||
+        error.message.includes("timeout") ||
+        error.message.includes("ECONNREFUSED"))
+    ) {
+      console.log(
+        "🔄 Detected connection error, resetting connection on next call",
+      );
+      this.db = null;
+    }
   }
 
   /**
@@ -61,12 +87,13 @@ class NeonDatabaseService {
   async createUser(
     userData: Omit<NewUser, "id" | "createdAt" | "updatedAt">,
   ): Promise<User> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const [user] = await this.db
+    const [user] = await db
       .insert(schema.users)
       .values({
         ...userData,
@@ -79,11 +106,16 @@ class NeonDatabaseService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     const db = await this.ensureConnection();
+<<<<<<< HEAD:server/services/neonDatabaseService.ts
     
     if (!db) {
       console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
+=======
+
+    if (!db) {
+>>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw new Error(
-        "Database not connected. Please check your NEON_DATABASE_URL environment variable.",
+        "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
       );
     }
 
@@ -110,12 +142,19 @@ class NeonDatabaseService {
       console.error("❌ Error fetching user from database", {
         email,
         error: error instanceof Error ? error.message : String(error),
+<<<<<<< HEAD:server/services/neonDatabaseService.ts
         dbConnected: !!db,
       });
       
       // Handle connection errors
       this.handleConnectionError(error);
       
+=======
+      });
+
+      // If it's a connection error, reset connection for next attempt
+      this.handleConnectionError(error);
+>>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw error;
     }
   }
@@ -285,9 +324,10 @@ class NeonDatabaseService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
-    return await this.db
+    return await db
       .select()
       .from(schema.users)
       .orderBy(desc(schema.users.createdAt));
@@ -590,10 +630,104 @@ class NeonDatabaseService {
         })
         .returning();
 
+      // Update user's subscription status to indicate they have a pending subscription
+      console.log(
+        "🔄 Updating user subscription status to pending for userId:",
+        subscriptionData.userId,
+      );
+      await this.db
+        .update(schema.users)
+        .set({
+          subscriptionStatus: "premium", // Set to premium/basic during pending
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, subscriptionData.userId))
+        .catch((err) =>
+          console.warn("⚠️ Could not update user subscription status:", err),
+        );
+
       console.log("✅ Subscription created:", subscription.id);
       return subscription;
     } catch (error) {
       console.error("❌ Error creating subscription:", error);
+      throw error;
+    }
+  }
+
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    status: string,
+  ): Promise<any> {
+    if (!this.db) throw new Error("Database not connected");
+
+    try {
+      // First, get the subscription to find the userId
+      const subscriptions = await this.db
+        .select()
+        .from(schema.packageSubscriptions)
+        .where(eq(schema.packageSubscriptions.id, subscriptionId));
+
+      if (!subscriptions || subscriptions.length === 0) {
+        console.error("❌ Subscription not found:", subscriptionId);
+        return null;
+      }
+
+      const subscription = subscriptions[0];
+      const userId = subscription.user_id || subscription.userId;
+
+      // Update subscription status
+      const [updatedSubscription] = await this.db
+        .update(schema.packageSubscriptions)
+        .set({
+          status,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.packageSubscriptions.id, subscriptionId))
+        .returning();
+
+      // If subscription is being activated, update user's subscriptionStatus
+      if (status === "active" && userId) {
+        // Map package names to subscription status
+        const packageId = subscription.package_id || subscription.packageId;
+        let userSubscriptionStatus = "premium"; // default
+
+        if (
+          packageId &&
+          (packageId.includes("classic") || packageId.includes("silver"))
+        ) {
+          userSubscriptionStatus = "basic";
+        } else if (
+          packageId &&
+          (packageId.includes("vip") || packageId.includes("gold"))
+        ) {
+          userSubscriptionStatus = "premium";
+        }
+
+        console.log(
+          "🔄 Updating user subscription status to:",
+          userSubscriptionStatus,
+        );
+
+        await this.db
+          .update(schema.users)
+          .set({
+            subscriptionStatus: userSubscriptionStatus,
+            subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.users.id, userId));
+
+        console.log(
+          "✅ User subscription status updated for userId:",
+          userId,
+          userSubscriptionStatus,
+        );
+      }
+
+      console.log("✅ Subscription status updated:", subscriptionId, status);
+      return updatedSubscription || null;
+    } catch (error) {
+      console.error("❌ Error updating subscription status:", error);
       throw error;
     }
   }
@@ -869,7 +1003,8 @@ class NeonDatabaseService {
     subscriptionUpgrades: number;
     monthlyGrowth: number;
   }> {
-    if (!this.db) throw new Error("Database not connected");
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
 
     // Calculate date range based on period
     const now = new Date();
@@ -893,17 +1028,15 @@ class NeonDatabaseService {
         break;
     }
 
-    const [userCount] = await this.db
-      .select({ count: count() })
-      .from(schema.users);
+    const [userCount] = await db.select({ count: count() }).from(schema.users);
 
-    const [bookingCount] = await this.db
+    const [bookingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(gte(schema.bookings.createdAt, startDate));
 
     // Count online bookings (where userId IS NOT NULL - registered customers)
-    const [onlineBookingCount] = await this.db
+    const [onlineBookingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -913,12 +1046,12 @@ class NeonDatabaseService {
         ),
       );
 
-    const [adCount] = await this.db
+    const [adCount] = await db
       .select({ count: count() })
       .from(schema.ads)
       .where(eq(schema.ads.isActive, true));
 
-    const [pendingCount] = await this.db
+    const [pendingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -929,7 +1062,7 @@ class NeonDatabaseService {
       );
 
     // Calculate total revenue from completed bookings (within date range)
-    const [bookingRevenueResult] = await this.db
+    const [bookingRevenueResult] = await db
       .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
       .from(schema.bookings)
       .where(
@@ -940,7 +1073,7 @@ class NeonDatabaseService {
       );
 
     // Calculate total revenue from POS transactions (within date range)
-    const [posRevenueResult] = await this.db
+    const [posRevenueResult] = await db
       .select({
         totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
       })
@@ -958,7 +1091,7 @@ class NeonDatabaseService {
     const totalRevenue = bookingRevenue + posRevenue;
 
     // Count completed washes from bookings (within date range)
-    const [bookingWashCount] = await this.db
+    const [bookingWashCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
       .where(
@@ -969,7 +1102,7 @@ class NeonDatabaseService {
       );
 
     // Count POS carwash transactions (items with "Wash" in name, within date range)
-    const [posWashCount] = await this.db
+    const [posWashCount] = await db
       .select({ count: count() })
       .from(schema.posTransactionItems)
       .where(
@@ -982,7 +1115,7 @@ class NeonDatabaseService {
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
     // Calculate total expenses from POS sessions (within date range)
-    const [expenseResult] = await this.db
+    const [expenseResult] = await db
       .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
       .from(schema.posExpenses)
       .where(gte(schema.posExpenses.createdAt, startDate));
@@ -991,7 +1124,7 @@ class NeonDatabaseService {
     const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
-    const [subscriptionCount] = await this.db
+    const [subscriptionCount] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(sql`${schema.users.subscriptionStatus} != 'free'`);
@@ -1000,12 +1133,12 @@ class NeonDatabaseService {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
-    const [recentUsers] = await this.db
+    const [recentUsers] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
 
-    const [previousUsers] = await this.db
+    const [previousUsers] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(
@@ -1024,7 +1157,7 @@ class NeonDatabaseService {
     // === SUBSCRIPTION METRICS ===
 
     // Calculate total subscription revenue from active/completed subscriptions (within date range)
-    const [subscriptionRevenueResult] = await this.db
+    const [subscriptionRevenueResult] = await db
       .select({
         totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
       })
@@ -1042,13 +1175,13 @@ class NeonDatabaseService {
     );
 
     // Count new subscriptions (within date range)
-    const [newSubscriptionCount] = await this.db
+    const [newSubscriptionCount] = await db
       .select({ count: count() })
       .from(schema.packageSubscriptions)
       .where(gte(schema.packageSubscriptions.startDate, startDate));
 
     // Count subscription upgrades (users with non-free subscription status created/updated in period)
-    const [upgradeCount] = await this.db
+    const [upgradeCount] = await db
       .select({ count: count() })
       .from(schema.users)
       .where(
@@ -1430,12 +1563,38 @@ class NeonDatabaseService {
   // ============= NEW FEATURES METHODS =============
 
   // Service packages methods
-  async getServicePackages() {
+  async getServicePackages(options?: { includeInactive?: boolean }) {
     try {
-      const sql = this.createSqlClient();
-      const result =
-        await sql`SELECT * FROM service_packages WHERE is_active = true ORDER BY is_featured DESC, is_popular DESC, name ASC`;
-      return result || [];
+      if (!this.db) {
+        console.warn("Database not initialized, returning fallback packages");
+        return [
+          {
+            id: "pkg_basic_carwash",
+            name: "Basic Car Wash",
+            description: "Essential car wash service",
+            category: "carwash",
+            base_price: 150,
+            is_active: true,
+            is_popular: true,
+          },
+        ];
+      }
+
+      let query = this.db.select().from(schema.servicePackages);
+      if (!options?.includeInactive) {
+        query = query.where(eq(schema.servicePackages.isActive, true));
+      }
+
+      const packages = await query.orderBy(
+        desc(schema.servicePackages.isFeatured),
+        desc(schema.servicePackages.isPopular),
+        asc(schema.servicePackages.name),
+      );
+
+      console.log(
+        `✅ Service packages retrieved: ${packages.length} packages found`,
+      );
+      return packages || [];
     } catch (error) {
       console.error("Get service packages error:", error);
       // Return mock data if table doesn't exist yet
@@ -1450,6 +1609,115 @@ class NeonDatabaseService {
           is_popular: true,
         },
       ];
+    }
+  }
+
+  async createServicePackage(packageData: {
+    name: string;
+    description?: string;
+    category?: string;
+    type?: string;
+    basePrice: number;
+    currency?: string;
+    durationType?: string;
+    duration?: string | null;
+    hours?: number | null;
+    startDate?: Date | null;
+    endDate?: Date | null;
+    features?: string[];
+    bannerUrl?: string | null;
+    isActive?: boolean;
+    isPopular?: boolean;
+    isFeatured?: boolean;
+    color?: string;
+    priority?: number;
+  }) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      const [created] = await this.db
+        .insert(schema.servicePackages)
+        .values({
+          name: packageData.name,
+          description: packageData.description,
+          category: packageData.category || "subscription",
+          type: packageData.type || "recurring",
+          basePrice: packageData.basePrice,
+          currency: packageData.currency || "PHP",
+          durationType: packageData.durationType || "preset",
+          duration: packageData.duration || null,
+          hours: packageData.hours || null,
+          startDate: packageData.startDate || null,
+          endDate: packageData.endDate || null,
+          features: packageData.features || [],
+          bannerUrl: packageData.bannerUrl || null,
+          isActive: packageData.isActive ?? true,
+          isPopular: packageData.isPopular ?? false,
+          isFeatured: packageData.isFeatured ?? false,
+          color: packageData.color,
+          priority: packageData.priority ?? 0,
+        })
+        .returning();
+
+      return created;
+    } catch (error) {
+      console.error("❌ Error creating service package:", error);
+      throw error;
+    }
+  }
+
+  async updateServicePackage(
+    id: string,
+    updates: Partial<{
+      name: string;
+      description: string;
+      category: string;
+      type: string;
+      basePrice: number;
+      currency: string;
+      durationType: string;
+      duration: string | null;
+      hours: number | null;
+      startDate: Date | null;
+      endDate: Date | null;
+      features: string[];
+      bannerUrl: string | null;
+      isActive: boolean;
+      isPopular: boolean;
+      isFeatured: boolean;
+      color: string;
+      priority: number;
+    }>,
+  ) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      const [updated] = await this.db
+        .update(schema.servicePackages)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.servicePackages.id, id))
+        .returning();
+
+      return updated;
+    } catch (error) {
+      console.error("❌ Error updating service package:", error);
+      throw error;
+    }
+  }
+
+  async deleteServicePackage(id: string) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      await this.db
+        .delete(schema.servicePackages)
+        .where(eq(schema.servicePackages.id, id));
+    } catch (error) {
+      console.error("❌ Error deleting service package:", error);
+      throw error;
     }
   }
 
@@ -1944,17 +2212,12 @@ class NeonDatabaseService {
   }
 
   // Helper method to create SQL client
-  private createSqlClient() {
-    const DATABASE_URL =
-      process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "";
-    if (!DATABASE_URL) {
-      throw new Error("Database URL not configured");
-    }
-    const { neon } = require("@neondatabase/serverless");
-    return neon(DATABASE_URL);
+  private async createSqlClient() {
+    const { getSqlClient } = await import("../database/connection");
+    return getSqlClient();
   }
 }
 
 // Export singleton instance
-export const neonDbService = new NeonDatabaseService();
-export default neonDbService;
+export const supabaseDbService = new SupabaseDatabaseService();
+export default supabaseDbService;

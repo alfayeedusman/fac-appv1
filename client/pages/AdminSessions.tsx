@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import AdminSidebar from '@/components/AdminSidebar';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import React, { useEffect, useState } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 type Session = {
   id: string;
@@ -21,68 +21,88 @@ export default function AdminSessions() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filterUserId, setFilterUserId] = useState<string>('');
+  const [filterUserId, setFilterUserId] = useState<string>("");
 
   const fetchSessions = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filterUserId) params.set('userId', filterUserId);
-      params.set('activeOnly', 'false');
+      if (filterUserId) params.set("userId", filterUserId);
+      params.set("activeOnly", "false");
 
-      const resp = await fetch(`/api/neon/sessions?${params.toString()}`, {
+      const resp = await fetch(`/api/supabase/sessions?${params.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem("sessionToken") || ""}`,
         },
       });
       const json = await resp.json();
       if (!resp.ok || !json.success) {
-        throw new Error(json.error || 'Failed to fetch sessions');
+        throw new Error(json.error || "Failed to fetch sessions");
       }
       setSessions(json.sessions || []);
     } catch (err: any) {
-      console.error('Load sessions failed', err);
-      toast({ title: 'Error', description: err.message || 'Could not load sessions', variant: 'destructive' });
+      console.error("Load sessions failed", err);
+      toast({
+        title: "Error",
+        description: err.message || "Could not load sessions",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const role = localStorage.getItem('userRole');
-    if (!role || (role !== 'admin' && role !== 'superadmin' && role !== 'manager')) {
-      toast({ title: 'Unauthorized', description: 'You do not have access to this page', variant: 'destructive' });
-      navigate('/admin-dashboard');
+    const role = localStorage.getItem("userRole");
+    if (
+      !role ||
+      (role !== "admin" && role !== "superadmin" && role !== "manager")
+    ) {
+      toast({
+        title: "Unauthorized",
+        description: "You do not have access to this page",
+        variant: "destructive",
+      });
+      navigate("/admin-dashboard");
       return;
     }
 
     fetchSessions();
   }, []);
 
-  const revoke = async (opts: { sessionId?: string; sessionToken?: string; userId?: string }) => {
+  const revoke = async (opts: {
+    sessionId?: string;
+    sessionToken?: string;
+    userId?: string;
+  }) => {
     try {
       const body: any = {};
       if (opts.sessionId) body.sessionId = opts.sessionId;
       if (opts.sessionToken) body.sessionToken = opts.sessionToken;
       if (opts.userId) body.userId = opts.userId;
 
-      const resp = await fetch('/api/neon/sessions/revoke', {
-        method: 'POST',
+      const resp = await fetch("/api/supabase/sessions/revoke", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("sessionToken") || ""}`,
         },
         body: JSON.stringify(body),
       });
 
       const json = await resp.json();
-      if (!resp.ok || !json.success) throw new Error(json.error || 'Revoke failed');
+      if (!resp.ok || !json.success)
+        throw new Error(json.error || "Revoke failed");
 
-      toast({ title: 'Success', description: json.message || 'Revoked' });
+      toast({ title: "Success", description: json.message || "Revoked" });
       fetchSessions();
     } catch (err: any) {
-      console.error('Revoke failed', err);
-      toast({ title: 'Error', description: err.message || 'Failed to revoke session', variant: 'destructive' });
+      console.error("Revoke failed", err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to revoke session",
+        variant: "destructive",
+      });
     }
   };
 
@@ -93,21 +113,21 @@ export default function AdminSessions() {
         onTabChange={(tab) => {
           // Map sidebar tab ids to routes
           switch (tab) {
-            case 'overview':
-              navigate('/admin-dashboard');
+            case "overview":
+              navigate("/admin-dashboard");
               break;
-            case 'user-management':
-              navigate('/admin-user-management');
+            case "user-management":
+              navigate("/admin-user-management");
               break;
-            case 'sessions':
-              navigate('/admin-sessions');
+            case "sessions":
+              navigate("/admin-sessions");
               break;
             default:
               // Generic mapping for known admin routes
               navigate(`/admin-${tab}`);
           }
         }}
-        userRole={localStorage.getItem('userRole') || 'admin'}
+        userRole={localStorage.getItem("userRole") || "admin"}
         notificationCount={0}
       />
 
@@ -121,7 +141,9 @@ export default function AdminSessions() {
               onChange={(e) => setFilterUserId(e.target.value)}
               className="input"
             />
-            <Button onClick={() => fetchSessions()}>{loading ? 'Loading...' : 'Refresh'}</Button>
+            <Button onClick={() => fetchSessions()}>
+              {loading ? "Loading..." : "Refresh"}
+            </Button>
           </div>
         </div>
 
@@ -141,24 +163,45 @@ export default function AdminSessions() {
             <tbody>
               {sessions.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-4 text-center text-muted-foreground">No sessions found</td>
+                  <td
+                    colSpan={7}
+                    className="p-4 text-center text-muted-foreground"
+                  >
+                    No sessions found
+                  </td>
                 </tr>
               )}
 
               {sessions.map((s) => (
                 <tr key={s.id} className="border-t">
                   <td className="p-2">
-                    <div className="text-sm font-medium">{s.userFullName || s.userEmail || s.userId}</div>
-                    <div className="text-xs text-muted-foreground">{s.userEmail}</div>
+                    <div className="text-sm font-medium">
+                      {s.userFullName || s.userEmail || s.userId}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {s.userEmail}
+                    </div>
                   </td>
                   <td className="p-2">{s.userRole}</td>
                   <td className="p-2">{s.ipAddress}</td>
                   <td className="p-2 break-words max-w-xs">{s.userAgent}</td>
-                  <td className="p-2">{s.expiresAt ? new Date(s.expiresAt).toLocaleString() : '-'}</td>
-                  <td className="p-2">{s.isActive ? 'Yes' : 'No'}</td>
+                  <td className="p-2">
+                    {s.expiresAt ? new Date(s.expiresAt).toLocaleString() : "-"}
+                  </td>
+                  <td className="p-2">{s.isActive ? "Yes" : "No"}</td>
                   <td className="p-2 space-x-2">
-                    <Button onClick={() => revoke({ sessionId: s.id })} variant="destructive">Revoke</Button>
-                    <Button onClick={() => revoke({ userId: s.userId })} variant="outline">Revoke All</Button>
+                    <Button
+                      onClick={() => revoke({ sessionId: s.id })}
+                      variant="destructive"
+                    >
+                      Revoke
+                    </Button>
+                    <Button
+                      onClick={() => revoke({ userId: s.userId })}
+                      variant="outline"
+                    >
+                      Revoke All
+                    </Button>
                   </td>
                 </tr>
               ))}

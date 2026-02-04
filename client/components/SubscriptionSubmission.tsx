@@ -26,8 +26,8 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
-import { addSubscriptionRequest } from "@/utils/subscriptionApprovalData";
 import { notificationManager } from "./NotificationModal";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 
 interface SubscriptionSubmissionProps {
   isOpen: boolean;
@@ -155,49 +155,34 @@ export default function SubscriptionSubmission({
     setIsSubmitting(true);
 
     try {
-      // Simulate file upload and create receipt data
-      // Clean up any existing object URL first
-      if (receiptObjectUrlRef.current) {
-        URL.revokeObjectURL(receiptObjectUrlRef.current);
-      }
-
-      // Create new object URL and store reference for cleanup
-      const objectUrl = URL.createObjectURL(receiptFile);
-      receiptObjectUrlRef.current = objectUrl;
-
-      const receipt = {
-        id: `RCP${Date.now()}`,
-        imageUrl: objectUrl,
-        fileName: receiptFile.name,
-        uploadDate: new Date().toISOString(),
-        fileSize: receiptFile.size,
-      };
-
       const selectedPkg = packages.find((p) => p.id === selectedPackage);
       if (!selectedPkg) return;
 
-      // Create subscription request
-      const request = addSubscriptionRequest({
+      // Extract price from string (e.g., "₱299" -> 299)
+      const packagePrice = parseInt(selectedPkg.price.replace(/[^0-9]/g, ""));
+
+      // Create subscription in backend
+      const upgradeResult = await supabaseDbClient.createSubscriptionUpgrade({
         userId: `user_${userEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
-        userEmail,
-        userName,
-        userPhone: userPhone || undefined,
-        packageType: selectedPkg.name as any,
-        packagePrice: `${selectedPkg.price}/${selectedPkg.period}`,
-        paymentMethod: paymentMethod as any,
-        paymentDetails: {
-          ...paymentDetails,
-          amount: `${selectedPkg.price}.00`,
-        },
-        receipt,
-        status: "pending",
-        customerStatus: "active",
+        email: userEmail,
+        packageId: selectedPackage,
+        packageName: selectedPkg.name,
+        finalPrice: packagePrice,
+        paymentMethod: paymentMethod,
       });
 
-      // Show success notification
+      if (!upgradeResult.success) {
+        notificationManager.error(
+          "Submission Failed",
+          upgradeResult.error || "Failed to submit subscription request",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       notificationManager.success(
         "Request Submitted! 🎉",
-        `Your subscription request has been submitted successfully!\n\nRequest ID: ${request.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
+        `Your subscription request has been submitted successfully!\n\nRequest ID: ${upgradeResult.subscription?.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
         { autoClose: 6000 },
       );
 

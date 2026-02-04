@@ -4,14 +4,45 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 export async function seedUsers() {
-  const db = getDatabase();
-  if (!db) {
-    console.error("❌ Database not connected");
-    return;
-  }
-
   try {
     console.log("👥 Seeding user data...");
+
+    // Wait for database to be ready
+    let db = await getDatabase();
+    let retries = 0;
+    while (!db && retries < 3) {
+      console.log(
+        "⏳ Waiting for database connection... (attempt",
+        retries + 1,
+        ")",
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      db = await getDatabase();
+      retries++;
+    }
+
+    if (!db) {
+      console.warn(
+        "⚠️ Database not connected after retries, skipping user seeding",
+      );
+      return;
+    }
+
+    // Hash password helper with logging
+    const hashPassword = async (password: string): Promise<string> => {
+      try {
+        const hashed = await bcrypt.hash(password, 10);
+        console.log(
+          "   ✓ Password hashed:",
+          password.substring(0, 3) + "**** →",
+          hashed.substring(0, 20) + "...",
+        );
+        return hashed;
+      } catch (err) {
+        console.error("   ✗ Error hashing password:", err);
+        throw err;
+      }
+    };
 
     // Check if users already exist
     const existingUsers = await db.select().from(schema.users);
@@ -24,32 +55,32 @@ export async function seedUsers() {
       );
 
       // Update passwords for sample accounts if they exist
-      console.log("🔄 Updating sample user passwords...");
-      const hashPassword = async (password: string) =>
-        await bcrypt.hash(password, 10);
+      console.log("🔄 Updating sample user passwords with new hashes...");
 
       const superadmin = existingUsers.find(
         (u) => u.email === "superadmin@fayeedautocare.com",
       );
       if (superadmin) {
+        console.log("   → Updating superadmin@fayeedautocare.com");
         const hashedPassword = await hashPassword("SuperAdmin2024!");
         await db
           .update(schema.users)
           .set({ password: hashedPassword })
           .where(eq(schema.users.id, superadmin.id));
-        console.log("✅ Updated superadmin password");
+        console.log("   ✅ Updated superadmin password");
       }
 
       const adminFayeed = existingUsers.find(
         (u) => u.email === "admin.fayeed@gmail.com",
       );
       if (adminFayeed) {
+        console.log("   → Updating admin.fayeed@gmail.com");
         const hashedPassword = await hashPassword("FayeedSuper123!");
         await db
           .update(schema.users)
           .set({ password: hashedPassword })
           .where(eq(schema.users.id, adminFayeed.id));
-        console.log("✅ Updated admin.fayeed password");
+        console.log("   ✅ Updated admin.fayeed password");
       }
 
       // Update other sample user passwords
@@ -66,28 +97,40 @@ export async function seedUsers() {
       for (const [email, password] of Object.entries(sampleEmails)) {
         const user = existingUsers.find((u) => u.email === email);
         if (user) {
+          console.log(`   → Updating ${email}`);
           const hashedPassword = await hashPassword(password);
           await db
             .update(schema.users)
             .set({ password: hashedPassword })
             .where(eq(schema.users.id, user.id));
-          console.log(`✅ Updated ${email} password`);
+          console.log(`   ✅ Updated ${email} password`);
         }
       }
 
+      console.log("✅ All user passwords updated successfully!");
       return;
     }
 
-    // Hash passwords
-    const hashPassword = async (password: string) =>
-      await bcrypt.hash(password, 10);
+    // Hash passwords FIRST before creating user objects
+    console.log("🔐 Hashing passwords for new users...");
+    const hashedPasswords = await Promise.all([
+      hashPassword("SuperAdmin2024!"), // superadmin
+      hashPassword("FayeedSuper123!"), // admin.fayeed
+      hashPassword("TumagaAdmin2024!"), // manager.tumaga
+      hashPassword("BoalanAdmin2024!"), // manager.boalan
+      hashPassword("Cashier123!"), // cashier.tumaga
+      hashPassword("Customer123!"), // john.doe
+      hashPassword("Maria2024!"), // maria.santos
+      hashPassword("Carlos123!"), // carlos.reyes
+      hashPassword("Anna2024!"), // anna.lopez
+    ]);
 
     // Sample user data based on SAMPLE_LOGIN_CREDENTIALS.md
     const sampleUsers = [
       {
         email: "superadmin@fayeedautocare.com",
         fullName: "Super Admin",
-        password: await hashPassword("SuperAdmin2024!"),
+        password: hashedPasswords[0],
         role: "superadmin" as const,
         contactNumber: "+63 999 111 1111",
         address: "Head Office, Zamboanga City, Philippines",
@@ -101,7 +144,7 @@ export async function seedUsers() {
       {
         email: "admin.fayeed@gmail.com",
         fullName: "Admin Fayeed",
-        password: await hashPassword("FayeedSuper123!"),
+        password: hashedPasswords[1],
         role: "superadmin" as const,
         contactNumber: "+63 999 111 2222",
         address: "Head Office, Zamboanga City, Philippines",
@@ -115,7 +158,7 @@ export async function seedUsers() {
       {
         email: "manager.tumaga@fayeedautocare.com",
         fullName: "Manager Tumaga",
-        password: await hashPassword("TumagaAdmin2024!"),
+        password: hashedPasswords[2],
         role: "manager" as const,
         contactNumber: "+63 962 123 4567",
         address: "Tumaga Branch, Zamboanga City, Philippines",
@@ -129,7 +172,7 @@ export async function seedUsers() {
       {
         email: "manager.boalan@fayeedautocare.com",
         fullName: "Manager Boalan",
-        password: await hashPassword("BoalanAdmin2024!"),
+        password: hashedPasswords[3],
         role: "manager" as const,
         contactNumber: "+63 962 234 5678",
         address: "Boalan Branch, Zamboanga City, Philippines",
@@ -143,7 +186,7 @@ export async function seedUsers() {
       {
         email: "cashier.tumaga@fayeedautocare.com",
         fullName: "Cashier Tumaga",
-        password: await hashPassword("Cashier123!"),
+        password: hashedPasswords[4],
         role: "cashier" as const,
         contactNumber: "+63 962 345 6789",
         address: "Tumaga Branch, Zamboanga City, Philippines",
@@ -157,7 +200,7 @@ export async function seedUsers() {
       {
         email: "john.doe@gmail.com",
         fullName: "John Doe",
-        password: await hashPassword("Customer123!"),
+        password: hashedPasswords[5],
         role: "user" as const,
         contactNumber: "+63 998 123 4567",
         address: "Zamboanga City, Philippines",
@@ -171,7 +214,7 @@ export async function seedUsers() {
       {
         email: "maria.santos@gmail.com",
         fullName: "Maria Santos",
-        password: await hashPassword("Maria2024!"),
+        password: hashedPasswords[6],
         role: "user" as const,
         contactNumber: "+63 998 234 5678",
         address: "Zamboanga City, Philippines",
@@ -185,7 +228,7 @@ export async function seedUsers() {
       {
         email: "carlos.reyes@gmail.com",
         fullName: "Carlos Reyes",
-        password: await hashPassword("Carlos123!"),
+        password: hashedPasswords[7],
         role: "user" as const,
         contactNumber: "+63 998 345 6789",
         address: "Zamboanga City, Philippines",
@@ -199,7 +242,7 @@ export async function seedUsers() {
       {
         email: "anna.lopez@gmail.com",
         fullName: "Anna Lopez",
-        password: await hashPassword("Anna2024!"),
+        password: hashedPasswords[8],
         role: "user" as const,
         contactNumber: "+63 998 456 7890",
         address: "Zamboanga City, Philippines",
@@ -230,7 +273,7 @@ export async function seedUsers() {
 
     return insertedUsers;
   } catch (error) {
-    console.error("❌ Error seeding users:", error);
-    throw error;
+    console.warn("⚠️ Error seeding users (non-critical):", error);
+    // Don't throw - users seeding is optional
   }
 }

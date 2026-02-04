@@ -1,8 +1,8 @@
 import { RequestHandler } from "express";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 import crypto from "crypto";
 
-// POST /api/neon/admin/invite
+// POST /api/supabase/admin/invite
 // Protected by ADMIN_INVITE_SECRET header. Generates a user with a random password
 // and returns the generated credentials in the response. Intended for secure
 // administrative use only (do not expose this endpoint publicly).
@@ -32,7 +32,7 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     }
 
     // Restrict roles that can be assigned by this endpoint
-    const allowedRoles = ["admin", "manager", "cashier"];
+    const allowedRoles = ["admin", "manager", "cashier", "dispatcher"];
     let assignedRole = "admin";
     if (role && typeof role === "string") {
       if (role === "superadmin") {
@@ -50,7 +50,7 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
     }
 
     // Check if user already exists
-    const existing = await neonDbService.getUserByEmail(email);
+    const existing = await supabaseDbService.getUserByEmail(email);
     if (existing) {
       return res
         .status(409)
@@ -70,7 +70,7 @@ export const createAdminInvite: RequestHandler = async (req, res) => {
       emailVerified: true,
     };
 
-    const user = await neonDbService.createUser(userData);
+    const user = await supabaseDbService.createUser(userData);
 
     // Return the created user (without hashed password) and the raw password.
     const { password: _pw, ...userWithoutPassword } = user as any;

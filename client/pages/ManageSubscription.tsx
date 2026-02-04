@@ -46,7 +46,8 @@ import SwipeablePackageModal from "@/components/SwipeablePackageModal";
 import SubscriptionSubmission from "@/components/SubscriptionSubmission";
 import {
   getUserSubscriptionStatus,
-  getSubscriptionRequests,
+  getUserSubscriptionData,
+  type UserSubscriptionData,
 } from "@/utils/subscriptionApprovalData";
 
 interface SubscriptionPlan {
@@ -92,17 +93,20 @@ export default function ManageSubscription() {
     status: string | null;
     request: any | null;
   }>({ hasRequest: false, status: null, request: null });
+  const [userSubscription, setUserSubscription] =
+    useState<UserSubscriptionData | null>(null);
 
   // Get real user data
   const userEmail = localStorage.getItem("userEmail") || "";
-  const userSubscription = JSON.parse(
-    localStorage.getItem(`subscription_${userEmail}`) || "null",
-  );
 
   // Function to refresh subscription status
-  const refreshSubscriptionStatus = () => {
-    const status = getUserSubscriptionStatus(userEmail);
+  const refreshSubscriptionStatus = async () => {
+    const [status, subscriptionData] = await Promise.all([
+      getUserSubscriptionStatus(userEmail),
+      getUserSubscriptionData(userEmail),
+    ]);
     setSubscriptionRequestStatus(status);
+    setUserSubscription(subscriptionData);
   };
 
   // Load subscription request status
@@ -131,14 +135,7 @@ export default function ManageSubscription() {
 
   const currentSubscription: CurrentSubscription = {
     plan: userSubscription?.package || "Regular Member",
-    price:
-      userSubscription?.package === "Classic Pro"
-        ? 500
-        : userSubscription?.package === "VIP Silver Elite"
-          ? 1500
-          : userSubscription?.package === "VIP Gold Ultimate"
-            ? 3000
-            : 0,
+    price: userSubscription?.price || 0,
     startDate:
       userSubscription?.currentCycleStart ||
       new Date().toISOString().split("T")[0],
@@ -150,8 +147,7 @@ export default function ManageSubscription() {
     lockInPeriod: "Monthly (Flexible)",
     autoRenewal: userSubscription?.autoRenewal || false,
     status:
-      userSubscription?.package !== "Regular Member" &&
-      userSubscription?.daysLeft > 0
+      userSubscription?.package && userSubscription?.daysLeft > 0
         ? "active"
         : "inactive",
   };

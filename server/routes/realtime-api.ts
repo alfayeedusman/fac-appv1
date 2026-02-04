@@ -1,7 +1,7 @@
 import express from "express";
 import mysql from "mysql2/promise";
 import { z } from "zod";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 
 const router = express.Router();
 
@@ -18,12 +18,23 @@ const dbConfig = {
   reconnect: true,
 };
 
-let pool: mysql.Pool;
+let pool: mysql.Pool | null = null;
 
-try {
-  pool = mysql.createPool(dbConfig);
-} catch (error) {
-  console.error("Database connection failed:", error);
+// Only initialize pool if database credentials are explicitly provided
+const hasDbCredentials =
+  process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME;
+
+if (hasDbCredentials) {
+  try {
+    pool = mysql.createPool(dbConfig);
+    console.log("✅ Realtime database pool initialized");
+  } catch (error) {
+    console.error("Database connection failed:", error);
+  }
+} else {
+  console.log(
+    "⚠️ Realtime API: Database credentials not configured - running in degraded mode",
+  );
 }
 
 // Validation schemas
@@ -85,15 +96,33 @@ const JobUpdateSchema = z.object({
 });
 
 // ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function checkDatabaseConnection(res: express.Response): boolean {
+  if (!pool) {
+    res.status(503).json({
+      success: false,
+      error: "Database not configured",
+      message: "Realtime features are unavailable - database not initialized",
+    });
+    return false;
+  }
+  return true;
+}
+
+// ============================================================================
 // CREW LOCATION ENDPOINTS
 // ============================================================================
 
 // Update crew location
 router.post("/crew/location", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = LocationUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Insert new location record
@@ -158,8 +187,10 @@ router.post("/crew/location", async (req, res) => {
 
 // Get crew locations (real-time)
 router.get("/crew/locations", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Get latest location for each active crew member
@@ -235,10 +266,12 @@ router.get("/crew/locations", async (req, res) => {
 
 // Update crew status
 router.post("/crew/status", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = StatusUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.beginTransaction();
@@ -293,11 +326,13 @@ router.post("/crew/status", async (req, res) => {
 
 // Get crew status history
 router.get("/crew/:crewId/status-history", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const crewId = parseInt(req.params.crewId);
     const limit = parseInt(req.query.limit as string) || 50;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(
@@ -335,10 +370,12 @@ router.get("/crew/:crewId/status-history", async (req, res) => {
 
 // Update job status and progress
 router.post("/jobs/update", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const validatedData = JobUpdateSchema.parse(req.body);
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.beginTransaction();
@@ -438,8 +475,10 @@ router.post("/jobs/update", async (req, res) => {
 
 // Get active jobs with locations
 router.get("/jobs/active", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(`
@@ -516,8 +555,10 @@ router.get("/jobs/active", async (req, res) => {
 
 // Get dashboard statistics
 router.get("/dashboard/stats", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       // Get current statistics
@@ -585,6 +626,8 @@ import { triggerPusherEvent } from "../services/pusherService";
 
 // Send real-time message
 router.post("/messages/send", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const {
       job_id,
@@ -598,7 +641,7 @@ router.post("/messages/send", async (req, res) => {
       priority,
     } = req.body;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [result] = await connection.execute(
@@ -680,11 +723,13 @@ router.post("/messages/send", async (req, res) => {
 
 // Get recent messages
 router.get("/messages/:recipientType/:recipientId", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
     const { recipientType, recipientId } = req.params;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       const [rows] = await connection.execute(
@@ -737,7 +782,7 @@ router.post("/pusher/auth", async (req, res) => {
     }
 
     // Server-side authentication: prefer Authorization Bearer <token> header
-    // The token is validated against user_sessions table via neonDbService
+    // The token is validated against user_sessions table via supabaseDbService
     let authenticatedUserId: string | null = null;
     let authenticatedUserRole: string | null = null;
 
@@ -746,14 +791,12 @@ router.post("/pusher/auth", async (req, res) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       try {
-        const session = await neonDbService.getSessionByToken(token);
+        const session = await supabaseDbService.getSessionByToken(token);
         if (!session || !session.isActive) {
-          return res
-            .status(403)
-            .json({
-              success: false,
-              error: "Invalid or inactive session token",
-            });
+          return res.status(403).json({
+            success: false,
+            error: "Invalid or inactive session token",
+          });
         }
         const expiresAt = new Date(session.expiresAt);
         if (expiresAt < new Date()) {
@@ -762,7 +805,7 @@ router.post("/pusher/auth", async (req, res) => {
             .json({ success: false, error: "Session token expired" });
         }
 
-        const user = await neonDbService.getUserById(session.userId);
+        const user = await supabaseDbService.getUserById(session.userId);
         if (!user) {
           return res
             .status(403)
@@ -799,7 +842,9 @@ router.post("/pusher/auth", async (req, res) => {
     if (channel_name.startsWith("private-admin")) {
       if (
         !authenticatedUserRole ||
-        !["admin", "superadmin", "manager"].includes(authenticatedUserRole)
+        !["admin", "superadmin", "manager", "dispatcher"].includes(
+          authenticatedUserRole,
+        )
       ) {
         return res
           .status(403)
@@ -830,8 +875,10 @@ router.post("/pusher/auth", async (req, res) => {
 // ============================================================================
 
 router.get("/health", async (req, res) => {
+  if (!checkDatabaseConnection(res)) return;
+
   try {
-    const connection = await pool.getConnection();
+    const connection = await pool!.getConnection();
 
     try {
       await connection.execute("SELECT 1");

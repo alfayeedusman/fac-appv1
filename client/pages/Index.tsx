@@ -299,6 +299,8 @@ export default function Index() {
         // Route based on user role
         if (userRole === "manager") {
           navigate("/manager-dashboard");
+        } else if (userRole === "dispatcher") {
+          navigate("/dispatcher-dashboard");
         } else if (userRole === "crew") {
           navigate("/crew-dashboard");
         } else if (userRole === "cashier") {
@@ -471,11 +473,7 @@ export default function Index() {
           {content.hero.ctaButtons
             .filter((button) => button.enabled)
             .map((button, index) => (
-              <Link
-                key={button.id}
-                to={button.link}
-                className="block"
-              >
+              <Link key={button.id} to={button.link} className="block">
                 <Button className={getButtonVariantClass(button.variant)}>
                   <span className="flex items-center justify-center">
                     {button.variant === "primary" && (

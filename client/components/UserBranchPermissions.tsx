@@ -1,13 +1,25 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Building2, Shield, AlertCircle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import type { User as UserType } from '@/services/neonDatabaseService';
-import BranchFilter from './BranchFilter';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { User, Building2, Shield, AlertCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import type { User as UserType } from "@/services/supabaseDatabaseService";
+import BranchFilter from "./BranchFilter";
 
 interface UserBranchPermissionsProps {
   user: UserType;
@@ -22,8 +34,12 @@ export default function UserBranchPermissions({
   onClose,
   onUpdate,
 }: UserBranchPermissionsProps) {
-  const [assignedBranch, setAssignedBranch] = useState(user.branchLocation || '');
-  const [canViewAll, setCanViewAll] = useState(user.canViewAllBranches || false);
+  const [assignedBranch, setAssignedBranch] = useState(
+    user.branchLocation || "",
+  );
+  const [canViewAll, setCanViewAll] = useState(
+    user.canViewAllBranches || false,
+  );
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSave = async () => {
@@ -104,34 +120,35 @@ export default function UserBranchPermissions({
                   Allow this user to view bookings from all branches
                 </p>
               </div>
-              <Switch
-                checked={canViewAll}
-                onCheckedChange={setCanViewAll}
-              />
+              <Switch checked={canViewAll} onCheckedChange={setCanViewAll} />
             </div>
           </div>
 
           {/* Warning */}
-          {user.role !== 'admin' && user.role !== 'superadmin' && canViewAll && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-800">
-              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-yellow-800 dark:text-yellow-200">
-                  Cross-Branch Access
-                </p>
-                <p className="text-yellow-700 dark:text-yellow-300">
-                  This {user.role} will be able to see bookings, sales, and analytics from all branches.
-                </p>
+          {user.role !== "admin" &&
+            user.role !== "superadmin" &&
+            canViewAll && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-800">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-yellow-800 dark:text-yellow-200">
+                    Cross-Branch Access
+                  </p>
+                  <p className="text-yellow-700 dark:text-yellow-300">
+                    This {user.role} will be able to see bookings, sales, and
+                    analytics from all branches.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Info for Admin/Superadmin */}
-          {(user.role === 'admin' || user.role === 'superadmin') && (
+          {(user.role === "admin" || user.role === "superadmin") && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800">
               <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
               <div className="text-sm text-blue-700 dark:text-blue-300">
-                {user.role === 'superadmin' ? 'Super Admins' : 'Admins'} always have access to all branches by default.
+                {user.role === "superadmin" ? "Super Admins" : "Admins"} always
+                have access to all branches by default.
               </div>
             </div>
           )}

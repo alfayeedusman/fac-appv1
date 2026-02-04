@@ -18,7 +18,7 @@ export const requestLogger: RequestHandler = (req, res, next) => {
     const logLevel = isError ? "⚠️" : "ℹ️";
 
     // Don't spam logs for health checks
-    if (req.path === "/api/health" || req.path === "/api/neon/test") {
+    if (req.path === "/api/health" || req.path === "/api/supabase/test") {
       return;
     }
 

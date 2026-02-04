@@ -36,15 +36,23 @@ import {
   Eye,
   EyeOff,
   Wrench,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 interface User {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "admin" | "superadmin" | "manager" | "cashier" | "inventory_manager" | "crew";
+  role:
+    | "user"
+    | "admin"
+    | "superadmin"
+    | "manager"
+    | "cashier"
+    | "inventory_manager"
+    | "crew";
   permissions: string[];
   status: "active" | "inactive" | "suspended";
   createdAt: string;
@@ -651,7 +659,9 @@ export default function UserRoleManagement() {
 
       // Ensure we have an array
       if (!Array.isArray(registeredUsers)) {
-        console.warn("registeredUsers is not an array, resetting to empty array");
+        console.warn(
+          "registeredUsers is not an array, resetting to empty array",
+        );
         localStorage.setItem("registeredUsers", "[]");
         setUsers([]);
         return;
@@ -659,10 +669,18 @@ export default function UserRoleManagement() {
 
       // Convert to our User interface format with safe fallbacks
       const formattedUsers: User[] = registeredUsers
-        .filter((user: any) => user && typeof user === 'object' && user.email) // Filter out invalid entries
+        .filter((user: any) => user && typeof user === "object" && user.email) // Filter out invalid entries
         .map((user: any) => {
           const userRole = user.role || "user";
-          const validRole = ["user", "crew", "manager", "cashier", "inventory_manager", "admin", "superadmin"].includes(userRole)
+          const validRole = [
+            "user",
+            "crew",
+            "manager",
+            "cashier",
+            "inventory_manager",
+            "admin",
+            "superadmin",
+          ].includes(userRole)
             ? userRole
             : "user";
 
@@ -671,11 +689,17 @@ export default function UserRoleManagement() {
             fullName: user.fullName || user.name || "Unknown User",
             email: user.email || "",
             role: validRole as User["role"],
-            permissions: user.permissions || ROLE_PRESETS[validRole as keyof typeof ROLE_PRESETS] || [],
-            status: (user.status && ["active", "inactive", "suspended"].includes(user.status)) 
-              ? user.status 
-              : "active",
-            createdAt: user.createdAt || user.registeredAt || new Date().toISOString(),
+            permissions:
+              user.permissions ||
+              ROLE_PRESETS[validRole as keyof typeof ROLE_PRESETS] ||
+              [],
+            status:
+              user.status &&
+              ["active", "inactive", "suspended"].includes(user.status)
+                ? user.status
+                : "active",
+            createdAt:
+              user.createdAt || user.registeredAt || new Date().toISOString(),
             lastLogin: user.lastLogin || undefined,
           };
         });
@@ -721,11 +745,11 @@ export default function UserRoleManagement() {
     try {
       if (!formData.fullName || !formData.email || !formData.password) {
         Swal.fire({
-          title: 'Validation Error',
-          text: 'Please fill in all required fields',
-          icon: 'warning',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#f59e0b'
+          title: "Validation Error",
+          text: "Please fill in all required fields",
+          icon: "warning",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#f59e0b",
         });
         return;
       }
@@ -747,11 +771,11 @@ export default function UserRoleManagement() {
       );
       if (userExists) {
         Swal.fire({
-          title: 'Duplicate Email',
-          text: 'User with this email already exists',
-          icon: 'warning',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#f59e0b'
+          title: "Duplicate Email",
+          text: "User with this email already exists",
+          icon: "warning",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#f59e0b",
         });
         return;
       }
@@ -800,23 +824,23 @@ export default function UserRoleManagement() {
       resetForm();
 
       Swal.fire({
-        title: 'Success!',
-        text: 'User created successfully!',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#10b981',
+        title: "Success!",
+        text: "User created successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#10b981",
         timer: 3000,
-        timerProgressBar: true
+        timerProgressBar: true,
       });
     } catch (error) {
       console.error("Error creating user:", error);
 
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to create user. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#ef4444'
+        title: "Error!",
+        text: "Failed to create user. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
       });
     }
   };
@@ -857,23 +881,23 @@ export default function UserRoleManagement() {
       resetForm();
 
       Swal.fire({
-        title: 'Success!',
-        text: 'User updated successfully!',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#10b981',
+        title: "Success!",
+        text: "User updated successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#10b981",
         timer: 3000,
-        timerProgressBar: true
+        timerProgressBar: true,
       });
     } catch (error) {
       console.error("Error updating user:", error);
 
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to update user. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#ef4444'
+        title: "Error!",
+        text: "Failed to update user. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
       });
     }
   };
@@ -881,24 +905,24 @@ export default function UserRoleManagement() {
   const handleDeleteUser = (user: User) => {
     if (user.role === "superadmin") {
       Swal.fire({
-        title: 'Access Denied',
-        text: 'Cannot delete superadmin users',
-        icon: 'warning',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#f59e0b'
+        title: "Access Denied",
+        text: "Cannot delete superadmin users",
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#f59e0b",
       });
       return;
     }
 
     Swal.fire({
-      title: 'Are you sure?',
+      title: "Are you sure?",
       text: `Do you want to delete ${user.fullName}? This action cannot be undone.`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
         try {
@@ -909,7 +933,10 @@ export default function UserRoleManagement() {
           const filteredUsers = existingUsers.filter(
             (u: any) => u.email !== user.email,
           );
-          localStorage.setItem("registeredUsers", JSON.stringify(filteredUsers));
+          localStorage.setItem(
+            "registeredUsers",
+            JSON.stringify(filteredUsers),
+          );
 
           // Clean up user data
           localStorage.removeItem(`subscription_${user.email}`);
@@ -918,23 +945,23 @@ export default function UserRoleManagement() {
           loadUsers();
 
           Swal.fire({
-            title: 'Deleted!',
-            text: 'User deleted successfully!',
-            icon: 'success',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#10b981',
+            title: "Deleted!",
+            text: "User deleted successfully!",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#10b981",
             timer: 3000,
-            timerProgressBar: true
+            timerProgressBar: true,
           });
         } catch (error) {
           console.error("Error deleting user:", error);
 
           Swal.fire({
-            title: 'Error!',
-            text: 'Failed to delete user. Please try again.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#ef4444'
+            title: "Error!",
+            text: "Failed to delete user. Please try again.",
+            icon: "error",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#ef4444",
           });
         }
       }
@@ -962,6 +989,8 @@ export default function UserRoleManagement() {
         return <Shield className="h-4 w-4" />;
       case "manager":
         return <UserCheck className="h-4 w-4" />;
+      case "dispatcher":
+        return <Send className="h-4 w-4" />;
       case "crew":
         return <Wrench className="h-4 w-4" />;
       case "cashier":
@@ -981,6 +1010,8 @@ export default function UserRoleManagement() {
         return "bg-gradient-to-r from-purple-500 to-blue-600";
       case "manager":
         return "bg-gradient-to-r from-blue-500 to-cyan-600";
+      case "dispatcher":
+        return "bg-gradient-to-r from-emerald-500 to-teal-600";
       case "crew":
         return "bg-gradient-to-r from-red-500 to-pink-600";
       case "cashier":
@@ -1110,8 +1141,11 @@ export default function UserRoleManagement() {
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="crew">Crew</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="dispatcher">Dispatcher</SelectItem>
                       <SelectItem value="cashier">Cashier</SelectItem>
-                      <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
+                      <SelectItem value="inventory_manager">
+                        Inventory Manager
+                      </SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="superadmin">Super Admin</SelectItem>
                     </SelectContent>
@@ -1241,24 +1275,38 @@ export default function UserRoleManagement() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   <strong>Tab Access:</strong>{" "}
-                  {user.permissions.filter(p => p.startsWith('tab.')).length} tabs
+                  {user.permissions.filter((p) => p.startsWith("tab.")).length}{" "}
+                  tabs
                 </p>
                 <p className="text-sm text-muted-foreground">
                   <strong>Created:</strong>{" "}
                   {new Date(user.createdAt).toLocaleDateString()}
                 </p>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {user.permissions.filter(p => p.startsWith('tab.')).slice(0, 3).map(tabPerm => {
-                    const tabName = DEFAULT_PERMISSIONS.find(p => p.id === tabPerm)?.name || tabPerm;
-                    return (
-                      <Badge key={tabPerm} variant="outline" className="text-xs">
-                        {tabName.replace(" Tab", "")}
-                      </Badge>
-                    );
-                  })}
-                  {user.permissions.filter(p => p.startsWith('tab.')).length > 3 && (
+                  {user.permissions
+                    .filter((p) => p.startsWith("tab."))
+                    .slice(0, 3)
+                    .map((tabPerm) => {
+                      const tabName =
+                        DEFAULT_PERMISSIONS.find((p) => p.id === tabPerm)
+                          ?.name || tabPerm;
+                      return (
+                        <Badge
+                          key={tabPerm}
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          {tabName.replace(" Tab", "")}
+                        </Badge>
+                      );
+                    })}
+                  {user.permissions.filter((p) => p.startsWith("tab.")).length >
+                    3 && (
                     <Badge variant="outline" className="text-xs">
-                      +{user.permissions.filter(p => p.startsWith('tab.')).length - 3} more
+                      +
+                      {user.permissions.filter((p) => p.startsWith("tab."))
+                        .length - 3}{" "}
+                      more
                     </Badge>
                   )}
                 </div>
@@ -1340,8 +1388,11 @@ export default function UserRoleManagement() {
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="crew">Crew</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="dispatcher">Dispatcher</SelectItem>
                     <SelectItem value="cashier">Cashier</SelectItem>
-                    <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
+                    <SelectItem value="inventory_manager">
+                      Inventory Manager
+                    </SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Super Admin</SelectItem>
                   </SelectContent>

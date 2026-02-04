@@ -1,32 +1,62 @@
+<<<<<<< HEAD
 import { neon } from "@neondatabase/serverless";
 import { getDatabase, testConnection } from "./connection";
 import { seedUsers } from "./seed-users";
 import { seedBranches } from "./seed-branches";
+=======
+import { getDatabase, getSqlClient, testConnection } from "./connection";
+>>>>>>> ai_main_eac8da03b891
 import bcrypt from "bcryptjs";
+import { seedPremiumUsers } from "./seed-premium-users";
 
-// Initialize Neon SQL client at module scope
-const DATABASE_URL =
-  process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "";
-const sql = DATABASE_URL ? neon(DATABASE_URL) : (null as any);
+// SQL client is created lazily via connection.ts
 
 // Database migration script to create all tables
 export async function runMigrations() {
   console.log("🚀 Starting database migrations...");
 
   try {
+    let sql;
+    try {
+      sql = await getSqlClient();
+    } catch (error) {
+      console.warn(
+        "⚠️ Database connection unavailable, skipping migrations:",
+        error,
+      );
+      return false;
+    }
+
     if (!sql) {
-      throw new Error("DATABASE_URL/NEON_DATABASE_URL is not configured");
+      console.warn("⚠️ DATABASE_URL/SUPABASE_DATABASE_URL is not configured");
+      return false;
     }
 
     // Test connection first
-    const isConnected = await testConnection();
-    if (!isConnected) {
-      throw new Error("Database connection failed");
+    let isConnected = false;
+    try {
+      isConnected = await testConnection(false); // Don't auto-reconnect during migration
+    } catch (error) {
+      console.warn("⚠️ Database connection test failed, skipping migrations");
+      return false;
     }
 
-    const db = getDatabase();
+    if (!isConnected) {
+      console.warn("⚠️ Database connection failed, skipping migrations");
+      return false;
+    }
+
+    let db;
+    try {
+      db = await getDatabase();
+    } catch (error) {
+      console.warn("⚠️ Database initialization failed, skipping migrations");
+      return false;
+    }
+
     if (!db) {
-      throw new Error("Database not initialized");
+      console.warn("⚠️ Database not initialized, skipping migrations");
+      return false;
     }
 
     // Create CUID2 extension if needed (for better ID generation)
@@ -71,6 +101,68 @@ export async function runMigrations() {
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await sql`
+      ALTER TABLE crew_members
+      ADD COLUMN IF NOT EXISTS wash_bay VARCHAR(50);
+    `;
+
+    // Create crew commission rates table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_commission_rates (
+        id TEXT PRIMARY KEY,
+        service_type VARCHAR(255) NOT NULL,
+        rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew commission entries table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_commission_entries (
+        id TEXT PRIMARY KEY,
+        crew_user_id TEXT NOT NULL,
+        entry_date TIMESTAMP NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        notes TEXT,
+        recorded_by TEXT NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        payout_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create crew payouts table
+    await sql`
+      CREATE TABLE IF NOT EXISTS crew_payouts (
+        id TEXT PRIMARY KEY,
+        crew_user_id TEXT NOT NULL,
+        period_start TIMESTAMP NOT NULL,
+        period_end TIMESTAMP NOT NULL,
+        total_amount DECIMAL(12,2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        created_by TEXT NOT NULL,
+        released_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create daily income table
+    await sql`
+      CREATE TABLE IF NOT EXISTS daily_income (
+        id TEXT PRIMARY KEY,
+        branch VARCHAR(255) NOT NULL,
+        income_date TIMESTAMP NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        recorded_by TEXT NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -132,7 +224,7 @@ export async function runMigrations() {
         id TEXT PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
         full_name VARCHAR(255) NOT NULL,
-        password VARCHAR(255) NOT NULL,
+        password TEXT NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'user',
         contact_number VARCHAR(20),
         address TEXT,
@@ -160,6 +252,28 @@ export async function runMigrations() {
 
     // Add missing columns to existing users table (safe migration)
     console.log("🔧 Checking for missing columns in users table...");
+
+    // Convert password column from varchar to text if needed (for bcrypt compatibility)
+    try {
+      await sql`
+        ALTER TABLE users
+        ALTER COLUMN password TYPE TEXT USING password::text;
+      `;
+      console.log("✅ password column converted to TEXT type");
+    } catch (error: any) {
+      if (
+        error.message?.includes("already text type") ||
+        error.message?.includes("no conversion")
+      ) {
+        console.log("✅ password column is already TEXT type");
+      } else {
+        console.warn(
+          "⚠️ Could not convert password column to TEXT:",
+          error.message,
+        );
+      }
+    }
+
     try {
       await sql`
         ALTER TABLE users
@@ -566,12 +680,19 @@ export async function runMigrations() {
         badge_icon VARCHAR(100),
         badge_color VARCHAR(50) DEFAULT '#6B7280',
         level_color VARCHAR(50) DEFAULT '#F97316',
+        gradient VARCHAR(100) DEFAULT 'from-gray-400 to-gray-600',
+        badge_shape VARCHAR(20) DEFAULT 'circle',
+        badge_pattern VARCHAR(20) DEFAULT 'solid',
         is_active BOOLEAN DEFAULT true,
         sort_order INTEGER DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
+
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS gradient VARCHAR(100) DEFAULT 'from-gray-400 to-gray-600';`;
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS badge_shape VARCHAR(20) DEFAULT 'circle';`;
+    await sql`ALTER TABLE customer_levels ADD COLUMN IF NOT EXISTS badge_pattern VARCHAR(20) DEFAULT 'solid';`;
 
     // Create achievements table
     await sql`
@@ -1210,8 +1331,9 @@ export async function runMigrations() {
     console.log("✅ Database migrations completed successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Migration failed:", error);
-    throw error;
+    console.warn("⚠️ Migration failed (non-critical):", error);
+    // Don't throw - allow server to start even if migrations fail
+    return false;
   }
 }
 
@@ -1220,9 +1342,22 @@ export async function seedInitialData() {
   console.log("🌱 Seeding initial data...");
 
   try {
-    const db = getDatabase();
-    if (!db) {
-      throw new Error("Database not initialized");
+    let sql, db;
+    try {
+      sql = await getSqlClient();
+      db = await getDatabase();
+    } catch (error) {
+      console.warn(
+        "⚠️ Database not initialized, skipping initial data seeding",
+      );
+      return false;
+    }
+
+    if (!db || !sql) {
+      console.warn(
+        "⚠️ Database not initialized, skipping initial data seeding",
+      );
+      return false;
     }
 
     // Create or update superadmin user
@@ -1231,7 +1366,7 @@ export async function seedInitialData() {
 
     // Use environment variable for superadmin password, fallback to secure default
     const defaultPassword =
-      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2025!";
+      process.env.SUPERADMIN_PASSWORD || "SuperAdmin2024!";
     const superAdminPassword = await bcrypt.hash(defaultPassword, 10);
 
     if (superAdminExists.length === 0) {
@@ -1347,20 +1482,144 @@ export async function seedInitialData() {
       }
     }
 
+    // Seed service packages (subscriptions)
+    console.log("📦 Seeding service packages...");
+    const packages = [
+      {
+        name: "Free Account",
+        type: "free",
+        basePrice: 0,
+        features: [
+          "Basic car wash services",
+          "Pay per service",
+          "Email support",
+        ],
+        description: "Perfect for occasional car wash needs",
+        isPopular: false,
+        isFeatured: false,
+      },
+      {
+        name: "Classic Pro",
+        type: "classic",
+        basePrice: 500,
+        features: [
+          "10 washes per month",
+          "Basic car wash services",
+          "Priority booking",
+          "Email support",
+        ],
+        description: "Great for regular customers",
+        isPopular: true,
+        isFeatured: true,
+      },
+      {
+        name: "VIP Silver Elite",
+        type: "silver",
+        basePrice: 1500,
+        features: [
+          "Unlimited basic washes",
+          "Premium detailing included",
+          "Priority support",
+          "Free add-on services",
+          "24/7 customer support",
+        ],
+        description: "Premium membership with unlimited benefits",
+        isPopular: false,
+        isFeatured: true,
+      },
+      {
+        name: "VIP Gold Ultimate",
+        type: "gold",
+        basePrice: 3000,
+        features: [
+          "All services unlimited",
+          "Premium detailing included",
+          "VIP concierge service",
+          "Free home pickup & delivery",
+          "Priority support",
+          "Exclusive member events",
+        ],
+        description: "Ultimate premium experience",
+        isPopular: true,
+        isFeatured: true,
+      },
+    ];
+
+    for (const pkg of packages) {
+      const pkgExists =
+        await sql`SELECT id FROM service_packages WHERE name = ${pkg.name} LIMIT 1`;
+      if (pkgExists.length === 0) {
+        await sql`
+          INSERT INTO service_packages (
+            id, name, description, category, type, base_price, currency, features,
+            is_active, is_popular, is_featured, color, priority
+          ) VALUES (
+            'pkg_' || ${pkg.type} || '_' || extract(epoch from now())::text,
+            ${pkg.name},
+            ${pkg.description},
+            'subscription',
+            'recurring',
+            ${pkg.basePrice},
+            'PHP',
+            ${JSON.stringify(pkg.features)},
+            true,
+            ${pkg.isPopular},
+            ${pkg.isFeatured},
+            ${pkg.type === "gold" ? "#FFD700" : pkg.type === "silver" ? "#C0C0C0" : pkg.type === "classic" ? "#8B4513" : "#E5E7EB"},
+            ${pkg.basePrice / 500}
+          );
+        `;
+      }
+    }
+    console.log("✅ Service packages seeded successfully!");
+
     console.log("✅ Initial data seeded successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Seeding failed:", error);
-    throw error;
+    console.warn("⚠️ Seeding failed (non-critical):", error);
+    // Don't throw - allow server to start even if seeding fails
+    return false;
   }
 }
 
 // Main migration function
 export async function migrate() {
+<<<<<<< HEAD
   await runMigrations();
   await seedInitialData();
   await seedUsers();
   await seedBranches();
+=======
+  const shouldSkip =
+    process.env.SKIP_MIGRATIONS === "true" ||
+    process.env.DISABLE_MIGRATIONS === "true";
+  const databaseUrl =
+    process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+
+  if (shouldSkip || !databaseUrl) {
+    console.warn(
+      "⚠️ Skipping database migrations: missing database URL or migrations disabled.",
+    );
+    return;
+  }
+
+  try {
+    await runMigrations();
+    await seedInitialData();
+
+    // Seed premium users and test accounts
+    try {
+      await seedPremiumUsers();
+    } catch (err) {
+      console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+    }
+  } catch (error) {
+    console.error("❌ Database migration failed:", error);
+    if (process.env.MIGRATIONS_STRICT === "true") {
+      throw error;
+    }
+  }
+>>>>>>> ai_main_eac8da03b891
 }
 
 // Run migrations if this file is executed directly

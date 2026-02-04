@@ -19,7 +19,7 @@ export function DatabaseInitializer() {
     setDetails("Running migrations and seeding data...");
 
     try {
-      const response = await fetch("/api/neon/init", {
+      const response = await fetch("/api/supabase/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

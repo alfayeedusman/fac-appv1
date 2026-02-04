@@ -33,7 +33,7 @@ import {
   Eye,
 } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import SubscriptionStatusBadge from "@/components/SubscriptionStatusBadge";
 import SubscriptionDetailsCard from "@/components/SubscriptionDetailsCard";
@@ -71,9 +71,9 @@ const XENDIT_FEES: PaymentFees = {
 };
 
 const ActiveSubscriptionsManager = () => {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionWithCustomer[]>(
-    [],
-  );
+  const [subscriptions, setSubscriptions] = useState<
+    SubscriptionWithCustomer[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubscription, setSelectedSubscription] =
     useState<SubscriptionWithCustomer | null>(null);
@@ -93,24 +93,33 @@ const ActiveSubscriptionsManager = () => {
       console.log("📋 Loading active subscriptions...");
 
       // Fetch subscriptions from database
-      if (!neonDbClient.getSubscriptions) {
+      if (!supabaseDbClient.getSubscriptions) {
         console.error("❌ getSubscriptions method not available");
         setIsEndpointAvailable(false);
         setSubscriptions([]);
         return;
       }
 
-      const result = await neonDbClient.getSubscriptions({ status: "active" });
+      const result = await supabaseDbClient.getSubscriptions({
+        status: "active",
+      });
       console.log("📋 Subscriptions result:", result);
 
       if (result?.success === false) {
-        console.warn("⚠️ Subscription fetch returned success: false", result.error);
+        console.warn(
+          "⚠️ Subscription fetch returned success: false",
+          result.error,
+        );
         setIsEndpointAvailable(false);
         setSubscriptions([]);
         return;
       }
 
-      if (result?.success && result.subscriptions && Array.isArray(result.subscriptions)) {
+      if (
+        result?.success &&
+        result.subscriptions &&
+        Array.isArray(result.subscriptions)
+      ) {
         // Map subscriptions to include customer and cycle info
         const mappedSubs = result.subscriptions
           .filter((sub: any) => sub.status === "active")
@@ -123,14 +132,18 @@ const ActiveSubscriptionsManager = () => {
               id: sub.id,
               customerId: sub.userId,
               customerName: `Customer ${sub.userId?.substring(0, 8) || "Unknown"}`,
-              customerEmail: `user.${sub.userId?.substring(0, 6)}@example.com` || "",
+              customerEmail:
+                `user.${sub.userId?.substring(0, 6)}@example.com` || "",
               packageId: sub.packageId,
               packageName: `Package ${sub.packageId?.substring(0, 6) || "Unknown"}`,
               status: sub.status,
               startDate: sub.startDate,
               endDate: sub.endDate || sub.renewalDate,
               renewalDate: sub.renewalDate,
-              finalPrice: typeof sub.finalPrice === "number" ? sub.finalPrice : parseFloat(sub.finalPrice || "0"),
+              finalPrice:
+                typeof sub.finalPrice === "number"
+                  ? sub.finalPrice
+                  : parseFloat(sub.finalPrice || "0"),
               xenditPlanId: sub.xenditPlanId,
               paymentMethod: sub.paymentMethod || "card",
               autoRenew: sub.autoRenew !== false,
@@ -155,7 +168,8 @@ const ActiveSubscriptionsManager = () => {
       if (error?.message?.includes("JSON")) {
         toast({
           title: "Connection Issue",
-          description: "Failed to load subscription data. The endpoint may not be available.",
+          description:
+            "Failed to load subscription data. The endpoint may not be available.",
           variant: "destructive",
         });
       }
@@ -168,8 +182,10 @@ const ActiveSubscriptionsManager = () => {
     amount: number,
     paymentMethod: string = "card",
   ) => {
-    const feePercentage = XENDIT_FEES[paymentMethod as keyof PaymentFees] || 2.9;
-    const platformFee = Math.round((amount * feePercentage) / 100 * 100) / 100;
+    const feePercentage =
+      XENDIT_FEES[paymentMethod as keyof PaymentFees] || 2.9;
+    const platformFee =
+      Math.round(((amount * feePercentage) / 100) * 100) / 100;
     const totalAmount = amount + platformFee;
 
     return {
@@ -250,14 +266,19 @@ const ActiveSubscriptionsManager = () => {
           disabled={loading}
           className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3">
-        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+        <Select
+          value={paymentMethodFilter}
+          onValueChange={setPaymentMethodFilter}
+        >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Filter by payment method" />
           </SelectTrigger>
@@ -280,7 +301,8 @@ const ActiveSubscriptionsManager = () => {
                 Subscription data unavailable
               </p>
               <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-                Unable to load subscription information. Please check your connection and try again.
+                Unable to load subscription information. Please check your
+                connection and try again.
               </p>
             </div>
           </div>
@@ -295,14 +317,20 @@ const ActiveSubscriptionsManager = () => {
                 <div className="animate-spin mb-4">
                   <RefreshCw className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground">Loading subscriptions...</p>
+                <p className="text-muted-foreground">
+                  Loading subscriptions...
+                </p>
               </div>
             </div>
           ) : filteredSubscriptions.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                <p className="text-muted-foreground">{isEndpointAvailable ? "No active subscriptions" : "Unable to load subscriptions"}</p>
+                <p className="text-muted-foreground">
+                  {isEndpointAvailable
+                    ? "No active subscriptions"
+                    : "Unable to load subscriptions"}
+                </p>
               </div>
             </div>
           ) : (
@@ -335,7 +363,9 @@ const ActiveSubscriptionsManager = () => {
                     {/* Cycle & Status */}
                     <div className="col-span-1">
                       <div className="space-y-2">
-                        <div className="text-xs text-muted-foreground">Cycle</div>
+                        <div className="text-xs text-muted-foreground">
+                          Cycle
+                        </div>
                         <Badge variant="outline" className="font-mono">
                           Cycle {subscription.cycleCount}
                         </Badge>
@@ -376,7 +406,9 @@ const ActiveSubscriptionsManager = () => {
                           Auto-Renew
                         </div>
                         <Badge
-                          variant={subscription.autoRenew ? "default" : "secondary"}
+                          variant={
+                            subscription.autoRenew ? "default" : "secondary"
+                          }
                           className={
                             subscription.autoRenew
                               ? "bg-green-600 hover:bg-green-700"
@@ -398,13 +430,18 @@ const ActiveSubscriptionsManager = () => {
                     {/* Actions */}
                     <div className="col-span-1">
                       <div className="space-y-2">
-                        <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+                        <Dialog
+                          open={isDetailsModalOpen}
+                          onOpenChange={setIsDetailsModalOpen}
+                        >
                           <DialogTrigger asChild>
                             <Button
                               size="sm"
                               variant="outline"
                               className="w-full"
-                              onClick={() => setSelectedSubscription(subscription)}
+                              onClick={() =>
+                                setSelectedSubscription(subscription)
+                              }
                             >
                               <Eye className="h-3 w-3 mr-1" />
                               Details
@@ -436,12 +473,18 @@ const ActiveSubscriptionsManager = () => {
 
                                 <SubscriptionDetailsCard
                                   customerId={selectedSubscription.customerId}
-                                  customerName={selectedSubscription.customerName}
-                                  subscriptionStatus={selectedSubscription.paymentMethod as any}
+                                  customerName={
+                                    selectedSubscription.customerName
+                                  }
+                                  subscriptionStatus={
+                                    selectedSubscription.paymentMethod as any
+                                  }
                                   renewalDate={selectedSubscription.renewalDate}
                                   cycleCount={selectedSubscription.cycleCount}
                                   autoRenew={selectedSubscription.autoRenew}
-                                  paymentMethod={selectedSubscription.paymentMethod}
+                                  paymentMethod={
+                                    selectedSubscription.paymentMethod
+                                  }
                                   amount={selectedSubscription.finalPrice}
                                   compact={false}
                                 />
@@ -450,12 +493,17 @@ const ActiveSubscriptionsManager = () => {
                           </DialogContent>
                         </Dialog>
 
-                        <Dialog open={isSetupDialogOpen} onOpenChange={setIsSetupDialogOpen}>
+                        <Dialog
+                          open={isSetupDialogOpen}
+                          onOpenChange={setIsSetupDialogOpen}
+                        >
                           <DialogTrigger asChild>
                             <Button
                               size="sm"
                               className="w-full bg-cyan-600 hover:bg-cyan-700"
-                              onClick={() => handleSetupXenditPlan(subscription)}
+                              onClick={() =>
+                                handleSetupXenditPlan(subscription)
+                              }
                             >
                               <Zap className="h-3 w-3 mr-1" />
                               Setup
@@ -483,7 +531,10 @@ const ActiveSubscriptionsManager = () => {
                           </DialogContent>
                         </Dialog>
 
-                        <Dialog open={isRenewalDialogOpen} onOpenChange={setIsRenewalDialogOpen}>
+                        <Dialog
+                          open={isRenewalDialogOpen}
+                          onOpenChange={setIsRenewalDialogOpen}
+                        >
                           <DialogTrigger asChild>
                             <Button
                               size="sm"
@@ -527,7 +578,9 @@ const ActiveSubscriptionsManager = () => {
       {/* Fee Structure Info */}
       <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-sm">Fee Structure (Charged to Customers)</CardTitle>
+          <CardTitle className="text-sm">
+            Fee Structure (Charged to Customers)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
@@ -571,7 +624,7 @@ const XenditSetupForm = ({
       console.log("🔧 Setting up Xendit subscription plan...");
 
       const response = await fetch(
-        "/api/neon/subscription/xendit/create-plan",
+        "/api/supabase/subscription/xendit/create-plan",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -611,9 +664,7 @@ const XenditSetupForm = ({
   return (
     <div className="space-y-4">
       <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded text-sm">
-        <p className="font-medium">
-          Customer: {subscription.customerName}
-        </p>
+        <p className="font-medium">Customer: {subscription.customerName}</p>
         <p className="text-xs text-muted-foreground mt-1">
           Email: {subscription.customerEmail}
         </p>
@@ -655,7 +706,8 @@ const ManualRenewalForm = ({
 
   const calculateFees = (amount: number, method: string) => {
     const feePercentage = XENDIT_FEES[method as keyof PaymentFees] || 2.9;
-    const platformFee = Math.round((amount * feePercentage) / 100 * 100) / 100;
+    const platformFee =
+      Math.round(((amount * feePercentage) / 100) * 100) / 100;
     return {
       platformFee,
       total: amount + platformFee,
@@ -695,8 +747,12 @@ const ManualRenewalForm = ({
           </span>
         </div>
         <div className="flex justify-between text-sm text-orange-600">
-          <span>Xendit Fee ({XENDIT_FEES[paymentMethod as keyof PaymentFees]}%):</span>
-          <span className="font-medium">₱{fees.platformFee.toLocaleString()}</span>
+          <span>
+            Xendit Fee ({XENDIT_FEES[paymentMethod as keyof PaymentFees]}%):
+          </span>
+          <span className="font-medium">
+            ₱{fees.platformFee.toLocaleString()}
+          </span>
         </div>
         <div className="border-t pt-2 flex justify-between font-bold">
           <span>Total Charge:</span>

@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { AdminConfigManager, type AdminConfig } from "@/utils/adminConfig";
 import { getCarWashServices } from "@/utils/carWashServices";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import {
   Calendar,
   Clock,
@@ -51,7 +51,7 @@ export default function AdminBookingSettings() {
         console.log("🔧 Loading booking settings from backend...");
 
         // First try to load from backend
-        const backendSettings = await neonDbClient.getSettings();
+        const backendSettings = await supabaseDbClient.getSettings();
 
         if (backendSettings.success && backendSettings.settings) {
           console.log(
@@ -79,7 +79,7 @@ export default function AdminBookingSettings() {
             setConfig(defaultConfig);
 
             // Save default config to backend
-            await neonDbClient.updateSetting(
+            await supabaseDbClient.updateSetting(
               "booking_configuration",
               defaultConfig,
               "Complete booking system configuration including pricing, scheduling, and home service settings",
@@ -124,7 +124,7 @@ export default function AdminBookingSettings() {
       console.log("💾 Saving booking settings to backend...", config);
 
       // Save to backend first
-      const backendResult = await neonDbClient.updateSetting(
+      const backendResult = await supabaseDbClient.updateSetting(
         "booking_configuration",
         config,
         "Complete booking system configuration including pricing, scheduling, and home service settings",

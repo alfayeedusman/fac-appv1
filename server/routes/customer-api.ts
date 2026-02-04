@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from "express";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 
 const router = Router();
 
@@ -13,13 +13,13 @@ const mockAuth: RequestHandler = (req, res, next) => {
 // Health check for new system
 router.get("/health", async (req, res) => {
   try {
-    const stats = await neonDbService.getStats();
+    const stats = await supabaseDbService.getStats();
     res.json({
       status: "healthy",
-      system: "neon-database",
+      system: "supabase-database",
       timestamp: new Date().toISOString(),
       services: {
-        neon: "connected",
+        supabase: "connected",
         firebase: "mock-connected",
         stats,
       },
@@ -27,7 +27,7 @@ router.get("/health", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "unhealthy",
-      system: "neon-database",
+      system: "supabase-database",
       timestamp: new Date().toISOString(),
       error: "Database connection failed",
     });
@@ -39,7 +39,7 @@ router.get("/users", async (req, res) => {
   console.log("🔍 GET /api/users endpoint called");
   try {
     console.log("📋 Fetching users from database...");
-    const users = await neonDbService.getAllUsers();
+    const users = await supabaseDbService.getAllUsers();
     console.log("✅ Users retrieved:", users);
     res.json({ success: true, users });
   } catch (error) {
@@ -50,7 +50,7 @@ router.get("/users", async (req, res) => {
 
 router.get("/user/profile", mockAuth, async (req, res) => {
   try {
-    const profile = await neonDbService.getUserById(req.user.uid);
+    const profile = await supabaseDbService.getUserById(req.user.uid);
     if (!profile) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -62,7 +62,7 @@ router.get("/user/profile", mockAuth, async (req, res) => {
 
 router.get("/user/analytics", mockAuth, async (req, res) => {
   try {
-    const bookings = await neonDbService.getBookingsByUserId(req.user.uid);
+    const bookings = await supabaseDbService.getBookingsByUserId(req.user.uid);
     const analytics = {
       totalBookings: bookings.length,
       pendingBookings: bookings.filter((b) => b.status === "pending").length,
@@ -124,7 +124,7 @@ router.get("/branches", async (req, res) => {
 // Bookings routes
 router.get("/bookings", mockAuth, async (req, res) => {
   try {
-    const bookings = await neonDbService.getBookingsByUserId(req.user.uid);
+    const bookings = await supabaseDbService.getBookingsByUserId(req.user.uid);
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ error: "Failed to get bookings" });
@@ -133,7 +133,7 @@ router.get("/bookings", mockAuth, async (req, res) => {
 
 router.post("/bookings", mockAuth, async (req, res) => {
   try {
-    const booking = await neonDbService.createBooking({
+    const booking = await supabaseDbService.createBooking({
       userId: req.user.uid,
       ...req.body,
     });

@@ -1,4 +1,12 @@
-export type UserRole = "customer" | "admin" | "cashier" | "inventory_manager";
+export type UserRole =
+  | "customer"
+  | "admin"
+  | "superadmin"
+  | "manager"
+  | "dispatcher"
+  | "crew"
+  | "cashier"
+  | "inventory_manager";
 
 export interface UserAccount {
   id: string;
@@ -35,6 +43,31 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
       actions: ["view", "create", "edit", "delete", "approve"],
     },
   ],
+  superadmin: [
+    { module: "pos", actions: ["view", "create", "edit", "delete"] },
+    { module: "inventory", actions: ["view", "create", "edit", "delete"] },
+    {
+      module: "admin",
+      actions: ["view", "create", "edit", "delete", "approve"],
+    },
+    { module: "reports", actions: ["view", "create"] },
+    { module: "users", actions: ["view", "create", "edit", "delete"] },
+    {
+      module: "subscriptions",
+      actions: ["view", "create", "edit", "delete", "approve"],
+    },
+  ],
+  manager: [
+    { module: "reports", actions: ["view", "create"] },
+    { module: "users", actions: ["view", "create", "edit"] },
+    { module: "pos", actions: ["view"] },
+  ],
+  dispatcher: [
+    { module: "reports", actions: ["view"] },
+    { module: "pos", actions: ["view"] },
+    { module: "users", actions: ["view"] },
+  ],
+  crew: [],
   cashier: [
     { module: "pos", actions: ["view", "create"] },
     { module: "inventory", actions: ["view"] },

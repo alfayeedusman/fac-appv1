@@ -22,7 +22,7 @@ import {
   cancelBooking,
 } from "@/utils/bookingData";
 import RatingReview from "./RatingReview";
-import { neonDbClient } from "@/services/neonDatabaseService";
+import { supabaseDbClient } from "@/services/supabaseDatabaseService";
 import { swalHelpers } from "@/utils/swalHelpers";
 
 interface BookingCardProps {
@@ -100,7 +100,7 @@ export default function BookingCard({ booking, onUpdate }: BookingCardProps) {
 
     setIsUpdating(true);
     try {
-      const result = await neonDbClient.updateBooking(booking.id, {
+      const result = await supabaseDbClient.updateBooking(booking.id, {
         status: "cancelled",
       });
       if (result.success) {

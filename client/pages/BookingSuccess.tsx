@@ -41,7 +41,7 @@ export default function BookingSuccess() {
     const poll = async () => {
       try {
         const res = await fetch(
-          `/api/neon/payment/xendit/invoice-status/${invoiceId}`,
+          `/api/supabase/payment/xendit/invoice-status/${invoiceId}`,
         );
         if (res.ok) {
           const data = await res.json();
