@@ -190,7 +190,7 @@ class SupabaseDatabaseClient {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/neon`;
-    log("🔗 NeonDatabaseClient baseUrl:", this.baseUrl);
+    log("🔗 SupabaseDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
       warn("⚠️ Background initialization failed:", err),
