@@ -188,7 +188,7 @@ export const initializeNeonDB: RequestHandler = async (req, res) => {
       return res.status(500).json({
         success: false,
         error:
-          "Failed to initialize database connection. Check NEON_DATABASE_URL environment variable.",
+          "Failed to initialize database connection. Check SUPABASE_DATABASE_URL environment variable.",
       });
     }
 
@@ -232,7 +232,7 @@ export const testNeonConnection: RequestHandler = async (req, res) => {
         success: false,
         connected: false,
         error:
-          "No database URL configured. Please set NEON_DATABASE_URL environment variable.",
+          "No database URL configured. Please set SUPABASE_DATABASE_URL environment variable.",
         stats: null,
         timestamp: new Date().toISOString(),
       });
