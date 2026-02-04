@@ -57,11 +57,11 @@ export class NetworkDiagnostics {
     }
   }
 
-  private async testNeonConnection(): Promise<void> {
+  private async testSupabaseConnection(): Promise<void> {
     try {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 5000);
-      const response = await fetch("/api/neon/test", {
+      const response = await fetch("/api/supabase/test", {
         method: "GET",
         signal: ac.signal,
       });
@@ -70,20 +70,20 @@ export class NetworkDiagnostics {
       if (response.ok) {
         const data = await response.json();
         this.results.push({
-          test: "Neon Database Test",
+          test: "Supabase Database Test",
           success: data.connected || data.success,
           details: `Connected: ${data.connected}, Stats: ${data.stats ? "Available" : "N/A"}`,
         });
       } else {
         this.results.push({
-          test: "Neon Database Test",
+          test: "Supabase Database Test",
           success: false,
           details: `HTTP ${response.status}: ${response.statusText}`,
         });
       }
     } catch (error) {
       this.results.push({
-        test: "Neon Database Test",
+        test: "Supabase Database Test",
         success: false,
         details: "Failed to connect",
         error: error instanceof Error ? error.message : String(error),
@@ -96,7 +96,7 @@ export class NetworkDiagnostics {
       // Test with invalid data to see if endpoint is reachable
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 5000);
-      const response = await fetch("/api/neon/auth/register", {
+      const response = await fetch("/api/supabase/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ test: "diagnostic" }),
