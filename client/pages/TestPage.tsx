@@ -16,11 +16,22 @@ export default function TestPage() {
         <p className="text-muted-foreground">Muted text color</p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mb-6">
         <h3 className="text-xl font-bold">Color Tests:</h3>
         <p className="text-foreground">Foreground color (should be visible)</p>
         <p className="text-muted-foreground">Muted foreground (gray text)</p>
         <p className="text-fac-orange-500">FAC Orange (brand color)</p>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold">State Test:</h3>
+        <p className="text-foreground">Count: {count}</p>
+        <button
+          onClick={() => setCount(count + 1)}
+          className="px-4 py-2 bg-fac-orange-500 text-white rounded-lg hover:bg-fac-orange-600"
+        >
+          Increment
+        </button>
       </div>
     </div>
   );
