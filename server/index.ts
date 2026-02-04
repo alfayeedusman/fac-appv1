@@ -352,31 +352,18 @@ export const createServer = async () => {
   console.log("🎨 CMS API routes registered successfully");
 
   // Fallback handler for SPA routing - MUST BE LAST
-  // In production, serve index.html for non-API routes
+  // In production, serve built React app
   if (process.env.NODE_ENV === "production") {
     const reactBuildPath = path.join(__dirname, "../dist/spa");
     app.use(express.static(reactBuildPath));
 
-    app.use((req, res, next) => {
-      // Skip if it's an API route
-      if (req.path.startsWith("/api/")) {
-        return res.status(404).json({ error: "API endpoint not found" });
-      }
-      // Serve index.html for all other routes (SPA)
+    app.get("*", (req, res) => {
+      // For any non-API route, serve index.html (SPA fallback)
       res.sendFile(path.join(reactBuildPath, "index.html"));
     });
   }
-  // In development, Vite's middleware (added in configureServer) handles everything
-  // Just catch unhandled API routes here
-  else {
-    app.use((req, res, next) => {
-      if (req.path.startsWith("/api/")) {
-        return res.status(404).json({ error: "API endpoint not found" });
-      }
-      // Pass to Vite for handling (will rewrite SPA routes to /index.html)
-      next();
-    });
-  }
+  // In development, Vite's appType: 'spa' configuration handles SPA fallback
+  // Express just provides API routes, Vite handles everything else
 
   return app;
 };
