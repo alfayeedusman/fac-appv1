@@ -366,16 +366,15 @@ export const createServer = async () => {
       res.sendFile(path.join(reactBuildPath, "index.html"));
     });
   } else {
-    // In development, let Vite handle the React app
-    // Just handle API routes
-    app.get("*", (req, res, next) => {
-      // Skip if it's an API route
+    // In development, let Vite handle static assets and React app
+    // Only handle API 404s explicitly
+    app.use((req, res, next) => {
+      // If it's an API route that wasn't handled, return 404
       if (req.path.startsWith("/api/")) {
         return res.status(404).json({ error: "API endpoint not found" });
       }
-      // In development, Vite middleware will handle this
-      // If we get here, it means Vite didn't handle it, so return 404
-      res.status(404).json({ error: "Not found" });
+      // For all other routes, let Vite middleware handle it
+      next();
     });
   }
 
