@@ -4,11 +4,11 @@ export function validateEnvironment() {
   const warnings: string[] = [];
 
   // Check for database URL
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+  const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
   if (!databaseUrl) {
     errors.push(
-      "❌ CRITICAL: Missing database URL configuration. Please set either NEON_DATABASE_URL or DATABASE_URL environment variable.",
+      "❌ CRITICAL: Missing database URL configuration. Please set SUPABASE_DATABASE_URL environment variable.",
     );
   } else {
     // Validate database URL format
@@ -24,16 +24,6 @@ export function validateEnvironment() {
         "⚠️ WARNING: Database URL does not include sslmode=require. This is recommended for production.",
       );
     }
-
-    // Check for connection pooler
-    if (!databaseUrl.includes("-pooler") && databaseUrl.includes("neon.tech")) {
-      warnings.push(
-        "⚠️ WARNING: Not using Neon connection pooler (-pooler). Consider adding -pooler to hostname for better connection management.",
-      );
-      warnings.push(
-        "   Recommended format: postgresql://user:pass@host-pooler.neon.tech/db?sslmode=require",
-      );
-    }
   }
 
   // Log database configuration info
@@ -42,7 +32,7 @@ export function validateEnvironment() {
       /postgresql:\/\/([^:]+):([^@]+)@/,
       "postgresql://***:***@",
     );
-    console.log("✅ Database URL configured:", maskedUrl);
+    console.log("✅ Supabase Database URL configured:", maskedUrl);
   }
 
   // Log errors
@@ -72,17 +62,11 @@ export function validateEnvironment() {
   console.log("📊 Database Configuration Details:");
   console.log("   Node Environment:", process.env.NODE_ENV || "development");
   console.log(
-    "   Neon Connection:",
+    "   Supabase Connection:",
     databaseUrl ? "✅ Configured" : "❌ Not configured",
   );
 
-  if (databaseUrl && databaseUrl.includes("neon.tech")) {
-    const hostname = databaseUrl.split("@")[1]?.split("/")[0];
-    console.log("   Hostname:", hostname);
-    console.log(
-      "   Connection Pooling:",
-      hostname?.includes("-pooler") ? "✅ Enabled" : "❌ Not enabled",
-    );
+  if (databaseUrl) {
     console.log(
       "   SSL:",
       databaseUrl.includes("sslmode=require")
