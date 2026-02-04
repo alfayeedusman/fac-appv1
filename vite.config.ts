@@ -45,15 +45,7 @@ function expressPlugin(): Plugin {
       // Express will handle all API routes
       server.middlewares.use(app);
 
-      // Return the server - Vite will handle SPA fallback via transformIndexHtml
+      // Vite's appType: 'spa' config will handle SPA fallback for non-API routes
     },
-    // Use Vite's built-in SPA fallback via transformIndexHtml
-    transformIndexHtml: {
-      order: 'post',
-      handler(html) {
-        // Just pass through - let Vite's default SPA handling work
-        return html;
-      }
-    }
   };
 }
