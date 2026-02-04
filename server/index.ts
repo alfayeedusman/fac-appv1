@@ -1,22 +1,3 @@
-// ============= GLOBAL ERROR HANDLERS =============
-// Must be at the very top to catch all unhandled errors and prevent crashes
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("⚠️ Unhandled Promise Rejection:", reason);
-  // Don't exit - keep server running
-});
-
-process.on("uncaughtException", (error) => {
-  console.error("⚠️ Uncaught Exception:", error);
-  // Don't exit for connection errors - keep server running
-  if (
-    error.message?.includes("ECONNREFUSED") ||
-    error.message?.includes("connect")
-  ) {
-    console.log("🔄 Continuing despite connection error...");
-    return;
-  }
-});
-
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -29,24 +10,25 @@ import otpApiRoutes from "./routes/otp-api";
 import * as neonApiRoutes from "./routes/neon-api";
 import * as crewApiRoutes from "./routes/crew-api";
 import * as xenditApiRoutes from "./routes/xendit-api";
-import imagesApiRoutes from "./routes/images-api";
 import notificationsApiRoutes from "./routes/notifications-api";
-import realtimeApiRoutes from "./routes/realtime-api";
-import cmsApiRoutes from "./routes/cms-api";
-import posApiRoutes from "./routes/pos-api";
-import * as adminInviteRoutes from "./routes/admin-invite";
-import * as branchesApiRoutes from "./routes/branches-api";
 import * as gamificationApiRoutes from "./routes/gamification-api";
+import imagesApiRoutes from "./routes/images-api";
+import cmsApiRoutes from "./routes/cms-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
-import { ensureDatabaseInitialized } from "./middleware/dbInitializer";
-import { requestLogger, errorHandler, logInit } from "./middleware/errorLogger";
+import { migrate } from "./database/migrate";
+import * as branchesApi from "./routes/branches-api";
+import { validateEnvironment } from "./utils/validateEnvironment";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function createServer() {
+// Validate environment on startup
+validateEnvironment();
+
+export const createServer = () => {
   const app = express();
+  const PORT = process.env.PORT || 3000;
 
   // Middleware - CORS configuration
   const corsOptions = {
