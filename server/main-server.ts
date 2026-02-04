@@ -369,7 +369,7 @@ export const createServer = async () => {
 
 // Only start server if this file is run directly
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const app = createServer();
+  const app = await createServer();
   const PORT = process.env.PORT || 3000;
 
   app.listen(PORT, () => {
