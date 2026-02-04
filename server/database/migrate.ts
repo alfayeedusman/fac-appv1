@@ -1,21 +1,18 @@
 import { neon } from "@neondatabase/serverless";
-import { neon } from "@neondatabase/serverless";
-import { getDatabase, testConnection } from "./connection";
+import { getDatabase, getSqlClient, testConnection } from "./connection";
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
 
-// Initialize Neon SQL client at module scope
-const DATABASE_URL =
-  process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "";
-const sql = DATABASE_URL ? neon(DATABASE_URL) : (null as any);
+// SQL client is created lazily via connection.ts
 
 // Database migration script to create all tables
 export async function runMigrations() {
   console.log("🚀 Starting database migrations...");
 
   try {
+    const sql = await getSqlClient();
     if (!sql) {
-      throw new Error("DATABASE_URL/NEON_DATABASE_URL is not configured");
+      throw new Error("DATABASE_URL/SUPABASE_DATABASE_URL is not configured");
     }
 
     // Test connection first
