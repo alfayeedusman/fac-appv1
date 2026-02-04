@@ -150,28 +150,6 @@ export interface Ad {
 const createSafeTimeoutAbort = (
   controller: AbortController,
   timeoutMs: number,
-<<<<<<< HEAD:client/services/neonDatabaseService.ts
-) => {
-  let isCleared = false;
-
-  const timeoutId = setTimeout(() => {
-    // Only abort if not already cleared
-    if (!isCleared && !controller.signal.aborted) {
-      try {
-        controller.abort();
-      } catch (e) {
-        console.warn(
-          `Error aborting request: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
-        );
-      }
-    }
-  }, timeoutMs);
-
-  return {
-    clearTimeout: () => {
-      isCleared = true;
-      globalThis.clearTimeout(timeoutId);
-=======
 ): { clearTimeout: () => void } => {
   let cleared = false;
   const timerHandle =
@@ -194,7 +172,6 @@ const createSafeTimeoutAbort = (
       if (timerHandle) {
         clearTimeout(timerHandle);
       }
->>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
     },
   };
 };
@@ -303,15 +280,8 @@ class SupabaseDatabaseClient {
 
       try {
         const res = await fetch(url, { signal: ac.signal });
-<<<<<<< HEAD:client/services/neonDatabaseService.ts
-        timeoutHandler.clearTimeout();
         return res;
       } catch (e) {
-        timeoutHandler.clearTimeout();
-=======
-        return res;
-      } catch (e) {
->>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
         // Handle abort errors gracefully (timeout is expected behavior)
         if (e instanceof Error && e.name === "AbortError") {
           throw new Error(`Request timeout after ${timeoutMs}ms`);
@@ -557,10 +527,6 @@ class SupabaseDatabaseClient {
 
         // Log detailed error info for debugging
         logError(
-<<<<<<< HEAD:client/services/neonDatabaseService.ts
-          `❌ Login failed with status ${status}`,
-          `Server error: ${json.error}, Debug: ${JSON.stringify(json.debug)}`,
-=======
           `❌ Login failed with status ${status}:`,
           JSON.stringify(
             {
@@ -571,7 +537,6 @@ class SupabaseDatabaseClient {
             null,
             2,
           ),
->>>>>>> ai_main_eac8da03b891:client/services/supabaseDatabaseService.ts
         );
 
         // Prefer server-provided public message if available
