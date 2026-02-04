@@ -69,8 +69,13 @@ export async function testConnection(
     if (!db || !sql) {
       if (autoReconnect) {
         console.log("🔄 No connection found, attempting to reconnect...");
-        await initializeDatabase(true);
-        return true;
+        try {
+          await initializeDatabase(true);
+          return true;
+        } catch (error) {
+          console.warn("⚠️ Reconnection attempt failed:", error);
+          return false;
+        }
       }
       return false;
     }
