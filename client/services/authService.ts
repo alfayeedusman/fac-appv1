@@ -213,7 +213,7 @@ class AuthService {
     // Call server to invalidate session token if present
     const sessionToken = localStorage.getItem("sessionToken");
     if (sessionToken) {
-      fetch("/api/neon/auth/logout", {
+      fetch("/api/supabase/auth/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

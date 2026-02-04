@@ -66,7 +66,7 @@ class XenditService {
       log("💳 Creating Xendit invoice...", params);
 
       // Create invoice via backend API
-      const response = await fetch("/api/neon/payment/xendit/create-invoice", {
+      const response = await fetch("/api/supabase/payment/xendit/create-invoice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ class XenditService {
 
     try {
       // Charge card via backend API
-      const response = await fetch("/api/neon/payment/xendit/charge", {
+      const response = await fetch("/api/supabase/payment/xendit/charge", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -260,7 +260,7 @@ class XenditService {
       log("📅 Creating recurring billing plan...", params);
 
       const response = await fetch(
-        "/api/neon/payment/xendit/create-subscription",
+        "/api/supabase/payment/xendit/create-subscription",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -303,7 +303,7 @@ class XenditService {
       log("💳 Processing subscription renewal...", params);
 
       const response = await fetch(
-        "/api/neon/payment/xendit/renew-subscription",
+        "/api/supabase/payment/xendit/renew-subscription",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
