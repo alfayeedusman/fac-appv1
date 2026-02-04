@@ -1437,8 +1437,9 @@ export async function seedInitialData() {
     console.log("✅ Initial data seeded successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Seeding failed:", error);
-    throw error;
+    console.warn("⚠️ Seeding failed (non-critical):", error);
+    // Don't throw - allow server to start even if seeding fails
+    return false;
   }
 }
 
