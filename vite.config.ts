@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    middlewareMode: false,
+    middlewareMode: true, // Use middleware mode so Express handles all routing
   },
   build: {
     outDir: "dist/spa",
@@ -31,7 +31,6 @@ export default defineConfig(({ mode }) => ({
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-  appType: 'spa', // Serve index.html as fallback for SPA routing
 }));
 
 function expressPlugin(): Plugin {
