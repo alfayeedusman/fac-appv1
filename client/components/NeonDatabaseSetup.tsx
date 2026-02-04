@@ -350,7 +350,7 @@ export default function NeonDatabaseSetup() {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Set the NEON_DATABASE_URL environment variable in your
+                      Set the SUPABASE_DATABASE_URL environment variable in your
                       server configuration.
                     </p>
                   </div>
@@ -362,8 +362,9 @@ export default function NeonDatabaseSetup() {
                       Environment Variables Required:
                     </p>
                     <div className="bg-muted p-3 rounded-lg text-sm font-mono">
-                      <div>NEON_DATABASE_URL=your_neon_connection_string</div>
-                      <div>DATABASE_URL=your_neon_connection_string</div>
+                      <div>SUPABASE_DATABASE_URL=postgresql://user:pass@db.xxxxx.supabase.co:5432/postgres</div>
+                      <div>VITE_SUPABASE_URL=https://xxxxx.supabase.co</div>
+                      <div>VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_key</div>
                     </div>
                   </div>
                 </CardContent>
