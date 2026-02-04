@@ -21,7 +21,7 @@ export async function runMigrations() {
       throw new Error("Database connection failed");
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       throw new Error("Database not initialized");
     }
