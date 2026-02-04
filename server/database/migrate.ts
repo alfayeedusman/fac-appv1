@@ -1583,9 +1583,18 @@ export async function migrate() {
   const databaseUrl =
     process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
-  if (shouldSkip || !databaseUrl) {
+  console.log("🔍 Migration check - shouldSkip:", shouldSkip, "hasDbUrl:", !!databaseUrl);
+
+  if (shouldSkip) {
     console.warn(
-      "⚠️ Skipping database migrations: missing database URL or migrations disabled.",
+      "⚠️ Skipping database migrations: migrations disabled.",
+    );
+    return;
+  }
+
+  if (!databaseUrl) {
+    console.warn(
+      "⚠️ Skipping database migrations: missing database URL.",
     );
     return;
   }
