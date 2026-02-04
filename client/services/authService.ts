@@ -1,10 +1,6 @@
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
-<<<<<<< HEAD
-import LocalStorageSyncService from "./localStorageSyncService";
-=======
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
->>>>>>> ai_main_eac8da03b891
 
 export interface LoginCredentials {
   email: string;
