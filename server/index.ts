@@ -1,3 +1,19 @@
+// ============= GLOBAL ERROR HANDLERS =============
+// Must be at the very top to catch all unhandled errors and prevent crashes
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("⚠️ Unhandled Promise Rejection:", reason);
+  // Don't exit - keep server running
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("⚠️ Uncaught Exception:", error);
+  // Don't exit for connection errors - keep server running
+  if (error.message?.includes("ECONNREFUSED") || error.message?.includes("connect")) {
+    console.log("🔄 Continuing despite connection error...");
+    return;
+  }
+});
+
 import express from "express";
 import cors from "cors";
 import path from "path";
