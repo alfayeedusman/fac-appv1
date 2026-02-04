@@ -114,14 +114,21 @@ export const createServer = () => {
     neonApiRoutes.debugPasswordVerification,
   );
   app.get("/api/supabase/debug/list-users", neonApiRoutes.debugListUsers);
-  app.post("/api/supabase/debug/hash-password", neonApiRoutes.debugHashPassword);
+  app.post(
+    "/api/supabase/debug/hash-password",
+    neonApiRoutes.debugHashPassword,
+  );
   app.post(
     "/api/supabase/admin/force-rehash-passwords",
     neonApiRoutes.adminForceRehashPasswords,
   );
 
   // Auth endpoints with database health check (critical routes)
-  app.post("/api/supabase/auth/login", ensureDbConnection, neonApiRoutes.loginUser);
+  app.post(
+    "/api/supabase/auth/login",
+    ensureDbConnection,
+    neonApiRoutes.loginUser,
+  );
   app.post(
     "/api/supabase/auth/register",
     ensureDbConnection,
@@ -199,7 +206,10 @@ export const createServer = () => {
     xenditApiRoutes.createInvoice,
   );
   app.post("/api/supabase/payment/xendit/charge", xenditApiRoutes.chargeCard);
-  app.post("/api/supabase/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
+  app.post(
+    "/api/supabase/payment/xendit/webhook",
+    xenditApiRoutes.handleWebhook,
+  );
 
   // Users endpoints (for customer management)
   app.get("/api/supabase/users", neonApiRoutes.getAllUsers);
@@ -211,8 +221,14 @@ export const createServer = () => {
   );
 
   // User vehicles and address endpoints
-  app.get("/api/supabase/users/:userId/vehicles", neonApiRoutes.getUserVehicles);
-  app.post("/api/supabase/users/:userId/vehicles", neonApiRoutes.addUserVehicle);
+  app.get(
+    "/api/supabase/users/:userId/vehicles",
+    neonApiRoutes.getUserVehicles,
+  );
+  app.post(
+    "/api/supabase/users/:userId/vehicles",
+    neonApiRoutes.addUserVehicle,
+  );
   app.put(
     "/api/supabase/users/:userId/vehicles/:vehicleId",
     neonApiRoutes.updateUserVehicle,
@@ -221,7 +237,10 @@ export const createServer = () => {
     "/api/supabase/users/:userId/vehicles/:vehicleId",
     neonApiRoutes.deleteUserVehicle,
   );
-  app.put("/api/supabase/users/:userId/address", neonApiRoutes.updateUserAddress);
+  app.put(
+    "/api/supabase/users/:userId/address",
+    neonApiRoutes.updateUserAddress,
+  );
   app.put("/api/supabase/users/:userId/status", neonApiRoutes.updateUserStatus);
 
   // ============= CREW MANAGEMENT API =============
@@ -237,7 +256,10 @@ export const createServer = () => {
     "/api/supabase/crew/:userId/wash-bay",
     crewApiRoutes.updateCrewWashBayAssignment,
   );
-  app.get("/api/supabase/crew/commission-rates", crewApiRoutes.getCommissionRates);
+  app.get(
+    "/api/supabase/crew/commission-rates",
+    crewApiRoutes.getCommissionRates,
+  );
   app.post(
     "/api/supabase/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,

@@ -238,7 +238,10 @@ export function createServer() {
   // Booking endpoints
   app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
   app.get("/api/supabase/bookings", neonApiRoutes.getBookings);
-  app.get("/api/supabase/bookings/availability", neonApiRoutes.getSlotAvailability);
+  app.get(
+    "/api/supabase/bookings/availability",
+    neonApiRoutes.getSlotAvailability,
+  );
   app.get(
     "/api/supabase/bookings/garage-settings",
     neonApiRoutes.getGarageSettings,
@@ -331,7 +334,10 @@ export function createServer() {
     "/api/supabase/payment/xendit/confirm-offline",
     xenditApiRoutes.confirmOfflinePayment,
   );
-  app.post("/api/supabase/payment/xendit/webhook", xenditApiRoutes.handleWebhook);
+  app.post(
+    "/api/supabase/payment/xendit/webhook",
+    xenditApiRoutes.handleWebhook,
+  );
   app.get(
     "/api/supabase/payment/xendit/invoice-status/:id",
     xenditApiRoutes.getInvoiceStatus,
@@ -368,7 +374,10 @@ export function createServer() {
     "/api/supabase/crew/:userId/wash-bay",
     crewApiRoutes.updateCrewWashBayAssignment,
   );
-  app.get("/api/supabase/crew/commission-rates", crewApiRoutes.getCommissionRates);
+  app.get(
+    "/api/supabase/crew/commission-rates",
+    crewApiRoutes.getCommissionRates,
+  );
   app.post(
     "/api/supabase/crew/commission-rates",
     crewApiRoutes.upsertCommissionRate,

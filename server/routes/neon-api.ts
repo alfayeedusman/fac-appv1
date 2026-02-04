@@ -137,7 +137,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
         },
       ],
       users: [
-        { method: "GET", path: "/api/supabase/users", description: "All users" },
+        {
+          method: "GET",
+          path: "/api/supabase/users",
+          description: "All users",
+        },
         {
           method: "GET",
           path: "/api/supabase/customers",
@@ -151,7 +155,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
         },
       ],
       bookings: [
-        { method: "GET", path: "/api/supabase/bookings", description: "Bookings" },
+        {
+          method: "GET",
+          path: "/api/supabase/bookings",
+          description: "Bookings",
+        },
         {
           method: "POST",
           path: "/api/supabase/bookings",

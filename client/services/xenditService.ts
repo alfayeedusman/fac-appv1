@@ -66,30 +66,34 @@ class XenditService {
       log("💳 Creating Xendit invoice...", params);
 
       // Create invoice via backend API
-      const response = await fetch("/api/supabase/payment/xendit/create-invoice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          external_id: params.externalId,
-          amount: params.amount,
-          payer_email: params.customerEmail,
-          description: params.description,
-          customer: {
-            given_names: params.customerName,
-            email: params.customerEmail,
+      const response = await fetch(
+        "/api/supabase/payment/xendit/create-invoice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          success_redirect_url:
-            params.successRedirectUrl ||
-            window.location.origin + "/booking-success",
-          failure_redirect_url:
-            params.failureRedirectUrl ||
-            window.location.origin + "/booking-failed",
-          preferred_payment_method: params.preferredPaymentMethod || undefined,
-        }),
-        signal: ac.signal,
-      });
+          body: JSON.stringify({
+            external_id: params.externalId,
+            amount: params.amount,
+            payer_email: params.customerEmail,
+            description: params.description,
+            customer: {
+              given_names: params.customerName,
+              email: params.customerEmail,
+            },
+            success_redirect_url:
+              params.successRedirectUrl ||
+              window.location.origin + "/booking-success",
+            failure_redirect_url:
+              params.failureRedirectUrl ||
+              window.location.origin + "/booking-failed",
+            preferred_payment_method:
+              params.preferredPaymentMethod || undefined,
+          }),
+          signal: ac.signal,
+        },
+      );
 
       clearTimeout(timeout);
       log("📡 Xendit API response status:", response.status);
