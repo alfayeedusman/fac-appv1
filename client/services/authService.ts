@@ -1,4 +1,3 @@
-import { supabaseDbClient } from "./supabaseDatabaseService";
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
