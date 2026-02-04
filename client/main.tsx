@@ -108,12 +108,9 @@ const AppComponent = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/test" element={<TestPage />} />
-                <Route path="/test123" element={<SimpleLogin />} />
-                <Route path="/testlogin" element={<SimpleLogin />} />
-                <Route path="/test-login2" element={<SimpleLogin />} />
-                <Route path="/simple-login" element={<SimpleLogin />} />
                 <Route path="/" element={<Index />} />
-                <Route path="/login" element={<SimpleLogin />} />
+                <Route path="/auth/login" element={<SimpleLogin />} />
+                <Route path="/simple-login" element={<SimpleLogin />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/credential-setup" element={<CredentialSetup />} />
