@@ -1,4 +1,4 @@
-import { supabaseDbClient } from '@/services/neonDatabaseService';
+import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 import { toast } from '@/hooks/use-toast';
 import { supabaseDbClient } from '@/services/supabaseDatabaseService';
 
