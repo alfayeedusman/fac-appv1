@@ -57,11 +57,11 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
         },
       ],
       ads: [
-        { method: "GET", path: "/api/neon/ads", description: "Popup ads" },
-        { method: "POST", path: "/api/neon/ads", description: "Create ad" },
+        { method: "GET", path: "/api/supabase/ads", description: "Popup ads" },
+        { method: "POST", path: "/api/supabase/ads", description: "Create ad" },
         {
           method: "POST",
-          path: "/api/neon/ads/:adId/dismiss",
+          path: "/api/supabase/ads/:adId/dismiss",
           description: "Dismiss ad",
         },
       ],
@@ -90,12 +90,12 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
       notifications: [
         {
           method: "GET",
-          path: "/api/neon/notifications",
+          path: "/api/supabase/notifications",
           description: "System notifications",
         },
         {
           method: "PUT",
-          path: "/api/neon/notifications/:notificationId/read",
+          path: "/api/supabase/notifications/:notificationId/read",
           description: "Mark notification read",
         },
         {
@@ -112,73 +112,73 @@ export const getApiCatalog: RequestHandler = async (req, res) => {
       crew: [
         {
           method: "GET",
-          path: "/api/neon/crew/list",
+          path: "/api/supabase/crew/list",
           description: "Crew list",
         },
         {
           method: "GET",
-          path: "/api/neon/crew/commission-entries",
+          path: "/api/supabase/crew/commission-entries",
           description: "Commission entries",
         },
         {
           method: "POST",
-          path: "/api/neon/crew/commission-entries",
+          path: "/api/supabase/crew/commission-entries",
           description: "Create commission entry",
         },
         {
           method: "GET",
-          path: "/api/neon/crew/payouts",
+          path: "/api/supabase/crew/payouts",
           description: "Crew payouts",
         },
         {
           method: "POST",
-          path: "/api/neon/crew/payouts",
+          path: "/api/supabase/crew/payouts",
           description: "Create payout",
         },
       ],
       users: [
-        { method: "GET", path: "/api/neon/users", description: "All users" },
+        { method: "GET", path: "/api/supabase/users", description: "All users" },
         {
           method: "GET",
-          path: "/api/neon/customers",
+          path: "/api/supabase/customers",
           description: "Customers",
         },
-        { method: "GET", path: "/api/neon/staff", description: "Staff" },
+        { method: "GET", path: "/api/supabase/staff", description: "Staff" },
         {
           method: "POST",
-          path: "/api/neon/staff",
+          path: "/api/supabase/staff",
           description: "Create staff",
         },
       ],
       bookings: [
-        { method: "GET", path: "/api/neon/bookings", description: "Bookings" },
+        { method: "GET", path: "/api/supabase/bookings", description: "Bookings" },
         {
           method: "POST",
-          path: "/api/neon/bookings",
+          path: "/api/supabase/bookings",
           description: "Create booking",
         },
         {
           method: "PUT",
-          path: "/api/neon/bookings/:id",
+          path: "/api/supabase/bookings/:id",
           description: "Update booking",
         },
       ],
       inventory: [
         {
           method: "GET",
-          path: "/api/neon/inventory/items",
+          path: "/api/supabase/inventory/items",
           description: "Inventory items",
         },
         {
           method: "GET",
-          path: "/api/neon/inventory/analytics",
+          path: "/api/supabase/inventory/analytics",
           description: "Inventory analytics",
         },
       ],
       payments: [
         {
           method: "POST",
-          path: "/api/neon/payment/xendit/create-invoice",
+          path: "/api/supabase/payment/xendit/create-invoice",
           description: "Create invoice",
         },
       ],
