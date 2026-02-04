@@ -126,7 +126,7 @@ export default function CustomerHub() {
   const loadPackages = async () => {
     try {
       setPackagesLoading(true);
-      const response = await fetch("/api/neon/packages");
+      const response = await fetch("/api/supabase/packages");
       const data = await response.json();
       if (data.success && Array.isArray(data.packages)) {
         console.log(

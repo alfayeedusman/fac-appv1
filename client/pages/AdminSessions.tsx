@@ -30,7 +30,7 @@ export default function AdminSessions() {
       if (filterUserId) params.set('userId', filterUserId);
       params.set('activeOnly', 'false');
 
-      const resp = await fetch(`/api/neon/sessions?${params.toString()}`, {
+      const resp = await fetch(`/api/supabase/sessions?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`,
         },
@@ -66,7 +66,7 @@ export default function AdminSessions() {
       if (opts.sessionToken) body.sessionToken = opts.sessionToken;
       if (opts.userId) body.userId = opts.userId;
 
-      const resp = await fetch('/api/neon/sessions/revoke', {
+      const resp = await fetch('/api/supabase/sessions/revoke', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

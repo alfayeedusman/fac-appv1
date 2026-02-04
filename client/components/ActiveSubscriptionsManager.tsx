@@ -624,7 +624,7 @@ const XenditSetupForm = ({
       console.log("🔧 Setting up Xendit subscription plan...");
 
       const response = await fetch(
-        "/api/neon/subscription/xendit/create-plan",
+        "/api/supabase/subscription/xendit/create-plan",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

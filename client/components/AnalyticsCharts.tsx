@@ -82,7 +82,7 @@ export default function AnalyticsCharts({
       const to = setTimeout(() => ac.abort(), 10000);
 
       const response = await fetch(
-        `/api/neon/analytics?timeFilter=${timeFilter}`,
+        `/api/supabase/analytics?timeFilter=${timeFilter}`,
         { signal: ac.signal },
       );
 
