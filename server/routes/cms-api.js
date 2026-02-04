@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { neonDbService } from '../services/neonDatabaseService.js';
+import { supabaseDbService } from '../services/supabaseDatabaseService.js';
 
 const router = Router();
 
@@ -161,7 +161,7 @@ router.get('/homepage', async (req, res) => {
   try {
     console.log('🎨 CMS: Getting homepage content...');
     
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       console.log('🎨 CMS: Database not available, returning default content');
       return res.json({
         success: true,
@@ -197,7 +197,7 @@ router.post('/homepage', async (req, res) => {
   try {
     console.log('🎨 CMS: Saving homepage content...');
     
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(503).json({
         success: false,
         error: "Database not available"

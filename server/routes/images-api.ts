@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
-import { neonDbService } from '../services/neonDatabaseService';
+import { supabaseDbService } from '../services/supabaseDatabaseService';
 import * as schema from '../database/schema';
 import { eq, desc, and, like, inArray, count } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
@@ -108,7 +108,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await neonDbService.db.insert(schema.images).values(imageData);
+    await supabaseDbService.db.insert(schema.images).values(imageData);
 
     res.json({
       success: true,
@@ -195,7 +195,7 @@ router.post('/upload-multiple', upload.array('images', 10), async (req, res) => 
         updatedAt: new Date(),
       };
 
-      await neonDbService.db.insert(schema.images).values(imageData);
+      await supabaseDbService.db.insert(schema.images).values(imageData);
       
       uploadedImages.push({
         id: imageData.id,
@@ -229,7 +229,7 @@ router.post('/upload-multiple', upload.array('images', 10), async (req, res) => 
 router.get('/', async (req, res) => {
   try {
     // Check if database is available
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: [],
@@ -287,7 +287,7 @@ router.get('/', async (req, res) => {
     }
 
     // Get images
-    const imageList = await neonDbService.db
+    const imageList = await supabaseDbService.db
       .select()
       .from(schema.images)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -296,7 +296,7 @@ router.get('/', async (req, res) => {
       .offset(offset);
 
     // Get total count
-    const totalResult = await neonDbService.db
+    const totalResult = await supabaseDbService.db
       .select({ count: count() })
       .from(schema.images)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
@@ -336,7 +336,7 @@ router.get('/', async (req, res) => {
 router.get('/collections', async (req, res) => {
   try {
     // Check if database is available
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: []
@@ -358,7 +358,7 @@ router.get('/collections', async (req, res) => {
       conditions.push(eq(schema.imageCollections.createdBy, createdBy as string));
     }
 
-    const collections = await neonDbService.db
+    const collections = await supabaseDbService.db
       .select()
       .from(schema.imageCollections)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -384,7 +384,7 @@ router.get('/collections', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     // Check if database is available
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: 'Database connection not available'
@@ -392,13 +392,13 @@ router.get('/stats', async (req, res) => {
     }
 
     // Get total images count
-    const totalImagesResult = await neonDbService.db
+    const totalImagesResult = await supabaseDbService.db
       .select({ count: count() })
       .from(schema.images)
       .where(eq(schema.images.isActive, true));
 
     // Get images by category
-    const categoryStats = await neonDbService.db
+    const categoryStats = await supabaseDbService.db
       .select({
         category: schema.images.category,
         count: count(),
@@ -408,7 +408,7 @@ router.get('/stats', async (req, res) => {
       .groupBy(schema.images.category);
 
     // Get storage usage
-    const storageResult = await neonDbService.db
+    const storageResult = await supabaseDbService.db
       .select({
         totalSize: schema.images.size,
       })
@@ -450,7 +450,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     const { incrementView = 'true' } = req.query;
 
-    const imageList = await neonDbService.db
+    const imageList = await supabaseDbService.db
       .select()
       .from(schema.images)
       .where(eq(schema.images.id, id))
@@ -467,7 +467,7 @@ router.get('/:id', async (req, res) => {
 
     // Increment view count if requested
     if (incrementView === 'true') {
-      await neonDbService.db
+      await supabaseDbService.db
         .update(schema.images)
         .set({
           viewCount: (image.viewCount || 0) + 1,
@@ -516,7 +516,7 @@ router.put('/:id', async (req, res) => {
     if (isActive !== undefined) updateData.isActive = isActive;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
-    const result = await neonDbService.db
+    const result = await supabaseDbService.db
       .update(schema.images)
       .set(updateData)
       .where(eq(schema.images.id, id));
@@ -544,7 +544,7 @@ router.delete('/:id', async (req, res) => {
     const { deleteFile = 'true' } = req.query;
 
     // Get image info first
-    const imageList = await neonDbService.db
+    const imageList = await supabaseDbService.db
       .select()
       .from(schema.images)
       .where(eq(schema.images.id, id))
@@ -560,7 +560,7 @@ router.delete('/:id', async (req, res) => {
     const image = imageList[0];
 
     // Delete from database
-    await neonDbService.db.delete(schema.images).where(eq(schema.images.id, id));
+    await supabaseDbService.db.delete(schema.images).where(eq(schema.images.id, id));
 
     // Delete physical file if requested and it's local storage
     if (deleteFile === 'true' && image.storageType === 'local') {
@@ -619,7 +619,7 @@ router.post('/collections', async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await neonDbService.db.insert(schema.imageCollections).values(collectionData);
+    await supabaseDbService.db.insert(schema.imageCollections).values(collectionData);
 
     res.json({
       success: true,
@@ -660,7 +660,7 @@ router.post('/collections/:collectionId/images', async (req, res) => {
       addedAt: new Date(),
     }));
 
-    await neonDbService.db.insert(schema.imageCollectionItems).values(collectionItems);
+    await supabaseDbService.db.insert(schema.imageCollectionItems).values(collectionItems);
 
     res.json({
       success: true,
@@ -683,7 +683,7 @@ router.get('/collections/:collectionId/images', async (req, res) => {
   try {
     const { collectionId } = req.params;
 
-    const collectionImages = await neonDbService.db
+    const collectionImages = await supabaseDbService.db
       .select({
         id: schema.imageCollectionItems.id,
         sortOrder: schema.imageCollectionItems.sortOrder,

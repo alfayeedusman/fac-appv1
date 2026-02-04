@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 import * as schema from "../database/schema";
 import { count, eq, and, sql, desc, avg, gte, lte, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { seedCrewData } from "../database/seed-crew";
 
 const requireDb = async (res: any) => {
-  const db = await neonDbService.getDb();
+  const db = await supabaseDbService.getDb();
   if (!db) {
     res.status(500).json({
       success: false,
@@ -266,14 +266,14 @@ export const getCrewList: RequestHandler = async (req, res) => {
 // Get crew groups
 export const getCrewGroups: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available"
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
 
     const groups = await db
       .select({
@@ -418,14 +418,14 @@ const getPayrollWindow = (referenceDate: Date) => {
 
 export const getCommissionRates: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const rates = await db
       .select()
       .from(schema.crewCommissionRates)
@@ -452,14 +452,14 @@ export const upsertCommissionRate: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const [existing] = await db
       .select()
       .from(schema.crewCommissionRates)
@@ -506,14 +506,14 @@ export const getCrewPayroll: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const referenceDate = new Date();
     const window = getPayrollWindow(referenceDate);
 
@@ -629,7 +629,7 @@ type CommissionStatus = (typeof COMMISSION_STATUSES)[number];
 
 export const getCommissionEntries: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
@@ -637,7 +637,7 @@ export const getCommissionEntries: RequestHandler = async (req, res) => {
     }
 
     const { crewUserId, startDate, endDate, status } = req.query;
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
 
     const conditions = [] as any[];
     if (crewUserId) {
@@ -697,7 +697,7 @@ export const createCommissionEntry: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
@@ -708,7 +708,7 @@ export const createCommissionEntry: RequestHandler = async (req, res) => {
       ? status
       : "pending";
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const [created] = await db
       .insert(schema.crewCommissionEntries)
       .values({
@@ -753,14 +753,14 @@ export const updateCommissionEntryStatus: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const [updated] = await db
       .update(schema.crewCommissionEntries)
       .set({ status, updatedAt: new Date() })
@@ -779,7 +779,7 @@ export const updateCommissionEntryStatus: RequestHandler = async (req, res) => {
 
 export const getCrewPayouts: RequestHandler = async (req, res) => {
   try {
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
@@ -787,7 +787,7 @@ export const getCrewPayouts: RequestHandler = async (req, res) => {
     }
 
     const { crewUserId } = req.query;
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
 
     let query = db
       .select({
@@ -834,7 +834,7 @@ export const createCrewPayout: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
@@ -845,7 +845,7 @@ export const createCrewPayout: RequestHandler = async (req, res) => {
       ? status
       : "pending";
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const [created] = await db
       .insert(schema.crewPayouts)
       .values({
@@ -902,14 +902,14 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.status(500).json({
         success: false,
         error: "Database connection not available",
       });
     }
 
-    const db = neonDbService.db;
+    const db = supabaseDbService.db;
     const [updated] = await db
       .update(schema.crewPayouts)
       .set({

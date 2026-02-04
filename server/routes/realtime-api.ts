@@ -1,7 +1,7 @@
 import express from "express";
 import mysql from "mysql2/promise";
 import { z } from "zod";
-import { neonDbService } from "../services/neonDatabaseService";
+import { supabaseDbService } from "../services/supabaseDatabaseService";
 
 const router = express.Router();
 
@@ -737,7 +737,7 @@ router.post("/pusher/auth", async (req, res) => {
     }
 
     // Server-side authentication: prefer Authorization Bearer <token> header
-    // The token is validated against user_sessions table via neonDbService
+    // The token is validated against user_sessions table via supabaseDbService
     let authenticatedUserId: string | null = null;
     let authenticatedUserRole: string | null = null;
 
@@ -746,7 +746,7 @@ router.post("/pusher/auth", async (req, res) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       try {
-        const session = await neonDbService.getSessionByToken(token);
+        const session = await supabaseDbService.getSessionByToken(token);
         if (!session || !session.isActive) {
           return res
             .status(403)
@@ -762,7 +762,7 @@ router.post("/pusher/auth", async (req, res) => {
             .json({ success: false, error: "Session token expired" });
         }
 
-        const user = await neonDbService.getUserById(session.userId);
+        const user = await supabaseDbService.getUserById(session.userId);
         if (!user) {
           return res
             .status(403)

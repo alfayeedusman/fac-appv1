@@ -1,5 +1,5 @@
 import express from 'express';
-import { neonDbService } from '../services/neonDatabaseService';
+import { supabaseDbService } from '../services/supabaseDatabaseService';
 import { pushNotificationService } from '../services/pushNotificationService';
 import * as schema from '../database/schema';
 import { eq, desc, and, gte, lte, count } from 'drizzle-orm';
@@ -349,7 +349,7 @@ router.post('/track/:action', async (req, res) => {
 router.get('/history', async (req, res) => {
   try {
     // Check if database is available
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: [],
@@ -395,7 +395,7 @@ router.get('/history', async (req, res) => {
     }
 
     // Get notifications
-    const notifications = await neonDbService.db
+    const notifications = await supabaseDbService.db
       .select()
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -404,7 +404,7 @@ router.get('/history', async (req, res) => {
       .offset(offset);
 
     // Get total count
-    const totalResult = await neonDbService.db
+    const totalResult = await supabaseDbService.db
       .select({ count: count() })
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
@@ -437,7 +437,7 @@ router.get('/history', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     // Check if database is available
-    if (!neonDbService.db) {
+    if (!supabaseDbService.db) {
       return res.json({
         success: true,
         data: {
@@ -457,7 +457,7 @@ router.get('/stats', async (req, res) => {
     startDate.setDate(startDate.getDate() - dayCount);
 
     // Get notification stats
-    const stats = await neonDbService.db
+    const stats = await supabaseDbService.db
       .select({
         count: count(),
         type: schema.pushNotifications.notificationType,
@@ -468,7 +468,7 @@ router.get('/stats', async (req, res) => {
       .groupBy(schema.pushNotifications.notificationType, schema.pushNotifications.status);
 
     // Get registered tokens count
-    const activeTokensResult = await neonDbService.db
+    const activeTokensResult = await supabaseDbService.db
       .select({ count: count() })
       .from(schema.fcmTokens)
       .where(eq(schema.fcmTokens.isActive, true));
@@ -511,7 +511,7 @@ router.get('/preferences/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const userTokens = await neonDbService.db
+    const userTokens = await supabaseDbService.db
       .select({
         notificationTypes: schema.fcmTokens.notificationTypes,
         deviceType: schema.fcmTokens.deviceType,
@@ -558,7 +558,7 @@ router.put('/preferences/:userId', async (req, res) => {
     }
 
     // Update all user's tokens
-    await neonDbService.db
+    await supabaseDbService.db
       .update(schema.fcmTokens)
       .set({
         notificationTypes,

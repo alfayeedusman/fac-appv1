@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import { neonDbService } from './neonDatabaseService';
+import { supabaseDbService } from './supabaseDatabaseService';
 import * as schema from '../database/schema';
 import { eq, inArray, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
@@ -87,7 +87,7 @@ export class PushNotificationService {
     notificationTypes?: string[];
   }): Promise<boolean> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
         throw new Error('Database not initialized');
       }
@@ -118,7 +118,7 @@ export class PushNotificationService {
         console.log('✅ FCM token updated successfully');
       } else {
         // Insert new token
-        await neonDbService.db.insert(schema.fcmTokens).values({
+        await supabaseDbService.db.insert(schema.fcmTokens).values({
           id: createId(),
           token: tokenData.token,
           userId: tokenData.userId,
@@ -147,7 +147,7 @@ export class PushNotificationService {
    */
   async unregisterToken(token: string, userId?: string): Promise<boolean> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
         throw new Error('Database not initialized');
       }
@@ -178,7 +178,7 @@ export class PushNotificationService {
    */
   private async getTargetTokens(target: NotificationTarget): Promise<Array<{ token: string; userId?: string; id: string }>> {
     try {
-      const db = neonDbService.db;
+      const db = supabaseDbService.db;
       if (!db) {
         console.error('Database not initialized for getTargetTokens');
         return [];
@@ -288,7 +288,7 @@ export class PushNotificationService {
 
       // Create notification record
       const notificationId = createId();
-      await neonDbService.db.insert(schema.pushNotifications).values({
+      await supabaseDbService.db.insert(schema.pushNotifications).values({
         id: notificationId,
         title: options.payload.title,
         body: options.payload.body,
@@ -316,7 +316,7 @@ export class PushNotificationService {
         
         // Create mock delivery records
         for (const tokenData of targetTokens) {
-          await neonDbService.db.insert(schema.notificationDeliveries).values({
+          await supabaseDbService.db.insert(schema.notificationDeliveries).values({
             id: createId(),
             notificationId,
             fcmTokenId: tokenData.id,
@@ -380,7 +380,7 @@ export class PushNotificationService {
               successfulDeliveries++;
               
               // Record successful delivery
-              await neonDbService.db.insert(schema.notificationDeliveries).values({
+              await supabaseDbService.db.insert(schema.notificationDeliveries).values({
                 id: createId(),
                 notificationId,
                 fcmTokenId: tokenData.id,
@@ -393,7 +393,7 @@ export class PushNotificationService {
               failedDeliveries++;
               
               // Record failed delivery
-              await neonDbService.db.insert(schema.notificationDeliveries).values({
+              await supabaseDbService.db.insert(schema.notificationDeliveries).values({
                 id: createId(),
                 notificationId,
                 fcmTokenId: tokenData.id,
