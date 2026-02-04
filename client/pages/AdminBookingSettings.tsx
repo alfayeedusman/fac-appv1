@@ -79,7 +79,7 @@ export default function AdminBookingSettings() {
             setConfig(defaultConfig);
 
             // Save default config to backend
-            await neonDbClient.updateSetting(
+            await supabaseDbClient.updateSetting(
               "booking_configuration",
               defaultConfig,
               "Complete booking system configuration including pricing, scheduling, and home service settings",
@@ -124,7 +124,7 @@ export default function AdminBookingSettings() {
       console.log("💾 Saving booking settings to backend...", config);
 
       // Save to backend first
-      const backendResult = await neonDbClient.updateSetting(
+      const backendResult = await supabaseDbClient.updateSetting(
         "booking_configuration",
         config,
         "Complete booking system configuration including pricing, scheduling, and home service settings",
