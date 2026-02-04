@@ -1421,14 +1421,32 @@ export async function seedInitialData() {
 
 // Main migration function
 export async function migrate() {
-  await runMigrations();
-  await seedInitialData();
+  const shouldSkip =
+    process.env.SKIP_MIGRATIONS === "true" ||
+    process.env.DISABLE_MIGRATIONS === "true";
 
-  // Seed premium users and test accounts
+  if (shouldSkip || !DATABASE_URL) {
+    console.warn(
+      "⚠️ Skipping database migrations: missing database URL or migrations disabled.",
+    );
+    return;
+  }
+
   try {
-    await seedPremiumUsers();
-  } catch (err) {
-    console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+    await runMigrations();
+    await seedInitialData();
+
+    // Seed premium users and test accounts
+    try {
+      await seedPremiumUsers();
+    } catch (err) {
+      console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+    }
+  } catch (error) {
+    console.error("❌ Database migration failed:", error);
+    if (process.env.MIGRATIONS_STRICT === "true") {
+      throw error;
+    }
   }
 }
 
