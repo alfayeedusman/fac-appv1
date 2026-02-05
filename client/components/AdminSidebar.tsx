@@ -216,6 +216,13 @@ const sidebarItems = [
     description: "Receipt & Tax Configuration",
     gradient: "from-purple-500 to-pink-500",
   },
+  {
+    id: "app-version",
+    label: "App Versions",
+    icon: Download,
+    description: "Manage Mobile App Versions",
+    gradient: "from-blue-500 to-cyan-500",
+  },
 ];
 
 export default function AdminSidebar({
