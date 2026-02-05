@@ -987,8 +987,8 @@ class SupabaseDatabaseService {
         break;
     }
 
-    // Convert startDate to ISO string for SQL queries
-    const startDateISO = startDate.toISOString();
+    // Keep as Date object for Drizzle ORM to handle properly
+    const startDateISO = startDate;
 
     const [userCount] = await db.select({ count: count() }).from(schema.users);
 
