@@ -99,19 +99,21 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
-      // Initialize database only on first login attempt
-      if (!localStorage.getItem("_db_init_done")) {
-        console.log("🔐 Login initiated - ensuring database is ready...");
-        try {
-          await initializeDatabase();
-          localStorage.setItem("_db_init_done", "true");
-          console.log("✅ Database ready, proceeding with login");
-        } catch (initError) {
-          console.warn("⚠️ Database initialization warning:", initError);
-          // Continue anyway - database might already be initialized
-        }
+      // Skip database init check - let it happen in background if needed
+      // Only initialize if this is truly the first ever login
+      if (!localStorage.getItem("_db_init_done") && !localStorage.getItem("userEmail")) {
+        // Non-blocking database initialization (don't await)
+        initializeDatabase()
+          .then(() => {
+            localStorage.setItem("_db_init_done", "true");
+            console.log("✅ Database initialized");
+          })
+          .catch((err) => {
+            console.warn("⚠️ Database init failed:", err);
+          });
       }
 
+      // Proceed with login immediately without waiting for DB init
       const result = await supabaseDbClient.login(
         credentials.email,
         credentials.password,
@@ -121,47 +123,39 @@ class AuthService {
         this.isLoggedIn = true;
         this.currentUser = result.user;
 
-        // Store session in localStorage for persistence
+        // Store session in localStorage for persistence (synchronous - very fast)
         localStorage.setItem("userEmail", result.user.email);
         localStorage.setItem("userRole", result.user.role);
         localStorage.setItem("userId", result.user.id);
         localStorage.setItem("userFullName", result.user.fullName || "");
         localStorage.setItem("userLoggedInAt", new Date().toISOString());
-
-        // Store complete user object for easy access
         localStorage.setItem("currentUser", JSON.stringify(result.user));
 
-        // Store server-issued session token (if provided) for authenticated requests
+        // Store tokens if provided
         if ((result as any).sessionToken) {
           localStorage.setItem("sessionToken", (result as any).sessionToken);
         }
-
         if ((result as any).expiresAt) {
           localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
         }
 
-        // Sync localStorage data to database in the background (non-blocking)
-        // This runs after login completes
+        // Sync data in background after a longer delay to not interfere with navigation
+        // This is completely non-blocking and will execute after page transition
         setTimeout(() => {
-          try {
-            LocalStorageSyncService.syncAllData().catch((err) => {
-              console.warn("⚠️ Background sync failed:", err);
-            });
-          } catch (syncError) {
-            console.warn("⚠️ Failed to initiate data sync:", syncError);
-          }
-        }, 100);
+          LocalStorageSyncService.syncAllData().catch((err) => {
+            console.warn("⚠️ Background sync failed:", err);
+          });
+        }, 500);
 
+        // Show toast immediately without waiting for anything
         toast({
-          title: "Login Successful",
+          title: "✅ Login Successful",
           description: `Welcome back, ${result.user.fullName}!`,
         });
       } else {
-        // Clear any existing session on failed login
         this.clearSession();
-
         toast({
-          title: "Login Failed",
+          title: "❌ Login Failed",
           description: result.error || "Invalid credentials",
           variant: "destructive",
         });
@@ -169,13 +163,11 @@ class AuthService {
 
       return result;
     } catch (error) {
-      // Clear session on error
       this.clearSession();
-
       const errorMessage =
         "Login failed. Please ensure you are connected to the database.";
       toast({
-        title: "Connection Error",
+        title: "⚠️ Connection Error",
         description: errorMessage,
         variant: "destructive",
       });
