@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, Lock, Mail, Eye, EyeOff, Zap } from "lucide-react";
+import { ChevronLeft, Lock, Mail, Eye, EyeOff, Zap, Loader2 } from "lucide-react";
 import { authService } from "@/services/authService";
 
 export default function Login() {
