@@ -1181,7 +1181,7 @@ class SupabaseDatabaseService {
 
     try {
       // Count online crew (active status within last 10 minutes)
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
       const [onlineCrewResult] = await this.db
         .select({ count: count() })
