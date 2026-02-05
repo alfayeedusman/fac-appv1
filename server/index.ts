@@ -207,6 +207,9 @@ export const createServer = async () => {
   // Analytics endpoints
   app.get("/api/supabase/analytics", neonApiRoutes.getAnalyticsData);
 
+  // App Version Management endpoints
+  app.use("/api", appVersionRoutes);
+
   // Xendit Payment endpoints
   app.post(
     "/api/supabase/payment/xendit/create-invoice",
