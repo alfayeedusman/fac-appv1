@@ -1116,7 +1116,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const url = `${this.baseUrl}/subscriptions?${queryParams.toString()}`;
+      const url = `${this.baseUrl}/supabase/subscriptions?${queryParams.toString()}`;
       console.log("📋 Fetching subscriptions from:", url);
 
       const response = await fetch(url, { signal: ac.signal });
