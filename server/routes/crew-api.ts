@@ -1267,21 +1267,41 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("Error fetching crew commission summary:", error);
     // Return fallback response instead of 500 error
-    res.json({
-      success: true,
-      summary: {
-        period: {
-          startDate: start.toISOString(),
-          endDate: end.toISOString(),
+    try {
+      const now = new Date();
+      return res.json({
+        success: true,
+        summary: {
+          period: {
+            startDate: start?.toISOString?.() || now.toISOString(),
+            endDate: end?.toISOString?.() || now.toISOString(),
+          },
+          totalBookings: 0,
+          totalRevenue: 0,
+          totalCommission: 0,
+          crewCount: 0,
+          crew: [],
+          breakdown: [],
         },
-        totalBookings: 0,
-        totalRevenue: 0,
-        totalCommission: 0,
-        crewCount: 0,
-        crew: [],
-        breakdown: [],
-      },
-    });
+      });
+    } catch (fallbackError) {
+      console.error("Error in crew commission summary fallback:", fallbackError);
+      return res.json({
+        success: true,
+        summary: {
+          period: {
+            startDate: new Date().toISOString(),
+            endDate: new Date().toISOString(),
+          },
+          totalBookings: 0,
+          totalRevenue: 0,
+          totalCommission: 0,
+          crewCount: 0,
+          crew: [],
+          breakdown: [],
+        },
+      });
+    }
   }
 };
 
