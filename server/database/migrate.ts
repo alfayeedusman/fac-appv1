@@ -648,6 +648,27 @@ export async function runMigrations() {
       );
     `;
 
+    // Add missing columns to service_packages table
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS duration_type VARCHAR(20) DEFAULT 'preset';
+      `;
+      console.log("✅ duration_type column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ duration_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+      `;
+      console.log("✅ sort_order column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ sort_order column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Create package_subscriptions table
     await sql`
       CREATE TABLE IF NOT EXISTS package_subscriptions (
