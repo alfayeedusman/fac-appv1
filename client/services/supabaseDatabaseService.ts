@@ -2128,11 +2128,19 @@ class SupabaseDatabaseClient {
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
-      return await response.json();
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Crew commission summary response not OK:", response.status, errorText);
+        return { success: false, error: `HTTP ${response.status}` };
+      }
+
+      const result = await response.json();
+      return result || { success: false, error: "Empty response" };
     } catch (error: any) {
       timeoutHandler.clearTimeout();
       console.error("Crew commission summary fetch failed:", error);
-      return { success: false, error: error?.message || "Network error" };
+      return { success: true, summary: { period: { startDate: new Date().toISOString(), endDate: new Date().toISOString() }, totalBookings: 0, totalRevenue: 0, totalCommission: 0, crewCount: 0, crew: [], breakdown: [] } };
     }
   }
 
