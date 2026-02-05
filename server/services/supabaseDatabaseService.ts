@@ -1042,7 +1042,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.bookings.status, "pending"),
-            gte(schema.bookings.createdAt, startDateISO),
+            gte(schema.bookings.createdAt, startDate),
           ),
         );
       if (result && result[0]) pendingCount = result[0];
@@ -1059,7 +1059,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.bookings.status, "completed"),
-            gte(schema.bookings.createdAt, startDateISO),
+            gte(schema.bookings.createdAt, startDate),
           ),
         );
       if (result.length > 0) {
@@ -1081,7 +1081,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.posTransactions.status, "completed"),
-            gte(schema.posTransactions.createdAt, startDateISO),
+            gte(schema.posTransactions.createdAt, startDate),
           ),
         );
       if (result.length > 0) {
