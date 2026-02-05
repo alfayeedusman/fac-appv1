@@ -152,25 +152,32 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  const timerHandle =
-    typeof setTimeout === "function"
-      ? setTimeout(() => {
-          if (cleared) return;
-          try {
-            if (!controller?.signal?.aborted) {
-              controller?.abort?.();
-            }
-          } catch (e) {
-            console.warn("Error aborting request:", e);
-          }
-        }, timeoutMs)
-      : null;
+  let timerHandle: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    timerHandle = setTimeout(() => {
+      if (cleared) return;
+      try {
+        if (!controller?.signal?.aborted) {
+          controller?.abort?.();
+        }
+      } catch (e) {
+        console.warn("Error aborting request:", e);
+      }
+    }, timeoutMs);
+  } catch (e) {
+    console.warn("Error setting timeout:", e);
+  }
 
   return {
     clearTimeout: () => {
       cleared = true;
-      if (timerHandle) {
-        clearTimeout(timerHandle);
+      if (timerHandle !== null && timerHandle !== undefined) {
+        try {
+          clearTimeout(timerHandle as NodeJS.Timeout);
+        } catch (e) {
+          console.warn("Error clearing timeout:", e);
+        }
       }
     },
   };
