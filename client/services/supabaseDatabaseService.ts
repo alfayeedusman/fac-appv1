@@ -585,12 +585,8 @@ class SupabaseDatabaseClient {
     email: string,
     password: string,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
-    // Attempt background connection check but don't block login
-    this.ensureConnection().catch((err) =>
-      warn(
-        `Background connection check failed: ${err?.message || JSON.stringify(err)}`,
-      ),
-    );
+    // Skip connection check during login - it's not needed
+    // Connection will be tested during the actual request
 
     try {
       const url = `${this.baseUrl}/auth/login`;
