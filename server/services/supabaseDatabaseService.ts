@@ -1106,7 +1106,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.bookings.status, "completed"),
-            gte(schema.bookings.createdAt, startDateISO),
+            gte(schema.bookings.createdAt, startDate),
           ),
         );
       if (result && result[0]) bookingWashCount = result[0];
@@ -1123,7 +1123,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
-            gte(schema.posTransactionItems.createdAt, startDateISO),
+            gte(schema.posTransactionItems.createdAt, startDate),
           ),
         );
       if (result && result[0]) posWashCount = result[0];
@@ -1139,7 +1139,7 @@ class SupabaseDatabaseService {
       const result = await db
         .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
         .from(schema.posExpenses)
-        .where(gte(schema.posExpenses.createdAt, startDateISO));
+        .where(gte(schema.posExpenses.createdAt, startDate));
       if (result && result[0]) expenseResult = result[0];
     } catch (e) {
       console.warn("⚠️ Failed to get expense total:", (e as any)?.message?.substring(0, 100));
