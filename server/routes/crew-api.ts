@@ -1101,22 +1101,28 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       }
     }
 
-    const manualEntries = await db
-      .select({
-        id: schema.crewCommissionEntries.id,
-        crewUserId: schema.crewCommissionEntries.crewUserId,
-        amount: schema.crewCommissionEntries.amount,
-        entryDate: schema.crewCommissionEntries.entryDate,
-        status: schema.crewCommissionEntries.status,
-      })
-      .from(schema.crewCommissionEntries)
-      .where(
-        and(
-          gte(schema.crewCommissionEntries.entryDate, start),
-          lte(schema.crewCommissionEntries.entryDate, end),
-          sql`${schema.crewCommissionEntries.status} != 'disputed'`,
-        ),
-      );
+    let manualEntries: any[] = [];
+    try {
+      manualEntries = await db
+        .select({
+          id: schema.crewCommissionEntries.id,
+          crewUserId: schema.crewCommissionEntries.crewUserId,
+          amount: schema.crewCommissionEntries.amount,
+          entryDate: schema.crewCommissionEntries.entryDate,
+          status: schema.crewCommissionEntries.status,
+        })
+        .from(schema.crewCommissionEntries)
+        .where(
+          and(
+            gte(schema.crewCommissionEntries.entryDate, start),
+            lte(schema.crewCommissionEntries.entryDate, end),
+            sql`${schema.crewCommissionEntries.status} != 'disputed'`,
+          ),
+        );
+    } catch (entryError) {
+      console.warn("Error fetching manual commission entries:", entryError);
+      manualEntries = [];
+    }
 
     let totalCommission = 0;
     let totalRevenue = 0;
