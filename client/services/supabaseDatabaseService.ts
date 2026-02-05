@@ -1075,7 +1075,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
+      const response = await fetch(`${this.baseUrl}/supabase/bookings/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -1212,7 +1212,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      let urlString = `${this.baseUrl}/packages`;
+      let urlString = `${this.baseUrl}/supabase/packages`;
       if (options?.includeInactive) {
         urlString += "?includeInactive=true";
       }
@@ -1273,7 +1273,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/packages`, {
+      const response = await fetch(`${this.baseUrl}/supabase/packages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(packageData),
@@ -1310,7 +1310,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+      const response = await fetch(`${this.baseUrl}/supabase/packages/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -1332,7 +1332,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/packages/${id}`, {
+      const response = await fetch(`${this.baseUrl}/supabase/packages/${id}`, {
         method: "DELETE",
       });
 
