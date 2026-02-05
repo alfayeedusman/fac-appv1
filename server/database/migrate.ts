@@ -349,6 +349,61 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= ADD MISSING COLUMNS TO EXISTING TABLES =============
+    console.log("🔧 Adding missing columns to existing tables...");
+
+    // Add missing columns to bookings table
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2);
+      `;
+      console.log("✅ total_price column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ total_price column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS service_type VARCHAR(20) DEFAULT 'branch';
+      `;
+      console.log("✅ service_type column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ service_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS assigned_crew JSONB;
+      `;
+      console.log("✅ assigned_crew column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ assigned_crew column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS service VARCHAR(255);
+      `;
+      console.log("✅ service column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ service column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    // Add missing columns to users table
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS car_type VARCHAR(100);
+      `;
+      console.log("✅ car_type column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ car_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Create system_notifications table
     await sql`
       CREATE TABLE IF NOT EXISTS system_notifications (
