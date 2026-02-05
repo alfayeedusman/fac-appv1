@@ -561,14 +561,25 @@ export default function AdminDashboard() {
   const loadServicePackages = async () => {
     try {
       setPackagesLoading(true);
+      console.log("📦 Loading service packages...");
+
       const result = await supabaseDbClient.getServicePackages({
         includeInactive: true,
       });
 
-      if (result.success && Array.isArray(result.packages)) {
-        setPackages(result.packages.map(mapServicePackage));
+      console.log("📦 Service packages result:", result);
+
+      if (result && result.packages && Array.isArray(result.packages) && result.packages.length > 0) {
+        try {
+          const mappedPackages = result.packages.map(mapServicePackage);
+          setPackages(mappedPackages);
+          console.log("✅ Service packages loaded successfully:", mappedPackages.length);
+        } catch (mapError) {
+          console.warn("⚠️ Error mapping packages:", mapError);
+          setPackages([]);
+        }
       } else {
-        console.warn("⚠️ Failed to load packages:", result);
+        console.log("ℹ️ No packages returned, using empty array");
         setPackages([]);
       }
     } catch (error) {
