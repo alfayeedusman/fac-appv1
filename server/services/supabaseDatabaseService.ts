@@ -1021,28 +1021,46 @@ class SupabaseDatabaseService {
       );
 
     // Calculate total revenue from completed bookings (within date range)
-    const [bookingRevenueResult] = await db
-      .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.createdAt, startDate),
-        ),
-      );
+    let bookingRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.createdAt, startDate),
+          ),
+        );
+      if (result.length > 0) {
+        bookingRevenueResult = result[0];
+      }
+    } catch (queryError) {
+      console.warn("Failed to get booking revenue (totalPrice column may not exist):", queryError);
+      bookingRevenueResult = { totalRevenue: "0" };
+    }
 
     // Calculate total revenue from POS transactions (within date range)
-    const [posRevenueResult] = await db
-      .select({
-        totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
-      })
-      .from(schema.posTransactions)
-      .where(
-        and(
-          eq(schema.posTransactions.status, "completed"),
-          gte(schema.posTransactions.createdAt, startDate),
-        ),
-      );
+    let posRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({
+          totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
+        })
+        .from(schema.posTransactions)
+        .where(
+          and(
+            eq(schema.posTransactions.status, "completed"),
+            gte(schema.posTransactions.createdAt, startDate),
+          ),
+        );
+      if (result.length > 0) {
+        posRevenueResult = result[0];
+      }
+    } catch (queryError) {
+      console.warn("Failed to get POS revenue:", queryError);
+      posRevenueResult = { totalRevenue: "0" };
+    }
 
     // Combine both revenues
     const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
