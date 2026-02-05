@@ -141,7 +141,10 @@ export const createServer = async () => {
   // Booking endpoints
   app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
   app.get("/api/supabase/bookings", neonApiRoutes.getBookings);
-  app.get("/api/supabase/bookings/garage-settings", neonApiRoutes.getGarageSettings);
+  app.get(
+    "/api/supabase/bookings/garage-settings",
+    neonApiRoutes.getGarageSettings,
+  );
   app.put("/api/supabase/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints

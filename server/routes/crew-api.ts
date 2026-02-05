@@ -217,7 +217,10 @@ export const getCrewStats: RequestHandler = async (req, res) => {
       onlineCrew: onlineCrewCount,
       busyCrew: busyCrewCount,
       availableCrew: availableCrewCount,
-      offlineCrew: Math.max(0, totalCrewCount - onlineCrewCount - busyCrewCount - availableCrewCount),
+      offlineCrew: Math.max(
+        0,
+        totalCrewCount - onlineCrewCount - busyCrewCount - availableCrewCount,
+      ),
       totalGroups: totalGroupsCount,
       activeGroups: activeGroupsCount,
       unassignedCrew: unassignedCrewCount,
@@ -1119,7 +1122,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       };
       return res.json(fallbackWithDates);
     } catch (fallbackError) {
-      console.error("Error in crew commission summary fallback:", fallbackError);
+      console.error(
+        "Error in crew commission summary fallback:",
+        fallbackError,
+      );
       return res.json(defaultFallback);
     }
   }
