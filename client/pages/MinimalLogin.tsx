@@ -21,16 +21,14 @@ export default function MinimalLogin() {
       });
 
       if (result.success) {
-        setStatus(`✅ Login successful! Welcome ${result.user?.fullName}`);
-        setTimeout(() => {
-          // Redirect based on user role
-          const userRole = result.user?.role;
-          if (userRole === "admin" || userRole === "superadmin") {
-            navigate("/admin-dashboard", { replace: true });
-          } else {
-            navigate("/dashboard", { replace: true });
-          }
-        }, 1000);
+        // Redirect immediately without delay
+        const userRole = result.user?.role;
+        if (userRole === "admin" || userRole === "superadmin") {
+          navigate("/admin-dashboard", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+        // Don't set status - navigation happens instantly
       } else {
         setStatus(`❌ Error: ${result.error}`);
       }
