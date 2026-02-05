@@ -3019,7 +3019,7 @@ class SupabaseDatabaseClient {
       const to = setTimeout(() => ac.abort(), 8000);
 
       const response = await fetch(
-        `${this.baseUrl}/inventory/items/${id}/stock`,
+        `${this.baseUrl}/supabase/inventory/items/${id}/stock`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -3063,7 +3063,7 @@ class SupabaseDatabaseClient {
       const to = setTimeout(() => ac.abort(), 8000);
 
       const response = await fetch(
-        `${this.baseUrl}/inventory/movements?${params}`,
+        `${this.baseUrl}/supabase/inventory/movements?${params}`,
         { signal: ac.signal },
       );
 
@@ -3095,7 +3095,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/movements`, {
+      const response = await fetch(`${this.baseUrl}/supabase/inventory/movements`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -3127,7 +3127,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/suppliers`, {
+      const response = await fetch(`${this.baseUrl}/supabase/inventory/suppliers`, {
         signal: ac.signal,
       });
 
@@ -3161,7 +3161,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
 
-      const response = await fetch(`${this.baseUrl}/inventory/suppliers`, {
+      const response = await fetch(`${this.baseUrl}/supabase/inventory/suppliers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(supplierData),
