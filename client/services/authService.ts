@@ -140,14 +140,17 @@ class AuthService {
           localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
         }
 
-        // Sync localStorage data to database in the background
-        try {
-          LocalStorageSyncService.syncAllData().catch((err) => {
-            console.warn("⚠️ Background sync failed:", err);
-          });
-        } catch (syncError) {
-          console.warn("⚠️ Failed to initiate data sync:", syncError);
-        }
+        // Sync localStorage data to database in the background (non-blocking)
+        // This runs after login completes
+        setTimeout(() => {
+          try {
+            LocalStorageSyncService.syncAllData().catch((err) => {
+              console.warn("⚠️ Background sync failed:", err);
+            });
+          } catch (syncError) {
+            console.warn("⚠️ Failed to initiate data sync:", syncError);
+          }
+        }, 100);
 
         toast({
           title: "Login Successful",
