@@ -1103,7 +1103,7 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     const db = await requireDb(res);
     if (!db) {
       console.warn("⚠️ Database not available for crew commission summary");
-      return res.json(defaultFallback);
+      return sendResponse(defaultFallback);
     }
     console.log("✅ Database connection available");
 
