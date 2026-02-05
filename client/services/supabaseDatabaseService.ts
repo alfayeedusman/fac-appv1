@@ -1216,13 +1216,13 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const url = new URL(`${this.baseUrl}/packages`);
+      let urlString = `${this.baseUrl}/packages`;
       if (options?.includeInactive) {
-        url.searchParams.set("includeInactive", "true");
+        urlString += "?includeInactive=true";
       }
 
       try {
-        const response = await fetch(url.toString(), {
+        const response = await fetch(urlString, {
           signal: ac.signal,
         });
 
