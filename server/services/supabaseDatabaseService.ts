@@ -1140,20 +1140,28 @@ class SupabaseDatabaseService {
       .where(sql`${schema.users.subscriptionStatus} != 'free'`);
 
     // Calculate monthly growth (users created in last 30 days vs previous 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [recentUsers] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
+    let recentUsers: any = { count: 0 };
+    let previousUsers: any = { count: 0 };
+    try {
+      const recentResult = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
+      if (recentResult && recentResult[0]) recentUsers = recentResult[0];
 
-    const [previousUsers] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(
-        sql`${schema.users.createdAt} >= ${sixtyDaysAgo} AND ${schema.users.createdAt} < ${thirtyDaysAgo}`,
-      );
+      const previousResult = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(
+          sql`${schema.users.createdAt} >= ${sixtyDaysAgo} AND ${schema.users.createdAt} < ${thirtyDaysAgo}`,
+        );
+      if (previousResult && previousResult[0]) previousUsers = previousResult[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get growth metrics:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate growth percentage
     const monthlyGrowth =
