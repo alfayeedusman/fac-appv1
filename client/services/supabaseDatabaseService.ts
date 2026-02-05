@@ -2230,7 +2230,7 @@ class SupabaseDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/branches`, {
+      const response = await fetch(`${this.baseUrl}/supabase/branches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2274,7 +2274,7 @@ class SupabaseDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+      const response = await fetch(`${this.baseUrl}/supabase/branches/${branchId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -2298,7 +2298,7 @@ class SupabaseDatabaseClient {
       return { success: false, error: "Database not connected" };
     }
     try {
-      const response = await fetch(`${this.baseUrl}/branches/${branchId}`, {
+      const response = await fetch(`${this.baseUrl}/supabase/branches/${branchId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
@@ -2325,7 +2325,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const url = `${this.baseUrl}/staff`;
+      const url = `${this.baseUrl}/supabase/staff`;
       log("📞 Making request to", url);
       const response = await fetch(url);
       log("📥 Response status:", response.status, response.statusText);
@@ -2363,7 +2363,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/staff`, {
+      const response = await fetch(`${this.baseUrl}/supabase/staff`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
