@@ -1414,7 +1414,7 @@ class SupabaseDatabaseService {
         );
 
       // New customers (created in last 30 days)
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
       const [newCustomersResult] = await this.db
         .select({ count: count() })
