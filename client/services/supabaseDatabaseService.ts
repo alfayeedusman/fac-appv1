@@ -1822,6 +1822,10 @@ class SupabaseDatabaseClient {
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
+      if (!response.ok) {
+        console.error("Crew activity response not OK:", response.status);
+        return { success: false, error: `HTTP ${response.status}` };
+      }
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
@@ -1843,11 +1847,15 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
+      if (!response.ok) {
+        console.error("Crew groups response not OK:", response.status);
+        return { success: false, groups: [], error: `HTTP ${response.status}` };
+      }
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
       console.error("Crew groups fetch failed:", error);
-      return { success: false, error: error?.message || "Network error" };
+      return { success: false, groups: [], error: error?.message || "Network error" };
     }
   }
 
