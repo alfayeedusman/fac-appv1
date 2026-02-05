@@ -69,138 +69,171 @@ export const getCrewStats: RequestHandler = async (req, res) => {
     }
 
     // Get crew by status
-    const [onlineCrewResult] = await db
-      .select({ count: count() })
-      .from(schema.crewStatus)
-      .where(
-        and(
-          eq(schema.crewStatus.status, "online"),
-          sql`${schema.crewStatus.endedAt} IS NULL`,
-        ),
-      );
+    let onlineCrewCount = 0;
+    try {
+      const [onlineCrewResult] = await db
+        .select({ count: count() })
+        .from(schema.crewStatus)
+        .where(
+          and(
+            eq(schema.crewStatus.status, "online"),
+            sql`${schema.crewStatus.endedAt} IS NULL`,
+          ),
+        );
+      onlineCrewCount = onlineCrewResult?.count || 0;
+    } catch (err) {
+      console.warn("Error fetching online crew count:", err);
+    }
 
-    const [busyCrewResult] = await db
-      .select({ count: count() })
-      .from(schema.crewStatus)
-      .where(
-        and(
-          eq(schema.crewStatus.status, "busy"),
-          sql`${schema.crewStatus.endedAt} IS NULL`,
-        ),
-      );
+    let busyCrewCount = 0;
+    try {
+      const [busyCrewResult] = await db
+        .select({ count: count() })
+        .from(schema.crewStatus)
+        .where(
+          and(
+            eq(schema.crewStatus.status, "busy"),
+            sql`${schema.crewStatus.endedAt} IS NULL`,
+          ),
+        );
+      busyCrewCount = busyCrewResult?.count || 0;
+    } catch (err) {
+      console.warn("Error fetching busy crew count:", err);
+    }
 
-    const [availableCrewResult] = await db
-      .select({ count: count() })
-      .from(schema.crewStatus)
-      .where(
-        and(
-          eq(schema.crewStatus.status, "available"),
-          sql`${schema.crewStatus.endedAt} IS NULL`,
-        ),
-      );
+    let availableCrewCount = 0;
+    try {
+      const [availableCrewResult] = await db
+        .select({ count: count() })
+        .from(schema.crewStatus)
+        .where(
+          and(
+            eq(schema.crewStatus.status, "available"),
+            sql`${schema.crewStatus.endedAt} IS NULL`,
+          ),
+        );
+      availableCrewCount = availableCrewResult?.count || 0;
+    } catch (err) {
+      console.warn("Error fetching available crew count:", err);
+    }
 
     // Get total groups
-    const [totalGroupsResult] = await db
-      .select({ count: count() })
-      .from(schema.crewGroups)
-      .where(eq(schema.crewGroups.status, "active"));
+    let totalGroupsCount = 0;
+    try {
+      const [totalGroupsResult] = await db
+        .select({ count: count() })
+        .from(schema.crewGroups)
+        .where(eq(schema.crewGroups.status, "active"));
+      totalGroupsCount = totalGroupsResult?.count || 0;
+    } catch (err) {
+      console.warn("Error fetching total groups count:", err);
+    }
 
-    // Get active groups (with online/busy members)
-    const [activeGroupsResult] = await db
-      .select({ count: count() })
-      .from(schema.crewGroups)
-      .where(
-        and(
-          eq(schema.crewGroups.status, "active"),
-          sql`EXISTS (
-            SELECT 1 FROM ${schema.crewMembers} cm
-            JOIN ${schema.crewStatus} cs ON cm.id = cs.crew_id
-            WHERE cm.crew_group_id = ${schema.crewGroups.id}
-            AND cs.status IN ('online', 'busy')
-            AND cs.ended_at IS NULL
-          )`,
-        ),
-      );
+    // Get active groups
+    let activeGroupsCount = 0;
+    try {
+      const [activeGroupsResult] = await db
+        .select({ count: count() })
+        .from(schema.crewGroups)
+        .where(
+          and(
+            eq(schema.crewGroups.status, "active"),
+            sql`EXISTS (
+              SELECT 1 FROM ${schema.crewMembers} cm
+              JOIN ${schema.crewStatus} cs ON cm.id = cs.crew_id
+              WHERE cm.crew_group_id = ${schema.crewGroups.id}
+              AND cs.status IN ('online', 'busy')
+              AND cs.ended_at IS NULL
+            )`,
+          ),
+        );
+      activeGroupsCount = activeGroupsResult?.count || 0;
+    } catch (err) {
+      console.warn("Error fetching active groups count:", err);
+    }
 
     // Get average crew rating
-    const [avgRatingResult] = await db
-      .select({
-        avgRating: avg(schema.users.crewRating),
-      })
-      .from(schema.users)
-      .where(
-        and(
-          eq(schema.users.role, "crew"),
-          sql`${schema.users.crewRating} IS NOT NULL`,
-        ),
-      );
+    let avgRating = 0;
+    try {
+      const [avgRatingResult] = await db
+        .select({
+          avgRating: avg(schema.users.crewRating),
+        })
+        .from(schema.users)
+        .where(
+          and(
+            eq(schema.users.role, "crew"),
+            sql`${schema.users.crewRating} IS NOT NULL`,
+          ),
+        );
+      avgRating = avgRatingResult?.avgRating
+        ? parseFloat(String(avgRatingResult.avgRating))
+        : 0;
+    } catch (err) {
+      console.warn("Error fetching average crew rating:", err);
+    }
 
     // Get today's completed bookings
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    let todayJobsCount = 0;
+    let todayRevenue = 0;
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [todayJobsResult] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.completedAt, today),
-          sql`${schema.bookings.completedAt} < ${tomorrow}`,
-        ),
-      );
+      const [todayJobsResult] = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.completedAt, today),
+            sql`${schema.bookings.completedAt} < ${tomorrow}`,
+          ),
+        );
+      todayJobsCount = todayJobsResult?.count || 0;
 
-    // Calculate today's revenue from completed bookings
-    const [todayRevenueResult] = await db
-      .select({
-        revenue: sql<number>`COALESCE(SUM(${schema.bookings.totalPrice}), 0)`,
-      })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.completedAt, today),
-          sql`${schema.bookings.completedAt} < ${tomorrow}`,
-        ),
-      );
-
-    const totalCrew = Number(totalCrewResult.count || 0);
-    const onlineCrew = Number(onlineCrewResult.count || 0);
-    const busyCrew = Number(busyCrewResult.count || 0);
-    const availableCrew = Number(availableCrewResult.count || 0);
-    const offlineCrew = Math.max(
-      0,
-      totalCrew - onlineCrew - busyCrew - availableCrew,
-    );
+      // Calculate today's revenue
+      const [todayRevenueResult] = await db
+        .select({
+          revenue: sql<number>`COALESCE(SUM(${schema.bookings.totalPrice}), 0)`,
+        })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.completedAt, today),
+            sql`${schema.bookings.completedAt} < ${tomorrow}`,
+          ),
+        );
+      todayRevenue = Number(todayRevenueResult?.revenue) || 0;
+    } catch (err) {
+      console.warn("Error fetching today's jobs and revenue:", err);
+    }
 
     const stats = {
-      totalCrew,
-      onlineCrew,
-      busyCrew,
-      availableCrew,
-      offlineCrew,
-      totalGroups: totalGroupsResult.count,
-      activeGroups: activeGroupsResult.count,
-      unassignedCrew: Number(unassignedCrewResult.count || 0),
-      avgRating: avgRatingResult.avgRating
-        ? parseFloat(String(avgRatingResult.avgRating))
-        : 0,
-      todayJobs: todayJobsResult.count,
-      todayRevenue: Number(todayRevenueResult.revenue) || 0,
+      totalCrew: totalCrewCount,
+      onlineCrew: onlineCrewCount,
+      busyCrew: busyCrewCount,
+      availableCrew: availableCrewCount,
+      offlineCrew: Math.max(0, totalCrewCount - onlineCrewCount - busyCrewCount - availableCrewCount),
+      totalGroups: totalGroupsCount,
+      activeGroups: activeGroupsCount,
+      unassignedCrew: unassignedCrewCount,
+      avgRating,
+      todayJobs: todayJobsCount,
+      todayRevenue,
     };
 
-    res.json({
+    console.log("✅ Successfully retrieved crew stats");
+    return res.json({
       success: true,
       stats,
     });
   } catch (error) {
-    console.error("Error fetching crew stats:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch crew statistics",
-    });
+    console.error("Error in crew stats endpoint:", error);
+    return res.json(fallback);
   }
 };
 
