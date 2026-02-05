@@ -79,9 +79,22 @@ export default function MinimalLogin() {
         )}
 
         <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#e8f4f8", borderRadius: "4px", fontSize: "13px" }}>
-          <p style={{ fontWeight: "bold", marginBottom: "5px" }}>Demo Account:</p>
-          <p>Email: superadmin@fayeedautocare.com</p>
-          <p>Password: SuperAdmin2024!</p>
+          <p style={{ fontWeight: "bold", marginBottom: "8px" }}>Available Demo Accounts:</p>
+          <div style={{ marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid #ccc" }}>
+            <p style={{ marginBottom: "2px" }}><strong>Superadmin:</strong></p>
+            <p style={{ margin: "0 0 2px 0", fontSize: "12px" }}>superadmin@fayeedautocare.com</p>
+            <p style={{ margin: "0", fontSize: "12px" }}>password123</p>
+          </div>
+          <div style={{ marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid #ccc" }}>
+            <p style={{ marginBottom: "2px" }}><strong>Admin:</strong></p>
+            <p style={{ margin: "0 0 2px 0", fontSize: "12px" }}>admin@fayeedautocare.com</p>
+            <p style={{ margin: "0", fontSize: "12px" }}>password123</p>
+          </div>
+          <div>
+            <p style={{ marginBottom: "2px" }}><strong>User:</strong></p>
+            <p style={{ margin: "0 0 2px 0", fontSize: "12px" }}>customer@test.com</p>
+            <p style={{ margin: "0", fontSize: "12px" }}>password123</p>
+          </div>
         </div>
       </div>
     </div>
