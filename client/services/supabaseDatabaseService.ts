@@ -991,8 +991,29 @@ class SupabaseDatabaseClient {
           headers: { "Content-Type": "application/json" },
         });
 
-        const data = await response.json();
-        return data;
+        if (!response.ok) {
+          console.error("Garage settings fetch failed with status:", response.status);
+          return {
+            success: false,
+            error: `HTTP ${response.status}`,
+          };
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.error("Failed to parse garage settings JSON:", parseError);
+          return {
+            success: false,
+            error: "Invalid response format",
+          };
+        }
+
+        return data || {
+          success: false,
+          error: "No data returned",
+        };
       } catch (fallbackError) {
         console.error("Garage settings fetch failed:", fallbackError);
         return {
