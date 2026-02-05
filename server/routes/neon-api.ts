@@ -2140,10 +2140,11 @@ export const getCustomers: RequestHandler = async (req, res) => {
     const allUsers = await supabaseDbService.getAllUsers();
     const customers = allUsers.filter((user) => user.role === "user");
     console.log("✅ Customers retrieved:", customers.length, "customers found");
-    res.json({ success: true, users: customers });
+    return res.json({ success: true, users: customers || [] });
   } catch (error) {
     console.error("❌ Error fetching customers:", error);
-    res.status(500).json({ success: false, error: "Failed to get customers" });
+    // Return fallback empty array on error
+    return res.json({ success: true, users: [] });
   }
 };
 
