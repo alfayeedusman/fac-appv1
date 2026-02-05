@@ -189,7 +189,7 @@ class SupabaseDatabaseClient {
   constructor() {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
-    this.baseUrl = `${apiBase}/neon`;
+    this.baseUrl = `${apiBase}/supabase`;
     log("🔗 SupabaseDatabaseClient baseUrl:", this.baseUrl);
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
