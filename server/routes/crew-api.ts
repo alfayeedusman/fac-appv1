@@ -1020,14 +1020,17 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
 
     const db = await requireDb(res);
     if (!db) {
+      console.warn("⚠️ Database not available for crew commission summary");
       return res.json(defaultFallback);
     }
+    console.log("✅ Database connection available");
 
     try {
       const referenceDate = new Date();
       const window = getPayrollWindow(referenceDate);
       start = startDate ? new Date(startDate as string) : window.start;
       end = endDate ? new Date(endDate as string) : window.end;
+      console.log("📅 Processing date range:", start.toISOString(), "to", end.toISOString());
     } catch (dateError) {
       console.warn("Error parsing dates for commission summary:", dateError);
       start = now;
