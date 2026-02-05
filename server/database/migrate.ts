@@ -424,6 +424,16 @@ export async function runMigrations() {
       console.warn("⚠️ crew_rating column (may already exist):", error.message?.substring(0, 100));
     }
 
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS crew_experience INTEGER;
+      `;
+      console.log("✅ crew_experience column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ crew_experience column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Add missing columns to service_packages
     try {
       await sql`
