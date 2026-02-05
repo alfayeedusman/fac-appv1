@@ -1110,8 +1110,8 @@ class SupabaseDatabaseService {
       .where(sql`${schema.users.subscriptionStatus} != 'free'`);
 
     // Calculate monthly growth (users created in last 30 days vs previous 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
     const [recentUsers] = await db
       .select({ count: count() })
