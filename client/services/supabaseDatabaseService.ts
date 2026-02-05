@@ -1384,7 +1384,7 @@ class SupabaseDatabaseClient {
     paymentMethod?: string;
   }): Promise<{ success: boolean; subscription?: any; error?: string }> {
     try {
-      const url = `${this.baseUrl}/subscriptions/upgrade`;
+      const url = `${this.baseUrl}/supabase/subscriptions/upgrade`;
       console.log("📦 Creating subscription upgrade:", url);
 
       const response = await fetch(url, {
@@ -1423,7 +1423,7 @@ class SupabaseDatabaseClient {
     status: string = "active",
   ): Promise<{ success: boolean; subscription?: any; error?: string }> {
     try {
-      const url = `${this.baseUrl}/subscriptions/${subscriptionId}/approve`;
+      const url = `${this.baseUrl}/supabase/subscriptions/${subscriptionId}/approve`;
       console.log("✅ Approving subscription upgrade:", url);
 
       const response = await fetch(url, {
@@ -1501,7 +1501,7 @@ class SupabaseDatabaseClient {
       const to = setTimeout(() => ac.abort(), 5000);
 
       const response = await fetch(
-        `${this.baseUrl}/notifications/${notificationId}/read`,
+        `${this.baseUrl}/supabase/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -1536,7 +1536,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/settings`, {
+      const response = await fetch(`${this.baseUrl}/supabase/settings`, {
         signal: ac.signal,
       });
 
@@ -1566,7 +1566,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/settings`, {
+      const response = await fetch(`${this.baseUrl}/supabase/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value, description, category }),
