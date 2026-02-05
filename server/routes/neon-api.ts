@@ -1794,37 +1794,44 @@ export const getDatabaseStats: RequestHandler = async (req, res) => {
   try {
     const period = (req.query.period as string) || "monthly";
 
+    // Ensure we always return a valid response
+    let stats: any = null;
+
     try {
-      const stats = await supabaseDbService.getStats(period);
-      return res.json({
-        success: true,
-        stats,
-      });
-    } catch (dbError) {
-      // Fallback to basic stats if database query fails
-      console.warn("⚠️ Database stats query failed, returning fallback stats:", dbError);
-      return res.json({
-        success: true,
-        stats: {
-          totalUsers: 0,
-          totalBookings: 0,
-          totalOnlineBookings: 0,
-          activeAds: 0,
-          pendingBookings: 0,
-          totalRevenue: 0,
-          totalWashes: 0,
-          totalExpenses: 0,
-          netIncome: 0,
-          activeSubscriptions: 0,
-          totalSubscriptionRevenue: 0,
-          newSubscriptions: 0,
-          subscriptionUpgrades: 0,
-          monthlyGrowth: 0,
-        },
-      });
+      const result = await supabaseDbService.getStats(period);
+      stats = result?.stats || result;
+    } catch (dbError: any) {
+      console.warn("⚠️ Database stats query failed:", dbError?.message?.substring(0, 150));
+      // Continue with fallback
     }
-  } catch (error) {
-    console.error("Get stats error:", error);
+
+    // Return either real stats or fallback stats
+    if (!stats) {
+      stats = {
+        totalUsers: 0,
+        totalBookings: 0,
+        totalOnlineBookings: 0,
+        activeAds: 0,
+        pendingBookings: 0,
+        totalRevenue: 0,
+        totalWashes: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        activeSubscriptions: 0,
+        totalSubscriptionRevenue: 0,
+        newSubscriptions: 0,
+        subscriptionUpgrades: 0,
+        monthlyGrowth: 0,
+      };
+    }
+
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (error: any) {
+    console.error("❌ Get stats outer error:", error?.message || error);
+    // Final fallback - ensure we always send a response
     res.json({
       success: true,
       stats: {
