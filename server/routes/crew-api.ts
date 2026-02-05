@@ -991,6 +991,8 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
+  console.log("🎯 getCrewCommissionSummary called with query:", req.query);
+
   const now = new Date();
   let start = new Date();
   let end = new Date();
@@ -1014,6 +1016,7 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
 
   try {
     const { startDate, endDate } = req.query;
+    console.log("📅 Parsed dates - startDate:", startDate, "endDate:", endDate);
 
     const db = await requireDb(res);
     if (!db) {
