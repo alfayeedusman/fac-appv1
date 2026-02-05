@@ -104,6 +104,7 @@ export const createServer = async () => {
   // Neon Database API Routes
   app.post("/api/supabase/init", neonApiRoutes.initializeSupabaseDB);
   app.get("/api/supabase/test", neonApiRoutes.testSupabaseConnection);
+  app.get("/api/supabase/db-check", neonApiRoutes.dbCheck);
   app.get("/api/supabase/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/supabase/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/supabase/fac-map-stats", neonApiRoutes.getFacMapStats);
