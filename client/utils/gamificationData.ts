@@ -163,9 +163,17 @@ export const getGamificationLevels = async (): Promise<CustomerLevel[]> => {
       },
     );
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.warn("Failed to parse gamification levels JSON:", parseError);
+      return defaultLevels;
+    }
+
     if (!response.ok || !data?.success) {
-      throw new Error(data?.error || "Failed to fetch levels");
+      console.warn("Gamification API error:", data?.error);
+      return defaultLevels;
     }
 
     const levels = (data.levels || []).map(normalizeLevel);
