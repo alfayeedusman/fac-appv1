@@ -1058,13 +1058,7 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
-  console.log("🎯 getCrewCommissionSummary called with query:", req.query);
-
   const now = new Date();
-  let start = new Date();
-  let end = new Date();
-
-  // Set default fallback response
   const defaultFallback = {
     success: true,
     summary: {
@@ -1081,36 +1075,17 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     },
   };
 
-  // Helper to safely send JSON
-  const sendJSON = (data: any) => {
-    if (res.headersSent) {
-      console.warn("Response already sent");
-      return;
-    }
-    try {
-      res.setHeader("Content-Type", "application/json");
-      res.json(data);
-    } catch (err) {
-      console.error("Error in sendJSON:", err);
-      try {
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).send(JSON.stringify(defaultFallback));
-      } catch (fallbackErr) {
-        console.error("Fallback sendJSON failed:", fallbackErr);
-      }
-    }
-  };
-
   try {
-    const { startDate, endDate } = req.query;
-    console.log("📅 Parsed dates - startDate:", startDate, "endDate:", endDate);
+    res.setHeader("Content-Type", "application/json");
 
+    const { startDate, endDate } = req.query;
     const db = await requireDb(res);
     if (!db) {
-      console.warn("⚠️ Database not available for crew commission summary");
-      return sendJSON(defaultFallback);
+      return res.json(defaultFallback);
     }
-    console.log("✅ Database connection available");
+
+    let start = startDate ? new Date(startDate as string) : now;
+    let end = endDate ? new Date(endDate as string) : now;
 
     try {
       const referenceDate = new Date();
