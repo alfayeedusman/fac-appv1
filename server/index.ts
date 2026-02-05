@@ -400,8 +400,8 @@ export const createServer = async () => {
     }
   });
 
-  // 404 handler - must be after all other routes
-  app.use((req: any, res: any) => {
+  // 404 handler - only for API routes that don't match
+  app.use("/api", (req: any, res: any) => {
     console.warn("🤷 404 Not Found:", req.method, req.path);
     res.status(404).json({
       success: false,
