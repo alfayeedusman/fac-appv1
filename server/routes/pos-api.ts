@@ -667,28 +667,22 @@ router.get("/reports/daily/:date", async (req, res) => {
     };
 
     console.log(`📈 Daily Report Summary:`, result);
-    res.json({
-      success: true,
-      data: result,
-    });
+    res.json(result);
   } catch (error: any) {
     console.error("❌ Error generating daily report:", error);
     console.error("Error details:", error.message || error);
     // Return fallback report instead of error
     res.json({
-      success: true,
-      data: {
-        date: req.params.date,
-        totalSales: 0,
-        totalCash: 0,
-        totalCard: 0,
-        totalGcash: 0,
-        totalBank: 0,
-        totalExpenses: 0,
-        netIncome: 0,
-        transactionCount: 0,
-        expenseCount: 0,
-      },
+      date: req.params.date,
+      totalSales: 0,
+      totalCash: 0,
+      totalCard: 0,
+      totalGcash: 0,
+      totalBank: 0,
+      totalExpenses: 0,
+      netIncome: 0,
+      transactionCount: 0,
+      expenseCount: 0,
     });
   }
 });
