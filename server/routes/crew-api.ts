@@ -1404,10 +1404,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
         },
       };
       console.log("✅ Sending crew commission summary response with", Object.keys(crewSummary).length, "crew members");
-      return sendResponse(responseData);
+      return sendJSON(responseData);
     } catch (responseError) {
       console.error("Error constructing crew commission summary response:", responseError);
-      return sendResponse(defaultFallback);
+      return sendJSON(defaultFallback);
     }
   } catch (error) {
     console.error("Error fetching crew commission summary:", error);
