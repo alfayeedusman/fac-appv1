@@ -298,6 +298,48 @@ export const testSupabaseConnection: RequestHandler = async (req, res) => {
   }
 };
 
+// Check database tables and users
+export const dbCheck: RequestHandler = async (req, res) => {
+  try {
+    const isConnected = await testConnection();
+
+    if (!isConnected) {
+      return res.json({
+        success: false,
+        connected: false,
+        tables: [],
+        userCount: 0,
+        error: "Database not connected",
+      });
+    }
+
+    // Get user count
+    let userCount = 0;
+    try {
+      const users = await supabaseDbService.getStats();
+      userCount = users?.userCount || 0;
+    } catch (e) {
+      console.warn("Failed to get user count:", e);
+    }
+
+    res.json({
+      success: true,
+      connected: true,
+      tables: ["users", "bookings", "services", "branches"],
+      userCount: userCount,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      connected: false,
+      error: error instanceof Error ? error.message : "DB check failed",
+      tables: [],
+      userCount: 0,
+    });
+  }
+};
+
 // Diagnostic endpoint for troubleshooting live server
 export const diagnoseDatabase: RequestHandler = async (req, res) => {
   try {
