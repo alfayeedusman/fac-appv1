@@ -1,34 +1,40 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { authService } from "@/services/authService";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("superadmin@fayeedautocare.com");
+  const [password, setPassword] = useState("password123");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("Testing login...");
-    
+    setLoading(true);
+    setMessage("Logging in...");
+
     try {
-      const res = await fetch("/api/supabase/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const result = await authService.login({
+        email,
+        password,
       });
-      
-      const data = await res.json();
-      if (data.success) {
-        setMessage(`✅ Login Success! Welcome ${data.user.fullName}`);
-        localStorage.setItem("isAuthenticated", "true");
-        window.location.href = "/admin-dashboard";
+
+      if (result.success) {
+        setMessage(`✅ Login Success! Welcome ${result.user?.fullName}`);
+        setTimeout(() => {
+          navigate("/admin-dashboard", { replace: true });
+        }, 1000);
       } else {
-        setMessage(`❌ ${data.error || "Login failed"}`);
+        setMessage(`❌ ${result.error || "Login failed"}`);
       }
     } catch (err) {
-      setMessage("❌ Error: " + String(err));
+      setMessage("❌ Error: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setLoading(false);
     }
   };
 
