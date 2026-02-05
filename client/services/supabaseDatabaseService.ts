@@ -1183,11 +1183,15 @@ class SupabaseDatabaseClient {
     packages?: any[];
     error?: string;
   }> {
-    if (!this.isConnected) {
-      return { success: false, packages: [] };
-    }
-
     try {
+      // Always ensure connection before fetching
+      await this.ensureConnection();
+
+      if (!this.isConnected) {
+        console.warn("Database not connected for getServicePackages, returning fallback");
+        return { success: false, packages: [] };
+      }
+
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
@@ -1196,32 +1200,39 @@ class SupabaseDatabaseClient {
         url.searchParams.set("includeInactive", "true");
       }
 
-      const response = await fetch(url.toString(), {
-        signal: ac.signal,
-      });
-
-      clearTimeout(to);
-
-      if (!response.ok) {
-        console.warn("Packages endpoint returned error:", response.status);
-        return { success: false, packages: [] };
-      }
-
-      let result;
       try {
-        result = await response.json();
-      } catch (parseError) {
-        console.warn("Failed to parse packages JSON, returning empty array:", parseError);
+        const response = await fetch(url.toString(), {
+          signal: ac.signal,
+        });
+
+        clearTimeout(to);
+
+        if (!response.ok) {
+          console.warn("Packages endpoint returned error:", response.status);
+          return { success: false, packages: [] };
+        }
+
+        let result;
+        try {
+          result = await response.json();
+        } catch (parseError) {
+          console.warn("Failed to parse packages JSON, returning empty array:", parseError);
+          return { success: false, packages: [] };
+        }
+
+        return result || { success: false, packages: [] };
+      } catch (fetchError: any) {
+        clearTimeout(to);
+        if (fetchError?.name === "AbortError") {
+          console.warn("Packages fetch timed out");
+        } else {
+          console.warn("Packages fetch failed:", fetchError?.message);
+        }
         return { success: false, packages: [] };
       }
-
-      return result || { success: false, packages: [] };
     } catch (error: any) {
-      console.error("Database packages fetch failed:", error);
-      if (error?.name === "AbortError") {
-        console.warn("Packages fetch timed out");
-      }
-      return { success: false, packages: [] };
+      console.error("getServicePackages error:", error?.message || error);
+      return { success: true, packages: [] }; // Return success with empty array for graceful degradation
     }
   }
 
