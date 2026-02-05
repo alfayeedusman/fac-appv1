@@ -1399,10 +1399,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
         },
       };
       console.log("✅ Sending crew commission summary response with", Object.keys(crewSummary).length, "crew members");
-      return res.json(responseData);
+      return sendResponse(responseData);
     } catch (responseError) {
       console.error("Error constructing crew commission summary response:", responseError);
-      return res.json(defaultFallback);
+      return sendResponse(defaultFallback);
     }
   } catch (error) {
     console.error("Error fetching crew commission summary:", error);
@@ -1418,10 +1418,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
           },
         },
       };
-      return res.json(fallbackWithDates);
+      return sendResponse(fallbackWithDates);
     } catch (fallbackError) {
       console.error("Error in crew commission summary fallback:", fallbackError);
-      return res.json(defaultFallback);
+      return sendResponse(defaultFallback);
     }
   }
 };
