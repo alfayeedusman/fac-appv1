@@ -1003,33 +1003,51 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     const start = startDate ? new Date(startDate as string) : window.start;
     const end = endDate ? new Date(endDate as string) : window.end;
 
-    const commissionRates = await db
-      .select()
-      .from(schema.crewCommissionRates)
-      .where(eq(schema.crewCommissionRates.isActive, true));
+    let commissionRates: any[] = [];
+    try {
+      commissionRates = await db
+        .select()
+        .from(schema.crewCommissionRates)
+        .where(eq(schema.crewCommissionRates.isActive, true));
+    } catch (rateError) {
+      console.warn("Error fetching commission rates:", rateError);
+      commissionRates = [];
+    }
 
     const rateMap = new Map<string, number>();
     commissionRates.forEach((rate) => {
       rateMap.set(rate.serviceType.toLowerCase(), Number(rate.rate) || 0);
     });
 
-    const crewProfiles = await db
-      .select({
-        userId: schema.crewMembers.userId,
-        fullName: schema.users.fullName,
-        crewName: schema.crewMembers.name,
-        commissionRate: schema.crewMembers.commissionRate,
-      })
-      .from(schema.crewMembers)
-      .leftJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id));
+    let crewProfiles: any[] = [];
+    try {
+      crewProfiles = await db
+        .select({
+          userId: schema.crewMembers.userId,
+          fullName: schema.users.fullName,
+          crewName: schema.crewMembers.name,
+          commissionRate: schema.crewMembers.commissionRate,
+        })
+        .from(schema.crewMembers)
+        .leftJoin(schema.users, eq(schema.crewMembers.userId, schema.users.id));
+    } catch (profileError) {
+      console.warn("Error fetching crew profiles:", profileError);
+      crewProfiles = [];
+    }
 
-    const crewUsers = await db
-      .select({
-        userId: schema.users.id,
-        fullName: schema.users.fullName,
-      })
-      .from(schema.users)
-      .where(eq(schema.users.role, "crew"));
+    let crewUsers: any[] = [];
+    try {
+      crewUsers = await db
+        .select({
+          userId: schema.users.id,
+          fullName: schema.users.fullName,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.role, "crew"));
+    } catch (userError) {
+      console.warn("Error fetching crew users:", userError);
+      crewUsers = [];
+    }
 
     const crewProfileMap = new Map<
       string,
