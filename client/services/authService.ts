@@ -99,10 +99,18 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
-      // Ensure database is initialized before attempting login
-      console.log("🔐 Login initiated - ensuring database is ready...");
-      await initializeDatabase();
-      console.log("✅ Database ready, proceeding with login");
+      // Initialize database only on first login attempt
+      if (!localStorage.getItem("_db_init_done")) {
+        console.log("🔐 Login initiated - ensuring database is ready...");
+        try {
+          await initializeDatabase();
+          localStorage.setItem("_db_init_done", "true");
+          console.log("✅ Database ready, proceeding with login");
+        } catch (initError) {
+          console.warn("⚠️ Database initialization warning:", initError);
+          // Continue anyway - database might already be initialized
+        }
+      }
 
       const result = await supabaseDbClient.login(
         credentials.email,
