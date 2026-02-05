@@ -626,7 +626,7 @@ class SupabaseDatabaseClient {
             "🔄 CORS/Network error detected, retrying via same-origin fallback...",
           );
           const ac2 = new AbortController();
-          const timeoutHandler2 = createSafeTimeoutAbort(ac2, 10000);
+          const timeoutHandler2 = createSafeTimeoutAbort(ac2, 3000);
           try {
             const resp2 = await fetch(`/api/supabase/auth/login`, {
               method: "POST",
