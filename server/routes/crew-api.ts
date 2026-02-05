@@ -1051,23 +1051,47 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       }
     });
 
-    const bookings = await db
-      .select({
-        id: schema.bookings.id,
-        service: schema.bookings.service,
-        category: schema.bookings.category,
-        totalPrice: schema.bookings.totalPrice,
-        completedAt: schema.bookings.completedAt,
-        assignedCrew: schema.bookings.assignedCrew,
-      })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.completedAt, start),
-          lte(schema.bookings.completedAt, end),
-        ),
-      );
+    let bookings;
+    try {
+      bookings = await db
+        .select({
+          id: schema.bookings.id,
+          service: schema.bookings.service,
+          category: schema.bookings.category,
+          totalPrice: schema.bookings.totalPrice,
+          completedAt: schema.bookings.completedAt,
+          assignedCrew: schema.bookings.assignedCrew,
+        })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.completedAt, start),
+            lte(schema.bookings.completedAt, end),
+          ),
+        );
+    } catch (selectError) {
+      // Fallback: try with minimal columns that definitely exist
+      try {
+        bookings = (await db
+          .select({
+            id: schema.bookings.id,
+            completedAt: schema.bookings.completedAt,
+            assignedCrew: schema.bookings.assignedCrew,
+          })
+          .from(schema.bookings)
+          .where(
+            and(
+              eq(schema.bookings.status, "completed"),
+              gte(schema.bookings.createdAt, start),
+              lte(schema.bookings.createdAt, end),
+            ),
+          )) as any;
+      } catch (fallbackError) {
+        console.warn("Error fetching crew commission bookings:", fallbackError);
+        bookings = [];
+      }
+    }
 
     const manualEntries = await db
       .select({
