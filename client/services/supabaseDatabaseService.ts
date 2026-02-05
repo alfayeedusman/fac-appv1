@@ -589,7 +589,7 @@ class SupabaseDatabaseClient {
     // Connection will be tested during the actual request
 
     try {
-      const url = `${this.baseUrl}/auth/login`;
+      const url = `${this.baseUrl}/supabase/auth/login`;
       log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
@@ -802,7 +802,7 @@ class SupabaseDatabaseClient {
 
     // Try primary URL first
     try {
-      const primaryUrl = `${this.baseUrl}/auth/register`;
+      const primaryUrl = `${this.baseUrl}/supabase/auth/register`;
       return await tryRegister(primaryUrl);
     } catch (primaryError) {
       warn("⚠️ Primary registration URL failed, trying fallback...");
@@ -879,7 +879,7 @@ class SupabaseDatabaseClient {
     };
 
     // Primary
-    const primary = await tryCreate(`${this.baseUrl}/bookings`);
+    const primary = await tryCreate(`${this.baseUrl}/supabase/bookings`);
     if (primary.success) return primary;
 
     // Fallback same-origin
@@ -909,7 +909,7 @@ class SupabaseDatabaseClient {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/bookings/availability?${params}`,
+        `${this.baseUrl}/supabase/bookings/availability?${params}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
