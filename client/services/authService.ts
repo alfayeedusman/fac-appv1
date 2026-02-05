@@ -139,13 +139,22 @@ class AuthService {
           localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
         }
 
-        // Sync data in background after a longer delay to not interfere with navigation
-        // This is completely non-blocking and will execute after page transition
-        setTimeout(() => {
-          LocalStorageSyncService.syncAllData().catch((err) => {
-            console.warn("⚠️ Background sync failed:", err);
+        // Sync data in background using idle callback for better performance
+        // This ensures sync happens when browser is idle, not blocking navigation
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            LocalStorageSyncService.syncAllData().catch((err) => {
+              console.warn("⚠️ Background sync failed:", err);
+            });
           });
-        }, 500);
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          setTimeout(() => {
+            LocalStorageSyncService.syncAllData().catch((err) => {
+              console.warn("⚠️ Background sync failed:", err);
+            });
+          }, 100);
+        }
 
         // Show toast immediately without waiting for anything
         toast({
