@@ -140,6 +140,7 @@ export const createServer = async () => {
   app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
   app.get("/api/supabase/bookings", neonApiRoutes.getBookings);
   app.put("/api/supabase/bookings/:id", neonApiRoutes.updateBooking);
+  app.get("/api/supabase/bookings/garage-settings", neonApiRoutes.getGarageSettings);
 
   // Subscription endpoints
   app.get("/api/supabase/subscriptions", neonApiRoutes.getSubscriptions);
