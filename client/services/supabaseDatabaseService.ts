@@ -2386,7 +2386,7 @@ class SupabaseDatabaseClient {
     }
 
     try {
-      const url = `${this.baseUrl}/users`;
+      const url = `${this.baseUrl}/supabase/users`;
       log("📞 Making request to", url);
       const response = await fetch(url);
       log("📥 Response status:", response.status, response.statusText);
@@ -2498,7 +2498,7 @@ class SupabaseDatabaseClient {
       const to = setTimeout(() => ac.abort(), 8000);
 
       const response = await fetch(
-        `${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`,
+        `${this.baseUrl}/supabase/users/${userId}/vehicles/${vehicleId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -2532,7 +2532,7 @@ class SupabaseDatabaseClient {
       const to = setTimeout(() => ac.abort(), 8000);
 
       const response = await fetch(
-        `${this.baseUrl}/users/${userId}/vehicles/${vehicleId}`,
+        `${this.baseUrl}/supabase/users/${userId}/vehicles/${vehicleId}`,
         {
           method: "DELETE",
           signal: ac.signal,
@@ -2564,7 +2564,7 @@ class SupabaseDatabaseClient {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/admin/fix-booking-userids`,
+        `${this.baseUrl}/supabase/admin/fix-booking-userids`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2837,7 +2837,7 @@ class SupabaseDatabaseClient {
     error?: string;
   }> {
     await this.ensureConnection();
-    const url = `${this.baseUrl}/vouchers/validate`;
+    const url = `${this.baseUrl}/supabase/vouchers/validate`;
     const ac = new AbortController();
     const to = setTimeout(() => ac.abort(), 8000);
     try {
