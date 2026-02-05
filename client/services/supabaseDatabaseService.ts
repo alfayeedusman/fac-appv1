@@ -2044,7 +2044,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/payouts`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/payouts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -2068,7 +2068,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/payouts/${id}/status`,
+        `${this.baseUrl}/supabase/crew/payouts/${id}/status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -2099,7 +2099,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/payroll?${queryParams.toString()}`,
+        `${this.baseUrl}/supabase/crew/payroll?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
@@ -2124,7 +2124,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/commission-summary?${queryParams.toString()}`,
+        `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
@@ -2147,7 +2147,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/daily-income`, {
+      const response = await fetch(`${this.baseUrl}/supabase/daily-income`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
