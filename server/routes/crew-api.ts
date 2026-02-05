@@ -1058,31 +1058,6 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
-  let responseSent = false;
-
-  const sendResponse = (data: any) => {
-    if (responseSent || res.headersSent) {
-      console.warn("Response already sent, skipping duplicate response");
-      return;
-    }
-    responseSent = true;
-    try {
-      // Ensure data is serializable
-      const jsonStr = JSON.stringify(data);
-      res.setHeader("Content-Type", "application/json");
-      return res.end(jsonStr);
-    } catch (err) {
-      console.error("Error sending response:", err);
-      try {
-        // Last resort fallback
-        res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify({ success: true, summary: { crew: [], breakdown: [], totalBookings: 0, totalRevenue: 0, totalCommission: 0, crewCount: 0, period: { startDate: new Date().toISOString(), endDate: new Date().toISOString() } } }));
-      } catch (finalErr) {
-        console.error("Final fallback failed:", finalErr);
-      }
-    }
-  };
-
   console.log("🎯 getCrewCommissionSummary called with query:", req.query);
 
   const now = new Date();
@@ -1104,6 +1079,26 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       crew: [],
       breakdown: [],
     },
+  };
+
+  // Helper to safely send JSON
+  const sendJSON = (data: any) => {
+    if (res.headersSent) {
+      console.warn("Response already sent");
+      return;
+    }
+    try {
+      res.setHeader("Content-Type", "application/json");
+      res.json(data);
+    } catch (err) {
+      console.error("Error in sendJSON:", err);
+      try {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).send(JSON.stringify(defaultFallback));
+      } catch (fallbackErr) {
+        console.error("Fallback sendJSON failed:", fallbackErr);
+      }
+    }
   };
 
   try {
