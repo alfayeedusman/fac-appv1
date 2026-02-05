@@ -1886,7 +1886,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/${params.userId}/wash-bay`,
+        `${this.baseUrl}/supabase/crew/${params.userId}/wash-bay`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -1912,7 +1912,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 12000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/seed`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/seed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: ac.signal,
@@ -1943,7 +1943,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/commission-entries?${queryParams.toString()}`,
+        `${this.baseUrl}/supabase/crew/commission-entries?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
@@ -1991,7 +1991,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/commission-entries/${id}/status`,
+        `${this.baseUrl}/supabase/crew/commission-entries/${id}/status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -2019,7 +2019,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/payouts?${queryParams.toString()}`,
+        `${this.baseUrl}/supabase/crew/payouts?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
