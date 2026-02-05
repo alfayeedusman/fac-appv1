@@ -1963,11 +1963,15 @@ class SupabaseDatabaseClient {
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
+      if (!response.ok) {
+        console.error("Commission entries response not OK:", response.status);
+        return { success: false, entries: [], error: `HTTP ${response.status}` };
+      }
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
       console.error("Commission entries fetch failed:", error);
-      return { success: false, error: error?.message || "Network error" };
+      return { success: false, entries: [], error: error?.message || "Network error" };
     }
   }
 
@@ -1983,7 +1987,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/commission-entries`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/commission-entries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
