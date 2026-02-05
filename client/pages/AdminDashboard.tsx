@@ -2873,6 +2873,12 @@ export default function AdminDashboard() {
               <SalesTransactions />
             </div>
           )}
+
+          {activeTab === "app-version" && (
+            <div className="space-y-6">
+              <AdminAppVersion />
+            </div>
+          )}
         </div>
       </div>
 
