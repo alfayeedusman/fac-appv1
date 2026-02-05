@@ -1596,7 +1596,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      const response = await fetch(`${this.baseUrl}/ads`, {
+      const response = await fetch(`${this.baseUrl}/supabase/ads`, {
         signal: ac.signal,
       });
 
@@ -1623,7 +1623,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 10000);
 
-      const response = await fetch(`${this.baseUrl}/ads`, {
+      const response = await fetch(`${this.baseUrl}/supabase/ads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(adData),
@@ -1654,7 +1654,7 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 5000);
 
-      const response = await fetch(`${this.baseUrl}/ads/${adId}/dismiss`, {
+      const response = await fetch(`${this.baseUrl}/supabase/ads/${adId}/dismiss`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail }),
@@ -1731,7 +1731,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/commission-rates`, {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
@@ -1751,7 +1751,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/commission-rates`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/commission-rates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serviceType, rate }),
