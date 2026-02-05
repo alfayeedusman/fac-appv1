@@ -65,9 +65,10 @@ export default function MinimalLogin() {
 
           <button
             type="submit"
-            style={{ backgroundColor: "#f97316", color: "white", padding: "10px", border: "none", borderRadius: "4px", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}
+            disabled={loading}
+            style={{ backgroundColor: loading ? "#d97706" : "#f97316", color: "white", padding: "10px", border: "none", borderRadius: "4px", fontSize: "16px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer" }}
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
