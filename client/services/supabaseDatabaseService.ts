@@ -2168,9 +2168,9 @@ class SupabaseDatabaseClient {
 
     let response: Response | null = null;
     try {
-      console.log("📋 Fetching crew commission summary from:", `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`);
+      console.log("📋 Fetching crew commission summary from:", `${this.baseUrl}/crew/commission-summary?${queryParams.toString()}`);
       response = await fetch(
-        `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`,
+        `${this.baseUrl}/crew/commission-summary?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
