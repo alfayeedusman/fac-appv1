@@ -1207,7 +1207,7 @@ class SupabaseDatabaseService {
           and(
             ne(schema.packageSubscriptions.status, "cancelled"),
             ne(schema.packageSubscriptions.status, "expired"),
-            gte(schema.packageSubscriptions.startDate, startDateISO),
+            gte(schema.packageSubscriptions.startDate, startDate),
           ),
         );
       if (result && result[0]) subscriptionRevenueResult = result[0];
@@ -1225,7 +1225,7 @@ class SupabaseDatabaseService {
       const result = await db
         .select({ count: count() })
         .from(schema.packageSubscriptions)
-        .where(gte(schema.packageSubscriptions.startDate, startDateISO));
+        .where(gte(schema.packageSubscriptions.startDate, startDate));
       if (result && result[0]) newSubscriptionCount = result[0];
     } catch (e) {
       console.warn("⚠️ Failed to get new subscription count:", (e as any)?.message?.substring(0, 100));
@@ -1240,7 +1240,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             ne(schema.users.subscriptionStatus, "free"),
-            gte(schema.users.updatedAt, startDateISO),
+            gte(schema.users.updatedAt, startDate),
           ),
         );
       if (result && result[0]) upgradeCount = result[0];
