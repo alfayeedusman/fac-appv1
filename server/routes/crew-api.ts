@@ -1103,13 +1103,6 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
         breakdown: [],
       },
     });
-
-    const rateMap = new Map<string, number>();
-    commissionRates.forEach((rate) => {
-      rateMap.set(rate.serviceType.toLowerCase(), Number(rate.rate) || 0);
-    });
-
-    let crewProfiles: any[] = [];
     try {
       crewProfiles = await db
         .select({
