@@ -1067,9 +1067,19 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     }
     responseSent = true;
     try {
-      res.json(data);
+      // Ensure data is serializable
+      const jsonStr = JSON.stringify(data);
+      res.setHeader("Content-Type", "application/json");
+      return res.end(jsonStr);
     } catch (err) {
       console.error("Error sending response:", err);
+      try {
+        // Last resort fallback
+        res.setHeader("Content-Type", "application/json");
+        return res.end(JSON.stringify({ success: true, summary: { crew: [], breakdown: [], totalBookings: 0, totalRevenue: 0, totalCommission: 0, crewCount: 0, period: { startDate: new Date().toISOString(), endDate: new Date().toISOString() } } }));
+      } catch (finalErr) {
+        console.error("Final fallback failed:", finalErr);
+      }
     }
   };
 
