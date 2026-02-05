@@ -991,20 +991,45 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
+  const now = new Date();
   let start = new Date();
   let end = new Date();
+
+  // Set default fallback response
+  const defaultFallback = {
+    success: true,
+    summary: {
+      period: {
+        startDate: now.toISOString(),
+        endDate: now.toISOString(),
+      },
+      totalBookings: 0,
+      totalRevenue: 0,
+      totalCommission: 0,
+      crewCount: 0,
+      crew: [],
+      breakdown: [],
+    },
+  };
 
   try {
     const { startDate, endDate } = req.query;
 
     const db = await requireDb(res);
-    if (!db) return;
+    if (!db) {
+      return res.json(defaultFallback);
+    }
 
-    const referenceDate = new Date();
-    const window = getPayrollWindow(referenceDate);
-
-    start = startDate ? new Date(startDate as string) : window.start;
-    end = endDate ? new Date(endDate as string) : window.end;
+    try {
+      const referenceDate = new Date();
+      const window = getPayrollWindow(referenceDate);
+      start = startDate ? new Date(startDate as string) : window.start;
+      end = endDate ? new Date(endDate as string) : window.end;
+    } catch (dateError) {
+      console.warn("Error parsing dates for commission summary:", dateError);
+      start = now;
+      end = now;
+    }
 
     let commissionRates: any[] = [];
     try {
