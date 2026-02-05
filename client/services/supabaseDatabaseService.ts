@@ -2159,16 +2159,29 @@ class SupabaseDatabaseClient {
       },
     };
 
+    let response: Response | null = null;
     try {
-      const response = await fetch(
+      console.log("📋 Fetching crew commission summary from:", `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`);
+      response = await fetch(
         `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
 
+      console.log("📥 Got response status:", response.status, response.statusText);
+
       if (!response.ok) {
         const errorText = await response.text().catch(() => "");
-        console.error("Crew commission summary response not OK:", response.status, errorText.substring(0, 200));
+        console.error("Crew commission summary response not OK:", response.status, "Content-Type:", response.headers.get("content-type"), "Error:", errorText.substring(0, 200));
+        return fallbackResponse;
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      console.log("📋 Response content-type:", contentType);
+
+      if (!contentType.includes("application/json")) {
+        const errorText = await response.text().catch(() => "");
+        console.error("Crew commission summary returned non-JSON response:", contentType, "Content:", errorText.substring(0, 200));
         return fallbackResponse;
       }
 
@@ -2180,14 +2193,18 @@ class SupabaseDatabaseClient {
 
       try {
         const result = JSON.parse(responseText);
+        console.log("✅ Successfully parsed crew commission summary response");
         return result || fallbackResponse;
       } catch (parseError) {
-        console.error("Failed to parse crew commission summary JSON:", parseError, "Response:", responseText.substring(0, 100));
+        console.error("Failed to parse crew commission summary JSON:", parseError, "Response:", responseText.substring(0, 150));
         return fallbackResponse;
       }
     } catch (error: any) {
       timeoutHandler.clearTimeout();
-      console.error("Crew commission summary fetch failed:", error?.message);
+      console.error("Crew commission summary fetch error:", error?.name, error?.message);
+      if (error?.name === "AbortError") {
+        console.error("Request timeout after 10 seconds");
+      }
       return fallbackResponse;
     }
   }
