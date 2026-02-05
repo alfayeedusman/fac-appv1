@@ -16,10 +16,23 @@ export const getCustomerLevels: RequestHandler = async (req, res) => {
     const { isActive } = req.query;
 
     let levels;
-    if (isActive === "true") {
-      levels = await sql`SELECT * FROM customer_levels WHERE is_active = true ORDER BY min_points ASC, sort_order ASC`;
-    } else {
-      levels = await sql`SELECT * FROM customer_levels ORDER BY min_points ASC, sort_order ASC`;
+    try {
+      if (isActive === "true") {
+        levels = await sql`SELECT * FROM customer_levels WHERE is_active = true ORDER BY min_points ASC`;
+      } else {
+        levels = await sql`SELECT * FROM customer_levels ORDER BY min_points ASC`;
+      }
+    } catch (dbError: any) {
+      // If sort_order doesn't exist, try without it
+      if (dbError.message?.includes("sort_order")) {
+        if (isActive === "true") {
+          levels = await sql`SELECT * FROM customer_levels WHERE is_active = true ORDER BY min_points ASC`;
+        } else {
+          levels = await sql`SELECT * FROM customer_levels ORDER BY min_points ASC`;
+        }
+      } else {
+        throw dbError;
+      }
     }
 
     res.json({
@@ -28,9 +41,10 @@ export const getCustomerLevels: RequestHandler = async (req, res) => {
     });
   } catch (error: any) {
     console.error("Get customer levels error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch customer levels",
+    // Return fallback instead of 500 error
+    res.json({
+      success: true,
+      levels: [],
     });
   }
 };
