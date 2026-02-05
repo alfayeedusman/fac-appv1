@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function MinimalLogin() {
   const [email, setEmail] = useState("superadmin@fayeedautocare.com");
-  const [password, setPassword] = useState("SuperAdmin2024!");
+  const [password, setPassword] = useState("password123");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
