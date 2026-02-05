@@ -1423,10 +1423,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
           },
         },
       };
-      return sendResponse(fallbackWithDates);
+      return sendJSON(fallbackWithDates);
     } catch (fallbackError) {
       console.error("Error in crew commission summary fallback:", fallbackError);
-      return sendResponse(defaultFallback);
+      return sendJSON(defaultFallback);
     }
   }
 };
