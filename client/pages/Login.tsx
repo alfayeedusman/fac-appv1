@@ -25,7 +25,13 @@ export default function Login() {
       });
 
       if (result.success) {
-        navigate("/dashboard", { replace: true });
+        // Redirect based on user role
+        const userRole = result.user?.role;
+        if (userRole === "admin" || userRole === "superadmin") {
+          navigate("/admin-dashboard", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       } else {
         setError(result.error || "Login failed. Please check your credentials.");
       }
