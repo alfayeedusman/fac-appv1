@@ -1199,39 +1199,57 @@ class SupabaseDatabaseService {
     // === SUBSCRIPTION METRICS ===
 
     // Calculate total subscription revenue from active/completed subscriptions (within date range)
-    const [subscriptionRevenueResult] = await db
-      .select({
-        totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
-      })
-      .from(schema.packageSubscriptions)
-      .where(
-        and(
-          ne(schema.packageSubscriptions.status, "cancelled"),
-          ne(schema.packageSubscriptions.status, "expired"),
-          gte(schema.packageSubscriptions.startDate, startDate),
-        ),
-      );
+    let subscriptionRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({
+          totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
+        })
+        .from(schema.packageSubscriptions)
+        .where(
+          and(
+            ne(schema.packageSubscriptions.status, "cancelled"),
+            ne(schema.packageSubscriptions.status, "expired"),
+            gte(schema.packageSubscriptions.startDate, startDateISO),
+          ),
+        );
+      if (result && result[0]) subscriptionRevenueResult = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get subscription revenue:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalSubscriptionRevenue = parseFloat(
       subscriptionRevenueResult.totalRevenue || "0",
     );
 
     // Count new subscriptions (within date range)
-    const [newSubscriptionCount] = await db
-      .select({ count: count() })
-      .from(schema.packageSubscriptions)
-      .where(gte(schema.packageSubscriptions.startDate, startDate));
+    let newSubscriptionCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.packageSubscriptions)
+        .where(gte(schema.packageSubscriptions.startDate, startDateISO));
+      if (result && result[0]) newSubscriptionCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get new subscription count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count subscription upgrades (users with non-free subscription status created/updated in period)
-    const [upgradeCount] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(
-        and(
-          ne(schema.users.subscriptionStatus, "free"),
-          gte(schema.users.updatedAt, startDate),
-        ),
-      );
+    let upgradeCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(
+          and(
+            ne(schema.users.subscriptionStatus, "free"),
+            gte(schema.users.updatedAt, startDateISO),
+          ),
+        );
+      if (result && result[0]) upgradeCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get upgrade count:", (e as any)?.message?.substring(0, 100));
+    }
 
     return {
       totalUsers: userCount.count,
