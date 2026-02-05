@@ -1775,7 +1775,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/list`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/list`, {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
@@ -1796,7 +1796,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/stats`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/stats`, {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
@@ -1818,7 +1818,7 @@ class SupabaseDatabaseClient {
     if (params?.limit) queryParams.append("limit", String(params.limit));
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/activity?${queryParams.toString()}`,
+        `${this.baseUrl}/supabase/crew/activity?${queryParams.toString()}`,
         { signal: ac.signal },
       );
       timeoutHandler.clearTimeout();
@@ -1839,7 +1839,7 @@ class SupabaseDatabaseClient {
     const ac = new AbortController();
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
-      const response = await fetch(`${this.baseUrl}/crew/groups`, {
+      const response = await fetch(`${this.baseUrl}/supabase/crew/groups`, {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
@@ -1860,7 +1860,7 @@ class SupabaseDatabaseClient {
     const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
     try {
       const response = await fetch(
-        `${this.baseUrl}/crew/${params.userId}/group`,
+        `${this.baseUrl}/supabase/crew/${params.userId}/group`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
