@@ -377,6 +377,39 @@ export const createServer = async () => {
   // In development, Vite's appType: 'spa' configuration handles SPA fallback
   // Express just provides API routes, Vite handles everything else
 
+  // ============= GLOBAL ERROR HANDLERS (must be last) =============
+  // Global error handler - catch any unhandled errors and return JSON
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("🚨 Global error handler caught error:", err?.message || err);
+
+    // Check if response has already been sent
+    if (res.headersSent) {
+      return next(err);
+    }
+
+    // Ensure we always return JSON
+    try {
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+        message: err?.message || "Unknown error occurred",
+      });
+    } catch (responseError) {
+      console.error("Error sending error response:", responseError);
+      return res.status(500).send("Internal server error");
+    }
+  });
+
+  // 404 handler - must be after all other routes
+  app.use((req: any, res: any) => {
+    console.warn("🤷 404 Not Found:", req.method, req.path);
+    res.status(404).json({
+      success: false,
+      error: "Endpoint not found",
+      path: req.path,
+    });
+  });
+
   return app;
 };
 
