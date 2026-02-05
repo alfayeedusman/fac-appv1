@@ -1779,6 +1779,10 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
+      if (!response.ok) {
+        console.error("Crew list response not OK:", response.status);
+        return { success: false, error: `HTTP ${response.status}` };
+      }
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
@@ -1800,11 +1804,15 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
       timeoutHandler.clearTimeout();
+      if (!response.ok) {
+        console.error("Crew stats response not OK:", response.status);
+        return { success: false, stats: {}, error: `HTTP ${response.status}` };
+      }
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
       console.error("Crew stats fetch failed:", error);
-      return { success: false, error: error?.message || "Network error" };
+      return { success: false, stats: {}, error: error?.message || "Network error" };
     }
   }
 
