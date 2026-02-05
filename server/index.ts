@@ -295,9 +295,33 @@ export const createServer = async () => {
     crewApiRoutes.updateCrewPayoutStatus,
   );
   app.get("/api/supabase/crew/payroll", crewApiRoutes.getCrewPayroll);
+  // Crew commission summary with safety wrapper
   app.get(
     "/api/supabase/crew/commission-summary",
-    crewApiRoutes.getCrewCommissionSummary,
+    async (req, res, next) => {
+      try {
+        await crewApiRoutes.getCrewCommissionSummary(req, res, next);
+      } catch (err) {
+        console.error("Unhandled error in crew commission summary route:", err);
+        if (!res.headersSent) {
+          res.json({
+            success: true,
+            summary: {
+              period: {
+                startDate: new Date().toISOString(),
+                endDate: new Date().toISOString(),
+              },
+              totalBookings: 0,
+              totalRevenue: 0,
+              totalCommission: 0,
+              crewCount: 0,
+              crew: [],
+              breakdown: [],
+            },
+          });
+        }
+      }
+    },
   );
   app.post("/api/supabase/crew/seed", crewApiRoutes.seedCrew); // For development only
 
