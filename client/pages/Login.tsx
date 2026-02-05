@@ -25,19 +25,20 @@ export default function Login() {
       });
 
       if (result.success) {
-        // Redirect based on user role
+        // Navigate immediately without waiting
         const userRole = result.user?.role;
         if (userRole === "admin" || userRole === "superadmin") {
           navigate("/admin-dashboard", { replace: true });
         } else {
           navigate("/dashboard", { replace: true });
         }
+        // Let loading state stay true - page is navigating anyway
       } else {
         setError(result.error || "Login failed. Please check your credentials.");
+        setLoading(false);
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
