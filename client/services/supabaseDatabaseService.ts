@@ -597,7 +597,7 @@ class SupabaseDatabaseClient {
       log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
-      const timeoutHandler = createSafeTimeoutAbort(ac, 10000);
+      const timeoutHandler = createSafeTimeoutAbort(ac, 5000);
 
       try {
         log("🔎 Sending login request to:", url);
