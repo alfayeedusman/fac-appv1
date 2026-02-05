@@ -1,34 +1,37 @@
 import { useState } from "react";
+import { authService } from "@/services/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function MinimalLogin() {
   const [email, setEmail] = useState("superadmin@fayeedautocare.com");
   const [password, setPassword] = useState("SuperAdmin2024!");
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setStatus("Attempting login...");
 
     try {
-      const response = await fetch("/api/supabase/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const result = await authService.login({
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setStatus(`✅ Login successful! Welcome ${data.user.fullName}`);
+      if (result.success) {
+        setStatus(`✅ Login successful! Welcome ${result.user?.fullName}`);
         setTimeout(() => {
-          localStorage.setItem("isAuthenticated", "true");
-          window.location.href = "/admin-dashboard";
+          navigate("/admin-dashboard", { replace: true });
         }, 1000);
       } else {
-        setStatus(`❌ Error: ${data.error}`);
+        setStatus(`❌ Error: ${result.error}`);
       }
     } catch (error) {
-      setStatus(`❌ Error: ${error}`);
+      setStatus(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
     }
   };
 
