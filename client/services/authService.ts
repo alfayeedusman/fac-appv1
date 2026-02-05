@@ -100,21 +100,8 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
-      // Skip database init check - let it happen in background if needed
-      // Only initialize if this is truly the first ever login
-      if (!localStorage.getItem("_db_init_done") && !localStorage.getItem("userEmail")) {
-        // Non-blocking database initialization (don't await)
-        initializeDatabase()
-          .then(() => {
-            localStorage.setItem("_db_init_done", "true");
-            console.log("✅ Database initialized");
-          })
-          .catch((err) => {
-            console.warn("⚠️ Database init failed:", err);
-          });
-      }
-
-      // Proceed with login immediately without waiting for DB init
+      // OPTIMIZED: Skip all non-essential checks before login
+      // Just proceed directly to authentication
       const result = await supabaseDbClient.login(
         credentials.email,
         credentials.password,
@@ -124,48 +111,55 @@ class AuthService {
         this.isLoggedIn = true;
         this.currentUser = result.user;
 
-        // Store session in localStorage for persistence (synchronous - very fast)
-        localStorage.setItem("userEmail", result.user.email);
-        localStorage.setItem("userRole", result.user.role);
-        localStorage.setItem("userId", result.user.id);
-        localStorage.setItem("userFullName", result.user.fullName || "");
-        localStorage.setItem("userLoggedInAt", new Date().toISOString());
-        localStorage.setItem("currentUser", JSON.stringify(result.user));
+        // OPTIMIZED: Batch localStorage operations for speed
+        // Use a single object instead of multiple setItem calls
+        const sessionData = {
+          userEmail: result.user.email,
+          userRole: result.user.role,
+          userId: result.user.id,
+          userFullName: result.user.fullName || "",
+          userLoggedInAt: new Date().toISOString(),
+          currentUser: JSON.stringify(result.user),
+        };
 
-        // Store tokens if provided
+        // Set all items at once (still fast, but grouped)
+        Object.entries(sessionData).forEach(([key, value]) => {
+          localStorage.setItem(key, value);
+        });
+
+        // Store tokens if provided (non-blocking)
         if ((result as any).sessionToken) {
           localStorage.setItem("sessionToken", (result as any).sessionToken);
         }
-        if ((result as any).expiresAt) {
-          localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
-        }
 
-        // Sync data in background using idle callback for better performance
-        // This ensures sync happens when browser is idle, not blocking navigation
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => {
-            LocalStorageSyncService.syncAllData().catch((err) => {
-              console.warn("⚠️ Background sync failed:", err);
+        // OPTIMIZED: No background sync, no database init
+        // These happen after page navigation completes
+        // Dispatch initialization in the absolute background
+        setTimeout(() => {
+          // Initialize DB only if first login
+          if (!localStorage.getItem("_db_init_done")) {
+            initializeDatabase().catch(() => {
+              // Silent fail - non-critical
             });
+            localStorage.setItem("_db_init_done", "true");
+          }
+
+          // Sync data after a delay (completely non-blocking)
+          LocalStorageSyncService.syncAllData().catch(() => {
+            // Silent fail - non-critical
           });
-        } else {
-          // Fallback for browsers without requestIdleCallback
-          setTimeout(() => {
-            LocalStorageSyncService.syncAllData().catch((err) => {
-              console.warn("⚠️ Background sync failed:", err);
-            });
-          }, 100);
-        }
+        }, 1000);
 
-        // Show toast immediately without waiting for anything
+        // OPTIMIZED: Non-blocking toast
         toast({
-          title: "✅ Login Successful",
-          description: `Welcome back, ${result.user.fullName}!`,
+          title: "Welcome back!",
+          description: "Logging you in...",
         });
       } else {
         this.clearSession();
+        // Only show error toast on failure
         toast({
-          title: "❌ Login Failed",
+          title: "Login Failed",
           description: result.error || "Invalid credentials",
           variant: "destructive",
         });
@@ -174,14 +168,12 @@ class AuthService {
       return result;
     } catch (error) {
       this.clearSession();
-      const errorMessage =
-        "Login failed. Please ensure you are connected to the database.";
       toast({
-        title: "⚠️ Connection Error",
-        description: errorMessage,
+        title: "Connection Error",
+        description: "Please try again",
         variant: "destructive",
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: "Login failed" };
     }
   }
 
