@@ -68,8 +68,12 @@ export default function Login() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-fac-orange-500 hover:bg-fac-orange-600">
-              Login
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 disabled:opacity-60"
+            >
+              {loading ? "Signing in..." : "Login"}
             </Button>
           </form>
 
@@ -80,9 +84,24 @@ export default function Login() {
           )}
 
           <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900 rounded text-sm">
-            <p className="font-bold mb-2">Test Account:</p>
-            <p><strong>Email:</strong> superadmin@fayeedautocare.com</p>
-            <p><strong>Password:</strong> SuperAdmin2024!</p>
+            <p className="font-bold mb-3">Available Demo Accounts:</p>
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold">Superadmin</p>
+                <p>Email: superadmin@fayeedautocare.com</p>
+                <p>Password: password123</p>
+              </div>
+              <div>
+                <p className="font-semibold">Admin</p>
+                <p>Email: admin@fayeedautocare.com</p>
+                <p>Password: password123</p>
+              </div>
+              <div>
+                <p className="font-semibold">User</p>
+                <p>Email: customer@test.com</p>
+                <p>Password: password123</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
