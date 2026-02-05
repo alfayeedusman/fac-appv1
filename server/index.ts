@@ -214,6 +214,8 @@ export const createServer = async () => {
 
   // Users endpoints (for customer management)
   app.get("/api/supabase/users", neonApiRoutes.getAllUsers);
+  app.get("/api/supabase/customers", neonApiRoutes.getCustomers);
+  app.get("/api/supabase/staff", neonApiRoutes.getStaffUsers);
 
   // Admin utilities
   app.post(
