@@ -46,6 +46,7 @@ import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminImageManager from "./pages/AdminImageManager";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
+import AdminAppVersion from "./pages/AdminAppVersion";
 import PaymentHistory from "./pages/PaymentHistory";
 import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
