@@ -2141,7 +2141,24 @@ class SupabaseDatabaseClient {
     if (params.endDate) queryParams.append("endDate", params.endDate);
 
     const ac = new AbortController();
-    const timeoutHandler = createSafeTimeoutAbort(ac, 8000);
+    const timeoutHandler = createSafeTimeoutAbort(ac, 10000);
+    const now = new Date();
+    const fallbackResponse = {
+      success: true,
+      summary: {
+        period: {
+          startDate: now.toISOString(),
+          endDate: now.toISOString(),
+        },
+        totalBookings: 0,
+        totalRevenue: 0,
+        totalCommission: 0,
+        crewCount: 0,
+        crew: [],
+        breakdown: [],
+      },
+    };
+
     try {
       const response = await fetch(
         `${this.baseUrl}/supabase/crew/commission-summary?${queryParams.toString()}`,
@@ -2150,17 +2167,28 @@ class SupabaseDatabaseClient {
       timeoutHandler.clearTimeout();
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Crew commission summary response not OK:", response.status, errorText);
-        return { success: false, error: `HTTP ${response.status}` };
+        const errorText = await response.text().catch(() => "");
+        console.error("Crew commission summary response not OK:", response.status, errorText.substring(0, 200));
+        return fallbackResponse;
       }
 
-      const result = await response.json();
-      return result || { success: false, error: "Empty response" };
+      const responseText = await response.text();
+      if (!responseText || responseText.trim().length === 0) {
+        console.warn("Crew commission summary returned empty response");
+        return fallbackResponse;
+      }
+
+      try {
+        const result = JSON.parse(responseText);
+        return result || fallbackResponse;
+      } catch (parseError) {
+        console.error("Failed to parse crew commission summary JSON:", parseError, "Response:", responseText.substring(0, 100));
+        return fallbackResponse;
+      }
     } catch (error: any) {
       timeoutHandler.clearTimeout();
-      console.error("Crew commission summary fetch failed:", error);
-      return { success: true, summary: { period: { startDate: new Date().toISOString(), endDate: new Date().toISOString() }, totalBookings: 0, totalRevenue: 0, totalCommission: 0, crewCount: 0, crew: [], breakdown: [] } };
+      console.error("Crew commission summary fetch failed:", error?.message);
+      return fallbackResponse;
     }
   }
 
