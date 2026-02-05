@@ -1,5 +1,5 @@
 import express, { RequestHandler } from "express";
-import { getSqlClient } from "../database/connection";
+import { getSqlClient, sql } from "../database/connection";
 
 const router = express.Router();
 
