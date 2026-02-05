@@ -1201,8 +1201,21 @@ class SupabaseDatabaseClient {
       });
 
       clearTimeout(to);
-      const result = await response.json();
-      return result;
+
+      if (!response.ok) {
+        console.warn("Packages endpoint returned error:", response.status);
+        return { success: false, packages: [] };
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.warn("Failed to parse packages JSON, returning empty array:", parseError);
+        return { success: false, packages: [] };
+      }
+
+      return result || { success: false, packages: [] };
     } catch (error: any) {
       console.error("Database packages fetch failed:", error);
       if (error?.name === "AbortError") {
