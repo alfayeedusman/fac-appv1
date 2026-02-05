@@ -90,6 +90,7 @@ import AdminBookingSettings from "./AdminBookingSettings";
 import AdminUserManagement from "./AdminUserManagement";
 import AdminCrewManagement from "./AdminCrewManagement";
 import AdminSettings from "./AdminSettings";
+import AdminAppVersion from "./AdminAppVersion";
 import CustomerHub from "@/components/CustomerHub";
 import SalesTransactions from "@/components/SalesTransactions";
 import BookingHub from "@/components/BookingHub";
@@ -561,14 +562,25 @@ export default function AdminDashboard() {
   const loadServicePackages = async () => {
     try {
       setPackagesLoading(true);
+      console.log("📦 Loading service packages...");
+
       const result = await supabaseDbClient.getServicePackages({
         includeInactive: true,
       });
 
-      if (result.success && Array.isArray(result.packages)) {
-        setPackages(result.packages.map(mapServicePackage));
+      console.log("📦 Service packages result:", result);
+
+      if (result && result.packages && Array.isArray(result.packages) && result.packages.length > 0) {
+        try {
+          const mappedPackages = result.packages.map(mapServicePackage);
+          setPackages(mappedPackages);
+          console.log("✅ Service packages loaded successfully:", mappedPackages.length);
+        } catch (mapError) {
+          console.warn("⚠️ Error mapping packages:", mapError);
+          setPackages([]);
+        }
       } else {
-        console.warn("⚠️ Failed to load packages:", result);
+        console.log("ℹ️ No packages returned, using empty array");
         setPackages([]);
       }
     } catch (error) {
@@ -1199,6 +1211,7 @@ export default function AdminDashboard() {
                   {activeTab === "images" && "Image Manager"}
                   {activeTab === "database" && "Database Management"}
                   {activeTab === "settings" && "System Settings"}
+                  {activeTab === "app-version" && "App Version Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
@@ -1229,6 +1242,8 @@ export default function AdminDashboard() {
                     "Manage media assets and galleries"}
                   {activeTab === "settings" &&
                     "Configure receipts, taxes, features, and user management"}
+                  {activeTab === "app-version" &&
+                    "Manage mobile app versions and release notes"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
@@ -2856,6 +2871,12 @@ export default function AdminDashboard() {
           {activeTab === "sales" && (
             <div className="space-y-6">
               <SalesTransactions />
+            </div>
+          )}
+
+          {activeTab === "app-version" && (
+            <div className="space-y-6">
+              <AdminAppVersion />
             </div>
           )}
         </div>

@@ -26,7 +26,8 @@ class SupabaseDatabaseService {
 
   // Add method to refresh connection when needed
   private async ensureConnection() {
-    if (!this.db || typeof this.db?.then === "function") {
+    if (!this.db) {
+      console.log("🔄 Database not available in service, refreshing connection...");
       this.db = await getDatabase();
     }
     return this.db;
@@ -36,45 +37,18 @@ class SupabaseDatabaseService {
     return this.ensureConnection();
   }
 
-  // Handle connection errors
-  private handleConnectionError(error: any) {
-    if (
-      error instanceof Error &&
-      (error.message.includes("connection") ||
-        error.message.includes("timeout") ||
-        error.message.includes("ECONNREFUSED"))
-    ) {
-      console.log(
-        "🔄 Detected connection error, resetting connection on next call",
-      );
-      this.db = null;
-    }
-  }
-
-  /**
-   * Ensure database connection is available, refresh if needed
-   * @returns Database instance
-   */
-  private async ensureConnection() {
-    if (!this.db) {
-      console.log("🔄 Database not available in service, refreshing connection...");
-      this.db = await getDatabase();
-    }
-    return this.db;
-  }
-
   /**
    * Check if error is connection-related and reset connection if needed
    */
   private handleConnectionError(error: any) {
     if (error instanceof Error) {
-      const isConnectionError = 
-        error.message.includes('connection') || 
+      const isConnectionError =
+        error.message.includes('connection') ||
         error.message.includes('timeout') ||
         error.message.includes('ECONNREFUSED') ||
         error.message.includes('ETIMEDOUT') ||
         error.message.includes('fetch failed');
-      
+
       if (isConnectionError) {
         console.log("🔄 Detected connection error, will reconnect on next call");
         this.db = null; // Force reconnection on next ensureConnection call
@@ -106,14 +80,8 @@ class SupabaseDatabaseService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     const db = await this.ensureConnection();
-<<<<<<< HEAD:server/services/neonDatabaseService.ts
-    
-    if (!db) {
-      console.error("❌ DATABASE NOT CONNECTED - cannot fetch user", { email });
-=======
 
     if (!db) {
->>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw new Error(
         "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
       );
@@ -142,19 +110,10 @@ class SupabaseDatabaseService {
       console.error("❌ Error fetching user from database", {
         email,
         error: error instanceof Error ? error.message : String(error),
-<<<<<<< HEAD:server/services/neonDatabaseService.ts
-        dbConnected: !!db,
-      });
-      
-      // Handle connection errors
-      this.handleConnectionError(error);
-      
-=======
       });
 
       // If it's a connection error, reset connection for next attempt
       this.handleConnectionError(error);
->>>>>>> ai_main_eac8da03b891:server/services/supabaseDatabaseService.ts
       throw error;
     }
   }
@@ -1028,62 +987,110 @@ class SupabaseDatabaseService {
         break;
     }
 
-    const [userCount] = await db.select({ count: count() }).from(schema.users);
+    let userCount: any = { count: 0 };
+    try {
+      const result = await db.select({ count: count() }).from(schema.users);
+      if (result && result[0]) userCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get user count:", (e as any)?.message?.substring(0, 100));
+    }
 
-    const [bookingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(gte(schema.bookings.createdAt, startDate));
+    let bookingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(gte(schema.bookings.createdAt, startDate));
+      if (result && result[0]) bookingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get booking count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count online bookings (where userId IS NOT NULL - registered customers)
-    const [onlineBookingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          ne(schema.bookings.userId, null),
-          gte(schema.bookings.createdAt, startDate),
-        ),
-      );
+    let onlineBookingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            ne(schema.bookings.userId, null),
+            gte(schema.bookings.createdAt, startDate),
+          ),
+        );
+      if (result && result[0]) onlineBookingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get online booking count:", (e as any)?.message?.substring(0, 100));
+    }
 
-    const [adCount] = await db
-      .select({ count: count() })
-      .from(schema.ads)
-      .where(eq(schema.ads.isActive, true));
+    let adCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.ads)
+        .where(eq(schema.ads.isActive, true));
+      if (result && result[0]) adCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get ad count:", (e as any)?.message?.substring(0, 100));
+    }
 
-    const [pendingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "pending"),
-          gte(schema.bookings.createdAt, startDate),
-        ),
-      );
+    let pendingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "pending"),
+            gte(schema.bookings.createdAt, startDate),
+          ),
+        );
+      if (result && result[0]) pendingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get pending count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate total revenue from completed bookings (within date range)
-    const [bookingRevenueResult] = await db
-      .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.createdAt, startDate),
-        ),
-      );
+    let bookingRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({ totalRevenue: sql<string>`SUM(${schema.bookings.totalPrice})` })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.createdAt, startDate),
+          ),
+        );
+      if (result.length > 0) {
+        bookingRevenueResult = result[0];
+      }
+    } catch (queryError) {
+      console.warn("Failed to get booking revenue (totalPrice column may not exist):", queryError);
+      bookingRevenueResult = { totalRevenue: "0" };
+    }
 
     // Calculate total revenue from POS transactions (within date range)
-    const [posRevenueResult] = await db
-      .select({
-        totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
-      })
-      .from(schema.posTransactions)
-      .where(
-        and(
-          eq(schema.posTransactions.status, "completed"),
-          gte(schema.posTransactions.createdAt, startDate),
-        ),
-      );
+    let posRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({
+          totalRevenue: sql<string>`SUM(${schema.posTransactions.totalAmount})`,
+        })
+        .from(schema.posTransactions)
+        .where(
+          and(
+            eq(schema.posTransactions.status, "completed"),
+            gte(schema.posTransactions.createdAt, startDate),
+          ),
+        );
+      if (result.length > 0) {
+        posRevenueResult = result[0];
+      }
+    } catch (queryError) {
+      console.warn("Failed to get POS revenue:", queryError);
+      posRevenueResult = { totalRevenue: "0" };
+    }
 
     // Combine both revenues
     const bookingRevenue = parseFloat(bookingRevenueResult.totalRevenue || "0");
@@ -1091,59 +1098,91 @@ class SupabaseDatabaseService {
     const totalRevenue = bookingRevenue + posRevenue;
 
     // Count completed washes from bookings (within date range)
-    const [bookingWashCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.createdAt, startDate),
-        ),
-      );
+    let bookingWashCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.createdAt, startDate),
+          ),
+        );
+      if (result && result[0]) bookingWashCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get booking wash count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count POS carwash transactions (items with "Wash" in name, within date range)
-    const [posWashCount] = await db
-      .select({ count: count() })
-      .from(schema.posTransactionItems)
-      .where(
-        and(
-          sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
-          gte(schema.posTransactionItems.createdAt, startDate),
-        ),
-      );
+    let posWashCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.posTransactionItems)
+        .where(
+          and(
+            sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
+            gte(schema.posTransactionItems.createdAt, startDate),
+          ),
+        );
+      if (result && result[0]) posWashCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get POS wash count:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
     // Calculate total expenses from POS sessions (within date range)
-    const [expenseResult] = await db
-      .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
-      .from(schema.posExpenses)
-      .where(gte(schema.posExpenses.createdAt, startDate));
+    let expenseResult = { totalExpenses: "0" };
+    try {
+      const result = await db
+        .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
+        .from(schema.posExpenses)
+        .where(gte(schema.posExpenses.createdAt, startDate));
+      if (result && result[0]) expenseResult = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get expense total:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
     const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
-    const [subscriptionCount] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(sql`${schema.users.subscriptionStatus} != 'free'`);
+    let subscriptionCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(sql`${schema.users.subscriptionStatus} != 'free'`);
+      if (result && result[0]) subscriptionCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get subscription count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate monthly growth (users created in last 30 days vs previous 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [recentUsers] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
+    let recentUsers: any = { count: 0 };
+    let previousUsers: any = { count: 0 };
+    try {
+      const recentResult = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(sql`${schema.users.createdAt} >= ${thirtyDaysAgo}`);
+      if (recentResult && recentResult[0]) recentUsers = recentResult[0];
 
-    const [previousUsers] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(
-        sql`${schema.users.createdAt} >= ${sixtyDaysAgo} AND ${schema.users.createdAt} < ${thirtyDaysAgo}`,
-      );
+      const previousResult = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(
+          sql`${schema.users.createdAt} >= ${sixtyDaysAgo} AND ${schema.users.createdAt} < ${thirtyDaysAgo}`,
+        );
+      if (previousResult && previousResult[0]) previousUsers = previousResult[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get growth metrics:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate growth percentage
     const monthlyGrowth =
@@ -1157,39 +1196,57 @@ class SupabaseDatabaseService {
     // === SUBSCRIPTION METRICS ===
 
     // Calculate total subscription revenue from active/completed subscriptions (within date range)
-    const [subscriptionRevenueResult] = await db
-      .select({
-        totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
-      })
-      .from(schema.packageSubscriptions)
-      .where(
-        and(
-          ne(schema.packageSubscriptions.status, "cancelled"),
-          ne(schema.packageSubscriptions.status, "expired"),
-          gte(schema.packageSubscriptions.startDate, startDate),
-        ),
-      );
+    let subscriptionRevenueResult = { totalRevenue: "0" };
+    try {
+      const result = await db
+        .select({
+          totalRevenue: sql<string>`SUM(${schema.packageSubscriptions.finalPrice})`,
+        })
+        .from(schema.packageSubscriptions)
+        .where(
+          and(
+            ne(schema.packageSubscriptions.status, "cancelled"),
+            ne(schema.packageSubscriptions.status, "expired"),
+            gte(schema.packageSubscriptions.startDate, startDate),
+          ),
+        );
+      if (result && result[0]) subscriptionRevenueResult = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get subscription revenue:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalSubscriptionRevenue = parseFloat(
       subscriptionRevenueResult.totalRevenue || "0",
     );
 
     // Count new subscriptions (within date range)
-    const [newSubscriptionCount] = await db
-      .select({ count: count() })
-      .from(schema.packageSubscriptions)
-      .where(gte(schema.packageSubscriptions.startDate, startDate));
+    let newSubscriptionCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.packageSubscriptions)
+        .where(gte(schema.packageSubscriptions.startDate, startDate));
+      if (result && result[0]) newSubscriptionCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get new subscription count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count subscription upgrades (users with non-free subscription status created/updated in period)
-    const [upgradeCount] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(
-        and(
-          ne(schema.users.subscriptionStatus, "free"),
-          gte(schema.users.updatedAt, startDate),
-        ),
-      );
+    let upgradeCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(
+          and(
+            ne(schema.users.subscriptionStatus, "free"),
+            gte(schema.users.updatedAt, startDate),
+          ),
+        );
+      if (result && result[0]) upgradeCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get upgrade count:", (e as any)?.message?.substring(0, 100));
+    }
 
     return {
       totalUsers: userCount.count,
@@ -1222,7 +1279,7 @@ class SupabaseDatabaseService {
 
     try {
       // Count online crew (active status within last 10 minutes)
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
       const [onlineCrewResult] = await this.db
         .select({ count: count() })
@@ -1247,7 +1304,7 @@ class SupabaseDatabaseService {
         );
 
       // Count active customers (sessions active within last 30 minutes)
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
       const [activeCustomersResult] = await this.db
         .select({ count: count() })

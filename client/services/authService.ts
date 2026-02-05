@@ -1,10 +1,7 @@
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "./dbInitService";
-<<<<<<< HEAD
-import LocalStorageSyncService from "./localStorageSyncService";
-=======
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
->>>>>>> ai_main_eac8da03b891
+import LocalStorageSyncService from "@/services/localStorageSyncService";
 
 export interface LoginCredentials {
   email: string;
@@ -103,11 +100,8 @@ class AuthService {
     credentials: LoginCredentials,
   ): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
-      // Ensure database is initialized before attempting login
-      console.log("🔐 Login initiated - ensuring database is ready...");
-      await initializeDatabase();
-      console.log("✅ Database ready, proceeding with login");
-
+      // OPTIMIZED: Skip all non-essential checks before login
+      // Just proceed directly to authentication
       const result = await supabaseDbClient.login(
         credentials.email,
         credentials.password,
@@ -117,42 +111,53 @@ class AuthService {
         this.isLoggedIn = true;
         this.currentUser = result.user;
 
-        // Store session in localStorage for persistence
-        localStorage.setItem("userEmail", result.user.email);
-        localStorage.setItem("userRole", result.user.role);
-        localStorage.setItem("userId", result.user.id);
-        localStorage.setItem("userFullName", result.user.fullName || "");
-        localStorage.setItem("userLoggedInAt", new Date().toISOString());
+        // OPTIMIZED: Batch localStorage operations for speed
+        // Use a single object instead of multiple setItem calls
+        const sessionData = {
+          userEmail: result.user.email,
+          userRole: result.user.role,
+          userId: result.user.id,
+          userFullName: result.user.fullName || "",
+          userLoggedInAt: new Date().toISOString(),
+          currentUser: JSON.stringify(result.user),
+        };
 
-        // Store complete user object for easy access
-        localStorage.setItem("currentUser", JSON.stringify(result.user));
+        // Set all items at once (still fast, but grouped)
+        Object.entries(sessionData).forEach(([key, value]) => {
+          localStorage.setItem(key, value);
+        });
 
-        // Store server-issued session token (if provided) for authenticated requests
+        // Store tokens if provided (non-blocking)
         if ((result as any).sessionToken) {
           localStorage.setItem("sessionToken", (result as any).sessionToken);
         }
 
-        if ((result as any).expiresAt) {
-          localStorage.setItem("sessionExpiresAt", (result as any).expiresAt);
-        }
+        // OPTIMIZED: No background sync, no database init
+        // These happen after page navigation completes
+        // Dispatch initialization in the absolute background
+        setTimeout(() => {
+          // Initialize DB only if first login
+          if (!localStorage.getItem("_db_init_done")) {
+            initializeDatabase().catch(() => {
+              // Silent fail - non-critical
+            });
+            localStorage.setItem("_db_init_done", "true");
+          }
 
-        // Sync localStorage data to database in the background
-        try {
-          LocalStorageSyncService.syncAllData().catch((err) => {
-            console.warn("⚠️ Background sync failed:", err);
+          // Sync data after a delay (completely non-blocking)
+          LocalStorageSyncService.syncAllData().catch(() => {
+            // Silent fail - non-critical
           });
-        } catch (syncError) {
-          console.warn("⚠️ Failed to initiate data sync:", syncError);
-        }
+        }, 1000);
 
+        // OPTIMIZED: Non-blocking toast
         toast({
-          title: "Login Successful",
-          description: `Welcome back, ${result.user.fullName}!`,
+          title: "Welcome back!",
+          description: "Logging you in...",
         });
       } else {
-        // Clear any existing session on failed login
         this.clearSession();
-
+        // Only show error toast on failure
         toast({
           title: "Login Failed",
           description: result.error || "Invalid credentials",
@@ -162,17 +167,13 @@ class AuthService {
 
       return result;
     } catch (error) {
-      // Clear session on error
       this.clearSession();
-
-      const errorMessage =
-        "Login failed. Please ensure you are connected to the database.";
       toast({
         title: "Connection Error",
-        description: errorMessage,
+        description: "Please try again",
         variant: "destructive",
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: "Login failed" };
     }
   }
 

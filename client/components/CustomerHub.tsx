@@ -464,38 +464,6 @@ export default function CustomerHub() {
   const handleSubscriptionUpgrade = async () => {
     if (!selectedCustomer) return;
 
-<<<<<<< HEAD
-    // Validate that we're actually upgrading
-    if (selectedPlan === selectedCustomer.subscriptionStatus) {
-      toast({
-        title: "ℹ️ No Change",
-        description: `Customer is already on the ${selectedPlan} plan`,
-      });
-      return;
-    }
-
-    try {
-      // Update the subscription in the database via the API
-      log(
-        "🔄 Upgrading subscription for",
-        selectedCustomer.email,
-        "to",
-        selectedPlan,
-      );
-
-      const response = await fetch(`/api/neon/auth/update-subscription`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: selectedCustomer.id,
-          newStatus: selectedPlan,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update subscription");
-=======
     try {
       // Get the selected package details
       const selectedPackage = availablePackages.find(
@@ -527,7 +495,6 @@ export default function CustomerHub() {
           variant: "destructive",
         });
         return;
->>>>>>> ai_main_eac8da03b891
       }
 
       // Play notification sound
@@ -536,49 +503,28 @@ export default function CustomerHub() {
       // Show success toast
       toast({
         title: "✨ Upgrade Successful!",
-<<<<<<< HEAD
-        description: `${selectedCustomer.fullName} upgraded to ${selectedPlan} plan! 🔔`,
-=======
         description: `${selectedCustomer.fullName} upgraded to ${selectedPackage.name} plan! 🔔`,
->>>>>>> ai_main_eac8da03b891
       });
 
       // Update customer in list
       const updatedCustomers = customers.map((c) =>
         c.id === selectedCustomer.id
-<<<<<<< HEAD
-          ? { ...c, subscriptionStatus: selectedPlan, lifecycle: "upgraded" }
-=======
           ? {
               ...c,
               subscriptionStatus: selectedPackage.name.toLowerCase(),
               lifecycle: "upgraded",
             }
->>>>>>> ai_main_eac8da03b891
           : c,
       );
       setCustomers(updatedCustomers);
       setIsSubscriptionModalOpen(false);
       setSelectedCustomer(null);
     } catch (error) {
-<<<<<<< HEAD
-      logError(
-        "❌ Subscription upgrade failed:",
-        error instanceof Error ? error.message : String(error),
-      );
-      toast({
-        title: "❌ Upgrade Failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to upgrade subscription. Please try again.",
-=======
       console.error("Error upgrading subscription:", error);
       toast({
         title: "Error",
         description: "Failed to process upgrade",
         variant: "destructive",
->>>>>>> ai_main_eac8da03b891
       });
     }
   };

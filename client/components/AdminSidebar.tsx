@@ -29,6 +29,7 @@ import {
   Camera,
   Wrench,
   Database,
+  Download,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -214,6 +215,13 @@ const sidebarItems = [
     icon: Settings,
     description: "Receipt & Tax Configuration",
     gradient: "from-purple-500 to-pink-500",
+  },
+  {
+    id: "app-version",
+    label: "App Versions",
+    icon: Download,
+    description: "Manage Mobile App Versions",
+    gradient: "from-blue-500 to-cyan-500",
   },
 ];
 

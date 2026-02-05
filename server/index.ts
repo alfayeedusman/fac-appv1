@@ -14,6 +14,8 @@ import notificationsApiRoutes from "./routes/notifications-api";
 import * as gamificationApiRoutes from "./routes/gamification-api";
 import imagesApiRoutes from "./routes/images-api";
 import cmsApiRoutes from "./routes/cms-api";
+import posApiRoutes from "./routes/pos-api";
+import appVersionRoutes from "./routes/appVersion";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { migrate } from "./database/migrate";
@@ -104,22 +106,11 @@ export const createServer = async () => {
   // Neon Database API Routes
   app.post("/api/supabase/init", neonApiRoutes.initializeSupabaseDB);
   app.get("/api/supabase/test", neonApiRoutes.testSupabaseConnection);
+  app.get("/api/supabase/db-check", neonApiRoutes.dbCheck);
   app.get("/api/supabase/stats", neonApiRoutes.getDatabaseStats);
   app.get("/api/supabase/realtime-stats", neonApiRoutes.getRealtimeStats);
   app.get("/api/supabase/fac-map-stats", neonApiRoutes.getFacMapStats);
 
-<<<<<<< HEAD
-  // Auth endpoints
-  app.post("/api/neon/auth/login", neonApiRoutes.loginUser);
-  app.post("/api/neon/auth/register", neonApiRoutes.registerUser);
-  app.post(
-    "/api/neon/auth/update-subscription",
-    neonApiRoutes.updateSubscription,
-  );
-  app.get("/api/neon/auth/subscription", neonApiRoutes.fetchUserSubscription);
-  app.post("/api/neon/auth/logout", neonApiRoutes.logoutUser); // invalidate current session token
-  app.post("/api/neon/auth/debug", neonApiRoutes.debugLogin); // Debug endpoint for testing passwords
-=======
   // DEBUG endpoints (for development only)
   app.post(
     "/api/supabase/debug/password-verify",
@@ -134,7 +125,6 @@ export const createServer = async () => {
     "/api/supabase/admin/force-rehash-passwords",
     neonApiRoutes.adminForceRehashPasswords,
   );
->>>>>>> ai_main_eac8da03b891
 
   // Auth endpoints with database health check (critical routes)
   app.post(
@@ -151,6 +141,10 @@ export const createServer = async () => {
   // Booking endpoints
   app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
   app.get("/api/supabase/bookings", neonApiRoutes.getBookings);
+  app.get(
+    "/api/supabase/bookings/garage-settings",
+    neonApiRoutes.getGarageSettings,
+  );
   app.put("/api/supabase/bookings/:id", neonApiRoutes.updateBooking);
 
   // Subscription endpoints
@@ -207,11 +201,17 @@ export const createServer = async () => {
   // Gamification endpoints
   app.get("/api/supabase/gamification/levels", neonApiRoutes.getCustomerLevels);
 
-  // POS endpoints
+  // POS endpoints - register router for all POS routes
+  // Register at both /api/pos and /api/supabase/pos for compatibility
+  app.use("/api/pos", posApiRoutes);
+  app.use("/api/supabase/pos", posApiRoutes);
   app.get("/api/supabase/pos/categories", neonApiRoutes.getPOSCategories);
 
   // Analytics endpoints
   app.get("/api/supabase/analytics", neonApiRoutes.getAnalyticsData);
+
+  // App Version Management endpoints
+  app.use("/api", appVersionRoutes);
 
   // Xendit Payment endpoints
   app.post(
@@ -226,6 +226,8 @@ export const createServer = async () => {
 
   // Users endpoints (for customer management)
   app.get("/api/supabase/users", neonApiRoutes.getAllUsers);
+  app.get("/api/supabase/customers", neonApiRoutes.getCustomers);
+  app.get("/api/supabase/staff", neonApiRoutes.getStaffUsers);
 
   // Admin utilities
   app.post(
@@ -364,45 +366,52 @@ export const createServer = async () => {
   app.use("/api/cms", cmsApiRoutes);
   console.log("🎨 CMS API routes registered successfully");
 
-  // Serve React admin app for everything that's NOT an API route
-  const reactBuildPath = path.join(__dirname, "../dist/spa");
-  app.use(express.static(reactBuildPath));
+  // Fallback handler for SPA routing - MUST BE LAST
+  // In production, serve built React app
+  if (process.env.NODE_ENV === "production") {
+    const reactBuildPath = path.join(__dirname, "../dist/spa");
+    app.use(express.static(reactBuildPath));
 
-  // Only serve React app for non-API routes
-  app.get("*", (req, res, next) => {
-    // Skip if it's an API route
-    if (req.path.startsWith("/api/")) {
-      return res.status(404).json({ error: "API endpoint not found" });
+    app.get("*", (req, res) => {
+      // For any non-API route, serve index.html (SPA fallback)
+      res.sendFile(path.join(reactBuildPath, "index.html"));
+    });
+  }
+  // In development, Vite's appType: 'spa' configuration handles SPA fallback
+  // Express just provides API routes, Vite handles everything else
+
+  // ============= GLOBAL ERROR HANDLERS (must be last) =============
+  // Global error handler - catch any unhandled errors and return JSON
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("🚨 Global error handler caught error:", err?.message || err);
+
+    // Check if response has already been sent
+    if (res.headersSent) {
+      return next(err);
     }
-<<<<<<< HEAD
-  }, 1000);
 
-  // ============= LOCALSTORAGE DATA SYNC ENDPOINTS =============
-  // User Preferences
-  app.post("/api/neon/sync/preferences", neonApiRoutes.syncUserPreferences);
-  app.get("/api/neon/sync/preferences", neonApiRoutes.getUserPreferences);
-
-  // User Notifications
-  app.post("/api/neon/sync/notifications", neonApiRoutes.syncUserNotifications);
-  app.get("/api/neon/sync/notifications", neonApiRoutes.getUserNotifications);
-
-  // Printer Configuration
-  app.post("/api/neon/sync/printer-config", neonApiRoutes.syncPrinterConfig);
-  app.get("/api/neon/sync/printer-configs", neonApiRoutes.getPrinterConfigs);
-
-  // Gamification Progress
-  app.post(
-    "/api/neon/sync/gamification",
-    neonApiRoutes.syncGamificationProgress,
-  );
-  app.get("/api/neon/sync/gamification", neonApiRoutes.getGamificationProgress);
-
-  // Error handling middleware (must be last)
-  app.use(errorHandler);
-=======
-    res.sendFile(path.join(reactBuildPath, "index.html"));
+    // Ensure we always return JSON
+    try {
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+        message: err?.message || "Unknown error occurred",
+      });
+    } catch (responseError) {
+      console.error("Error sending error response:", responseError);
+      return res.status(500).send("Internal server error");
+    }
   });
->>>>>>> ai_main_eac8da03b891
+
+  // 404 handler - only for API routes that don't match
+  app.use("/api", (req: any, res: any) => {
+    console.warn("🤷 404 Not Found:", req.method, req.path);
+    res.status(404).json({
+      success: false,
+      error: "Endpoint not found",
+      path: req.path,
+    });
+  });
 
   return app;
 };

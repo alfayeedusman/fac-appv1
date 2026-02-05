@@ -163,9 +163,17 @@ export const getGamificationLevels = async (): Promise<CustomerLevel[]> => {
       },
     );
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.warn("Failed to parse gamification levels JSON:", parseError);
+      return defaultLevels;
+    }
+
     if (!response.ok || !data?.success) {
-      throw new Error(data?.error || "Failed to fetch levels");
+      console.warn("Gamification API error:", data?.error);
+      return defaultLevels;
     }
 
     const levels = (data.levels || []).map(normalizeLevel);
@@ -253,41 +261,93 @@ export const getUserProgress = async (
   userId: string,
   levels?: CustomerLevel[],
 ): Promise<UserProgress> => {
-  const resolvedLevels = levels ?? (await getGamificationLevels());
-  const dashboardResponse = await fetch(
-    `${gamificationBaseUrl}/dashboard/${userId}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    },
-  ).then((response) => response.json());
+  try {
+    const resolvedLevels = levels ?? (await getGamificationLevels());
 
-  if (!dashboardResponse?.success) {
-    throw new Error(dashboardResponse?.error || "Failed to load progress");
+    let dashboardResponse;
+    try {
+      const response = await fetch(
+        `${gamificationBaseUrl}/dashboard/${userId}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      dashboardResponse = await response.json();
+    } catch (parseError) {
+      console.warn("Failed to parse dashboard JSON:", parseError);
+      // Return default progress
+      const defaultLevel = getCurrentLevel(0, resolvedLevels);
+      return {
+        userId,
+        currentLevel: defaultLevel.id,
+        totalBookings: 0,
+        completedBookings: 0,
+        nextLevelBookings: defaultLevel.minBookings,
+        earnedRewards: [],
+        badges: [],
+        rank: calculateUserRank(defaultLevel.id, resolvedLevels),
+        joinDate: new Date().toISOString(),
+      };
+    }
+
+    if (!dashboardResponse?.success) {
+      console.warn("Dashboard API error:", dashboardResponse?.error);
+      // Return default progress on API error
+      const defaultLevel = getCurrentLevel(0, resolvedLevels);
+      return {
+        userId,
+        currentLevel: defaultLevel.id,
+        totalBookings: 0,
+        completedBookings: 0,
+        nextLevelBookings: defaultLevel.minBookings,
+        earnedRewards: [],
+        badges: [],
+        rank: calculateUserRank(defaultLevel.id, resolvedLevels),
+        joinDate: new Date().toISOString(),
+      };
+    }
+
+    const dashboard = dashboardResponse.dashboard || {};
+    const points = dashboard.userPoints || 0;
+    const currentLevel = dashboard.currentLevel
+      ? normalizeLevel(dashboard.currentLevel)
+      : getCurrentLevel(points, resolvedLevels);
+    const nextLevel = dashboard.nextLevel
+      ? normalizeLevel(dashboard.nextLevel)
+      : getNextLevel(currentLevel.id, resolvedLevels);
+
+    return {
+      userId,
+      currentLevel: currentLevel.id,
+      totalBookings: points,
+      completedBookings: points,
+      nextLevelBookings: nextLevel
+        ? Math.max(0, nextLevel.minBookings - points)
+        : 0,
+      earnedRewards: currentLevel.rewards,
+      badges: [currentLevel.id],
+      rank: calculateUserRank(currentLevel.id, resolvedLevels),
+      joinDate: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error loading user progress:", error);
+    // Return minimal default progress
+    const defaultLevels2 = defaultLevels;
+    const defaultLevel = getCurrentLevel(0, defaultLevels2);
+    return {
+      userId,
+      currentLevel: defaultLevel.id,
+      totalBookings: 0,
+      completedBookings: 0,
+      nextLevelBookings: defaultLevel.minBookings,
+      earnedRewards: [],
+      badges: [],
+      rank: 1,
+      joinDate: new Date().toISOString(),
+    };
   }
-
-  const dashboard = dashboardResponse.dashboard || {};
-  const points = dashboard.userPoints || 0;
-  const currentLevel = dashboard.currentLevel
-    ? normalizeLevel(dashboard.currentLevel)
-    : getCurrentLevel(points, resolvedLevels);
-  const nextLevel = dashboard.nextLevel
-    ? normalizeLevel(dashboard.nextLevel)
-    : getNextLevel(currentLevel.id, resolvedLevels);
-
-  return {
-    userId,
-    currentLevel: currentLevel.id,
-    totalBookings: points,
-    completedBookings: points,
-    nextLevelBookings: nextLevel
-      ? Math.max(0, nextLevel.minBookings - points)
-      : 0,
-    earnedRewards: currentLevel.rewards,
-    badges: [currentLevel.id],
-    rank: calculateUserRank(currentLevel.id, resolvedLevels),
-    joinDate: new Date().toISOString(),
-  };
 };
 
 export const getCurrentLevel = (

@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-import { neon } from "@neondatabase/serverless";
-import { getDatabase, testConnection } from "./connection";
-import { seedUsers } from "./seed-users";
-import { seedBranches } from "./seed-branches";
-=======
 import { getDatabase, getSqlClient, testConnection } from "./connection";
->>>>>>> ai_main_eac8da03b891
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
 
@@ -356,6 +349,112 @@ export async function runMigrations() {
       );
     `;
 
+    // ============= ADD MISSING COLUMNS TO EXISTING TABLES =============
+    console.log("🔧 Adding missing columns to existing tables...");
+
+    // Add missing columns to bookings table
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2);
+      `;
+      console.log("✅ total_price column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ total_price column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS service_type VARCHAR(20) DEFAULT 'branch';
+      `;
+      console.log("✅ service_type column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ service_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS assigned_crew JSONB;
+      `;
+      console.log("✅ assigned_crew column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ assigned_crew column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE bookings
+        ADD COLUMN IF NOT EXISTS service VARCHAR(255);
+      `;
+      console.log("✅ service column added to bookings");
+    } catch (error: any) {
+      console.warn("⚠️ service column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    // Add missing columns to users table
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS car_type VARCHAR(100);
+      `;
+      console.log("✅ car_type column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ car_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS current_assignment TEXT;
+      `;
+      console.log("✅ current_assignment column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ current_assignment column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS crew_rating DECIMAL(3,2);
+      `;
+      console.log("✅ crew_rating column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ crew_rating column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS crew_experience INTEGER;
+      `;
+      console.log("✅ crew_experience column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ crew_experience column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    // Add missing columns to service_packages
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS duration VARCHAR(50);
+      `;
+      console.log("✅ duration column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ duration column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS hours INTEGER;
+      `;
+      console.log("✅ hours column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ hours column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Create system_notifications table
     await sql`
       CREATE TABLE IF NOT EXISTS system_notifications (
@@ -599,6 +698,27 @@ export async function runMigrations() {
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `;
+
+    // Add missing columns to service_packages table
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS duration_type VARCHAR(20) DEFAULT 'preset';
+      `;
+      console.log("✅ duration_type column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ duration_type column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+      `;
+      console.log("✅ sort_order column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ sort_order column (may already exist):", error.message?.substring(0, 100));
+    }
 
     // Create package_subscriptions table
     await sql`
@@ -1584,21 +1704,26 @@ export async function seedInitialData() {
 
 // Main migration function
 export async function migrate() {
-<<<<<<< HEAD
-  await runMigrations();
-  await seedInitialData();
-  await seedUsers();
-  await seedBranches();
-=======
+  // In production, check for skip flags; in dev, always run
+  const isDev = process.env.NODE_ENV !== "production";
   const shouldSkip =
-    process.env.SKIP_MIGRATIONS === "true" ||
-    process.env.DISABLE_MIGRATIONS === "true";
+    (!isDev && process.env.SKIP_MIGRATIONS === "true") ||
+    (!isDev && process.env.DISABLE_MIGRATIONS === "true");
   const databaseUrl =
     process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
-  if (shouldSkip || !databaseUrl) {
+  console.log("🔍 Migration check - isDev:", isDev, "shouldSkip:", shouldSkip, "hasDbUrl:", !!databaseUrl);
+
+  if (shouldSkip) {
     console.warn(
-      "⚠️ Skipping database migrations: missing database URL or migrations disabled.",
+      "⚠️ Skipping database migrations: migrations disabled.",
+    );
+    return;
+  }
+
+  if (!databaseUrl) {
+    console.warn(
+      "⚠️ Skipping database migrations: missing database URL.",
     );
     return;
   }
@@ -1619,7 +1744,6 @@ export async function migrate() {
       throw error;
     }
   }
->>>>>>> ai_main_eac8da03b891
 }
 
 // Run migrations if this file is executed directly

@@ -14,6 +14,9 @@ import ChatWidget from "@/components/ChatWidget";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import SimpleLogin from "./pages/SimpleLogin";
+import TestPage from "./pages/TestPage";
+import LoginDebug from "./pages/LoginDebug";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
 import ForgotPassword from "./pages/ForgotPassword";
 import SignUp from "./pages/SignUp";
@@ -43,6 +46,7 @@ import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminImageManager from "./pages/AdminImageManager";
 import AdminGamification from "./pages/AdminGamification";
 import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
+import AdminAppVersion from "./pages/AdminAppVersion";
 import PaymentHistory from "./pages/PaymentHistory";
 import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
@@ -105,6 +109,8 @@ const AppComponent = () => {
             <ChatWidget />
             <BrowserRouter>
               <Routes>
+                <Route path="/test" element={<TestPage />} />
+                <Route path="/login-debug" element={<LoginDebug />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -139,6 +145,14 @@ const AppComponent = () => {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminFACMap />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin-app-version"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminAppVersion />
                     </ProtectedRoute>
                   }
                 />
