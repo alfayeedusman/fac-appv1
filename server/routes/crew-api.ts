@@ -1058,6 +1058,21 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
+  let responseSent = false;
+
+  const sendResponse = (data: any) => {
+    if (responseSent || res.headersSent) {
+      console.warn("Response already sent, skipping duplicate response");
+      return;
+    }
+    responseSent = true;
+    try {
+      res.json(data);
+    } catch (err) {
+      console.error("Error sending response:", err);
+    }
+  };
+
   console.log("🎯 getCrewCommissionSummary called with query:", req.query);
 
   const now = new Date();
