@@ -1275,23 +1275,30 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       crewSummary[crewId].totalCommission += amount;
     });
 
-    res.json({
-      success: true,
-      summary: {
-        period: {
-          startDate: start.toISOString(),
-          endDate: end.toISOString(),
+    try {
+      const responseData = {
+        success: true,
+        summary: {
+          period: {
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+          },
+          totalBookings: bookings.length,
+          totalRevenue,
+          totalCommission,
+          crewCount: Object.keys(crewSummary).length,
+          crew: Object.values(crewSummary).sort(
+            (a, b) => b.totalCommission - a.totalCommission,
+          ),
+          breakdown: Object.values(breakdown),
         },
-        totalBookings: bookings.length,
-        totalRevenue,
-        totalCommission,
-        crewCount: Object.keys(crewSummary).length,
-        crew: Object.values(crewSummary).sort(
-          (a, b) => b.totalCommission - a.totalCommission,
-        ),
-        breakdown: Object.values(breakdown),
-      },
-    });
+      };
+      console.log("✅ Sending crew commission summary response with", Object.keys(crewSummary).length, "crew members");
+      return res.json(responseData);
+    } catch (responseError) {
+      console.error("Error constructing crew commission summary response:", responseError);
+      return res.json(defaultFallback);
+    }
   } catch (error) {
     console.error("Error fetching crew commission summary:", error);
     // Return fallback response with safe dates
