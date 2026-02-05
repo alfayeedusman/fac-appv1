@@ -1117,10 +1117,10 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
           },
         },
       };
-      return sendJSON(fallbackWithDates);
+      return res.json(fallbackWithDates);
     } catch (fallbackError) {
       console.error("Error in crew commission summary fallback:", fallbackError);
-      return sendJSON(defaultFallback);
+      return res.json(defaultFallback);
     }
   }
 };
