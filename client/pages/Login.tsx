@@ -1,38 +1,35 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/authService";
 
 export default function Login() {
-  const [email, setEmail] = useState("superadmin@fayeedautocare.com");
-  const [password, setPassword] = useState("password123");
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setMessage("Logging in...");
 
     try {
       const result = await authService.login({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (result.success) {
-        setMessage(`✅ Login Success! Welcome ${result.user?.fullName}`);
-        setTimeout(() => {
-          navigate("/admin-dashboard", { replace: true });
-        }, 1000);
+        navigate("/admin-dashboard", { replace: true });
       } else {
-        setMessage(`❌ ${result.error || "Login failed"}`);
+        setError(result.error || "Login failed. Please check your credentials.");
       }
     } catch (err) {
-      setMessage("❌ Error: " + (err instanceof Error ? err.message : String(err)));
+      setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
