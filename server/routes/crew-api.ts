@@ -991,6 +991,9 @@ export const updateCrewPayoutStatus: RequestHandler = async (req, res) => {
 };
 
 export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
+  let start = new Date();
+  let end = new Date();
+
   try {
     const { startDate, endDate } = req.query;
 
@@ -1000,8 +1003,8 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     const referenceDate = new Date();
     const window = getPayrollWindow(referenceDate);
 
-    const start = startDate ? new Date(startDate as string) : window.start;
-    const end = endDate ? new Date(endDate as string) : window.end;
+    start = startDate ? new Date(startDate as string) : window.start;
+    end = endDate ? new Date(endDate as string) : window.end;
 
     let commissionRates: any[] = [];
     try {
