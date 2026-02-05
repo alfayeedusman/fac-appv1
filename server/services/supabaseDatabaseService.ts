@@ -998,36 +998,60 @@ class SupabaseDatabaseService {
       console.warn("⚠️ Failed to get user count:", (e as any)?.message?.substring(0, 100));
     }
 
-    const [bookingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(gte(schema.bookings.createdAt, startDateISO));
+    let bookingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(gte(schema.bookings.createdAt, startDateISO));
+      if (result && result[0]) bookingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get booking count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count online bookings (where userId IS NOT NULL - registered customers)
-    const [onlineBookingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          ne(schema.bookings.userId, null),
-          gte(schema.bookings.createdAt, startDateISO),
-        ),
-      );
+    let onlineBookingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            ne(schema.bookings.userId, null),
+            gte(schema.bookings.createdAt, startDateISO),
+          ),
+        );
+      if (result && result[0]) onlineBookingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get online booking count:", (e as any)?.message?.substring(0, 100));
+    }
 
-    const [adCount] = await db
-      .select({ count: count() })
-      .from(schema.ads)
-      .where(eq(schema.ads.isActive, true));
+    let adCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.ads)
+        .where(eq(schema.ads.isActive, true));
+      if (result && result[0]) adCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get ad count:", (e as any)?.message?.substring(0, 100));
+    }
 
-    const [pendingCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "pending"),
-          gte(schema.bookings.createdAt, startDateISO),
-        ),
-      );
+    let pendingCount: any = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "pending"),
+            gte(schema.bookings.createdAt, startDateISO),
+          ),
+        );
+      if (result && result[0]) pendingCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get pending count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate total revenue from completed bookings (within date range)
     let bookingRevenueResult = { totalRevenue: "0" };
