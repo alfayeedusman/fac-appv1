@@ -16,6 +16,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SimpleLogin from "./pages/SimpleLogin";
 import TestPage from "./pages/TestPage";
+import LoginDebug from "./pages/LoginDebug";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
 import ForgotPassword from "./pages/ForgotPassword";
 import SignUp from "./pages/SignUp";
