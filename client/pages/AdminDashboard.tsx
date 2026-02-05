@@ -1211,6 +1211,7 @@ export default function AdminDashboard() {
                   {activeTab === "images" && "Image Manager"}
                   {activeTab === "database" && "Database Management"}
                   {activeTab === "settings" && "System Settings"}
+                  {activeTab === "app-version" && "App Version Management"}
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   {activeTab === "overview" &&
@@ -1241,6 +1242,8 @@ export default function AdminDashboard() {
                     "Manage media assets and galleries"}
                   {activeTab === "settings" &&
                     "Configure receipts, taxes, features, and user management"}
+                  {activeTab === "app-version" &&
+                    "Manage mobile app versions and release notes"}
                 </p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-4">
