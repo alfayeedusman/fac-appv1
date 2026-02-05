@@ -1070,14 +1070,13 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
             lte(schema.bookings.completedAt, end),
           ),
         );
-    } catch (selectError) {
+    } catch (selectError: any) {
       // Fallback: try with minimal columns that definitely exist
       try {
-        bookings = (await db
+        const fallbackBookings = await db
           .select({
             id: schema.bookings.id,
             completedAt: schema.bookings.completedAt,
-            assignedCrew: schema.bookings.assignedCrew,
           })
           .from(schema.bookings)
           .where(
@@ -1086,7 +1085,16 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
               gte(schema.bookings.createdAt, start),
               lte(schema.bookings.createdAt, end),
             ),
-          )) as any;
+          );
+        // Map to expected format with empty fields
+        bookings = fallbackBookings.map((b: any) => ({
+          id: b.id,
+          service: "Unknown",
+          category: "Unknown",
+          totalPrice: 0,
+          completedAt: b.completedAt,
+          assignedCrew: [],
+        }));
       } catch (fallbackError) {
         console.warn("Error fetching crew commission bookings:", fallbackError);
         bookings = [];
