@@ -197,7 +197,10 @@ export const createServer = async () => {
   // Gamification endpoints
   app.get("/api/supabase/gamification/levels", neonApiRoutes.getCustomerLevels);
 
-  // POS endpoints
+  // POS endpoints - register router for all POS routes
+  // Register at both /api/pos and /api/supabase/pos for compatibility
+  app.use("/api/pos", posApiRoutes);
+  app.use("/api/supabase/pos", posApiRoutes);
   app.get("/api/supabase/pos/categories", neonApiRoutes.getPOSCategories);
 
   // Analytics endpoints
