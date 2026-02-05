@@ -1197,83 +1197,103 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
       }
     > = {};
 
-    bookings.forEach((booking) => {
-      const revenue = Number(booking.totalPrice) || 0;
-      totalRevenue += revenue;
-
-      const serviceKey =
-        booking.service || booking.category || "Unspecified Service";
-      const normalizedKey = serviceKey.toLowerCase();
-
-      let assignedCrew: string[] = [];
-      if (Array.isArray(booking.assignedCrew)) {
-        assignedCrew = booking.assignedCrew as string[];
-      } else if (typeof booking.assignedCrew === "string") {
+    try {
+      bookings.forEach((booking) => {
         try {
-          assignedCrew = JSON.parse(booking.assignedCrew);
-        } catch (e) {
-          assignedCrew = [];
+          const revenue = Number(booking.totalPrice) || 0;
+          totalRevenue += revenue;
+
+          const serviceKey =
+            booking.service || booking.category || "Unspecified Service";
+          const normalizedKey = serviceKey.toLowerCase();
+
+          let assignedCrew: string[] = [];
+          if (Array.isArray(booking.assignedCrew)) {
+            assignedCrew = booking.assignedCrew as string[];
+          } else if (typeof booking.assignedCrew === "string") {
+            try {
+              assignedCrew = JSON.parse(booking.assignedCrew);
+            } catch (e) {
+              assignedCrew = [];
+            }
+          }
+
+          assignedCrew.forEach((crewId) => {
+            try {
+              const profile = crewProfileMap.get(crewId);
+              const fallbackRate = Number(profile?.commissionRate || 0);
+              const rate =
+                rateMap.get(normalizedKey) ||
+                rateMap.get((booking.category || "").toLowerCase()) ||
+                fallbackRate;
+              const commission = (revenue * rate) / 100;
+
+              totalCommission += commission;
+
+              if (!crewSummary[crewId]) {
+                crewSummary[crewId] = {
+                  crewId,
+                  crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
+                  totalRevenue: 0,
+                  totalCommission: 0,
+                  totalBookings: 0,
+                };
+              }
+
+              crewSummary[crewId].totalRevenue += revenue;
+              crewSummary[crewId].totalCommission += commission;
+              crewSummary[crewId].totalBookings += 1;
+
+              if (!breakdown[serviceKey]) {
+                breakdown[serviceKey] = {
+                  serviceType: serviceKey,
+                  bookingCount: 0,
+                  totalRevenue: 0,
+                  totalCommission: 0,
+                };
+              }
+
+              breakdown[serviceKey].bookingCount += 1;
+              breakdown[serviceKey].totalRevenue += revenue;
+              breakdown[serviceKey].totalCommission += commission;
+            } catch (crewError) {
+              console.warn("Error processing crew commission for crewId:", crewId, crewError);
+            }
+          });
+        } catch (bookingError) {
+          console.warn("Error processing booking:", booking.id, bookingError);
         }
-      }
-
-      assignedCrew.forEach((crewId) => {
-        const profile = crewProfileMap.get(crewId);
-        const fallbackRate = Number(profile?.commissionRate || 0);
-        const rate =
-          rateMap.get(normalizedKey) ||
-          rateMap.get((booking.category || "").toLowerCase()) ||
-          fallbackRate;
-        const commission = (revenue * rate) / 100;
-
-        totalCommission += commission;
-
-        if (!crewSummary[crewId]) {
-          crewSummary[crewId] = {
-            crewId,
-            crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
-            totalRevenue: 0,
-            totalCommission: 0,
-            totalBookings: 0,
-          };
-        }
-
-        crewSummary[crewId].totalRevenue += revenue;
-        crewSummary[crewId].totalCommission += commission;
-        crewSummary[crewId].totalBookings += 1;
-
-        if (!breakdown[serviceKey]) {
-          breakdown[serviceKey] = {
-            serviceType: serviceKey,
-            bookingCount: 0,
-            totalRevenue: 0,
-            totalCommission: 0,
-          };
-        }
-
-        breakdown[serviceKey].bookingCount += 1;
-        breakdown[serviceKey].totalRevenue += revenue;
-        breakdown[serviceKey].totalCommission += commission;
       });
-    });
+    } catch (bookingsError) {
+      console.warn("Error processing bookings forEach:", bookingsError);
+    }
 
-    manualEntries.forEach((entry) => {
-      const crewId = entry.crewUserId;
-      const amount = Number(entry.amount) || 0;
-      totalCommission += amount;
+    try {
+      manualEntries.forEach((entry) => {
+        try {
+          const crewId = entry.crewUserId;
+          const amount = Number(entry.amount) || 0;
+          totalCommission += amount;
 
-      if (!crewSummary[crewId]) {
-        const profile = crewProfileMap.get(crewId);
-        crewSummary[crewId] = {
-          crewId,
-          crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
-          totalRevenue: 0,
-          totalCommission: 0,
-          totalBookings: 0,
-        };
-      }
+          if (!crewSummary[crewId]) {
+            const profile = crewProfileMap.get(crewId);
+            crewSummary[crewId] = {
+              crewId,
+              crewName: profile?.fullName || profile?.crewName || "Unknown Crew",
+              totalRevenue: 0,
+              totalCommission: 0,
+              totalBookings: 0,
+            };
+          }
 
-      crewSummary[crewId].totalCommission += amount;
-    });
+          crewSummary[crewId].totalCommission += amount;
+        } catch (entryError) {
+          console.warn("Error processing manual entry:", entry.id, entryError);
+        }
+      });
+    } catch (entriesError) {
+      console.warn("Error processing manualEntries forEach:", entriesError);
+    }
 
     try {
       const responseData = {
