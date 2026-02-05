@@ -1206,7 +1206,7 @@ class SupabaseDatabaseService {
         );
 
       // Count active customers (sessions active within last 30 minutes)
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
       const [activeCustomersResult] = await this.db
         .select({ count: count() })
