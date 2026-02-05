@@ -161,9 +161,18 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg flex items-center justify-center gap-2 disabled:opacity-60 transition-all"
           >
-            <span>✓</span> Sign In <Zap className="w-4 h-4" />
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              <>
+                <span>✓</span> Sign In <Zap className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </form>
 
