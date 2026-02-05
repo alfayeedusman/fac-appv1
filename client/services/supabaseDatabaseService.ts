@@ -1686,7 +1686,7 @@ class SupabaseDatabaseClient {
         return { success: true, users: [] };
       }
 
-      const url = `${this.baseUrl}/customers`;
+      const url = `${this.baseUrl}/supabase/customers`;
       log("📞 Making request to", url);
 
       try {
