@@ -314,7 +314,9 @@ export async function getDailySalesReport(date: string): Promise<DailySalesRepor
         throw new Error(`HTTP ${response.status}: Failed to fetch daily report`);
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
+      // Handle both wrapped { success, data } and direct response formats
+      const data = responseData.data || responseData;
       console.log(`✅ Daily report fetched successfully:`, data);
       return data;
     } catch (error: any) {
