@@ -29,6 +29,7 @@ import {
   Camera,
   Wrench,
   Database,
+  Download,
 } from "lucide-react";
 
 interface AdminSidebarProps {
