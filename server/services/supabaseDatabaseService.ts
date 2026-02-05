@@ -1101,43 +1101,67 @@ class SupabaseDatabaseService {
     const totalRevenue = bookingRevenue + posRevenue;
 
     // Count completed washes from bookings (within date range)
-    const [bookingWashCount] = await db
-      .select({ count: count() })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.createdAt, startDateISO),
-        ),
-      );
+    let bookingWashCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.status, "completed"),
+            gte(schema.bookings.createdAt, startDateISO),
+          ),
+        );
+      if (result && result[0]) bookingWashCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get booking wash count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Count POS carwash transactions (items with "Wash" in name, within date range)
-    const [posWashCount] = await db
-      .select({ count: count() })
-      .from(schema.posTransactionItems)
-      .where(
-        and(
-          sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
-          gte(schema.posTransactionItems.createdAt, startDateISO),
-        ),
-      );
+    let posWashCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.posTransactionItems)
+        .where(
+          and(
+            sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
+            gte(schema.posTransactionItems.createdAt, startDateISO),
+          ),
+        );
+      if (result && result[0]) posWashCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get POS wash count:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalWashes = bookingWashCount.count + posWashCount.count;
 
     // Calculate total expenses from POS sessions (within date range)
-    const [expenseResult] = await db
-      .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
-      .from(schema.posExpenses)
-      .where(gte(schema.posExpenses.createdAt, startDateISO));
+    let expenseResult = { totalExpenses: "0" };
+    try {
+      const result = await db
+        .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
+        .from(schema.posExpenses)
+        .where(gte(schema.posExpenses.createdAt, startDateISO));
+      if (result && result[0]) expenseResult = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get expense total:", (e as any)?.message?.substring(0, 100));
+    }
 
     const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
     const netIncome = totalRevenue - totalExpenses;
 
     // Count active subscriptions (users with non-free subscription status)
-    const [subscriptionCount] = await db
-      .select({ count: count() })
-      .from(schema.users)
-      .where(sql`${schema.users.subscriptionStatus} != 'free'`);
+    let subscriptionCount = { count: 0 };
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(schema.users)
+        .where(sql`${schema.users.subscriptionStatus} != 'free'`);
+      if (result && result[0]) subscriptionCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get subscription count:", (e as any)?.message?.substring(0, 100));
+    }
 
     // Calculate monthly growth (users created in last 30 days vs previous 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
