@@ -987,10 +987,16 @@ class SupabaseDatabaseService {
         break;
     }
 
-    // Keep as Date object for Drizzle ORM to handle properly
-    const startDateISO = startDate;
+    // Convert to ISO string for safe parameter binding
+    const startDateISO = startDate.toISOString();
 
-    const [userCount] = await db.select({ count: count() }).from(schema.users);
+    let userCount: any = { count: 0 };
+    try {
+      const result = await db.select({ count: count() }).from(schema.users);
+      if (result && result[0]) userCount = result[0];
+    } catch (e) {
+      console.warn("⚠️ Failed to get user count:", (e as any)?.message?.substring(0, 100));
+    }
 
     const [bookingCount] = await db
       .select({ count: count() })
