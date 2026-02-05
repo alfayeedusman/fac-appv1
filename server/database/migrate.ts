@@ -404,6 +404,27 @@ export async function runMigrations() {
       console.warn("⚠️ car_type column (may already exist):", error.message?.substring(0, 100));
     }
 
+    try {
+      await sql`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS current_assignment TEXT;
+      `;
+      console.log("✅ current_assignment column added to users");
+    } catch (error: any) {
+      console.warn("⚠️ current_assignment column (may already exist):", error.message?.substring(0, 100));
+    }
+
+    // Add missing columns to service_packages
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS duration VARCHAR(50);
+      `;
+      console.log("✅ duration column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ duration column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Create system_notifications table
     await sql`
       CREATE TABLE IF NOT EXISTS system_notifications (
