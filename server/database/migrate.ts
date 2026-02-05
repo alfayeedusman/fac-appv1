@@ -435,6 +435,16 @@ export async function runMigrations() {
       console.warn("⚠️ duration column (may already exist):", error.message?.substring(0, 100));
     }
 
+    try {
+      await sql`
+        ALTER TABLE service_packages
+        ADD COLUMN IF NOT EXISTS hours INTEGER;
+      `;
+      console.log("✅ hours column added to service_packages");
+    } catch (error: any) {
+      console.warn("⚠️ hours column (may already exist):", error.message?.substring(0, 100));
+    }
+
     // Create system_notifications table
     await sql`
       CREATE TABLE IF NOT EXISTS system_notifications (
