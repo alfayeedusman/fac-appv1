@@ -149,6 +149,14 @@ const AppComponent = () => {
                   }
                 />
                 <Route
+                  path="/admin-app-version"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminAppVersion />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/profile"
                   element={
                     <ProtectedRoute>
