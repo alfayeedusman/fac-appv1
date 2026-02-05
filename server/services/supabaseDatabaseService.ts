@@ -987,9 +987,6 @@ class SupabaseDatabaseService {
         break;
     }
 
-    // Convert to ISO string for safe parameter binding
-    const startDateISO = startDate.toISOString();
-
     let userCount: any = { count: 0 };
     try {
       const result = await db.select({ count: count() }).from(schema.users);
@@ -1003,7 +1000,7 @@ class SupabaseDatabaseService {
       const result = await db
         .select({ count: count() })
         .from(schema.bookings)
-        .where(gte(schema.bookings.createdAt, startDateISO));
+        .where(gte(schema.bookings.createdAt, startDate));
       if (result && result[0]) bookingCount = result[0];
     } catch (e) {
       console.warn("⚠️ Failed to get booking count:", (e as any)?.message?.substring(0, 100));
@@ -1018,7 +1015,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             ne(schema.bookings.userId, null),
-            gte(schema.bookings.createdAt, startDateISO),
+            gte(schema.bookings.createdAt, startDate),
           ),
         );
       if (result && result[0]) onlineBookingCount = result[0];
