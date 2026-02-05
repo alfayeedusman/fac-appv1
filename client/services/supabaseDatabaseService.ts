@@ -1666,14 +1666,19 @@ class SupabaseDatabaseClient {
           response.status,
           response.statusText,
         );
-        const text = await response.text();
-        console.error("Response body:", text);
         return { success: false, users: [] };
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.warn("Failed to parse customers JSON:", parseError);
+        return { success: false, users: [] };
+      }
+
       info("✅ getCustomers result:", result);
-      return result;
+      return result || { success: false, users: [] };
     } catch (error) {
       console.error("❌ Database customers fetch failed:", error);
       return { success: false, users: [] };
