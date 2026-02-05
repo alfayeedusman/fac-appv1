@@ -987,6 +987,9 @@ class SupabaseDatabaseService {
         break;
     }
 
+    // Convert startDate to ISO string for SQL queries
+    const startDateISO = startDate.toISOString();
+
     const [userCount] = await db.select({ count: count() }).from(schema.users);
 
     const [bookingCount] = await db
