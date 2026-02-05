@@ -535,19 +535,16 @@ router.get("/reports/daily/:date", async (req, res) => {
     if (!db) {
       console.warn("⚠️ Database not initialized for daily report - returning fallback");
       return res.json({
-        success: true,
-        data: {
-          date: req.params.date,
-          totalSales: 0,
-          totalCash: 0,
-          totalCard: 0,
-          totalGcash: 0,
-          totalBank: 0,
-          totalExpenses: 0,
-          netIncome: 0,
-          transactionCount: 0,
-          expenseCount: 0,
-        },
+        date: req.params.date,
+        totalSales: 0,
+        totalCash: 0,
+        totalCard: 0,
+        totalGcash: 0,
+        totalBank: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+        expenseCount: 0,
       });
     }
 
@@ -559,20 +556,17 @@ router.get("/reports/daily/:date", async (req, res) => {
     if (isNaN(dateObj.getTime())) {
       console.error(`❌ Invalid date format: ${date}`);
       return res.json({
-        success: true,
-        data: {
-          error: "Invalid date format. Use YYYY-MM-DD",
-          date,
-          totalSales: 0,
-          totalCash: 0,
-          totalCard: 0,
-          totalGcash: 0,
-          totalBank: 0,
-          totalExpenses: 0,
-          netIncome: 0,
-          transactionCount: 0,
-          expenseCount: 0,
-        },
+        error: "Invalid date format. Use YYYY-MM-DD",
+        date,
+        totalSales: 0,
+        totalCash: 0,
+        totalCard: 0,
+        totalGcash: 0,
+        totalBank: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+        expenseCount: 0,
       });
     }
 
