@@ -90,6 +90,7 @@ import AdminBookingSettings from "./AdminBookingSettings";
 import AdminUserManagement from "./AdminUserManagement";
 import AdminCrewManagement from "./AdminCrewManagement";
 import AdminSettings from "./AdminSettings";
+import AdminAppVersion from "./AdminAppVersion";
 import CustomerHub from "@/components/CustomerHub";
 import SalesTransactions from "@/components/SalesTransactions";
 import BookingHub from "@/components/BookingHub";
