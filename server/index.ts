@@ -304,21 +304,29 @@ export const createServer = async () => {
       } catch (err) {
         console.error("Unhandled error in crew commission summary route:", err);
         if (!res.headersSent) {
-          res.json({
-            success: true,
-            summary: {
-              period: {
-                startDate: new Date().toISOString(),
-                endDate: new Date().toISOString(),
+          try {
+            const fallback = {
+              success: true,
+              summary: {
+                period: {
+                  startDate: new Date().toISOString(),
+                  endDate: new Date().toISOString(),
+                },
+                totalBookings: 0,
+                totalRevenue: 0,
+                totalCommission: 0,
+                crewCount: 0,
+                crew: [],
+                breakdown: [],
               },
-              totalBookings: 0,
-              totalRevenue: 0,
-              totalCommission: 0,
-              crewCount: 0,
-              crew: [],
-              breakdown: [],
-            },
-          });
+            };
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(fallback));
+          } catch (fallbackErr) {
+            console.error("Fallback error:", fallbackErr);
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ success: true }));
+          }
         }
       }
     },
