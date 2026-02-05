@@ -295,41 +295,9 @@ export const createServer = async () => {
     crewApiRoutes.updateCrewPayoutStatus,
   );
   app.get("/api/supabase/crew/payroll", crewApiRoutes.getCrewPayroll);
-  // Crew commission summary with safety wrapper
   app.get(
     "/api/supabase/crew/commission-summary",
-    async (req, res, next) => {
-      try {
-        await crewApiRoutes.getCrewCommissionSummary(req, res, next);
-      } catch (err) {
-        console.error("Unhandled error in crew commission summary route:", err);
-        if (!res.headersSent) {
-          try {
-            const fallback = {
-              success: true,
-              summary: {
-                period: {
-                  startDate: new Date().toISOString(),
-                  endDate: new Date().toISOString(),
-                },
-                totalBookings: 0,
-                totalRevenue: 0,
-                totalCommission: 0,
-                crewCount: 0,
-                crew: [],
-                breakdown: [],
-              },
-            };
-            res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify(fallback));
-          } catch (fallbackErr) {
-            console.error("Fallback error:", fallbackErr);
-            res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({ success: true }));
-          }
-        }
-      }
-    },
+    crewApiRoutes.getCrewCommissionSummary,
   );
   app.post("/api/supabase/crew/seed", crewApiRoutes.seedCrew); // For development only
 
