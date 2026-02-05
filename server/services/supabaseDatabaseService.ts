@@ -995,7 +995,7 @@ class SupabaseDatabaseService {
     const [bookingCount] = await db
       .select({ count: count() })
       .from(schema.bookings)
-      .where(gte(schema.bookings.createdAt, startDate));
+      .where(gte(schema.bookings.createdAt, startDateISO));
 
     // Count online bookings (where userId IS NOT NULL - registered customers)
     const [onlineBookingCount] = await db
@@ -1004,7 +1004,7 @@ class SupabaseDatabaseService {
       .where(
         and(
           ne(schema.bookings.userId, null),
-          gte(schema.bookings.createdAt, startDate),
+          gte(schema.bookings.createdAt, startDateISO),
         ),
       );
 
@@ -1019,7 +1019,7 @@ class SupabaseDatabaseService {
       .where(
         and(
           eq(schema.bookings.status, "pending"),
-          gte(schema.bookings.createdAt, startDate),
+          gte(schema.bookings.createdAt, startDateISO),
         ),
       );
 
@@ -1032,7 +1032,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.bookings.status, "completed"),
-            gte(schema.bookings.createdAt, startDate),
+            gte(schema.bookings.createdAt, startDateISO),
           ),
         );
       if (result.length > 0) {
@@ -1054,7 +1054,7 @@ class SupabaseDatabaseService {
         .where(
           and(
             eq(schema.posTransactions.status, "completed"),
-            gte(schema.posTransactions.createdAt, startDate),
+            gte(schema.posTransactions.createdAt, startDateISO),
           ),
         );
       if (result.length > 0) {
@@ -1077,7 +1077,7 @@ class SupabaseDatabaseService {
       .where(
         and(
           eq(schema.bookings.status, "completed"),
-          gte(schema.bookings.createdAt, startDate),
+          gte(schema.bookings.createdAt, startDateISO),
         ),
       );
 
@@ -1088,7 +1088,7 @@ class SupabaseDatabaseService {
       .where(
         and(
           sql`${schema.posTransactionItems.itemName} LIKE '%wash%' OR ${schema.posTransactionItems.itemName} LIKE '%Wash%'`,
-          gte(schema.posTransactionItems.createdAt, startDate),
+          gte(schema.posTransactionItems.createdAt, startDateISO),
         ),
       );
 
@@ -1098,7 +1098,7 @@ class SupabaseDatabaseService {
     const [expenseResult] = await db
       .select({ totalExpenses: sql<string>`SUM(${schema.posExpenses.amount})` })
       .from(schema.posExpenses)
-      .where(gte(schema.posExpenses.createdAt, startDate));
+      .where(gte(schema.posExpenses.createdAt, startDateISO));
 
     const totalExpenses = parseFloat(expenseResult.totalExpenses || "0");
     const netIncome = totalRevenue - totalExpenses;
