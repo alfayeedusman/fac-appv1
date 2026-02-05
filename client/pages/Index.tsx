@@ -1,259 +1,164 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Zap, Droplets, Clock, Smartphone, Moon, Sun } from "lucide-react";
 import { authService } from "@/services/authService";
-import {
-  Car,
-  Droplets,
-  MapPin,
-  Star,
-  Shield,
-  Clock,
-  Users,
-  TrendingUp,
-  ArrowRight,
-} from "lucide-react";
 
 export default function Index() {
+  const [isDark, setIsDark] = useState(false);
   const isAuthenticated = authService.isAuthenticated();
 
-  const features = [
-    {
-      icon: Car,
-      title: "Professional Car Care",
-      description: "Expert washing, detailing, and coating services",
-    },
-    {
-      icon: Droplets,
-      title: "Quality Products",
-      description: "Premium chemicals and materials for best results",
-    },
-    {
-      icon: MapPin,
-      title: "Multiple Locations",
-      description: "Convenient branches across the city",
-    },
-    {
-      icon: Clock,
-      title: "Quick Service",
-      description: "Fast turnaround without compromising quality",
-    },
-    {
-      icon: Users,
-      title: "Expert Team",
-      description: "Trained professionals with years of experience",
-    },
-    {
-      icon: Star,
-      title: "Customer Satisfaction",
-      description: "Highly rated by thousands of satisfied customers",
-    },
-  ];
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const isDarkMode = savedTheme === "dark" || 
+      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setIsDark(isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
-  const services = [
-    {
-      name: "Car Wash",
-      description: "Professional exterior and interior cleaning",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      name: "Auto Detailing",
-      description: "Complete restoration and protection services",
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      name: "Graphene Coating",
-      description: "Long-lasting protective coating application",
-      color: "from-amber-500 to-orange-500",
-    },
-    {
-      name: "Maintenance",
-      description: "Regular care and preservation programs",
-      color: "from-green-500 to-emerald-500",
-    },
-  ];
+  const toggleTheme = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    localStorage.setItem("theme", newIsDark ? "dark" : "light");
+    if (newIsDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-fac-orange-50/30 to-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-fac-orange-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-fac-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">FAC</span>
-            </div>
-            <span className="font-bold text-lg text-foreground">Fayeed Auto Care</span>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col items-center justify-center px-4 py-8">
+      {/* Theme Toggle */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-6 right-6 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+      >
+        {isDark ? (
+          <Sun className="w-6 h-6 text-yellow-500" />
+        ) : (
+          <Moon className="w-6 h-6 text-gray-600" />
+        )}
+      </button>
 
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <Link to="/admin-dashboard">
-                <Button className="bg-fac-orange-500 hover:bg-fac-orange-600">
-                  Dashboard
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" className="border-fac-orange-200">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="bg-fac-orange-500 hover:bg-fac-orange-600">
-                    Get Started
-                  </Button>
-                </Link>
-              </>
-            )}
+      {/* Logo */}
+      <div className="mb-8 text-center relative">
+        <div className="inline-block relative">
+          <div className="text-4xl md:text-5xl font-black text-center" style={{ color: "#f97316" }}>
+            FAYEED
+          </div>
+          <div className="text-3xl md:text-4xl font-black text-center text-gray-900 dark:text-white">
+            AUTOCARE
+          </div>
+          <div className="absolute -top-2 -right-8 bg-fac-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+            Premium
+          </div>
+          <div className="flex justify-center gap-1 mt-1">
+            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
+            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
+            <div className="w-8 h-1 bg-fac-orange-500 rounded"></div>
           </div>
         </div>
-      </nav>
+      </div>
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="inline-block">
-              <span className="px-4 py-2 rounded-full bg-fac-orange-100 text-fac-orange-700 text-sm font-semibold">
-                Premium Auto Care Solutions
-              </span>
-            </div>
+      {/* Main Heading */}
+      <div className="text-center mb-6 max-w-2xl">
+        <h1 className="text-3xl md:text-5xl font-bold mb-2">
+          <span style={{ color: "#f97316" }}>Smart Auto Care</span>
+          <span className="text-gray-900 dark:text-white"> for</span>
+        </h1>
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-600 dark:text-gray-300 mb-4">
+          Modern Drivers
+        </h1>
+      </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              Your Vehicle Deserves the{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fac-orange-500 to-orange-600">
-                Best Care
-              </span>
-            </h1>
+      {/* Badge */}
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+          <span className="text-white text-xs font-bold">✓</span>
+        </div>
+        <span className="text-gray-700 dark:text-gray-300 font-semibold">
+          Premium Quality • Affordable Prices
+        </span>
+      </div>
 
-            <p className="text-lg text-muted-foreground max-w-lg">
-              Experience premium car washing, professional detailing, and advanced protective coatings at Fayeed Auto Care. Trust our expert team for exceptional results.
-            </p>
+      {/* Description */}
+      <p className="text-center text-gray-600 dark:text-gray-400 text-lg max-w-xl mb-12">
+        Experience the future of car care with our advanced technology and expert service in Zamboanga City
+      </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              {!isAuthenticated && (
-                <>
-                  <Link to="/signup" className="flex">
-                    <Button size="lg" className="bg-fac-orange-500 hover:bg-fac-orange-600 text-lg">
-                      Book Now <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </Link>
-                  <Link to="/login" className="flex">
-                    <Button size="lg" variant="outline" className="border-fac-orange-200 text-lg">
-                      Sign In
-                    </Button>
-                  </Link>
-                </>
-              )}
-              {isAuthenticated && (
-                <Link to="/admin-dashboard" className="flex">
-                  <Button size="lg" className="bg-fac-orange-500 hover:bg-fac-orange-600 text-lg">
-                    Go to Dashboard <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-              )}
-            </div>
+      {/* Features */}
+      <div className="grid grid-cols-3 gap-8 mb-12 w-full max-w-lg">
+        <div className="text-center">
+          <div className="flex justify-center mb-3">
+            <Droplets className="w-8 h-8" style={{ color: "#f97316" }} />
           </div>
+          <p className="font-bold text-gray-900 dark:text-white">Premium</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Car Wash</p>
+        </div>
 
-          <div className="relative h-96 md:h-full min-h-96">
-            <div className="absolute inset-0 bg-gradient-to-r from-fac-orange-500/20 to-orange-500/20 rounded-3xl"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-6xl">🚗</div>
-            </div>
+        <div className="text-center">
+          <div className="flex justify-center mb-3">
+            <Clock className="w-8 h-8" style={{ color: "#a855f7" }} />
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Why Choose Fayeed Auto Care?
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            We combine expertise, quality products, and dedication to deliver outstanding results for your vehicle.
-          </p>
+          <p className="font-bold text-gray-900 dark:text-white">Quick</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Service</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, idx) => {
-            const Icon = feature.icon;
-            return (
-              <Card key={idx} className="border-fac-orange-100 hover:border-fac-orange-300 transition">
-                <CardContent className="pt-6">
-                  <Icon className="w-12 h-12 text-fac-orange-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Our Services
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive solutions for every aspect of your vehicle's care and maintenance.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {services.map((service, idx) => (
-            <Card key={idx} className="overflow-hidden border-0 hover:shadow-lg transition">
-              <div className={`h-2 bg-gradient-to-r ${service.color}`}></div>
-              <CardContent className="pt-6">
-                <h3 className="text-2xl font-bold text-foreground mb-2">
-                  {service.name}
-                </h3>
-                <p className="text-muted-foreground text-lg">
-                  {service.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      {!isAuthenticated && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="bg-gradient-to-r from-fac-orange-500 to-orange-600 rounded-3xl p-12 text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Ready to Transform Your Vehicle?
-            </h2>
-            <p className="text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of satisfied customers and experience premium auto care service.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup">
-                <Button size="lg" variant="secondary" className="text-lg">
-                  Book a Service <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/20 text-lg">
-                  Sign In
-                </Button>
-              </Link>
-            </div>
+        <div className="text-center">
+          <div className="flex justify-center mb-3">
+            <Smartphone className="w-8 h-8" style={{ color: "#3b82f6" }} />
           </div>
-        </section>
-      )}
+          <p className="font-bold text-gray-900 dark:text-white">Smart</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Booking</p>
+        </div>
+      </div>
+
+      {/* CTA Buttons */}
+      <div className="w-full max-w-sm space-y-3">
+        {!isAuthenticated ? (
+          <>
+            <Link to="/signup" className="w-full block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg flex items-center justify-center gap-2">
+                <span>✓</span> Get Started Free <Zap className="w-4 h-4" />
+              </Button>
+            </Link>
+
+            <Link to="/login" className="w-full block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg">
+                Login →
+              </Button>
+            </Link>
+
+            <Link to="/guest-booking" className="w-full block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg">
+                Book Now →
+              </Button>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/dashboard" className="w-full block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg">
+                Go to Dashboard →
+              </Button>
+            </Link>
+
+            <Link to="/booking" className="w-full block">
+              <Button className="w-full bg-fac-orange-500 hover:bg-fac-orange-600 text-white font-bold py-3 rounded-full text-lg">
+                Book a Service →
+              </Button>
+            </Link>
+          </>
+        )}
+      </div>
 
       {/* Footer */}
-      <footer className="border-t border-fac-orange-100 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-muted-foreground">
-          <p>&copy; 2024 Fayeed Auto Care. All rights reserved.</p>
-        </div>
-      </footer>
+      <div className="mt-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+        <p>&copy; 2024 Fayeed Auto Care. All rights reserved.</p>
+      </div>
     </div>
   );
 }
