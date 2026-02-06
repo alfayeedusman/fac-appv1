@@ -79,12 +79,17 @@ class SupabaseDatabaseService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    const db = await this.ensureConnection();
+    let db = await this.ensureConnection();
 
     if (!db) {
-      throw new Error(
-        "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
-      );
+      // Try one more time with forced reconnection
+      const { getDatabase } = await import("../database/connection");
+      db = await getDatabase();
+      if (!db) {
+        throw new Error(
+          "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
+        );
+      }
     }
 
     try {
@@ -113,6 +118,7 @@ class SupabaseDatabaseService {
       });
 
       // If it's a connection error, reset connection for next attempt
+      this.db = null;
       this.handleConnectionError(error);
       throw error;
     }
