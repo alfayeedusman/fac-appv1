@@ -79,38 +79,49 @@ class SupabaseDatabaseService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    let db = await this.ensureConnection();
+    const db = await this.ensureConnection();
 
     if (!db) {
-      // Try one more time with forced reconnection
-      const { getDatabase } = await import("../database/connection");
-      db = await getDatabase();
-      if (!db) {
-        throw new Error(
-          "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
-        );
-      }
+      throw new Error(
+        "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
+      );
     }
 
     try {
-      // Try exact match first for performance
-      const [user] = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, email))
-        .limit(1);
+      console.log("🔍 Querying user by email:", email);
 
-      if (user) return user;
+      // Use raw SQL with the underlying postgres client for more reliable queries
+      const { sql } = await import("../database/connection");
+      if (!sql) {
+        throw new Error("Postgres client not available");
+      }
 
-      // If no exact match, try case-insensitive search (fallback)
-      const lowercaseEmail = email.toLowerCase();
-      const result = await db.select().from(schema.users);
+      const rows = await sql`
+        SELECT
+          id, email, full_name as "fullName", password, role,
+          contact_number as "contactNumber", address,
+          default_address as "defaultAddress", car_unit as "carUnit",
+          car_plate_number as "carPlateNumber", car_type as "carType",
+          branch_location as "branchLocation", profile_image as "profileImage",
+          is_active as "isActive", email_verified as "emailVerified",
+          loyalty_points as "loyaltyPoints", subscription_status as "subscriptionStatus",
+          subscription_expiry as "subscriptionExpiry", crew_skills as "crewSkills",
+          crew_status as "crewStatus", current_assignment as "currentAssignment",
+          crew_rating as "crewRating", crew_experience as "crewExperience",
+          last_login_at as "lastLoginAt", can_view_all_branches as "canViewAllBranches",
+          created_at as "createdAt", updated_at as "updatedAt"
+        FROM users
+        WHERE email = ${email.toLowerCase()}
+        LIMIT 1
+      `;
 
-      const caseInsensitiveUser = result.find(
-        (u) => u.email.toLowerCase() === lowercaseEmail,
-      );
+      if (rows.length === 0) {
+        console.log("❌ User not found:", email);
+        return null;
+      }
 
-      return caseInsensitiveUser || null;
+      console.log("✅ User found:", email);
+      return rows[0] as User;
     } catch (error) {
       console.error("❌ Error fetching user from database", {
         email,
