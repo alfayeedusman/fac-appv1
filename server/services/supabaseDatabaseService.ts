@@ -1097,13 +1097,21 @@ class SupabaseDatabaseService {
     activeCustomers: number;
     activeGroups: number;
   }> {
-    if (!this.db) throw new Error("Database not connected");
-
     try {
+      const db = await this.ensureConnection();
+      if (!db) {
+        return {
+          onlineCrew: 0,
+          busyCrew: 0,
+          activeCustomers: 0,
+          activeGroups: 0,
+        };
+      }
+
       // Count online crew (active status within last 10 minutes)
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-      const [onlineCrewResult] = await this.db
+      const [onlineCrewResult] = await db
         .select({ count: count() })
         .from(schema.crewStatus)
         .where(
@@ -1115,7 +1123,7 @@ class SupabaseDatabaseService {
         );
 
       // Count busy crew
-      const [busyCrewResult] = await this.db
+      const [busyCrewResult] = await db
         .select({ count: count() })
         .from(schema.crewStatus)
         .where(
@@ -1128,7 +1136,7 @@ class SupabaseDatabaseService {
       // Count active customers (sessions active within last 30 minutes)
       const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
-      const [activeCustomersResult] = await this.db
+      const [activeCustomersResult] = await db
         .select({ count: count() })
         .from(schema.customerSessions)
         .where(
@@ -1139,7 +1147,7 @@ class SupabaseDatabaseService {
         );
 
       // Count active crew groups (groups with at least one online member)
-      const [activeGroupsResult] = await this.db
+      const [activeGroupsResult] = await db
         .select({ count: count() })
         .from(schema.crewGroups)
         .where(
