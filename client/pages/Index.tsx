@@ -44,11 +44,11 @@ export default function Index() {
       </button>
 
       {/* Logo */}
-      <div className="mb-8 text-center relative">
+      <div className="mb-6 text-center relative">
         <img
           src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2F4c2591f24e704059a0760c169fa7d698?format=webp&width=800&height=1200"
           alt="Fayeed Autocare Logo"
-          className="h-32 md:h-40 object-contain mx-auto"
+          className="h-20 md:h-24 object-contain mx-auto"
         />
       </div>
 
