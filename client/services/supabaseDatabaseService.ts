@@ -596,7 +596,7 @@ class SupabaseDatabaseClient {
     // Connection will be tested during the actual request
 
     try {
-      const url = `${this.baseUrl}/supabase/auth/login`;
+      const url = `${this.baseUrl}/auth/login`;
       log("🔎 Login request URL:", url);
 
       const ac = new AbortController();
