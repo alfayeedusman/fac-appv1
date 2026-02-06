@@ -102,7 +102,7 @@ class SupabaseDatabaseService {
           subscription_expiry as "subscriptionExpiry", crew_skills as "crewSkills",
           crew_status as "crewStatus", current_assignment as "currentAssignment",
           crew_rating as "crewRating", crew_experience as "crewExperience",
-          last_login_at as "lastLoginAt", can_view_all_branches as "canViewAllBranches",
+          can_view_all_branches as "canViewAllBranches",
           created_at as "createdAt", updated_at as "updatedAt"
         FROM users
         WHERE email = ${email.toLowerCase()}
