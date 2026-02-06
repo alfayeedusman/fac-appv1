@@ -79,19 +79,13 @@ class SupabaseDatabaseService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    const db = await this.ensureConnection();
-
-    if (!db) {
-      throw new Error(
-        "Database not connected. Please check your SUPABASE_DATABASE_URL environment variable.",
-      );
-    }
-
     try {
       console.log("🔍 Querying user by email:", email);
 
       // Use raw SQL with the underlying postgres client for more reliable queries
-      const { sql } = await import("../database/connection");
+      const { getSqlClient } = await import("../database/connection");
+      const sql = await getSqlClient();
+
       if (!sql) {
         throw new Error("Postgres client not available");
       }
@@ -128,7 +122,7 @@ class SupabaseDatabaseService {
         error: error instanceof Error ? error.message : String(error),
       });
 
-      // If it's a connection error, reset connection for next attempt
+      // Reset connection on error for next attempt
       this.db = null;
       this.handleConnectionError(error);
       throw error;
