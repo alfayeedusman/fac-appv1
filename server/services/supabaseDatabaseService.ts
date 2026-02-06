@@ -294,13 +294,46 @@ class SupabaseDatabaseService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    const db = await this.ensureConnection();
-    if (!db) throw new Error("Database not connected");
+    try {
+      console.log("🔍 Fetching all users with raw SQL...");
 
-    return await db
-      .select()
-      .from(schema.users)
-      .orderBy(desc(schema.users.createdAt));
+      // Use raw SQL with the underlying postgres client for more reliable queries
+      const { getSqlClient } = await import("../database/connection");
+      const sql = await getSqlClient();
+
+      if (!sql) {
+        throw new Error("Postgres client not available");
+      }
+
+      const rows = await sql`
+        SELECT
+          id, email, full_name as "fullName", password, role,
+          contact_number as "contactNumber", address,
+          default_address as "defaultAddress", car_unit as "carUnit",
+          car_plate_number as "carPlateNumber", car_type as "carType",
+          branch_location as "branchLocation", profile_image as "profileImage",
+          is_active as "isActive", email_verified as "emailVerified",
+          loyalty_points as "loyaltyPoints", subscription_status as "subscriptionStatus",
+          subscription_expiry as "subscriptionExpiry", crew_skills as "crewSkills",
+          crew_status as "crewStatus", current_assignment as "currentAssignment",
+          crew_rating as "crewRating", crew_experience as "crewExperience",
+          can_view_all_branches as "canViewAllBranches",
+          created_at as "createdAt", updated_at as "updatedAt"
+        FROM users
+        ORDER BY created_at DESC
+      `;
+
+      console.log(`✅ Retrieved ${rows.length} total users`);
+      return rows as User[];
+    } catch (error) {
+      console.error("❌ Error fetching all users", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      this.db = null;
+      this.handleConnectionError(error);
+      throw error;
+    }
   }
 
   // === BOOKING MANAGEMENT ===
