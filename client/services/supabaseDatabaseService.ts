@@ -809,7 +809,7 @@ class SupabaseDatabaseClient {
 
     // Try primary URL first
     try {
-      const primaryUrl = `${this.baseUrl}/supabase/auth/register`;
+      const primaryUrl = `${this.baseUrl}/auth/register`;
       return await tryRegister(primaryUrl);
     } catch (primaryError) {
       warn("⚠️ Primary registration URL failed, trying fallback...");
