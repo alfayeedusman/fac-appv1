@@ -393,13 +393,13 @@ export default function SignUp() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-black text-foreground mb-2">
-              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                Fayeed Auto Care
-              </span>
-            </h1>
-            <h2 className="text-xl font-black text-foreground">
+          <div className="flex-1">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2F4c2591f24e704059a0760c169fa7d698?format=webp&width=800&height=1200"
+              alt="Fayeed Autocare Logo"
+              className="h-16 object-contain mb-2"
+            />
+            <h2 className="text-lg font-black text-foreground">
               Join{" "}
               <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
                 FAC 2026
