@@ -397,7 +397,7 @@ export default function SignUp() {
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2F4c2591f24e704059a0760c169fa7d698?format=webp&width=800&height=1200"
               alt="Fayeed Autocare Logo"
-              className="h-16 object-contain mb-2"
+              className="h-12 object-contain mb-2"
             />
             <h2 className="text-lg font-black text-foreground">
               Join{" "}
