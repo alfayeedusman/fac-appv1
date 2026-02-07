@@ -853,9 +853,9 @@ export const fetchUserSubscription: RequestHandler = async (req, res) => {
 
     let user;
     if (userId) {
-      user = await neonDbService.getUserById(userId as string);
+      user = await supabaseDbService.getUserById(userId as string);
     } else {
-      user = await neonDbService.getUserByEmail(email as string);
+      user = await supabaseDbService.getUserByEmail(email as string);
     }
 
     if (!user) {
