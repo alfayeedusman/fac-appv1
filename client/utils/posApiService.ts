@@ -264,16 +264,24 @@ export async function saveExpense(
   expense: POSExpense
 ): Promise<{ expenseId: string; success: boolean }> {
   try {
+    console.log(`💰 Saving expense: ${expense.category} - ₱${expense.amount}`);
     const response = await fetch(`${API_BASE}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(expense),
     });
 
-    if (!response.ok) throw new Error("Failed to save expense");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to save expense: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to save expense`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Expense saved successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error saving expense:", error);
+    console.error("Error saving expense:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
