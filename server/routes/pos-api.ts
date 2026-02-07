@@ -662,6 +662,7 @@ router.post("/expenses", async (req, res) => {
       description,
       amount,
       paymentMethod,
+      moneySource,
       notes,
       recordedByInfo,
     } = req.body;
@@ -673,6 +674,8 @@ router.post("/expenses", async (req, res) => {
     }
 
     const expenseId = createId();
+    const expenseMoneySource = moneySource || "income"; // Default to "income"
+
     await db.insert(posExpenses).values({
       id: expenseId,
       posSessionId,
@@ -680,6 +683,7 @@ router.post("/expenses", async (req, res) => {
       description,
       amount: amount.toString(),
       paymentMethod: paymentMethod || "cash",
+      moneySource: expenseMoneySource,
       notes,
       recordedBy: recordedByInfo?.id || "unknown",
       recordedByName: recordedByInfo?.name || "Unknown",
