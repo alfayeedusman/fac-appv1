@@ -566,10 +566,8 @@ export default function POSKiosk() {
       });
       setShowPaymentModal(false);
 
-      // Wait a moment for database to save transaction, then refresh sales
-      setTimeout(() => {
-        loadTodaysSalesAndExpenses();
-      }, 500);
+      // Sales data will be updated automatically via Pusher
+      console.log("✅ Payment processed - Pusher will update sales data automatically");
     } catch (error) {
       console.error("Payment error:", error);
       notificationManager.error(
