@@ -736,7 +736,6 @@ router.get("/reports/daily/:date", async (req, res) => {
       }
 
       // Get bookings for the day (these are also sales)
-      const { bookings } = await import("../database/schema");
       bookingsData = await db
         .select()
         .from(bookings)
