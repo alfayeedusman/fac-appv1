@@ -1311,6 +1311,8 @@ export default function POSKiosk() {
           setCurrentSessionId(sessionId);
           setSessionLoaded(true);
           setShowOpeningModal(false);
+          // Refresh sales data after opening session
+          loadTodaysSalesAndExpenses();
         }}
         cashierInfo={{ id: cashierId, name: cashierName }}
         branchId={branchId}
