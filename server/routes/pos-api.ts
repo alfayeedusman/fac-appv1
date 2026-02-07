@@ -741,8 +741,8 @@ router.get("/reports/daily/:date", async (req, res) => {
         .from(posExpenses)
         .where(
           and(
-            gte(posExpenses.createdAt, startDateISO),
-            lte(posExpenses.createdAt, endDateISO),
+            gte(posExpenses.createdAt, startDate),
+            lte(posExpenses.createdAt, endDate),
           ),
         );
 
