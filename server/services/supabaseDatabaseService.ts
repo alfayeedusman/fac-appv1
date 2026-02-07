@@ -1458,40 +1458,23 @@ class SupabaseDatabaseService {
   // Service packages methods
   async getServicePackages(options?: { includeInactive?: boolean }) {
     try {
-      const { getSqlClient } = await import("../database/connection");
-      const sql = await getSqlClient();
-
-      if (!sql) {
+      const db = await this.ensureConnection();
+      if (!db) {
         console.warn("Database not initialized, returning fallback packages");
         return [];
       }
 
-      let query = `
-        SELECT
-          id, name, description, category, type,
-          base_price as "basePrice", currency,
-          duration_type as "durationType", duration, hours,
-          features, inclusions, exclusions, vehicle_types as "vehicleTypes",
-          car_price as "carPrice", motorcycle_price as "motorcyclePrice",
-          suv_price as "suvPrice", truck_price as "truckPrice",
-          image_url as "imageUrl", banner_url as "bannerUrl", color,
-          is_active as "isActive", is_popular as "isPopular",
-          is_featured as "isFeatured", available_branches as "availableBranches",
-          max_bookings_per_day as "maxBookingsPerDay",
-          max_bookings_per_month as "maxBookingsPerMonth",
-          min_advance_booking as "minAdvanceBooking",
-          max_advance_booking as "maxAdvanceBooking",
-          created_at as "createdAt", updated_at as "updatedAt"
-        FROM service_packages
-      `;
+      let query = db.select().from(schema.servicePackages);
 
       if (!options?.includeInactive) {
-        query += ` WHERE is_active = true`;
+        query = query.where(eq(schema.servicePackages.isActive, true));
       }
 
-      query += ` ORDER BY is_featured DESC, is_popular DESC, name ASC`;
-
-      const packages = await sql.unsafe(query);
+      const packages = await query.orderBy(
+        desc(schema.servicePackages.isFeatured),
+        desc(schema.servicePackages.isPopular),
+        asc(schema.servicePackages.name),
+      );
 
       console.log(
         `✅ Service packages retrieved: ${packages.length} packages found`,
@@ -1499,7 +1482,7 @@ class SupabaseDatabaseService {
       return packages || [];
     } catch (error) {
       console.error("Get service packages error:", error);
-      // Return empty array if table doesn't exist yet
+      // Return empty array if table doesn't exist or has issues
       return [];
     }
   }
