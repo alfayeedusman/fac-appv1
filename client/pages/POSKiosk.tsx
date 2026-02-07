@@ -149,17 +149,26 @@ export default function POSKiosk() {
   const loadTodaysSalesAndExpenses = async () => {
     try {
       const today = new Date().toISOString().split("T")[0];
+      console.log(`📊 Fetching sales report for ${today}...`);
       const report = await getDailyReportAPI(today);
-      setTodaysSales(report.totalSales);
-      setTodayExpenses(report.totalExpenses);
+      console.log(`✅ Sales report loaded:`, report);
+      setTodaysSales(report.totalSales || 0);
+      setTodayExpenses(report.totalExpenses || 0);
     } catch (error) {
       console.error("Error loading sales data:", error);
+      // Keep existing values on error
     }
   };
 
   useEffect(() => {
     loadTodaysSalesAndExpenses();
-    // Load once on mount - avoid continuous polling to prevent lag
+
+    // Set up polling to refresh sales data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadTodaysSalesAndExpenses();
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   useEffect(() => {
