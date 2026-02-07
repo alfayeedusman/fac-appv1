@@ -271,6 +271,16 @@ export default function POSKiosk() {
 
   const addToCart = async (product: Product) => {
     try {
+      // Check if POS session is opened
+      if (!currentSessionId) {
+        notificationManager.error(
+          "POS Not Opened",
+          "You must open POS first before adding items to cart. The opening modal should appear automatically."
+        );
+        setShowOpeningModal(true);
+        return;
+      }
+
       if (!product || !product.id) {
         console.error("Invalid product:", product);
         return;
