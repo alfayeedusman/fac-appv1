@@ -529,6 +529,10 @@ export default function POSKiosk() {
 
       console.log(`✅ Transaction saved successfully:`, transactionResult);
 
+      // Immediately refresh sales data to show the transaction right away
+      console.log("📊 Immediately refreshing sales data after transaction...");
+      await loadTodaysSalesAndExpenses();
+
       // Handle receipt printing based on settings
       try {
         const receiptData = {
@@ -584,7 +588,7 @@ export default function POSKiosk() {
       });
       setShowPaymentModal(false);
 
-      // Sales data will be updated automatically via Pusher
+      // Sales data will be updated automatically via Pusher for real-time updates
       console.log("✅ Payment processed - Pusher will update sales data automatically");
     } catch (error) {
       console.error("Payment error:", error);
