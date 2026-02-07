@@ -279,6 +279,7 @@ class RealtimeService {
       privatePublic.bind('booking.created', (data: any) => this.emit('booking.created', data));
       privatePublic.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
       privatePublic.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      privatePublic.bind('pos.expense.created', (data: any) => this.emit('pos.expense.created', data));
       privatePublic.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
       this.pusherChannels.push(privatePublic);
 
