@@ -204,6 +204,8 @@ export async function saveTransaction(
 ): Promise<{ transactionId: string; success: boolean }> {
   try {
     const transactionNumber = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`💳 Saving transaction: ${transactionNumber}, Amount: ₱${transaction.totalAmount}`);
+
     const response = await fetch(`${API_BASE}/transactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -213,10 +215,17 @@ export async function saveTransaction(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to save transaction");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to save transaction: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to save transaction`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Transaction saved successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error saving transaction:", error);
+    console.error("Error saving transaction:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
