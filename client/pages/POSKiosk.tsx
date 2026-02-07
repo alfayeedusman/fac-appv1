@@ -540,6 +540,27 @@ export default function POSKiosk() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-4 font-display">
+      {/* POS Status Banner */}
+      {!currentSessionId && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-red-600 animate-pulse" />
+              <div>
+                <h3 className="font-bold text-red-900">POS Not Opened</h3>
+                <p className="text-sm text-red-700">You must open a POS session before using this kiosk. Opening balance is required (zero is acceptable).</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowOpeningModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white whitespace-nowrap"
+            >
+              Open POS Now
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
         <div className="glass rounded-2xl shadow-xl border border-white/50 p-6 mb-8 hover-lift">
