@@ -897,7 +897,6 @@ export const posTransactions = pgTable("pos_transactions", {
 
   // Location and staff
   branchId: text("branch_id").notNull(),
-  posSessionId: text("pos_session_id"), // Link to POS session
   cashierId: text("cashier_id").notNull(),
   cashierName: varchar("cashier_name", { length: 255 }).notNull(),
 
