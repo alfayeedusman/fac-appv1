@@ -802,6 +802,26 @@ export const updateSubscription: RequestHandler = async (req, res) => {
       email: updatedUser.email,
     });
 
+    // Emit subscription.upgraded event for real-time dashboard update
+    (async () => {
+      try {
+        await triggerPusherEvent(
+          ["public-realtime", "private-public-realtime"],
+          "subscription.upgraded",
+          {
+            userId,
+            newStatus,
+            oldStatus: updatedUser.subscriptionStatus,
+            email: updatedUser.email,
+            timestamp: new Date(),
+          }
+        );
+        console.log("✅ subscription.upgraded event emitted");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit subscription.upgraded event:", err);
+      }
+    })();
+
     res.json({
       success: true,
       user: updatedUser,
