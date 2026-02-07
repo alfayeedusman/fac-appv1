@@ -380,6 +380,7 @@ router.post("/transactions", async (req, res) => {
       }
     }
 
+    console.log(`✅ Transaction saved successfully: ${transactionId}`);
     res.json({
       success: true,
       transactionId,
@@ -392,13 +393,13 @@ router.post("/transactions", async (req, res) => {
         const payload = {
           transactionId,
           transactionNumber,
-          totalAmount,
+          totalAmount: Number(totalAmount),
           paymentMethod,
-          branchId,
+          branchId: branchId || "default",
           cashierInfo,
           timestamp: new Date().toISOString(),
         };
-        console.log(`🚀 Emitting pos.transaction.created event with payload:`, payload);
+        console.log(`🚀 Emitting pos.transaction.created event with payload:`, JSON.stringify(payload));
 
         // Broadcast to public and branch channels (also private versions)
         const results = await Promise.all([
