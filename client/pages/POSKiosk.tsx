@@ -153,8 +153,19 @@ export default function POSKiosk() {
       console.log(`📊 Fetching sales report for ${today}...`);
       const report = await getDailyReportAPI(today);
       console.log(`✅ Sales report loaded:`, report);
+      console.log(`   Total Sales: ₱${report.totalSales}`);
+      console.log(`   Total Expenses: ₱${report.totalExpenses}`);
+      console.log(`   Net Income: ₱${report.totalSales - report.totalExpenses}`);
+      console.log(`   Transaction Count: ${report.transactionCount}`);
+
       setTodaysSales(report.totalSales || 0);
       setTodayExpenses(report.totalExpenses || 0);
+
+      // Log the state update
+      console.log(`📈 Sales state updated:`, {
+        todaysSales: report.totalSales || 0,
+        todayExpenses: report.totalExpenses || 0
+      });
     } catch (error) {
       console.error("Error loading sales data:", error);
       // Keep existing values on error
