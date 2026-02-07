@@ -360,6 +360,7 @@ router.post("/transactions", async (req, res) => {
       changeAmount,
       cashierInfo,
       branchId,
+      posSessionId, // Session ID to link transaction to session
     } = req.body;
 
     console.log("📊 Transaction details:", {
