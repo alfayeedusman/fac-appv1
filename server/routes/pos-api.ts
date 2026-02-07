@@ -75,7 +75,6 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
     const { cashierId } = req.params;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
 
     try {
       const result = await db
@@ -84,7 +83,7 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
         .where(
           and(
             eq(posSessions.cashierId, cashierId),
-            gte(posSessions.sessionDate, todayISO),
+            gte(posSessions.sessionDate, today),
             eq(posSessions.status, "open"),
           ),
         )
