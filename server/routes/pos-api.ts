@@ -359,7 +359,7 @@ router.post("/transactions", async (req, res) => {
 // Get Transactions by Date
 router.get("/transactions/:date", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
