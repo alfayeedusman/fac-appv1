@@ -108,11 +108,18 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
   try {
     const db = await getDatabase();
     if (!db) {
+      console.error("❌ Database not initialized for closing session");
       return res.status(500).json({ error: "Database not initialized" });
     }
 
     const { sessionId } = req.params;
     const { actualCash, actualDigital, remittanceNotes } = req.body;
+
+    console.log(`🔒 Attempting to close POS session: ${sessionId}`, {
+      actualCash,
+      actualDigital,
+      remittanceNotes,
+    });
 
     // Fetch session
     const sessionResult = await db
@@ -123,8 +130,11 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     const session = sessionResult[0];
     if (!session) {
+      console.error(`❌ Session not found: ${sessionId}`);
       return res.status(404).json({ error: "Session not found" });
     }
+
+    console.log(`✅ Session found, opening balance: ₱${session.openingBalance}`);
 
     // Get all transactions for this session
     const transactions = await db
