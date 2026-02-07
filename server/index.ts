@@ -367,6 +367,11 @@ export const createServer = async () => {
   app.use("/api/cms", cmsApiRoutes);
   console.log("🎨 CMS API routes registered successfully");
 
+  // ============= REAL-TIME API (Pusher, WebSockets, etc.) =============
+  console.log("🔌 Registering Real-time API routes...");
+  app.use("/api/realtime", realtimeApiRoutes);
+  console.log("🔌 Real-time API routes registered successfully");
+
   // Fallback handler for SPA routing - MUST BE LAST
   // In production, serve built React app
   if (process.env.NODE_ENV === "production") {
