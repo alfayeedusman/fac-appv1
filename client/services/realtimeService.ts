@@ -282,8 +282,13 @@ class RealtimeService {
       const privatePublic = this.pusher.subscribe('private-public-realtime');
       privatePublic.bind('booking.created', (data: any) => this.emit('booking.created', data));
       privatePublic.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      privatePublic.bind('subscription.created', (data: any) => this.emit('subscription.created', data));
+      privatePublic.bind('subscription.upgraded', (data: any) => this.emit('subscription.upgraded', data));
       privatePublic.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
       privatePublic.bind('pos.expense.created', (data: any) => this.emit('pos.expense.created', data));
+      privatePublic.bind('user.created', (data: any) => this.emit('user.created', data));
+      privatePublic.bind('notification.created', (data: any) => this.emit('notification.created', data));
+      privatePublic.bind('inventory.created', (data: any) => this.emit('inventory.created', data));
       privatePublic.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
       this.pusherChannels.push(privatePublic);
 
