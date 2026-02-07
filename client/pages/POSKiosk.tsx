@@ -1321,9 +1321,15 @@ export default function POSKiosk() {
         isOpen={showClosingModal}
         onClose={() => setShowClosingModal(false)}
         onSessionClosed={() => {
-          setCurrentSessionId(null);
-          setSessionLoaded(false);
-          navigate("/admin-dashboard");
+          // Refresh sales data before navigating
+          loadTodaysSalesAndExpenses().then(() => {
+            setCurrentSessionId(null);
+            setSessionLoaded(false);
+            // Delay navigation slightly to ensure data is updated
+            setTimeout(() => {
+              navigate("/admin-dashboard");
+            }, 500);
+          });
         }}
         sessionId={currentSessionId || ""}
         openingBalance={openingBalance}
