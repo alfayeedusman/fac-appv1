@@ -162,14 +162,37 @@ export default function POSKiosk() {
   };
 
   useEffect(() => {
+    // Load initial sales data
     loadTodaysSalesAndExpenses();
 
-    // Set up polling to refresh sales data every 30 seconds
-    const refreshInterval = setInterval(() => {
-      loadTodaysSalesAndExpenses();
-    }, 30000);
+    // Set up Pusher real-time subscriptions for live updates
+    console.log("🔌 Setting up Pusher subscriptions for POS Kiosk...");
 
-    return () => clearInterval(refreshInterval);
+    // Subscribe to POS transaction events (real-time sales)
+    const unsubscribePOSTransaction = realtimeService.subscribe("pos.transaction.created", (data: any) => {
+      console.log("📈 New POS transaction via Pusher:", data);
+      // Refresh sales data when new transaction is created
+      loadTodaysSalesAndExpenses();
+    });
+
+    // Subscribe to booking creation events (also tracked as sales)
+    const unsubscribeBooking = realtimeService.subscribe("booking.created", (data: any) => {
+      console.log("📅 New booking via Pusher:", data);
+      // Refresh sales data when new booking is created
+      loadTodaysSalesAndExpenses();
+    });
+
+    // Subscribe to inventory updates
+    const unsubscribeInventory = realtimeService.subscribe("inventory.updated", (data: any) => {
+      console.log("📦 Inventory updated via Pusher:", data);
+    });
+
+    return () => {
+      // Unsubscribe from all Pusher events when component unmounts
+      unsubscribePOSTransaction();
+      unsubscribeBooking();
+      unsubscribeInventory();
+    };
   }, []);
 
   useEffect(() => {
