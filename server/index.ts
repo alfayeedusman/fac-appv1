@@ -15,6 +15,7 @@ import * as gamificationApiRoutes from "./routes/gamification-api";
 import imagesApiRoutes from "./routes/images-api";
 import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
+import realtimeApiRoutes from "./routes/realtime-api";
 import appVersionRoutes from "./routes/appVersion";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
