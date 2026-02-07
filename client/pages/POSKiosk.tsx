@@ -75,6 +75,7 @@ export default function POSKiosk() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
