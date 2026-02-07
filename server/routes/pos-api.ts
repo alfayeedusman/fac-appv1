@@ -689,6 +689,7 @@ router.get("/reports/daily/:date", async (req, res) => {
 
     try {
       // Get POS transactions for the day
+      console.log(`🔍 Querying POS transactions...`);
       posTransactionsData = await db
         .select()
         .from(posTransactions)
@@ -701,6 +702,15 @@ router.get("/reports/daily/:date", async (req, res) => {
         );
 
       console.log(`✅ Found ${posTransactionsData.length} POS transactions`);
+      if (posTransactionsData.length > 0) {
+        console.log(`   Sample transaction:`, {
+          id: posTransactionsData[0].id,
+          transactionNumber: posTransactionsData[0].transactionNumber,
+          totalAmount: posTransactionsData[0].totalAmount,
+          createdAt: posTransactionsData[0].createdAt,
+          status: posTransactionsData[0].status,
+        });
+      }
 
       // Get bookings for the day (these are also sales)
       const { bookings } = await import("../database/schema");
