@@ -136,7 +136,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     console.log(`✅ Session found, opening balance: ₱${session.openingBalance}`);
 
-    // Get all transactions for this session
+    // Get all transactions for this session (both POS transactions and bookings)
     const transactions = await db
       .select()
       .from(posTransactions)
@@ -147,14 +147,44 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         ),
       );
 
+    console.log(`📊 Found ${transactions.length} POS transactions for session`);
+
+    // Also include bookings as sales
+    const { bookings } = await import("../database/schema");
+    const bookingsData = await db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          gte(bookings.createdAt, session.openedAt || session.createdAt),
+          lte(bookings.createdAt, new Date()),
+        ),
+      );
+
+    console.log(`📊 Found ${bookingsData.length} bookings for session`);
+
+    // Combine all transactions
+    const allTransactions = [
+      ...transactions.map(t => ({
+        totalAmount: parseFloat(t.totalAmount?.toString() || "0"),
+        paymentMethod: t.paymentMethod || "cash",
+        type: "pos"
+      })),
+      ...bookingsData.map(b => ({
+        totalAmount: parseFloat(b.totalPrice?.toString() || "0"),
+        paymentMethod: b.paymentMethod || "cash",
+        type: "booking"
+      }))
+    ];
+
     // Calculate totals with proper rounding to prevent floating-point errors
     let totalCashSales = 0;
     let totalCardSales = 0;
     let totalGcashSales = 0;
     let totalBankSales = 0;
 
-    transactions.forEach((trans) => {
-      const amount = roundToTwo(parseFloat(trans.totalAmount.toString()));
+    allTransactions.forEach((trans) => {
+      const amount = roundToTwo(trans.totalAmount);
       switch (trans.paymentMethod) {
         case "cash":
           totalCashSales = roundToTwo(totalCashSales + amount);
@@ -171,6 +201,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       }
     });
 
+    console.log(`💰 Transaction breakdown - Cash: ₱${totalCashSales}, Card: ₱${totalCardSales}, GCash: ₱${totalGcashSales}, Bank: ₱${totalBankSales}`);
+
     // Get total expenses
     const expenses = await db
       .select()
@@ -183,6 +215,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         0,
       ),
     );
+
+    console.log(`💸 Total expenses: ₱${totalExpenses}`);
 
     // Calculate expected balances with proper rounding
     const openingBalance = roundToTwo(
