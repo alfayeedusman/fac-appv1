@@ -308,24 +308,30 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     // Track if owner is covering expenses
     const ownerCoveringDigitalExpenses = totalDigitalExpenses > totalDigitalSales;
 
-    console.log(`📋 Expected Balance Calculation (Owner-Aware Logic):`);
+    console.log(`📋 SMART BALANCE CALCULATION (Money Flow Aware):`);
     console.log(`  💵 CASH RECONCILIATION:`);
     console.log(`    Opening Balance: ₱${openingBalance}`);
     console.log(`    + Cash Sales: ₱${totalCashSales}`);
-    console.log(`    - Cash Expenses: ₱${cashExpenses}`);
+    console.log(`    - Cash Expenses (from income): ₱${cashExpenses}`);
     console.log(`    = Expected Cash: ₱${expectedCash}`);
+
     console.log(`\n  💳 DIGITAL RECONCILIATION:`);
     console.log(`    Digital Sales: ₱${totalDigitalSales}`);
-    console.log(`    - Digital Expenses: ₱${totalDigitalExpenses}`);
+    console.log(`    - Digital Expenses (from income): ₱${totalDigitalExpenses}`);
     console.log(`    = Expected Digital: ₱${expectedDigital}`);
-    if (ownerCoveringDigitalExpenses) {
-      console.log(`    ⚠️  Owner Covering: ₱${totalDigitalExpenses - totalDigitalSales} (expense excess)`);
+
+    if (totalOwnerExpenses > 0) {
+      console.log(`\n  👤 OWNER-PAID EXPENSES (NOT affecting balance):`);
+      console.log(`    Owner Paid: ₱${totalOwnerExpenses}`);
+      console.log(`    Count: ${ownerExpenses.length} items`);
+      console.log(`    Status: ✅ Recorded for audit trail`);
     }
-    console.log(`\n  📌 Key Logic:`);
-    console.log(`    • Cash expenses only affect cash balance`);
-    console.log(`    • Digital expenses only affect digital balance`);
-    console.log(`    • If digital expenses > digital sales = owner is paying the difference`);
-    console.log(`    • Expenses are recorded regardless for complete accounting`);
+
+    console.log(`\n  📌 MONEY FLOW LOGIC:`);
+    console.log(`    ✅ Income-based expenses = deducted from sales balance`);
+    console.log(`    ✅ Owner-paid expenses = recorded but NOT affecting balance`);
+    console.log(`    ✅ Only matching sales against their own expense sources`);
+    console.log(`    ✅ Owner contributions are tracked separately`);
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
