@@ -369,6 +369,16 @@ export default function POSKiosk() {
 
   const handlePayment = async () => {
     try {
+      // Check if POS session is opened
+      if (!currentSessionId) {
+        notificationManager.error(
+          "POS Not Opened",
+          "You must open POS before processing payments. Please open POS first."
+        );
+        setShowOpeningModal(true);
+        return;
+      }
+
       setIsProcessingPayment(true);
 
       if (cartItems.length === 0) {
