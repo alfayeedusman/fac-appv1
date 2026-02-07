@@ -72,9 +72,9 @@ export async function initializeDatabase(
 
     db = drizzle(sql, { schema });
 
-    // Test the connection with a timeout
+    // Test the connection with a timeout (30 seconds for slow connections)
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Connection test timeout")), 10000);
+      setTimeout(() => reject(new Error("Connection test timeout")), 30000);
     });
 
     await Promise.race([sql`SELECT 1 as test`, timeoutPromise]);
