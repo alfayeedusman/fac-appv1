@@ -263,10 +263,14 @@ class RealtimeService {
       publicChannel.bind('new-message', (data: any) => this.emit('new-message', data));
       publicChannel.bind('booking.created', (data: any) => this.emit('booking.created', data));
       publicChannel.bind('booking.updated', (data: any) => this.emit('booking.updated', data));
+      publicChannel.bind('subscription.created', (data: any) => this.emit('subscription.created', data));
       publicChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
+      publicChannel.bind('subscription.upgraded', (data: any) => this.emit('subscription.upgraded', data));
       publicChannel.bind('subscription.failed', (data: any) => this.emit('subscription.failed', data));
       publicChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
       publicChannel.bind('pos.expense.created', (data: any) => this.emit('pos.expense.created', data));
+      publicChannel.bind('user.created', (data: any) => this.emit('user.created', data));
+      publicChannel.bind('notification.created', (data: any) => this.emit('notification.created', data));
       publicChannel.bind('inventory.created', (data: any) => this.emit('inventory.created', data));
       publicChannel.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
       publicChannel.bind('inventory.deleted', (data: any) => this.emit('inventory.deleted', data));
