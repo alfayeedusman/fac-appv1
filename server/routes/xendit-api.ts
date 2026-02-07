@@ -441,7 +441,7 @@ export const confirmOfflinePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    const db = getDb();
+    const db = await getDb();
     if (!db) {
       return res.status(503).json({
         success: false,
