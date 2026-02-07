@@ -533,6 +533,11 @@ export default function POSKiosk() {
         referenceNumber: "",
       });
       setShowPaymentModal(false);
+
+      // Wait a moment for database to save transaction, then refresh sales
+      setTimeout(() => {
+        loadTodaysSalesAndExpenses();
+      }, 500);
     } catch (error) {
       console.error("Payment error:", error);
       notificationManager.error(
