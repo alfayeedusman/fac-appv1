@@ -278,7 +278,12 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const isBalanced =
       Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
-    console.log(`💵 Actual vs Expected - Cash: ₱${actualCashAmount} (variance: ${cashVariance >= 0 ? "+" : ""}₱${cashVariance}), Digital: ₱${actualDigitalAmount} (variance: ${digitalVariance >= 0 ? "+" : ""}₱${digitalVariance})`);
+    console.log(`💵 Actual Amounts Counted:`);
+    console.log(`  Actual Cash: ₱${actualCashAmount}`);
+    console.log(`  Actual Digital: ₱${actualDigitalAmount}`);
+    console.log(`💰 Variance Analysis:`);
+    console.log(`  Cash Variance: ${cashVariance >= 0 ? "+" : ""}₱${cashVariance} (difference between counted and expected)`);
+    console.log(`  Digital Variance: ${digitalVariance >= 0 ? "+" : ""}₱${digitalVariance}`);
     console.log(`✅ Session balanced: ${isBalanced}`);
 
     // Update session with properly rounded values
