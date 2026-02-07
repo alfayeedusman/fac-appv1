@@ -23,6 +23,7 @@ interface SimplePaymentModalProps {
   change: number;
   onPayment: () => void;
   isProcessing?: boolean;
+  onOpenCustomerSearch?: () => void;
 }
 
 export function SimplePaymentModal({
@@ -35,8 +36,12 @@ export function SimplePaymentModal({
   total,
   change,
   onPayment,
-  isProcessing = false
+  isProcessing = false,
+  onOpenCustomerSearch,
 }: SimplePaymentModalProps) {
+  const [showQRInput, setShowQRInput] = useState(false);
+  const [qrInput, setQrInput] = useState("");
+
   if (!isOpen) return null;
 
   return (
