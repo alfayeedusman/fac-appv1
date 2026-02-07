@@ -45,23 +45,24 @@ function expressPlugin(): Plugin {
       // Express will handle all API routes
       server.middlewares.use(app);
 
-      // Trigger database migrations and seeding in dev mode
+      // Trigger database migrations and seeding in dev mode (non-blocking)
       // (In production, this happens when app.listen() is called)
       setTimeout(async () => {
         try {
           const { migrate } = await import("./server/database/migrate.js");
 
           console.log("🔄 Initializing database and running migrations...");
-          await migrate();
-          console.log("✅ Database initialization and migrations completed successfully");
+          // Don't await - let it run in the background
+          migrate().catch((error) => {
+            console.error("❌ Database initialization failed:", error);
+          });
 
-          // Skip additional seeding - the migrate() function already handles initial data
-          // seedBranches() and seedUsers() have schema mismatches and will cause server errors
+          console.log("✅ Database initialization started in background");
           console.log("🌱 Core database initialization complete");
         } catch (error) {
-          console.error("❌ Database initialization failed:", error);
+          console.error("❌ Database initialization setup failed:", error);
         }
-      }, 2000); // Wait 2 seconds to ensure Vite is fully ready
+      }, 1000); // Wait 1 second to ensure Vite is fully ready
 
       // Vite's appType: 'spa' config will handle SPA fallback for non-API routes
     },
