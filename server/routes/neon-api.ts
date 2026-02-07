@@ -2231,6 +2231,52 @@ export const getStaffUsers: RequestHandler = async (req, res) => {
   }
 };
 
+// Customer search endpoint - search by ID, phone, name, or QR code
+export const searchCustomers: RequestHandler = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ success: false, error: "Query parameter required" });
+    }
+
+    console.log(`🔍 Searching customers for: ${query}`);
+    const allUsers = await supabaseDbService.getAllUsers();
+    const customers = allUsers.filter((user) => user.role === "user");
+
+    // Search by phone, name, email, or ID (case-insensitive)
+    const searchTerm = query.toLowerCase().trim();
+    const results = customers.filter((customer) => {
+      const phone = customer.contactNumber || customer.phone || "";
+      const email = customer.email || "";
+      const fullName = customer.fullName || customer.name || "";
+      const id = customer.id || "";
+
+      return (
+        phone.toLowerCase().includes(searchTerm) ||
+        email.toLowerCase().includes(searchTerm) ||
+        fullName.toLowerCase().includes(searchTerm) ||
+        id.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    console.log(`✅ Found ${results.length} matching customers`);
+    return res.json({
+      success: true,
+      customers: results.map(c => ({
+        id: c.id,
+        name: c.fullName || c.name || "Unknown",
+        email: c.email,
+        phone: c.contactNumber || c.phone,
+        qrCode: c.qrCode || `CUST-${c.id}`, // Generate QR code identifier if not present
+      }))
+    });
+  } catch (error) {
+    console.error("❌ Error searching customers:", error);
+    return res.json({ success: false, customers: [] });
+  }
+};
+
 // Create staff user endpoint
 export const createStaffUser: RequestHandler = async (req, res) => {
   try {
