@@ -1816,7 +1816,9 @@ class SupabaseDatabaseClient {
       });
       timeoutHandler.clearTimeout();
       if (!response.ok) {
-        console.error("Crew list response not OK:", response.status);
+        if (import.meta.env.DEV) {
+          console.error("Crew list response not OK:", response.status);
+        }
         return { success: false, error: `HTTP ${response.status}` };
       }
       return await response.json();
