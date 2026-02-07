@@ -1070,6 +1070,13 @@ export default function POSKiosk() {
         isProcessing={isProcessingPayment}
       />
 
+      {/* Customer Search Modal */}
+      <CustomerSearchModal
+        isOpen={showCustomerSearch}
+        onClose={() => setShowCustomerSearch(false)}
+        onSelectCustomer={handleCustomerSelected}
+      />
+
       {/* Car Wash Service Modal */}
       {showCarWashModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
