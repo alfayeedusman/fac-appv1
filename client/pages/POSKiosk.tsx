@@ -418,9 +418,18 @@ export default function POSKiosk() {
     0
   );
 
-  const change = paymentInfo.method === "cash" 
+  const change = paymentInfo.method === "cash"
     ? Math.max(0, parseFloat(paymentInfo.amountPaid || "0") - total)
     : 0;
+
+  const handleCustomerSelected = (customer: Customer) => {
+    console.log(`👤 Customer selected:`, customer);
+    setCustomerInfo({
+      uniqueId: customer.id,
+      name: customer.name,
+    });
+    setShowCustomerSearch(false);
+  };
 
   const handlePayment = async () => {
     try {
