@@ -85,7 +85,13 @@ export default function POSOpeningModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      {/* Prevent closing by clicking outside */}
+      <div
+        className="absolute inset-0"
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -97,10 +103,11 @@ export default function POSOpeningModal({
               <p className="text-sm text-gray-600 mt-1">Initialize session for {cashierInfo.name}</p>
             </div>
           </div>
+          {/* Close button disabled - user must open POS */}
           <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            disabled={true}
+            className="text-gray-400 cursor-not-allowed opacity-30"
+            title="You must open POS to continue"
           >
             <X className="h-6 w-6" />
           </button>
