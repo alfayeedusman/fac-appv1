@@ -341,7 +341,41 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       })
       .where(eq(posSessions.id, sessionId));
 
+    // Create comprehensive closure report
+    const closureReport = {
+      closedAt: new Date().toISOString(),
+      sales: {
+        cash: totalCashSales,
+        card: totalCardSales,
+        gcash: totalGcashSales,
+        bank: totalBankSales,
+        total: totalCashSales + totalCardSales + totalGcashSales + totalBankSales,
+      },
+      expenses: {
+        cash: cashExpenses,
+        card: cardExpenses,
+        gcash: gcashExpenses,
+        bank: bankExpenses,
+        total: totalExpenses,
+      },
+      balance: {
+        opening: openingBalance,
+        expectedCash,
+        expectedDigital,
+        actualCash: actualCashAmount,
+        actualDigital: actualDigitalAmount,
+        closingBalance,
+      },
+      reconciliation: {
+        cashVariance,
+        digitalVariance,
+        isBalanced,
+      },
+      notes: remittanceNotes,
+    };
+
     console.log(`🔒 POS session ${sessionId} closed successfully`);
+    console.log(`📊 CLOSURE REPORT:`, JSON.stringify(closureReport, null, 2));
 
     res.json({
       success: true,
@@ -349,9 +383,10 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       cashVariance,
       digitalVariance,
       closingBalance,
+      closureReport,
       message: isBalanced
-        ? "POS closed successfully and balanced!"
-        : "POS closed with variance",
+        ? "POS closed successfully and balanced! Sales finalized and recorded."
+        : "POS closed with variance - expenses tracked separately from sales reconciliation",
     });
   } catch (error: any) {
     console.error("❌ Error closing POS session:", error);
