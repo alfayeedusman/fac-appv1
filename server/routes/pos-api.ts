@@ -8,7 +8,7 @@ import {
   posSessions,
   bookings,
 } from "../database/schema";
-import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray, ne } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { triggerPusherEvent } from "../services/pusherService";
 
