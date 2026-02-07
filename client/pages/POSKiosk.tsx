@@ -1397,6 +1397,7 @@ export default function POSKiosk() {
                           description: expenseForm.description,
                           amount: parseFloat(expenseForm.amount),
                           paymentMethod: expenseForm.paymentMethod,
+                          moneySource: expenseForm.moneySource,
                           notes: expenseForm.notes,
                           recordedByInfo: {
                             id: cashierId,
