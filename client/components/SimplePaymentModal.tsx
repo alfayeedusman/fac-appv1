@@ -34,7 +34,8 @@ export function SimplePaymentModal({
   setPaymentInfo,
   total,
   change,
-  onPayment
+  onPayment,
+  isProcessing = false
 }: SimplePaymentModalProps) {
   if (!isOpen) return null;
 
