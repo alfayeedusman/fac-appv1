@@ -7,6 +7,14 @@ const PUSHER_CLUSTER = process.env.PUSHER_CLUSTER || 'mt1';
 
 if (!PUSHER_APP_ID || !PUSHER_KEY || !PUSHER_SECRET) {
   console.warn('⚠️ Pusher credentials not fully configured. Pusher will be disabled.');
+  console.warn('  PUSHER_APP_ID:', PUSHER_APP_ID ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_KEY:', PUSHER_KEY ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_SECRET:', PUSHER_SECRET ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_CLUSTER:', PUSHER_CLUSTER);
+} else {
+  console.log('✅ Pusher credentials configured successfully');
+  console.log('  APP_ID:', PUSHER_APP_ID);
+  console.log('  CLUSTER:', PUSHER_CLUSTER);
 }
 
 const buildQueryString = (obj: Record<string, string>) =>
