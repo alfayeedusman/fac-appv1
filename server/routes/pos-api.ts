@@ -742,7 +742,13 @@ router.get("/reports/daily/:date", async (req, res) => {
 
       // Get bookings for the day (these are also sales)
       bookingsData = await db
-        .select()
+        .select({
+          id: bookings.id,
+          totalPrice: bookings.totalPrice,
+          paymentMethod: bookings.paymentMethod,
+          createdAt: bookings.createdAt,
+          status: bookings.status,
+        })
         .from(bookings)
         .where(
           and(
