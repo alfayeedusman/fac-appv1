@@ -381,14 +381,20 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         total: totalCashSales + totalCardSales + totalGcashSales + totalBankSales,
       },
       expenses: {
-        cash: cashExpenses,
-        card: cardExpenses,
-        gcash: gcashExpenses,
-        bank: bankExpenses,
-        total: totalExpenses,
-        note: ownerCoveringDigitalExpenses
-          ? `Owner covering ₱${totalDigitalExpenses - totalDigitalSales} in digital expenses`
-          : "All expenses covered by respective payment method revenue",
+        fromIncome: {
+          cash: cashExpenses,
+          card: cardExpenses,
+          gcash: gcashExpenses,
+          bank: bankExpenses,
+          total: cashExpenses + cardExpenses + gcashExpenses + bankExpenses,
+          note: "These expenses are deducted from sales for balance matching",
+        },
+        fromOwner: {
+          total: totalOwnerExpenses,
+          count: ownerExpenses.length,
+          note: "Owner-paid expenses - recorded for audit but NOT affecting balance",
+        },
+        grandTotal: totalExpenses,
       },
       balance: {
         opening: openingBalance,
