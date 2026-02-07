@@ -1458,23 +1458,32 @@ class SupabaseDatabaseService {
   // Service packages methods
   async getServicePackages(options?: { includeInactive?: boolean }) {
     try {
-      const db = await this.ensureConnection();
-      if (!db) {
+      const { getSqlClient } = await import("../database/connection");
+      const sql = await getSqlClient();
+
+      if (!sql) {
         console.warn("Database not initialized, returning fallback packages");
         return [];
       }
 
-      let query = db.select().from(schema.servicePackages);
+      // Build query with only columns that definitely exist
+      let query = `
+        SELECT
+          id, name, description, category, type,
+          base_price as "basePrice", currency,
+          is_active as "isActive", is_popular as "isPopular",
+          is_featured as "isFeatured",
+          created_at as "createdAt", updated_at as "updatedAt"
+        FROM service_packages
+      `;
 
       if (!options?.includeInactive) {
-        query = query.where(eq(schema.servicePackages.isActive, true));
+        query += ` WHERE is_active = true`;
       }
 
-      const packages = await query.orderBy(
-        desc(schema.servicePackages.isFeatured),
-        desc(schema.servicePackages.isPopular),
-        asc(schema.servicePackages.name),
-      );
+      query += ` ORDER BY is_featured DESC, is_popular DESC, name ASC`;
+
+      const packages = await sql.unsafe(query);
 
       console.log(
         `✅ Service packages retrieved: ${packages.length} packages found`,
