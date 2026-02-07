@@ -24,10 +24,11 @@ export default function POSOpeningModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleOpenSession = async () => {
-    if (!openingBalance || openingBalance.trim() === "") {
+    // Allow zero as valid input
+    if (openingBalance === "" || openingBalance.trim() === "") {
       notificationManager.error(
         "Required Field",
-        "Opening balance is required to start a POS session"
+        "Opening balance is required. Enter 0 if starting with no cash."
       );
       return;
     }
