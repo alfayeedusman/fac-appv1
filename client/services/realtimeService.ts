@@ -266,6 +266,7 @@ class RealtimeService {
       publicChannel.bind('subscription.renewed', (data: any) => this.emit('subscription.renewed', data));
       publicChannel.bind('subscription.failed', (data: any) => this.emit('subscription.failed', data));
       publicChannel.bind('pos.transaction.created', (data: any) => this.emit('pos.transaction.created', data));
+      publicChannel.bind('pos.expense.created', (data: any) => this.emit('pos.expense.created', data));
       publicChannel.bind('inventory.created', (data: any) => this.emit('inventory.created', data));
       publicChannel.bind('inventory.updated', (data: any) => this.emit('inventory.updated', data));
       publicChannel.bind('inventory.deleted', (data: any) => this.emit('inventory.deleted', data));
