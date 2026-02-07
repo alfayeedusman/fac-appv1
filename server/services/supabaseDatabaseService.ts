@@ -1049,17 +1049,24 @@ class SupabaseDatabaseService {
       const startDateStr = startDate.toISOString();
 
       // Get all counts using simple raw SQL
-      const [userCountResult, bookingCountResult, subscriptionCountResult, newSubscriptionCountResult] = await Promise.all([
+      const [userCountResult, bookingCountResult, subscriptionCountResult, newSubscriptionCountResult, revenueResult, expensesResult] = await Promise.all([
         sql`SELECT COUNT(*) as count FROM users`,
         sql`SELECT COUNT(*) as count FROM bookings WHERE created_at >= ${startDateStr}`,
         sql`SELECT COUNT(*) as count FROM package_subscriptions WHERE status = 'active'`,
         sql`SELECT COUNT(*) as count FROM package_subscriptions WHERE status = 'active' AND created_at >= ${startDateStr}`,
-      ]).catch(() => [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }]);
+        sql`SELECT COALESCE(SUM(total_amount), 0) as total FROM pos_transactions WHERE status = 'completed' AND created_at >= ${startDateStr}`,
+        sql`SELECT COALESCE(SUM(amount), 0) as total FROM pos_expenses WHERE created_at >= ${startDateStr}`,
+      ]).catch(() => [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { total: 0 }, { total: 0 }]);
 
       const userCount = userCountResult[0]?.count || 0;
       const bookingCount = bookingCountResult[0]?.count || 0;
       const activeSubscriptionCount = subscriptionCountResult[0]?.count || 0;
       const newSubscriptionCount = newSubscriptionCountResult[0]?.count || 0;
+      const totalRevenue = parseFloat(revenueResult[0]?.total || 0);
+      const totalExpenses = parseFloat(expensesResult[0]?.total || 0);
+      const netIncome = totalRevenue - totalExpenses;
+
+      console.log(`📊 Stats computed - Revenue: ${totalRevenue}, Expenses: ${totalExpenses}, Net Income: ${netIncome}`);
 
       // Return stats with real subscription data
       return {
@@ -1068,10 +1075,10 @@ class SupabaseDatabaseService {
         totalOnlineBookings: Math.floor(bookingCount * 0.7), // Estimated
         activeAds: 0,
         pendingBookings: Math.floor(bookingCount * 0.2), // Estimated
-        totalRevenue: 0,
+        totalRevenue: totalRevenue,
         totalWashes: bookingCount,
-        totalExpenses: 0,
-        netIncome: 0,
+        totalExpenses: totalExpenses,
+        netIncome: netIncome,
         activeSubscriptions: activeSubscriptionCount, // Real data from database
         totalSubscriptionRevenue: 0,
         newSubscriptions: newSubscriptionCount, // Real data from database
