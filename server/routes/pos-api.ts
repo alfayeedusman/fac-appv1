@@ -33,7 +33,7 @@ router.post("/sessions/open", async (req, res) => {
       });
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
