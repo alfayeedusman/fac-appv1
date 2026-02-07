@@ -2012,7 +2012,9 @@ class SupabaseDatabaseClient {
       );
       timeoutHandler.clearTimeout();
       if (!response.ok) {
-        console.error("Commission entries response not OK:", response.status);
+        if (import.meta.env.DEV) {
+          console.error("Commission entries response not OK:", response.status);
+        }
         return {
           success: false,
           entries: [],
