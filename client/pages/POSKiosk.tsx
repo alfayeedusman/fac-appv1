@@ -1263,34 +1263,47 @@ export default function POSKiosk() {
                       return;
                     }
 
-                    saveExpenseAPI({
-                      posSessionId: currentSessionId || "temp",
-                      category: expenseForm.category,
-                      description: expenseForm.description,
-                      amount: parseFloat(expenseForm.amount),
-                      paymentMethod: expenseForm.paymentMethod,
-                      notes: expenseForm.notes,
-                      recordedByInfo: {
-                        id: cashierId,
-                        name: cashierName,
-                      },
-                    });
+                    (async () => {
+                      try {
+                        await saveExpenseAPI({
+                          posSessionId: currentSessionId || "temp",
+                          category: expenseForm.category,
+                          description: expenseForm.description,
+                          amount: parseFloat(expenseForm.amount),
+                          paymentMethod: expenseForm.paymentMethod,
+                          notes: expenseForm.notes,
+                          recordedByInfo: {
+                            id: cashierId,
+                            name: cashierName,
+                          },
+                        });
 
-                    notificationManager.success(
-                      "Success",
-                      `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
-                    );
+                        notificationManager.success(
+                          "Success",
+                          `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
+                        );
 
-                    // Reset form
-                    setExpenseForm({
-                      category: "supplies",
-                      description: "",
-                      amount: "",
-                      paymentMethod: "cash",
-                      notes: "",
-                    });
-                    setShowExpenseModal(false);
-                    loadTodaysSalesAndExpenses();
+                        // Reset form
+                        setExpenseForm({
+                          category: "supplies",
+                          description: "",
+                          amount: "",
+                          paymentMethod: "cash",
+                          notes: "",
+                        });
+                        setShowExpenseModal(false);
+
+                        // Wait a moment for database to save, then refresh
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        await loadTodaysSalesAndExpenses();
+                      } catch (error) {
+                        console.error("Error saving expense:", error);
+                        notificationManager.error(
+                          "Error",
+                          "Failed to save expense. Please try again."
+                        );
+                      }
+                    })();
                   }}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 font-medium transition-all duration-200"
                 >
