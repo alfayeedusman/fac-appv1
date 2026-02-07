@@ -352,10 +352,8 @@ export default function POSKiosk() {
           },
         ]);
       }
-      notificationManager.success(
-        "Added to Cart",
-        `${product.name} added to cart`
-      );
+      // Silent notification - no popup to slow down workflow
+      console.log(`✅ ${product.name} added to cart`);
     } catch (error) {
       console.error("Error adding to cart:", error);
       notificationManager.error(
