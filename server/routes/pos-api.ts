@@ -238,19 +238,39 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     console.log(`💰 Transaction breakdown - Cash: ₱${totalCashSales}, Card: ₱${totalCardSales}, GCash: ₱${totalGcashSales}, Bank: ₱${totalBankSales}`);
 
-    // Get total expenses
+    // Get total expenses and track by payment method
     const expenses = await db
       .select()
       .from(posExpenses)
       .where(eq(posExpenses.posSessionId, sessionId));
 
-    const totalExpenses = roundToTwo(
-      expenses.reduce(
-        (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
-        0,
-      ),
-    );
+    // Track expenses by payment method
+    let cashExpenses = 0;
+    let cardExpenses = 0;
+    let gcashExpenses = 0;
+    let bankExpenses = 0;
 
+    expenses.forEach((exp) => {
+      const amount = roundToTwo(parseFloat(exp.amount.toString()));
+      switch (exp.paymentMethod) {
+        case "cash":
+          cashExpenses = roundToTwo(cashExpenses + amount);
+          break;
+        case "card":
+          cardExpenses = roundToTwo(cardExpenses + amount);
+          break;
+        case "gcash":
+          gcashExpenses = roundToTwo(gcashExpenses + amount);
+          break;
+        case "bank":
+          bankExpenses = roundToTwo(bankExpenses + amount);
+          break;
+      }
+    });
+
+    const totalExpenses = roundToTwo(cashExpenses + cardExpenses + gcashExpenses + bankExpenses);
+
+    console.log(`💸 Expense breakdown - Cash: ₱${cashExpenses}, Card: ₱${cardExpenses}, GCash: ₱${gcashExpenses}, Bank: ₱${bankExpenses}`);
     console.log(`💸 Total expenses: ₱${totalExpenses}`);
 
     // Calculate expected balances with proper rounding
