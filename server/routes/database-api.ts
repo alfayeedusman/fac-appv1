@@ -71,6 +71,7 @@ router.post("/admin/force-rehash-passwords", neonApi.adminForceRehashPasswords);
 // ============= USER MANAGEMENT ENDPOINTS =============
 router.get("/users", neonApi.getAllUsers);
 router.get("/customers", neonApi.getCustomers);
+router.get("/customers/search", neonApi.searchCustomers);
 router.get("/staff", neonApi.getStaffUsers);
 router.post("/staff", neonApi.createStaffUser);
 router.put("/users/:userId/status", neonApi.updateUserStatus);
