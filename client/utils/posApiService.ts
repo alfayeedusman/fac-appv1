@@ -88,6 +88,7 @@ export async function openPOSSession(
   openingBalance: number
 ): Promise<{ sessionId: string; success: boolean }> {
   try {
+    console.log(`🔓 Opening POS session for cashier: ${cashierName} (${cashierId}) in branch: ${branchId}`);
     const response = await fetch(`${API_BASE}/sessions/open`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,10 +100,17 @@ export async function openPOSSession(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to open POS session");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to open POS session: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to open POS session`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ POS session opened successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error opening POS session:", error);
+    console.error("Error opening POS session:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
