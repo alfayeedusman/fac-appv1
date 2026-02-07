@@ -393,6 +393,7 @@ router.post("/transactions", async (req, res) => {
       type: "sale",
       status: "completed",
       branchId: branchId || "default",
+      posSessionId: posSessionId, // Link to specific POS session
       cashierId: cashierInfo?.id || "unknown",
       cashierName: cashierInfo?.name || "Unknown",
       subtotal: subtotal?.toString() || "0",
