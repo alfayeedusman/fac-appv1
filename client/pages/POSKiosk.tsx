@@ -500,7 +500,12 @@ export default function POSKiosk() {
 
       // Save transaction to database
       const transactionNumber = `TXN-${Date.now()}`;
-      await saveTransactionAPI({
+      console.log(`💾 Saving transaction to database...`);
+      console.log(`   Transaction #${transactionNumber}`);
+      console.log(`   Amount: ₱${total.toFixed(2)}`);
+      console.log(`   Items: ${cartItems.length}`);
+
+      const transactionResult = await saveTransactionAPI({
         transactionNumber,
         customerInfo: {
           id: customerInfo.uniqueId,
@@ -521,6 +526,8 @@ export default function POSKiosk() {
         },
         branchId,
       });
+
+      console.log(`✅ Transaction saved successfully:`, transactionResult);
 
       // Handle receipt printing based on settings
       try {
