@@ -65,7 +65,7 @@ export async function initializeDatabase(
     sql = postgres(databaseUrl, {
       ssl: { rejectUnauthorized: false },
       prepare: false,
-      connect_timeout: 10, // 10 second connection timeout
+      connect_timeout: 30, // 30 second connection timeout
       idle_timeout: 20, // Close idle connections after 20 seconds
       max_lifetime: 60 * 30, // Max connection lifetime 30 minutes
     });
