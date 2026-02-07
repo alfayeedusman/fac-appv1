@@ -185,6 +185,12 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
           ),
         );
       console.log(`📊 Found ${bookingsData.length} bookings for session`);
+      if (bookingsData.length > 0) {
+        console.log(`🔍 Booking details:`);
+        bookingsData.forEach((b, i) => {
+          console.log(`  ${i + 1}. Booking ${b.id}: ₱${b.totalPrice} (${b.paymentMethod}) - Status: ${b.status}`);
+        });
+      }
     } catch (bookingError: any) {
       console.error(`❌ Error querying bookings:`, bookingError.message || String(bookingError));
       console.error("Booking query error details:", bookingError);
