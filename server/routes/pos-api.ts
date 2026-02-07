@@ -238,19 +238,23 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     console.log(`💰 Transaction breakdown - Cash: ₱${totalCashSales}, Card: ₱${totalCardSales}, GCash: ₱${totalGcashSales}, Bank: ₱${totalBankSales}`);
 
-    // Get total expenses and track by payment method
-    const expenses = await db
+    // Get total expenses and track by payment method and source
+    const allExpenses = await db
       .select()
       .from(posExpenses)
       .where(eq(posExpenses.posSessionId, sessionId));
 
-    // Track expenses by payment method
+    // Separate expenses by source: only "income" expenses affect balance matching
+    const incomeExpenses = allExpenses.filter((e) => e.moneySource !== "owner");
+    const ownerExpenses = allExpenses.filter((e) => e.moneySource === "owner");
+
+    // Track INCOME expenses by payment method (used for balance matching)
     let cashExpenses = 0;
     let cardExpenses = 0;
     let gcashExpenses = 0;
     let bankExpenses = 0;
 
-    expenses.forEach((exp) => {
+    incomeExpenses.forEach((exp) => {
       const amount = roundToTwo(parseFloat(exp.amount.toString()));
       switch (exp.paymentMethod) {
         case "cash":
@@ -268,10 +272,19 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       }
     });
 
-    const totalExpenses = roundToTwo(cashExpenses + cardExpenses + gcashExpenses + bankExpenses);
+    // Total owner expenses (recorded but NOT used in balance matching)
+    const totalOwnerExpenses = roundToTwo(
+      ownerExpenses.reduce(
+        (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
+        0,
+      ),
+    );
 
-    console.log(`💸 Expense breakdown - Cash: ₱${cashExpenses}, Card: ₱${cardExpenses}, GCash: ₱${gcashExpenses}, Bank: ₱${bankExpenses}`);
-    console.log(`💸 Total expenses: ₱${totalExpenses}`);
+    const totalExpenses = roundToTwo(cashExpenses + cardExpenses + gcashExpenses + bankExpenses + totalOwnerExpenses);
+
+    console.log(`💸 INCOME EXPENSES (count in balance) - Cash: ₱${cashExpenses}, Card: ₱${cardExpenses}, GCash: ₱${gcashExpenses}, Bank: ₱${bankExpenses}`);
+    console.log(`👤 OWNER EXPENSES (recorded only) - Total: ₱${totalOwnerExpenses}`);
+    console.log(`💸 Total expenses recorded: ₱${totalExpenses}`);
 
     // Calculate expected balances with smart logic
     // RULE: Only expenses matching the payment method reduce that method's balance
