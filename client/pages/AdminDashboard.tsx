@@ -834,8 +834,11 @@ export default function AdminDashboard() {
       // Users can manually refresh by clicking buttons
 
       return () => {
+        // Clear the subscription timer if it hasn't fired yet
+        clearTimeout(subscriptionTimer);
         // unsubscribe realtime subscriptions
         subs.forEach((u) => u && u());
+        console.log("🧹 Cleaned up Pusher subscriptions");
       };
     } else {
       navigate("/login");
