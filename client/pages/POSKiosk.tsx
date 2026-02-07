@@ -54,6 +54,7 @@ import {
 import { receiptPrintService } from "@/services/receiptPrintService";
 import POSOpeningModal from "@/components/POSOpeningModal";
 import POSClosingModal from "@/components/POSClosingModal";
+import realtimeService from "@/services/realtimeService";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
