@@ -686,7 +686,7 @@ router.get("/reports/daily/:date", async (req, res) => {
 // Get all transactions (with optional filters)
 router.get("/transactions", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
