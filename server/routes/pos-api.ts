@@ -177,6 +177,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
           and(
             gte(bookings.createdAt, sessionStartDate),
             lte(bookings.createdAt, sessionEndDate),
+            eq(bookings.status, "completed"), // Only count completed bookings
           ),
         );
       console.log(`📊 Found ${bookingsData.length} bookings for session`);
