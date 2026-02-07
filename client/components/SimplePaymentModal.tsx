@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, CreditCard } from 'lucide-react';
+import { User, CreditCard, Loader } from 'lucide-react';
 
 interface CustomerInfo {
   uniqueId: string;
@@ -22,6 +22,7 @@ interface SimplePaymentModalProps {
   total: number;
   change: number;
   onPayment: () => void;
+  isProcessing?: boolean;
 }
 
 export function SimplePaymentModal({
