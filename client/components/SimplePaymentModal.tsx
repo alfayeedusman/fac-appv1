@@ -48,38 +48,59 @@ export function SimplePaymentModal({
         </div>
 
         <div className="space-y-4">
-          {/* Customer ID */}
-          <div>
-            <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
-              Customer ID/Phone *
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                id="customer-id"
-                type="text"
-                placeholder="Enter customer ID or phone number"
-                value={customerInfo.uniqueId}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          {/* Customer Info Display/Edit */}
+          {customerInfo.uniqueId && customerInfo.name ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-semibold text-gray-900">{customerInfo.name}</div>
+                  <div className="text-sm text-gray-600">ID: {customerInfo.uniqueId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCustomerInfo({ uniqueId: "", name: "" })}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Customer ID */}
+              <div>
+                <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
+                  Customer ID/Phone *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    id="customer-id"
+                    type="text"
+                    placeholder="Enter customer ID or phone number"
+                    value={customerInfo.uniqueId}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
 
-          {/* Customer Name */}
-          <div>
-            <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
-              Customer Name (Optional)
-            </label>
-            <input
-              id="customer-name"
-              type="text"
-              placeholder="Enter customer name"
-              value={customerInfo.name}
-              onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+              {/* Customer Name */}
+              <div>
+                <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
+                  Customer Name (Optional)
+                </label>
+                <input
+                  id="customer-name"
+                  type="text"
+                  placeholder="Enter customer name"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </>
+          )}
 
           {/* Payment Method */}
           <div>
