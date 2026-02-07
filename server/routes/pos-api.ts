@@ -484,7 +484,7 @@ router.post("/expenses", async (req, res) => {
 // Get Expenses by Session
 router.get("/expenses/session/:sessionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
