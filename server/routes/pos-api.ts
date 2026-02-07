@@ -753,7 +753,8 @@ router.get("/reports/daily/:date", async (req, res) => {
 
       console.log(`💰 Found ${expenses.length} expenses`);
     } catch (dbError: any) {
-      console.warn("⚠️ Database query failed for daily report:", dbError.message?.substring(0, 150));
+      console.warn("⚠️ Database query failed for daily report:", dbError.message || String(dbError));
+      console.error("Full error object:", dbError);
       posTransactionsData = [];
       bookingsData = [];
       expenses = [];
