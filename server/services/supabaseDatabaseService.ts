@@ -1048,16 +1048,20 @@ class SupabaseDatabaseService {
 
       const startDateStr = startDate.toISOString();
 
-      // Get all counts using simple raw SQL - these are the only columns we need that exist
-      const [userCountResult, bookingCountResult] = await Promise.all([
+      // Get all counts using simple raw SQL
+      const [userCountResult, bookingCountResult, subscriptionCountResult, newSubscriptionCountResult] = await Promise.all([
         sql`SELECT COUNT(*) as count FROM users`,
-        sql`SELECT COUNT(*) as count FROM bookings WHERE created_at >= ${startDateStr}`
-      ]).catch(() => [{ count: 0 }, { count: 0 }]);
+        sql`SELECT COUNT(*) as count FROM bookings WHERE created_at >= ${startDateStr}`,
+        sql`SELECT COUNT(*) as count FROM package_subscriptions WHERE status = 'active'`,
+        sql`SELECT COUNT(*) as count FROM package_subscriptions WHERE status = 'active' AND created_at >= ${startDateStr}`,
+      ]).catch(() => [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }]);
 
       const userCount = userCountResult[0]?.count || 0;
       const bookingCount = bookingCountResult[0]?.count || 0;
+      const activeSubscriptionCount = subscriptionCountResult[0]?.count || 0;
+      const newSubscriptionCount = newSubscriptionCountResult[0]?.count || 0;
 
-      // Return simple stats - avoid complex queries that may fail
+      // Return stats with real subscription data
       return {
         totalUsers: userCount,
         totalBookings: bookingCount,
@@ -1068,9 +1072,9 @@ class SupabaseDatabaseService {
         totalWashes: bookingCount,
         totalExpenses: 0,
         netIncome: 0,
-        activeSubscriptions: Math.floor(userCount * 0.3), // Estimated
+        activeSubscriptions: activeSubscriptionCount, // Real data from database
         totalSubscriptionRevenue: 0,
-        newSubscriptions: 0,
+        newSubscriptions: newSubscriptionCount, // Real data from database
         subscriptionUpgrades: 0,
         monthlyGrowth: 0
       };
