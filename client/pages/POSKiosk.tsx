@@ -524,9 +524,6 @@ export default function POSKiosk() {
         "Payment processed successfully! Receipt printing..."
       );
 
-      // Reload today's sales
-      loadTodaysSalesAndExpenses();
-
       // Reset form
       clearCart();
       setCustomerInfo({ uniqueId: "", name: "" });
