@@ -436,7 +436,7 @@ router.get("/transactions/:date/detailed", async (req, res) => {
 // Save Expense
 router.post("/expenses", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
