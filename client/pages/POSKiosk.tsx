@@ -103,6 +103,7 @@ export default function POSKiosk() {
     amount: "",
     paymentMethod: "cash",
     notes: "",
+    moneySource: "income" as "income" | "owner",
   });
   const [todayExpenses, setTodayExpenses] = useState(0);
   const [showOpeningModal, setShowOpeningModal] = useState(false);
