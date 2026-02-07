@@ -507,7 +507,7 @@ router.get("/expenses/session/:sessionId", async (req, res) => {
 // Delete Expense
 router.delete("/expenses/:expenseId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
