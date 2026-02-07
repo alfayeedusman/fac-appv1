@@ -1051,6 +1051,7 @@ export default function POSKiosk() {
         total={total}
         change={change}
         onPayment={handlePayment}
+        isProcessing={isProcessingPayment}
       />
 
       {/* Car Wash Service Modal */}
