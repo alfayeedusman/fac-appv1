@@ -113,6 +113,26 @@ export const createServer = async () => {
   app.post("/api/supabase/auth/login", ensureDbConnection);
   app.post("/api/supabase/auth/register", ensureDbConnection);
 
+  // ============= POS API ROUTES =============
+  console.log("🛒 Registering POS API routes...");
+  app.use("/api/pos", posApiRoutes);
+  app.use("/api/supabase/pos", posApiRoutes);
+  console.log("✅ POS API routes registered successfully");
+
+  // ============= XENDIT PAYMENT API =============
+  app.post(
+    "/api/supabase/payment/xendit/create-invoice",
+    xenditApiRoutes.createInvoice,
+  );
+  app.post("/api/supabase/payment/xendit/charge", xenditApiRoutes.chargeCard);
+  app.post(
+    "/api/supabase/payment/xendit/webhook",
+    xenditApiRoutes.handleWebhook,
+  );
+
+  // ============= APP VERSION MANAGEMENT =============
+  app.use("/api", appVersionRoutes);
+
   // ============= CREW MANAGEMENT API =============
   app.get("/api/supabase/crew/stats", crewApiRoutes.getCrewStats);
   app.get("/api/supabase/crew/activity", crewApiRoutes.getCrewActivity);
