@@ -842,7 +842,7 @@ export default function POSKiosk() {
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className={`space-y-6 transition-opacity duration-300 ${!currentSessionId ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                 {cartItems.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="relative">
@@ -854,7 +854,7 @@ export default function POSKiosk() {
                       </div>
                     </div>
                     <h3 className="text-lg font-bold text-gray-700 mb-2 text-shadow-sm">Your cart is empty</h3>
-                    <p className="text-gray-400 text-sm">Add some products to get started</p>
+                    <p className="text-gray-400 text-sm">{!currentSessionId ? 'Open POS first before adding products' : 'Add some products to get started'}</p>
                   </div>
                 ) : (
                   <>
