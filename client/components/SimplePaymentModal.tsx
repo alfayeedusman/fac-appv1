@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, CreditCard, Loader } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, CreditCard, Loader, QrCode, X, Phone, Mail } from 'lucide-react';
 
 interface CustomerInfo {
   uniqueId: string;
