@@ -956,7 +956,7 @@ export const checkSubscriptionPaymentStatus: RequestHandler = async (
         .json({ success: false, error: "subscriptionId required" });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const [subscription] = await db
       .select()
       .from(schema.packageSubscriptions)
