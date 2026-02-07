@@ -29,10 +29,12 @@ export async function triggerPusherEvent(
   data: any,
 ): Promise<{ success: boolean; response?: any; error?: string }> {
   if (!PUSHER_APP_ID || !PUSHER_KEY || !PUSHER_SECRET) {
+    console.error('❌ Pusher not configured - cannot trigger event:', eventName);
     return { success: false, error: 'Pusher not configured' };
   }
 
   const channelList = Array.isArray(channels) ? channels : [channels];
+  console.log(`📡 Triggering Pusher event "${eventName}" on channels:`, channelList);
 
   const body = JSON.stringify({ name: eventName, channels: channelList, data });
   const bodyMd5 = crypto.createHash('md5').update(body).digest('hex');
