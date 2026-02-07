@@ -66,44 +66,99 @@ export function SimplePaymentModal({
                   onClick={() => setCustomerInfo({ uniqueId: "", name: "" })}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  ✕
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
           ) : (
             <>
-              {/* Customer ID */}
-              <div>
-                <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
-                  Customer ID/Phone *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    id="customer-id"
-                    type="text"
-                    placeholder="Enter customer ID or phone number"
-                    value={customerInfo.uniqueId}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              {/* Customer Search Options */}
+              <div className="space-y-2">
+                {/* Search Button */}
+                {onOpenCustomerSearch && (
+                  <button
+                    type="button"
+                    onClick={onOpenCustomerSearch}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Search Customer</span>
+                  </button>
+                )}
+
+                {/* QR Code Scanner Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowQRInput(!showQRInput)}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium"
+                >
+                  <QrCode className="h-4 w-4" />
+                  <span>Scan QR Code</span>
+                </button>
               </div>
 
-              {/* Customer Name */}
-              <div>
-                <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
-                  Customer Name (Optional)
-                </label>
-                <input
-                  id="customer-name"
-                  type="text"
-                  placeholder="Enter customer name"
-                  value={customerInfo.name}
-                  onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {/* QR Code Input */}
+              {showQRInput && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Scan or paste QR code:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Scan QR code or paste customer ID..."
+                    value={qrInput}
+                    onChange={(e) => setQrInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && qrInput.trim()) {
+                        setCustomerInfo({ uniqueId: qrInput.trim(), name: qrInput.trim() });
+                        setQrInput("");
+                        setShowQRInput(false);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-600">Press Enter to use this customer ID</p>
+                </div>
+              )}
+
+              {/* Manual Entry */}
+              {!showQRInput && (
+                <>
+                  {/* Customer ID */}
+                  <div>
+                    <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
+                      Customer ID/Phone *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        id="customer-id"
+                        type="text"
+                        placeholder="Enter customer ID or phone number"
+                        value={customerInfo.uniqueId}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer Name */}
+                  <div>
+                    <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
+                      Customer Name (Optional)
+                    </label>
+                    <input
+                      id="customer-name"
+                      type="text"
+                      placeholder="Enter customer name"
+                      value={customerInfo.name}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
 
