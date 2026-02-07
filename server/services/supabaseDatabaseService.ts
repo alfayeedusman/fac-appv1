@@ -382,12 +382,18 @@ class SupabaseDatabaseService {
   }
 
   async getAllBookings(): Promise<Booking[]> {
-    if (!this.db) throw new Error("Database not connected");
+    try {
+      const db = await this.ensureConnection();
+      if (!db) return [];
 
-    return await this.db
-      .select()
-      .from(schema.bookings)
-      .orderBy(desc(schema.bookings.createdAt));
+      return await db
+        .select()
+        .from(schema.bookings)
+        .orderBy(desc(schema.bookings.createdAt));
+    } catch (error) {
+      console.error("Error fetching all bookings:", error);
+      return [];
+    }
   }
 
   async updateBooking(
