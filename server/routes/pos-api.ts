@@ -273,32 +273,46 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     console.log(`💸 Expense breakdown - Cash: ₱${cashExpenses}, Card: ₱${cardExpenses}, GCash: ₱${gcashExpenses}, Bank: ₱${bankExpenses}`);
     console.log(`💸 Total expenses: ₱${totalExpenses}`);
 
-    // Calculate expected balances with proper rounding
-    // IMPORTANT: Only CASH expenses affect the cash balance
-    // Digital/Card/GCash expenses are paid from those sources, not from cash drawer
+    // Calculate expected balances with smart logic
+    // RULE: Only expenses matching the payment method reduce that method's balance
+    // If digital expenses > digital sales, owner is shouldering the difference
     const openingBalance = roundToTwo(
       parseFloat(session.openingBalance.toString()),
     );
+
+    // CASH: Only reduced by actual cash expenses
     const expectedCash = roundToTwo(
-      openingBalance + totalCashSales - cashExpenses, // Only deduct CASH expenses from cash
-    );
-    const expectedDigital = roundToTwo(
-      totalCardSales + totalGcashSales + totalBankSales - (cardExpenses + gcashExpenses + bankExpenses), // Digital expenses reduce digital balance
+      openingBalance + totalCashSales - cashExpenses,
     );
 
-    console.log(`📋 Expected Balance Calculation (Smart Expense Tracking):`);
-    console.log(`  💵 CASH:`);
+    // DIGITAL: Only reduced by digital expenses, but not below zero (owner covers excess)
+    const totalDigitalSales = roundToTwo(totalCardSales + totalGcashSales + totalBankSales);
+    const totalDigitalExpenses = roundToTwo(cardExpenses + gcashExpenses + bankExpenses);
+    const expectedDigital = roundToTwo(
+      Math.max(0, totalDigitalSales - totalDigitalExpenses) // Never go negative
+    );
+
+    // Track if owner is covering expenses
+    const ownerCoveringDigitalExpenses = totalDigitalExpenses > totalDigitalSales;
+
+    console.log(`📋 Expected Balance Calculation (Owner-Aware Logic):`);
+    console.log(`  💵 CASH RECONCILIATION:`);
     console.log(`    Opening Balance: ₱${openingBalance}`);
     console.log(`    + Cash Sales: ₱${totalCashSales}`);
-    console.log(`    - Cash Expenses ONLY: ₱${cashExpenses}`);
+    console.log(`    - Cash Expenses: ₱${cashExpenses}`);
     console.log(`    = Expected Cash: ₱${expectedCash}`);
-    console.log(`  💳 DIGITAL:`);
-    console.log(`    Card Sales: ₱${totalCardSales}`);
-    console.log(`    + GCash Sales: ₱${totalGcashSales}`);
-    console.log(`    + Bank Sales: ₱${totalBankSales}`);
-    console.log(`    - Digital Expenses: ₱${cardExpenses + gcashExpenses + bankExpenses}`);
+    console.log(`\n  💳 DIGITAL RECONCILIATION:`);
+    console.log(`    Digital Sales: ₱${totalDigitalSales}`);
+    console.log(`    - Digital Expenses: ₱${totalDigitalExpenses}`);
     console.log(`    = Expected Digital: ₱${expectedDigital}`);
-    console.log(`\n  📌 Note: Expenses paid via digital/card/gcash don't affect cash drawer balance`);
+    if (ownerCoveringDigitalExpenses) {
+      console.log(`    ⚠️  Owner Covering: ₱${totalDigitalExpenses - totalDigitalSales} (expense excess)`);
+    }
+    console.log(`\n  📌 Key Logic:`);
+    console.log(`    • Cash expenses only affect cash balance`);
+    console.log(`    • Digital expenses only affect digital balance`);
+    console.log(`    • If digital expenses > digital sales = owner is paying the difference`);
+    console.log(`    • Expenses are recorded regardless for complete accounting`);
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
