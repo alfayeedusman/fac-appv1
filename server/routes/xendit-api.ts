@@ -917,7 +917,7 @@ export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
         .json({ success: false, error: "bookingId required" });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const [booking] = await db
       .select()
       .from(schema.bookings)
