@@ -1079,6 +1079,10 @@ export default function POSKiosk() {
         change={change}
         onPayment={handlePayment}
         isProcessing={isProcessingPayment}
+        onOpenCustomerSearch={() => {
+          setShowPaymentModal(false);
+          setShowCustomerSearch(true);
+        }}
       />
 
       {/* Customer Search Modal */}
