@@ -161,7 +161,13 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     let bookingsData: any[] = [];
     try {
       bookingsData = await db
-        .select()
+        .select({
+          id: bookings.id,
+          totalPrice: bookings.totalPrice,
+          paymentMethod: bookings.paymentMethod,
+          createdAt: bookings.createdAt,
+          status: bookings.status,
+        })
         .from(bookings)
         .where(
           and(
