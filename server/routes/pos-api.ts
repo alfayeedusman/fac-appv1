@@ -158,6 +158,10 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       );
 
     console.log(`📊 Found ${transactions.length} POS transactions for session`);
+    console.log(`🔍 Transaction details:`);
+    transactions.forEach((t, i) => {
+      console.log(`  ${i + 1}. ${t.transactionNumber}: ₱${t.totalAmount} (${t.paymentMethod}) - Status: ${t.status}, Type: ${t.type}`);
+    });
 
     // Also include bookings as sales
     console.log(`🔍 Querying bookings between ${sessionStartDate.toISOString()} and ${sessionEndDate.toISOString()}`);
