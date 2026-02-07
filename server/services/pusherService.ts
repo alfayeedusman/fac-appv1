@@ -72,12 +72,17 @@ export async function triggerPusherEvent(
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      return { success: false, error: `Pusher API responded with ${res.status}: ${text}` };
+      const errorMsg = `Pusher API responded with ${res.status}: ${text}`;
+      console.error('❌', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     const json = await res.json().catch(() => ({}));
+    console.log('✅ Pusher event triggered successfully');
     return { success: true, response: json };
   } catch (error: any) {
-    return { success: false, error: error?.message || String(error) };
+    const errorMsg = error?.message || String(error);
+    console.error('❌ Failed to trigger Pusher event:', errorMsg);
+    return { success: false, error: errorMsg };
   }
 }
