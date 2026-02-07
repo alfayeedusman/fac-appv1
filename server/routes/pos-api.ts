@@ -66,7 +66,7 @@ router.post("/sessions/open", async (req, res) => {
 // Get Current POS Session
 router.get("/sessions/current/:cashierId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       console.warn("⚠️ Database not initialized for POS session");
       return res.json({ session: null });
