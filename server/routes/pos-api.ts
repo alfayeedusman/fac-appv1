@@ -295,8 +295,10 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 // Save Transaction
 router.post("/transactions", async (req, res) => {
   try {
+    console.log("💳 Processing POS transaction...");
     const db = await getDatabase();
     if (!db) {
+      console.error("❌ Database not initialized for transaction");
       return res.status(500).json({ error: "Database not initialized" });
     }
 
@@ -316,7 +318,16 @@ router.post("/transactions", async (req, res) => {
       branchId,
     } = req.body;
 
+    console.log("📊 Transaction details:", {
+      transactionNumber,
+      totalAmount,
+      paymentMethod,
+      itemsCount: items?.length || 0,
+      branchId,
+    });
+
     if (!transactionNumber || !totalAmount || !paymentMethod) {
+      console.error("❌ Missing required transaction fields");
       return res.status(400).json({
         error: "Missing required fields",
       });
