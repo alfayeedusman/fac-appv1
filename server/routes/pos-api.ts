@@ -704,8 +704,8 @@ router.get("/reports/daily/:date", async (req, res) => {
         .from(posTransactions)
         .where(
           and(
-            gte(posTransactions.createdAt, startDateISO),
-            lte(posTransactions.createdAt, endDateISO),
+            gte(posTransactions.createdAt, startDate),
+            lte(posTransactions.createdAt, endDate),
             eq(posTransactions.status, "completed"),
           ),
         );
