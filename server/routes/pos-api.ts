@@ -801,7 +801,12 @@ router.get("/reports/daily/:date", async (req, res) => {
       expenseCount: expenses.length,
     };
 
-    console.log(`📈 Daily Report Summary:`, result);
+    console.log(`📈 Daily Report Summary for ${date}:`);
+    console.log(`   Total Sales: ₱${result.totalSales}`);
+    console.log(`   Total Expenses: ₱${result.totalExpenses}`);
+    console.log(`   Net Income: ₱${result.netIncome}`);
+    console.log(`   Transaction Count: ${result.transactionCount}`);
+    console.log(`   Payment Breakdown - Cash: ₱${result.totalCash}, Card: ₱${result.totalCard}, GCash: ₱${result.totalGcash}, Bank: ₱${result.totalBank}`);
     res.json(result);
   } catch (error: any) {
     console.error("❌ Error generating daily report:", error);
