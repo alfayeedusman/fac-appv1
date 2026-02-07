@@ -157,17 +157,24 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     // Also include bookings as sales
     const { bookings } = await import("../database/schema");
     console.log(`🔍 Querying bookings between ${sessionStartDate.toISOString()} and ${sessionEndDate.toISOString()}`);
-    const bookingsData = await db
-      .select()
-      .from(bookings)
-      .where(
-        and(
-          gte(bookings.createdAt, sessionStartDate),
-          lte(bookings.createdAt, sessionEndDate),
-        ),
-      );
 
-    console.log(`📊 Found ${bookingsData.length} bookings for session`);
+    let bookingsData: any[] = [];
+    try {
+      bookingsData = await db
+        .select()
+        .from(bookings)
+        .where(
+          and(
+            gte(bookings.createdAt, sessionStartDate),
+            lte(bookings.createdAt, sessionEndDate),
+          ),
+        );
+      console.log(`📊 Found ${bookingsData.length} bookings for session`);
+    } catch (bookingError: any) {
+      console.error(`❌ Error querying bookings:`, bookingError.message || String(bookingError));
+      console.error("Booking query error details:", bookingError);
+      bookingsData = [];
+    }
 
     // Combine all transactions
     const allTransactions = [
