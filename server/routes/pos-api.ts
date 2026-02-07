@@ -738,7 +738,7 @@ router.get("/transactions", async (req, res) => {
 // Get transaction details with items
 router.get("/transactions/:transactionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
