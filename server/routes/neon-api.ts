@@ -692,6 +692,26 @@ export const registerUser: RequestHandler = async (req, res) => {
 
     console.log("✅ User created:", user.id);
 
+    // Emit user.created event for real-time dashboard update
+    (async () => {
+      try {
+        await triggerPusherEvent(
+          ["public-realtime", "private-public-realtime"],
+          "user.created",
+          {
+            userId: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            subscriptionStatus: user.subscriptionStatus,
+            timestamp: new Date(),
+          }
+        );
+        console.log("✅ user.created event emitted");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit user.created event:", err);
+      }
+    })();
+
     // Create subscription if a package was selected
     let subscription = null;
     if (subscriptionPackage && subscriptionPackage !== "regular") {
@@ -709,6 +729,27 @@ export const registerUser: RequestHandler = async (req, res) => {
           autoRenew: true,
         });
         console.log("✅ Subscription created:", subscription.id);
+
+        // Emit subscription.created event for real-time dashboard update
+        (async () => {
+          try {
+            await triggerPusherEvent(
+              ["public-realtime", "private-public-realtime"],
+              "subscription.created",
+              {
+                subscriptionId: subscription.id,
+                userId: user.id,
+                packageId: subscriptionPackage,
+                amount: getPackagePrice(subscriptionPackage),
+                status: "pending",
+                timestamp: new Date(),
+              }
+            );
+            console.log("✅ subscription.created event emitted");
+          } catch (err) {
+            console.warn("⚠️ Failed to emit subscription.created event:", err);
+          }
+        })();
       } catch (subError) {
         console.warn("⚠️ Failed to create subscription:", subError);
         // Continue - subscription creation failure should not block registration
