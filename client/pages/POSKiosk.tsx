@@ -1417,6 +1417,7 @@ export default function POSKiosk() {
                           amount: "",
                           paymentMethod: "cash",
                           notes: "",
+                          moneySource: "income",
                         });
                         setShowExpenseModal(false);
 
