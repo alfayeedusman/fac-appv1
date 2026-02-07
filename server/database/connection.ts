@@ -35,6 +35,10 @@ export async function initializeDatabase(
   // Prevent concurrent connection attempts
   if (isConnecting) {
     console.log("⏳ Connection attempt already in progress");
+    // Return existing connection if available, even if currently connecting
+    if (db && sql) {
+      return db;
+    }
     return null;
   }
 
