@@ -182,7 +182,9 @@ export default function POSKiosk() {
     // Subscribe to POS transaction events (real-time sales)
     const unsubscribePOSTransaction = realtimeService.subscribe("pos.transaction.created", (data: any) => {
       console.log("📈 New POS transaction via Pusher:", data);
+      console.log(`   Transaction #${data.transactionNumber}, Amount: ₱${data.totalAmount}`);
       // Refresh sales data when new transaction is created
+      console.log("🔄 Refreshing sales data...");
       loadTodaysSalesAndExpenses();
     });
 
