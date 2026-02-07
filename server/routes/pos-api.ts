@@ -373,6 +373,9 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         gcash: gcashExpenses,
         bank: bankExpenses,
         total: totalExpenses,
+        note: ownerCoveringDigitalExpenses
+          ? `Owner covering ₱${totalDigitalExpenses - totalDigitalSales} in digital expenses`
+          : "All expenses covered by respective payment method revenue",
       },
       balance: {
         opening: openingBalance,
@@ -386,6 +389,11 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         cashVariance,
         digitalVariance,
         isBalanced,
+        note: isBalanced
+          ? "Perfect match - all balances reconciled"
+          : ownerCoveringDigitalExpenses
+            ? "Digital expenses covered by owner - sales records intact"
+            : "Review variance details",
       },
       notes: remittanceNotes,
     };
