@@ -1026,6 +1026,17 @@ export default function POSKiosk() {
                         Clear Cart
                       </Button>
 
+                      {!customerInfo.uniqueId && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCustomerSearch(true)}
+                          className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 rounded-xl py-3"
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Select Customer
+                        </Button>
+                      )}
+
                       <Button
                         onClick={() => setShowPaymentModal(true)}
                         disabled={isProcessingPayment}
