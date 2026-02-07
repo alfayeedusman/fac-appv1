@@ -531,7 +531,7 @@ router.delete("/expenses/:expenseId", async (req, res) => {
 // Get Daily Sales Report
 router.get("/reports/daily/:date", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       console.warn("⚠️ Database not initialized for daily report - returning fallback");
       return res.json({
