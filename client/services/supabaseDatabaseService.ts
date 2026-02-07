@@ -1769,7 +1769,9 @@ class SupabaseDatabaseClient {
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
-      console.error("Commission rates fetch failed:", error);
+      if (import.meta.env.DEV) {
+        console.error("Commission rates fetch failed:", error);
+      }
       return { success: false, error: error?.message || "Network error" };
     }
   }
@@ -1820,7 +1822,9 @@ class SupabaseDatabaseClient {
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
-      console.error("Crew list fetch failed:", error);
+      if (import.meta.env.DEV) {
+        console.error("Crew list fetch failed:", error);
+      }
       return { success: false, error: error?.message || "Network error" };
     }
   }
@@ -2016,7 +2020,9 @@ class SupabaseDatabaseClient {
       return await response.json();
     } catch (error: any) {
       timeoutHandler.clearTimeout();
-      console.error("Commission entries fetch failed:", error);
+      if (import.meta.env.DEV) {
+        console.error("Commission entries fetch failed:", error);
+      }
       return {
         success: false,
         entries: [],
