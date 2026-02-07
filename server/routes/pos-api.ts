@@ -263,7 +263,12 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       totalCardSales + totalGcashSales + totalBankSales,
     );
 
-    console.log(`📋 Expected Balance - Cash: ₱${expectedCash} (Opening ₱${openingBalance} + Sales ₱${totalCashSales} - Expenses ₱${totalExpenses}), Digital: ₱${expectedDigital}`);
+    console.log(`📋 Expected Balance Calculation:`);
+    console.log(`  Opening Balance: ₱${openingBalance}`);
+    console.log(`  + Cash Sales: ₱${totalCashSales}`);
+    console.log(`  - Expenses: ₱${totalExpenses}`);
+    console.log(`  = Expected Cash: ₱${expectedCash}`);
+    console.log(`  Expected Digital: ₱${expectedDigital}`);
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
