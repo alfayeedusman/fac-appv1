@@ -528,7 +528,7 @@ router.delete("/expenses/:expenseId", async (req, res) => {
 
 // ============= DAILY REPORT ROUTES =============
 
-// Get Daily Sales Report
+// Get Daily Sales Report (includes both POS transactions AND bookings)
 router.get("/reports/daily/:date", async (req, res) => {
   try {
     const db = await getDatabase();
@@ -582,12 +582,13 @@ router.get("/reports/daily/:date", async (req, res) => {
       `⏰ Date range: ${startDateISO} to ${endDateISO}`,
     );
 
-    let transactions: any[] = [];
+    let posTransactionsData: any[] = [];
+    let bookingsData: any[] = [];
     let expenses: any[] = [];
 
     try {
-      // Get transactions for the day
-      transactions = await db
+      // Get POS transactions for the day
+      posTransactionsData = await db
         .select()
         .from(posTransactions)
         .where(
@@ -598,9 +599,23 @@ router.get("/reports/daily/:date", async (req, res) => {
           ),
         );
 
-      console.log(`✅ Found ${transactions.length} transactions`);
+      console.log(`✅ Found ${posTransactionsData.length} POS transactions`);
 
-      // Get expenses from pos_expenses table (not filtered by session date, but by transaction date)
+      // Get bookings for the day (these are also sales)
+      const { bookings } = await import("../database/schema");
+      bookingsData = await db
+        .select()
+        .from(bookings)
+        .where(
+          and(
+            gte(bookings.createdAt, startDateISO),
+            lte(bookings.createdAt, endDateISO),
+          ),
+        );
+
+      console.log(`✅ Found ${bookingsData.length} bookings`);
+
+      // Get expenses from pos_expenses table
       expenses = await db
         .select()
         .from(posExpenses)
@@ -610,42 +625,57 @@ router.get("/reports/daily/:date", async (req, res) => {
             lte(posExpenses.createdAt, endDateISO),
           ),
         );
+
+      console.log(`💰 Found ${expenses.length} expenses`);
     } catch (dbError: any) {
       console.warn("⚠️ Database query failed for daily report:", dbError.message?.substring(0, 150));
-      transactions = [];
+      posTransactionsData = [];
+      bookingsData = [];
       expenses = [];
     }
+
+    // Combine POS transactions and bookings for total sales
+    const allTransactions = [
+      ...posTransactionsData.map(t => ({
+        totalAmount: parseFloat(t.totalAmount?.toString() || "0"),
+        paymentMethod: t.paymentMethod || "unknown",
+        source: "pos"
+      })),
+      ...bookingsData.map(b => ({
+        totalAmount: parseFloat(b.totalPrice?.toString() || "0"),
+        paymentMethod: b.paymentMethod || "unknown",
+        source: "booking"
+      }))
+    ];
 
     const totalExpenses = expenses.reduce(
       (sum, exp) => sum + parseFloat(exp.amount.toString()),
       0,
     );
 
-    console.log(
-      `💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`,
-    );
+    console.log(`💰 Total expenses: ₱${totalExpenses.toFixed(2)}`);
 
-    // Calculate totals
-    const totalSales = transactions.reduce(
-      (sum, trans) => sum + parseFloat(trans.totalAmount.toString()),
+    // Calculate totals from combined transactions
+    const totalSales = allTransactions.reduce(
+      (sum, trans) => sum + trans.totalAmount,
       0,
     );
 
-    const totalCash = transactions
+    const totalCash = allTransactions
       .filter((t) => t.paymentMethod === "cash")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalCard = transactions
+    const totalCard = allTransactions
       .filter((t) => t.paymentMethod === "card")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalGcash = transactions
+    const totalGcash = allTransactions
       .filter((t) => t.paymentMethod === "gcash")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalBank = transactions
+    const totalBank = allTransactions
       .filter((t) => t.paymentMethod === "bank")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
     const result = {
       date,
@@ -656,7 +686,7 @@ router.get("/reports/daily/:date", async (req, res) => {
       totalBank: parseFloat(totalBank.toFixed(2)),
       totalExpenses: parseFloat(totalExpenses.toFixed(2)),
       netIncome: parseFloat((totalSales - totalExpenses).toFixed(2)),
-      transactionCount: transactions.length,
+      transactionCount: allTransactions.length,
       expenseCount: expenses.length,
     };
 
