@@ -687,13 +687,10 @@ router.get("/reports/daily/:date", async (req, res) => {
     const endDate = new Date(dateObj);
     endDate.setHours(23, 59, 59, 999);
 
-    const startDateISO = startDate.toISOString();
-    const endDateISO = endDate.toISOString();
-
     console.log(`📅 Date requested: ${date}`);
     console.log(`⏰ Query date range:`);
-    console.log(`   Start: ${startDateISO}`);
-    console.log(`   End: ${endDateISO}`);
+    console.log(`   Start: ${startDate.toISOString()}`);
+    console.log(`   End: ${endDate.toISOString()}`);
 
     let posTransactionsData: any[] = [];
     let bookingsData: any[] = [];
