@@ -534,12 +534,13 @@ class SupabaseDatabaseService {
     status?: string;
     userId?: string;
   }): Promise<any[]> {
-    if (!this.db) {
-      console.warn("⚠️ Database not connected");
-      return [];
-    }
-
     try {
+      const db = await this.ensureConnection();
+      if (!db) {
+        console.warn("⚠️ Database not connected");
+        return [];
+      }
+
       console.log("📋 Fetching subscriptions with params:", params);
 
       // Build the where conditions
@@ -552,7 +553,7 @@ class SupabaseDatabaseService {
       }
 
       // Build query with optional where clause
-      let query = this.db.select().from(schema.packageSubscriptions);
+      let query = db.select().from(schema.packageSubscriptions);
 
       if (conditions.length > 0) {
         query = query.where(and(...conditions));
