@@ -22,8 +22,6 @@ export function CustomerSearchModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  if (!isOpen) return null;
-
   // Load all customers when modal opens
   useEffect(() => {
     const loadCustomers = async () => {
