@@ -144,18 +144,32 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const sessionEndDate = new Date();
 
     // Query ONLY completed/paid transactions (exclude pending, cancelled, refunded)
+    // First try to use posSessionId if available, otherwise use time-based filtering
+    let transactionWhere: any;
+
+    if (sessionId) {
+      // Filter by session ID (preferred, more accurate)
+      transactionWhere = and(
+        eq(posTransactions.posSessionId, sessionId),
+        eq(posTransactions.status, "completed"),
+        ne(posTransactions.type, "refund"),
+        ne(posTransactions.type, "void"),
+      );
+    } else {
+      // Fallback to time-based filtering
+      transactionWhere = and(
+        gte(posTransactions.createdAt, sessionStartDate),
+        lte(posTransactions.createdAt, sessionEndDate),
+        eq(posTransactions.status, "completed"),
+        ne(posTransactions.type, "refund"),
+        ne(posTransactions.type, "void"),
+      );
+    }
+
     const transactions = await db
       .select()
       .from(posTransactions)
-      .where(
-        and(
-          gte(posTransactions.createdAt, sessionStartDate),
-          lte(posTransactions.createdAt, sessionEndDate),
-          eq(posTransactions.status, "completed"),
-          ne(posTransactions.type, "refund"),
-          ne(posTransactions.type, "void"),
-        ),
-      );
+      .where(transactionWhere);
 
     console.log(`📊 Found ${transactions.length} POS transactions for session`);
     console.log(`🔍 Transaction details:`);
