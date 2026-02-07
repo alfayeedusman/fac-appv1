@@ -385,9 +385,12 @@ router.post("/transactions", async (req, res) => {
           paymentMethod,
           branchId,
           cashierInfo,
+          timestamp: new Date().toISOString(),
         };
+        console.log(`🚀 Emitting pos.transaction.created event with payload:`, payload);
+
         // Broadcast to public and branch channels (also private versions)
-        await Promise.all([
+        const results = await Promise.all([
           triggerPusherEvent(
             ["public-realtime", `branch-${branchId}`],
             "pos.transaction.created",
@@ -399,8 +402,10 @@ router.post("/transactions", async (req, res) => {
             payload,
           ),
         ]);
+
+        console.log(`✅ Pusher events emitted successfully:`, results);
       } catch (err) {
-        console.warn("Failed to emit pos.transaction.created:", err);
+        console.error("❌ Failed to emit pos.transaction.created:", err);
       }
     })();
   } catch (error) {
