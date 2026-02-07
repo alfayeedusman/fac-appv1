@@ -689,12 +689,13 @@ router.post("/expenses", async (req, res) => {
       recordedByName: recordedByInfo?.name || "Unknown",
     });
 
-    console.log(`💸 Expense recorded: ${category} - ₱${amount} (ID: ${expenseId})`);
+    const sourceLabel = expenseMoneySource === "owner" ? "👤 Owner Paid" : "💰 From Income";
+    console.log(`💸 Expense recorded: ${category} - ₱${amount} [${sourceLabel}] (ID: ${expenseId})`);
 
     res.json({
       success: true,
       expenseId,
-      message: "Expense recorded successfully",
+      message: `Expense recorded successfully (${sourceLabel})`,
     });
 
     // Emit Pusher event for real-time updates
@@ -707,6 +708,7 @@ router.post("/expenses", async (req, res) => {
           description,
           amount: parseFloat(amount.toString()),
           paymentMethod,
+          moneySource: expenseMoneySource,
           recordedBy: recordedByInfo?.id,
           recordedByName: recordedByInfo?.name,
           timestamp: new Date(),
