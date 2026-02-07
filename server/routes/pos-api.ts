@@ -335,7 +335,10 @@ router.post("/transactions", async (req, res) => {
 
     // Insert main transaction
     const transactionId = createId();
-    await db.insert(posTransactions).values({
+    const now = new Date();
+    console.log(`⏱️ Current server time: ${now.toISOString()}`);
+
+    const insertResult = await db.insert(posTransactions).values({
       id: transactionId,
       transactionNumber,
       customerId: customerInfo?.id,
@@ -360,6 +363,15 @@ router.post("/transactions", async (req, res) => {
         customerInfo,
         timestamp: new Date(),
       }),
+    });
+
+    console.log(`💾 Transaction inserted:`, {
+      id: transactionId,
+      transactionNumber,
+      totalAmount,
+      status: "completed",
+      branchId: branchId || "default",
+      insertedAt: now.toISOString(),
     });
 
     // Insert transaction items
