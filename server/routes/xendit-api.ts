@@ -27,7 +27,7 @@ const XENDIT_WEBHOOK_TOKEN = process.env.XENDIT_WEBHOOK_TOKEN || "";
 const XENDIT_API_URL = "https://api.xendit.co/v2";
 
 // Helper function to get database
-const getDb = () => getDatabase();
+const getDb = async () => await getDatabase();
 
 // Cache for available payment methods to speed up responses
 const PAYMENT_METHODS_CACHE_TTL = Number(
