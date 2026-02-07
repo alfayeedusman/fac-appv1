@@ -1327,9 +1327,8 @@ export default function POSKiosk() {
                         });
                         setShowExpenseModal(false);
 
-                        // Wait a moment for database to save, then refresh
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        await loadTodaysSalesAndExpenses();
+                        // Sales data will be updated automatically via Pusher
+                        console.log("✅ Expense saved - Pusher will update sales data automatically");
                       } catch (error) {
                         console.error("Error saving expense:", error);
                         notificationManager.error(
