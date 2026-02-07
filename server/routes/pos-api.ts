@@ -136,13 +136,19 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     console.log(`✅ Session found, opening balance: ₱${session.openingBalance}`);
 
     // Get all transactions for this session (both POS transactions and bookings)
+    // Ensure we have proper Date objects for comparison
+    const sessionStartDate = session.openedAt
+      ? new Date(session.openedAt)
+      : (session.createdAt ? new Date(session.createdAt) : new Date());
+    const sessionEndDate = new Date();
+
     const transactions = await db
       .select()
       .from(posTransactions)
       .where(
         and(
-          gte(posTransactions.createdAt, session.openedAt || session.createdAt),
-          lte(posTransactions.createdAt, new Date()),
+          gte(posTransactions.createdAt, sessionStartDate),
+          lte(posTransactions.createdAt, sessionEndDate),
         ),
       );
 
@@ -155,8 +161,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       .from(bookings)
       .where(
         and(
-          gte(bookings.createdAt, session.openedAt || session.createdAt),
-          lte(bookings.createdAt, new Date()),
+          gte(bookings.createdAt, sessionStartDate),
+          lte(bookings.createdAt, sessionEndDate),
         ),
       );
 
