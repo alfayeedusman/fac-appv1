@@ -111,14 +111,22 @@ export async function getCurrentPOSSession(
   cashierId: string
 ): Promise<POSSession | null> {
   try {
+    console.log(`🔍 Fetching current POS session for cashier: ${cashierId}`);
     const response = await fetch(
       `${API_BASE}/sessions/current/${cashierId}`
     );
-    if (!response.ok) throw new Error("Failed to fetch POS session");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to fetch POS session: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to fetch POS session`);
+    }
+
     const data = await response.json();
-    return data.session;
+    console.log(`✅ POS session response received:`, data);
+    return data.session || null;
   } catch (error) {
-    console.error("Error fetching current POS session:", error);
+    console.error("Error fetching current POS session:", error instanceof Error ? error.message : String(error));
     return null;
   }
 }
