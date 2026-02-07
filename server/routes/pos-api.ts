@@ -523,11 +523,41 @@ router.post("/expenses", async (req, res) => {
       recordedByName: recordedByInfo?.name || "Unknown",
     });
 
+    console.log(`💸 Expense recorded: ${category} - ₱${amount} (ID: ${expenseId})`);
+
     res.json({
       success: true,
       expenseId,
       message: "Expense recorded successfully",
     });
+
+    // Emit Pusher event for real-time updates
+    (async () => {
+      try {
+        const payload = {
+          expenseId,
+          posSessionId,
+          category,
+          description,
+          amount: parseFloat(amount.toString()),
+          paymentMethod,
+          recordedBy: recordedByInfo?.id,
+          recordedByName: recordedByInfo?.name,
+          timestamp: new Date(),
+        };
+        // Broadcast to public and branch channels
+        await Promise.all([
+          triggerPusherEvent(
+            ["public-realtime", `private-public-realtime`],
+            "pos.expense.created",
+            payload,
+          ),
+        ]);
+        console.log("✅ Expense event emitted to Pusher");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit pos.expense.created event:", err);
+      }
+    })();
   } catch (error) {
     console.error("Error saving expense:", error);
     res.status(500).json({ error: "Failed to save expense" });
