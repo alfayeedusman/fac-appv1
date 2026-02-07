@@ -792,7 +792,7 @@ export const updateSubscription: RequestHandler = async (req, res) => {
     });
 
     // Update user's subscription status
-    const updatedUser = await neonDbService.updateUser(userId, {
+    const updatedUser = await supabaseDbService.updateUser(userId, {
       subscriptionStatus: newStatus,
     });
 
