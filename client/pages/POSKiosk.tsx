@@ -1324,6 +1324,42 @@ export default function POSKiosk() {
                 </select>
               </div>
 
+              {/* Money Source */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">💰 Money Flow</label>
+                <div className="space-y-3">
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{borderColor: expenseForm.moneySource === "income" ? "#3b82f6" : "#d1d5db", backgroundColor: expenseForm.moneySource === "income" ? "#eff6ff" : "transparent"}}>
+                    <input
+                      type="radio"
+                      name="moneySource"
+                      value="income"
+                      checked={expenseForm.moneySource === "income"}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, moneySource: e.target.value as "income" | "owner" })}
+                      className="w-4 h-4 accent-blue-500 cursor-pointer"
+                    />
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900">From Current Income</p>
+                      <p className="text-xs text-gray-600">Expense will be deducted from today's sales for balance matching</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{borderColor: expenseForm.moneySource === "owner" ? "#f97316" : "#d1d5db", backgroundColor: expenseForm.moneySource === "owner" ? "#fff7ed" : "transparent"}}>
+                    <input
+                      type="radio"
+                      name="moneySource"
+                      value="owner"
+                      checked={expenseForm.moneySource === "owner"}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, moneySource: e.target.value as "income" | "owner" })}
+                      className="w-4 h-4 accent-orange-500 cursor-pointer"
+                    />
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900">Shouldered by Owner</p>
+                      <p className="text-xs text-gray-600">Expense is paid by owner, not deducted from sales balance</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
