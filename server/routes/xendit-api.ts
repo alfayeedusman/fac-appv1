@@ -523,7 +523,7 @@ export const handleWebhook: RequestHandler = async (req, res) => {
       event?.type || event?.event || "unknown",
     );
 
-    const db = getDb();
+    const db = await getDb();
     const externalId = event.external_id;
     const eventId = event.id || event.reference_id || `xendit-${Date.now()}`; // Use webhook event ID or fallback
 
