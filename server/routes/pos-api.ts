@@ -156,6 +156,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     // Also include bookings as sales
     const { bookings } = await import("../database/schema");
+    console.log(`🔍 Querying bookings between ${sessionStartDate.toISOString()} and ${sessionEndDate.toISOString()}`);
     const bookingsData = await db
       .select()
       .from(bookings)
