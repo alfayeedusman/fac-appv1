@@ -6,6 +6,8 @@ import {
   posTransactionItems,
   posExpenses,
   posSessions,
+  bookings,
+  posExpenses as posExpensesSchema,
 } from "../database/schema";
 import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
