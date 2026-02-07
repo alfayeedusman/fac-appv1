@@ -979,6 +979,7 @@ export const posExpenses = pgTable("pos_expenses", {
 
   // Payment information
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // 'cash' | 'card' | 'gcash' | 'bank'
+  moneySource: varchar("money_source", { length: 50 }).default("income"), // 'income' = from sales | 'owner' = owner paid it
   notes: text("notes"),
 
   // Staff information
