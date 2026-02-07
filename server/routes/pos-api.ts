@@ -106,7 +106,7 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
 // Close POS Session with Reconciliation
 router.post("/sessions/close/:sessionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
