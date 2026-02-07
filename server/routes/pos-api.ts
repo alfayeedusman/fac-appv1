@@ -143,6 +143,7 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       : (session.createdAt ? new Date(session.createdAt) : new Date());
     const sessionEndDate = new Date();
 
+    // Query ONLY completed/paid transactions (exclude pending, cancelled, refunded)
     const transactions = await db
       .select()
       .from(posTransactions)
@@ -150,6 +151,9 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
         and(
           gte(posTransactions.createdAt, sessionStartDate),
           lte(posTransactions.createdAt, sessionEndDate),
+          eq(posTransactions.status, "completed"),
+          ne(posTransactions.type, "refund"),
+          ne(posTransactions.type, "void"),
         ),
       );
 
