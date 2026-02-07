@@ -274,22 +274,31 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     console.log(`💸 Total expenses: ₱${totalExpenses}`);
 
     // Calculate expected balances with proper rounding
+    // IMPORTANT: Only CASH expenses affect the cash balance
+    // Digital/Card/GCash expenses are paid from those sources, not from cash drawer
     const openingBalance = roundToTwo(
       parseFloat(session.openingBalance.toString()),
     );
     const expectedCash = roundToTwo(
-      openingBalance + totalCashSales - totalExpenses,
+      openingBalance + totalCashSales - cashExpenses, // Only deduct CASH expenses from cash
     );
     const expectedDigital = roundToTwo(
-      totalCardSales + totalGcashSales + totalBankSales,
+      totalCardSales + totalGcashSales + totalBankSales - (cardExpenses + gcashExpenses + bankExpenses), // Digital expenses reduce digital balance
     );
 
-    console.log(`📋 Expected Balance Calculation:`);
-    console.log(`  Opening Balance: ₱${openingBalance}`);
-    console.log(`  + Cash Sales: ₱${totalCashSales}`);
-    console.log(`  - Expenses: ₱${totalExpenses}`);
-    console.log(`  = Expected Cash: ₱${expectedCash}`);
-    console.log(`  Expected Digital: ₱${expectedDigital}`);
+    console.log(`📋 Expected Balance Calculation (Smart Expense Tracking):`);
+    console.log(`  💵 CASH:`);
+    console.log(`    Opening Balance: ₱${openingBalance}`);
+    console.log(`    + Cash Sales: ₱${totalCashSales}`);
+    console.log(`    - Cash Expenses ONLY: ₱${cashExpenses}`);
+    console.log(`    = Expected Cash: ₱${expectedCash}`);
+    console.log(`  💳 DIGITAL:`);
+    console.log(`    Card Sales: ₱${totalCardSales}`);
+    console.log(`    + GCash Sales: ₱${totalGcashSales}`);
+    console.log(`    + Bank Sales: ₱${totalBankSales}`);
+    console.log(`    - Digital Expenses: ₱${cardExpenses + gcashExpenses + bankExpenses}`);
+    console.log(`    = Expected Digital: ₱${expectedDigital}`);
+    console.log(`\n  📌 Note: Expenses paid via digital/card/gcash don't affect cash drawer balance`);
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
