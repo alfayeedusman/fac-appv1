@@ -599,7 +599,17 @@ export default function POSKiosk() {
                 Add Expense
               </Button>
               <Button
-                onClick={() => setShowCarWashModal(true)}
+                onClick={() => {
+                  if (!currentSessionId) {
+                    notificationManager.error(
+                      "POS Not Opened",
+                      "You must open POS first before adding car wash services"
+                    );
+                    setShowOpeningModal(true);
+                    return;
+                  }
+                  setShowCarWashModal(true);
+                }}
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 px-6"
               >
                 <Droplet className="h-4 w-4 mr-2" />
