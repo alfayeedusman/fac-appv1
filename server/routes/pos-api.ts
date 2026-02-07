@@ -317,6 +317,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     console.log(`✅ Session balanced: ${isBalanced}`);
 
     // Update session with properly rounded values
+    // Once closed, this session becomes FINAL and IMMUTABLE
+    // All sales and expenses are recorded and locked
     const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
 
     const updateResult = await db
