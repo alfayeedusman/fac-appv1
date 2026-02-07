@@ -240,7 +240,9 @@ describe("Database Operations", () => {
         updatedAt: new Date("2024-01-02"),
       };
 
-      expect(record.createdAt).toBeLessThanOrEqual(record.updatedAt);
+      expect(record.createdAt.getTime()).toBeLessThanOrEqual(
+        record.updatedAt.getTime()
+      );
       expect(record.createdAt instanceof Date).toBe(true);
       expect(record.updatedAt instanceof Date).toBe(true);
     });
