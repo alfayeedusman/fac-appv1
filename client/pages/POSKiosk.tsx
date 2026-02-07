@@ -537,7 +537,6 @@ export default function POSKiosk() {
           name: cashierName,
         },
         branchId,
-        posSessionId: currentSessionId, // Link transaction to the current POS session
       });
 
       console.log(`✅ Transaction saved successfully:`, transactionResult);
