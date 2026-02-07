@@ -182,6 +182,13 @@ export default function POSKiosk() {
       loadTodaysSalesAndExpenses();
     });
 
+    // Subscribe to expense creation events (real-time expenses)
+    const unsubscribeExpense = realtimeService.subscribe("pos.expense.created", (data: any) => {
+      console.log("💸 New POS expense via Pusher:", data);
+      // Refresh sales and expense data when new expense is created
+      loadTodaysSalesAndExpenses();
+    });
+
     // Subscribe to inventory updates
     const unsubscribeInventory = realtimeService.subscribe("inventory.updated", (data: any) => {
       console.log("📦 Inventory updated via Pusher:", data);
@@ -191,6 +198,7 @@ export default function POSKiosk() {
       // Unsubscribe from all Pusher events when component unmounts
       unsubscribePOSTransaction();
       unsubscribeBooking();
+      unsubscribeExpense();
       unsubscribeInventory();
     };
   }, []);
