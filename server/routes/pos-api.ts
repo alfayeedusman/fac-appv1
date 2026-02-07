@@ -229,6 +229,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       totalCardSales + totalGcashSales + totalBankSales,
     );
 
+    console.log(`📋 Expected Balance - Cash: ₱${expectedCash} (Opening ₱${openingBalance} + Sales ₱${totalCashSales} - Expenses ₱${totalExpenses}), Digital: ₱${expectedDigital}`);
+
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
     const actualDigitalAmount = roundToTwo(parseFloat(actualDigital));
@@ -237,10 +239,13 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const isBalanced =
       Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
+    console.log(`💵 Actual vs Expected - Cash: ₱${actualCashAmount} (variance: ${cashVariance >= 0 ? "+" : ""}₱${cashVariance}), Digital: ₱${actualDigitalAmount} (variance: ${digitalVariance >= 0 ? "+" : ""}₱${digitalVariance})`);
+    console.log(`✅ Session balanced: ${isBalanced}`);
+
     // Update session with properly rounded values
     const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
 
-    await db
+    const updateResult = await db
       .update(posSessions)
       .set({
         status: "closed",
@@ -262,18 +267,22 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       })
       .where(eq(posSessions.id, sessionId));
 
+    console.log(`🔒 POS session ${sessionId} closed successfully`);
+
     res.json({
       success: true,
       isBalanced,
       cashVariance,
       digitalVariance,
+      closingBalance,
       message: isBalanced
         ? "POS closed successfully and balanced!"
         : "POS closed with variance",
     });
   } catch (error: any) {
-    console.error("Error closing POS session:", error);
+    console.error("❌ Error closing POS session:", error);
     const errorMessage = error?.message || error?.toString() || "Unknown error";
+    console.error("Error stack:", error?.stack);
     res.status(500).json({
       error: "Failed to close POS session",
       details: errorMessage,
