@@ -174,14 +174,20 @@ export const AuthRegister: React.FC<AuthRegisterProps> = ({
               <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 type="tel"
-                placeholder="+63 9XX XXX XXXX"
+                placeholder="+63 9XX XXX XXXX or 09XX XXX XXXX"
                 value={formData.contactNumber}
                 onChange={(e) =>
                   setFormData({ ...formData, contactNumber: e.target.value })
                 }
-                className="pl-10"
+                className={`pl-10 ${errors.contactNumber ? "border-red-500" : ""}`}
               />
             </div>
+            {errors.contactNumber && (
+              <p className="text-sm text-red-500 mt-1">{errors.contactNumber}</p>
+            )}
+            {!errors.contactNumber && (
+              <p className="text-xs text-gray-500 mt-1">Format: 09XX XXX XXXX or +63 9XX XXX XXXX</p>
+            )}
           </div>
 
           {/* Address */}
@@ -193,14 +199,20 @@ export const AuthRegister: React.FC<AuthRegisterProps> = ({
               <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Street address"
+                placeholder="Street address, City, Province"
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                className="pl-10"
+                className={`pl-10 ${errors.address ? "border-red-500" : ""}`}
               />
             </div>
+            {errors.address && (
+              <p className="text-sm text-red-500 mt-1">{errors.address}</p>
+            )}
+            {!errors.address && (
+              <p className="text-xs text-gray-500 mt-1">e.g., 123 Main St, Manila, Metro Manila</p>
+            )}
           </div>
 
           {/* Branch Location */}
