@@ -298,18 +298,30 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Button
-                onClick={() => setIsEditing(!isEditing)}
-                className="w-10 h-10 p-0"
-                variant="outline"
-                size="icon"
-              >
-                {isEditing ? (
-                  <X className="h-4 w-4" />
-                ) : (
-                  <Edit className="h-4 w-4" />
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="w-10 h-10 p-0"
+                  variant="outline"
+                  size="icon"
+                  title="Edit profile"
+                >
+                  {isEditing ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Edit className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  className="w-10 h-10 p-0 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                  variant="outline"
+                  size="icon"
+                  title="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
         </Card>
