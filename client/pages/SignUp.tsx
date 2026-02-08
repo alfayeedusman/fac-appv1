@@ -89,8 +89,13 @@ export default function SignUp() {
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^(\+?63|0)?[0-9]{10}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ""));
+    // Remove spaces and dashes
+    const cleaned = phone.replace(/[\s\-()]/g, "");
+    // Philippine phone patterns:
+    // 09XXXXXXXXX (starts with 09, 11 digits total)
+    // +639XXXXXXXXX (starts with +639, 12 chars)
+    const phoneRegex = /^(\+639|09)\d{9}$/;
+    return phoneRegex.test(cleaned);
   };
 
   const validateStep = (
