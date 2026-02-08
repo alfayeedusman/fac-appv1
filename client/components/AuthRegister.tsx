@@ -95,11 +95,34 @@ export const AuthRegister: React.FC<AuthRegisterProps> = ({
           onSuccess(formData.email);
         }
       } else {
-        notificationManager.error("Registration Failed", result.message);
+        // Check if error is validation error with field details
+        if (typeof result.message === 'object') {
+          // Backend returned field-level validation errors
+          const validationErrors = result.message as Record<string, string>;
+          setErrors(validationErrors);
+          const errorMessages = Object.values(validationErrors).join(", ");
+          notificationManager.error("Validation Error", errorMessages);
+        } else {
+          notificationManager.error("Registration Failed", result.message);
+        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Registration failed";
-      notificationManager.error("Error", errorMessage);
+      console.error("Registration error:", errorMessage);
+
+      // Try to parse validation errors if it's a JSON error message
+      try {
+        const parsedError = JSON.parse(errorMessage);
+        if (typeof parsedError === 'object') {
+          setErrors(parsedError);
+          const errorMessages = Object.values(parsedError).join(", ");
+          notificationManager.error("Validation Error", errorMessages);
+        } else {
+          notificationManager.error("Error", errorMessage);
+        }
+      } catch {
+        notificationManager.error("Error", errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
