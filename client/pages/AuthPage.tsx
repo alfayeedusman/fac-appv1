@@ -10,6 +10,8 @@ import { AuthRegister } from "@/components/AuthRegister";
 import { AuthEmailVerification } from "@/components/AuthEmailVerification";
 import { AuthForgotPassword } from "@/components/AuthForgotPassword";
 import { AuthResetPassword } from "@/components/AuthResetPassword";
+import { AuthSocialLogin } from "@/components/AuthSocialLogin";
+import { AuthMFASetup } from "@/components/AuthMFASetup";
 
 type AuthMode = "login" | "register" | "verify-email" | "forgot-password" | "reset-password";
 
