@@ -337,6 +337,14 @@ const AppComponent = () => {
                   }
                 />
                 <Route
+                  path="/admin-customer-hub"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminCustomerHub />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/admin-sessions"
                   element={
                     <ProtectedRoute requiredRole="admin">
