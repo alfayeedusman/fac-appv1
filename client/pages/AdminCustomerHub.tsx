@@ -23,7 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { supabaseDbClient, User } from "@/services/supabaseDatabaseService";
 import StickyHeader from "@/components/StickyHeader";
-import { AdminSidebar } from "@/components/AdminSidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 
 export default function AdminCustomerHub() {
   const navigate = useNavigate();
