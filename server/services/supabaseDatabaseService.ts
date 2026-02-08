@@ -78,6 +78,27 @@ class SupabaseDatabaseService {
     return user;
   }
 
+  /**
+   * Create user profile without password (for Supabase Auth users)
+   */
+  async createUserProfile(
+    userData: Omit<NewUser, "id" | "createdAt" | "updatedAt" | "password">,
+  ): Promise<User> {
+    const db = await this.ensureConnection();
+    if (!db) throw new Error("Database not connected");
+
+    // Use a placeholder password since this is for auth users
+    const [user] = await db
+      .insert(schema.users)
+      .values({
+        ...userData,
+        password: "auth_managed_no_local_password",
+      })
+      .returning();
+
+    return user;
+  }
+
   async getUserByEmail(email: string): Promise<User | null> {
     try {
       console.log("🔍 Querying user by email:", email);
