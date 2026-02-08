@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Mail, Lock, User, Phone, MapPin, Building } from "lucide-react";
 import { supabaseAuthService } from "@/services/supabaseAuthService";
 import { notificationManager } from "@/components/NotificationModal";
+import { validateRegistrationForm } from "@/utils/validationUtils";
 
 interface AuthRegisterProps {
   onSuccess?: (email: string) => void;
