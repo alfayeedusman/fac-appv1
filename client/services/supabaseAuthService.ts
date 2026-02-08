@@ -397,6 +397,295 @@ class SupabaseAuthService {
   }
 
   /**
+   * Social Login - Google
+   */
+  async signInWithGoogle() {
+    try {
+      console.log("🔐 Signing in with Google...");
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("✅ Google sign-in initiated");
+      return {
+        success: true,
+        message: "Redirecting to Google...",
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Google sign-in error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Social Login - GitHub
+   */
+  async signInWithGitHub() {
+    try {
+      console.log("🔐 Signing in with GitHub...");
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("✅ GitHub sign-in initiated");
+      return {
+        success: true,
+        message: "Redirecting to GitHub...",
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("GitHub sign-in error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Social Login - Facebook
+   */
+  async signInWithFacebook() {
+    try {
+      console.log("🔐 Signing in with Facebook...");
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "facebook",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("✅ Facebook sign-in initiated");
+      return {
+        success: true,
+        message: "Redirecting to Facebook...",
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Facebook sign-in error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Setup Multi-Factor Authentication (MFA) - Email OTP
+   */
+  async setupMFAEmail() {
+    try {
+      console.log("🔐 Setting up MFA with email...");
+
+      const { data, error } = await supabase.auth.mfa.listFactors();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Check if email factor already exists
+      const emailFactor = data.factors?.find((f) => f.factor_type === "email");
+
+      if (emailFactor) {
+        return {
+          success: true,
+          message: "Email MFA already enabled",
+          factorId: emailFactor.id,
+        };
+      }
+
+      // Enroll new email factor
+      const { data: enrollData, error: enrollError } =
+        await supabase.auth.mfa.enroll({
+          factorType: "email",
+        });
+
+      if (enrollError) {
+        throw new Error(enrollError.message);
+      }
+
+      console.log("✅ Email MFA setup initiated");
+
+      return {
+        success: true,
+        message: "Email MFA setup started",
+        factorId: enrollData?.id,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("MFA setup error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Setup Multi-Factor Authentication (MFA) - TOTP (Authenticator App)
+   */
+  async setupMFATOTP() {
+    try {
+      console.log("🔐 Setting up MFA with TOTP...");
+
+      // Enroll TOTP factor
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("✅ TOTP MFA setup initiated");
+
+      return {
+        success: true,
+        message: "TOTP MFA setup started",
+        factorId: data?.id,
+        qrCode: data?.totp?.qr_code,
+        secret: data?.totp?.secret,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("TOTP MFA setup error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Verify MFA Factor
+   */
+  async verifyMFAFactor(factorId: string, code: string) {
+    try {
+      console.log(`🔐 Verifying MFA factor: ${factorId}`);
+
+      const { data, error } = await supabase.auth.mfa.challenge({
+        factorId,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.mfa.verify({
+          factorId,
+          challengeId: data.id,
+          code,
+        });
+
+      if (verifyError) {
+        throw new Error(verifyError.message);
+      }
+
+      console.log("✅ MFA factor verified successfully");
+
+      return {
+        success: true,
+        message: "MFA verified successfully",
+        session: verifyData.session,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("MFA verification error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Get MFA Factors
+   */
+  async getMFAFactors() {
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return {
+        success: true,
+        factors: data.factors || [],
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Get MFA factors error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+        factors: [],
+      };
+    }
+  }
+
+  /**
+   * Unenroll MFA Factor
+   */
+  async removeMFAFactor(factorId: string) {
+    try {
+      console.log(`🔐 Removing MFA factor: ${factorId}`);
+
+      const { error } = await supabase.auth.mfa.unenroll({
+        factorId,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("✅ MFA factor removed successfully");
+
+      return {
+        success: true,
+        message: "MFA factor removed successfully",
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Remove MFA factor error:", errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
+  }
+
+  /**
    * Get Supabase client for direct access if needed
    */
   getClient() {
