@@ -241,8 +241,11 @@ export default function AuthPage() {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
+          {/* Social Login */}
+          <AuthSocialLogin />
+
           {/* Sign Up Link */}
-          <div className="text-center space-y-3">
+          <div className="text-center space-y-3 mt-6">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <button
