@@ -11,6 +11,7 @@ import { triggerPusherEvent } from "../services/pusherService"; // Fire events t
 import * as schema from "../database/schema";
 import { and, eq, gte, lte, desc } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { sendPasswordResetEmail } from "../services/emailService";
 
 const emitPusher = async (
   channels: string | string[],
