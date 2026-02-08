@@ -112,6 +112,7 @@ export const createServer = async () => {
   // Add health check middleware to critical auth routes
   app.post("/api/supabase/auth/login", ensureDbConnection);
   app.post("/api/supabase/auth/register", ensureDbConnection);
+  app.post("/api/supabase/auth/forgot-password", ensureDbConnection);
 
   // ============= POS API ROUTES =============
   console.log("🛒 Registering POS API routes...");
