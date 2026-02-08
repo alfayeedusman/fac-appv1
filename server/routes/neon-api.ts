@@ -661,7 +661,7 @@ export const loginUser: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const userData = req.body;
-    const { subscriptionPackage } = userData;
+    const { subscriptionPackage, password: _password } = userData;
 
     console.log("📝 User registration initiated:", {
       email: userData.email,
@@ -677,10 +677,10 @@ export const registerUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Create user (excluding subscriptionPackage from user data)
-    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } =
+    // Create user profile (excluding subscriptionPackage and password)
+    const { subscriptionPackage: _ignore, password: _pass, ...userDataForProfile } =
       userData;
-    const user = await supabaseDbService.createUser(userDataWithoutPackage);
+    const user = await supabaseDbService.createUserProfile(userDataForProfile);
 
     console.log("✅ User created:", user.id);
 
