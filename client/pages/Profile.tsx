@@ -24,6 +24,7 @@ import {
   Settings,
   Trophy,
   CreditCard,
+  LogOut,
 } from "lucide-react";
 import VehicleSelector from "@/components/VehicleSelector";
 import StickyHeader from "@/components/StickyHeader";
