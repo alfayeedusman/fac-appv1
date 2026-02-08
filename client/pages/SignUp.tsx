@@ -849,6 +849,13 @@ export default function SignUp() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Selection instruction */}
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                    <p className="text-sm text-blue-900 dark:text-blue-200">
+                      <span className="font-bold">📌 Required:</span> Please select a plan below and click <span className="font-bold">"JOIN THE FUTURE"</span> to proceed with registration.
+                    </p>
+                  </div>
+
                   <div className="space-y-4">
                     {packages.map((pkg) => (
                       <div
