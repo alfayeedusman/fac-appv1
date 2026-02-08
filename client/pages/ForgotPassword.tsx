@@ -86,20 +86,14 @@ export default function ForgotPassword() {
       case "email":
         return {
           title: "Forgot Password",
-          subtitle: "Enter your email to receive a verification code",
+          subtitle: "Enter your email to receive a password reset link",
           badge: "Password Recovery",
         };
-      case "otp":
+      case "sent":
         return {
-          title: "Verify Code",
-          subtitle: "Enter the 6-digit code sent to your email",
-          badge: "Verification",
-        };
-      case "reset":
-        return {
-          title: "Reset Password",
-          subtitle: "Create a new secure password",
-          badge: "New Password",
+          title: "Email Sent",
+          subtitle: "Check your email for a password reset link",
+          badge: "Check Email",
         };
     }
   };
