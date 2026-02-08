@@ -52,6 +52,7 @@ import POSKiosk from "./pages/POSKiosk";
 import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import AdminCustomerHub from "./pages/AdminCustomerHub";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminSessions from "./pages/AdminSessions";
 import AdminHomeService from "./pages/AdminHomeService";
