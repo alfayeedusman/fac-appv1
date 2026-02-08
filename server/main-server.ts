@@ -134,6 +134,11 @@ export const createServer = async () => {
     ensureDbConnection,
     neonApiRoutes.registerUser,
   );
+  app.post(
+    "/api/supabase/auth/forgot-password",
+    ensureDbConnection,
+    neonApiRoutes.requestPasswordReset,
+  );
 
   // Booking endpoints
   app.post("/api/supabase/bookings", neonApiRoutes.createBooking);
