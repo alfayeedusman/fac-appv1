@@ -50,38 +50,37 @@ export default function ForgotPassword() {
       return;
     }
 
-    // Check if email exists in registered users
-    const registeredUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]",
-    );
-    const userExists = registeredUsers.find(
-      (user: any) => user.email === formData.email,
-    );
+    try {
+      // Use Supabase Auth to request password reset
+      const result = await supabaseAuthService.requestPasswordReset(formData.email);
 
-    if (!userExists) {
+      if (result.success) {
+        toast({
+          title: "Password Reset Email Sent! 📧",
+          description: "Check your email for a link to reset your password",
+          variant: "default",
+        });
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to send password reset email",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred";
       toast({
-        title: "Email Not Found",
-        description: "This email address is not registered with us",
+        title: "Error",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Generate a random 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOTP(otp);
-
-    // Simulate sending OTP (in real app, this would be sent via email/SMS)
-    setTimeout(() => {
-      toast({
-        title: "OTP Sent! 📧",
-        description: `For demo purposes, your OTP is: ${otp}`,
-        variant: "default",
-      });
-      setStep("otp");
-      setIsLoading(false);
-    }, 2000);
   };
 
   const handleOTPSubmit = (e: React.FormEvent) => {
