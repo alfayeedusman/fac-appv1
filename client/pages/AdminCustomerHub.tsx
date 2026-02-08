@@ -85,6 +85,8 @@ export default function AdminCustomerHub() {
       <div className="flex">
         <AdminSidebar
           activeTab="customers"
+          userRole={userRole}
+          notificationCount={notificationCount}
           onTabChange={(tab) => {
             if (tab === "crew")
               navigate("/admin-crew-management");
