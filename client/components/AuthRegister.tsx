@@ -31,38 +31,18 @@ export const AuthRegister: React.FC<AuthRegisterProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const validation = validateRegistrationForm({
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      fullName: formData.fullName,
+      contactNumber: formData.contactNumber,
+      address: formData.address,
+      branchLocation: formData.branchLocation,
+    });
 
-    if (!formData.email) newErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = "Invalid email format";
-
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-
-    if (!formData.fullName) newErrors.fullName = "Full name is required";
-
-    // Validate phone number (Philippine format) - optional but if provided, must be valid
-    if (formData.contactNumber) {
-      // Accept formats: +63 9XX XXX XXXX, 09XX XXX XXXX, +639XXXXXXXXXX, 09XXXXXXXXXX
-      const phoneRegex = /^(\+63|0)?9\d{9}$/;
-      const cleanedPhone = formData.contactNumber.replace(/[\s\-()]/g, "");
-      if (!phoneRegex.test(cleanedPhone)) {
-        newErrors.contactNumber = "Please enter a valid Philippine phone number (e.g., 09XX XXX XXXX or +63 9XX XXX XXXX)";
-      }
-    }
-
-    // Validate address - optional but if provided, must not be empty or just whitespace
-    if (formData.address && !formData.address.trim()) {
-      newErrors.address = "Please provide a complete address";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
