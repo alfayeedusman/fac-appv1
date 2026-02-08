@@ -919,6 +919,15 @@ export default function SignUp() {
             </div>
           )}
 
+          {/* Error message for step 3 */}
+          {currentStep === 3 && errors.packageToAvail && (
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-900 dark:text-red-200">
+                <span className="font-bold">❌ {errors.packageToAvail}</span>
+              </p>
+            </div>
+          )}
+
           {/* Navigation Buttons */}
           <div className="flex justify-between pt-6">
             {currentStep > 1 && (
