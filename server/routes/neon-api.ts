@@ -800,20 +800,32 @@ export const requestPasswordReset: RequestHandler = async (req, res) => {
                       Math.random().toString(36).substring(2, 15);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Store reset token in database (in a real app, use a tokens table)
-    // For now, we'll store it in localStorage-like session
     console.log("🔐 Password reset token generated for:", email);
 
-    // In development, return reset link in response
+    // Generate reset link
     const resetLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    // TODO: In production, send email with reset link using nodemailer or similar
     console.log("📧 Password reset link:", resetLink);
     console.log("⏰ Token expires at:", expiresAt);
 
+    // Send password reset email
+    const emailSent = await sendPasswordResetEmail({
+      email,
+      resetLink,
+      userName: user.fullName || undefined,
+    });
+
+    if (!emailSent) {
+      console.warn("⚠️ Failed to send password reset email");
+      return res.status(500).json({
+        success: false,
+        error: "Failed to send password reset email. Please check email configuration.",
+      });
+    }
+
     res.json({
       success: true,
-      message: "Password reset email sent successfully",
+      message: "Password reset email sent successfully. Check your inbox.",
       // In development, include the link for testing
       ...(process.env.NODE_ENV === "development" && { resetLink }),
     });
