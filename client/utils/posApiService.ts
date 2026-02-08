@@ -42,6 +42,7 @@ export interface POSExpense {
   description: string;
   amount: number;
   paymentMethod: string;
+  moneySource?: "income" | "owner"; // 'income' = from sales | 'owner' = owner paid it
   notes?: string;
   recordedByInfo?: {
     id: string;
