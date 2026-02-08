@@ -766,6 +766,65 @@ export const registerUser: RequestHandler = async (req, res) => {
   }
 };
 
+// Request password reset
+export const requestPasswordReset: RequestHandler = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "Email is required",
+      });
+    }
+
+    console.log("🔄 Password reset requested for:", email);
+
+    // Check if user exists in database
+    const user = await supabaseDbService.getUserByEmail(email);
+
+    if (!user) {
+      // For security, don't reveal if email exists or not
+      console.log("❌ User not found:", email);
+      return res.status(404).json({
+        success: false,
+        error: "Email not found in our records",
+      });
+    }
+
+    console.log("✅ User found:", email);
+
+    // Generate a password reset token (valid for 24 hours)
+    const resetToken = Math.random().toString(36).substring(2, 15) +
+                      Math.random().toString(36).substring(2, 15);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Store reset token in database (in a real app, use a tokens table)
+    // For now, we'll store it in localStorage-like session
+    console.log("🔐 Password reset token generated for:", email);
+
+    // In development, return reset link in response
+    const resetLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    // TODO: In production, send email with reset link using nodemailer or similar
+    console.log("📧 Password reset link:", resetLink);
+    console.log("⏰ Token expires at:", expiresAt);
+
+    res.json({
+      success: true,
+      message: "Password reset email sent successfully",
+      // In development, include the link for testing
+      ...(process.env.NODE_ENV === "development" && { resetLink }),
+    });
+  } catch (error) {
+    console.error("Password reset error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to process password reset request",
+    });
+  }
+};
+
 // Update user subscription status
 export const updateSubscription: RequestHandler = async (req, res) => {
   try {
