@@ -749,7 +749,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     }
 
     // Remove password from response
-    const { password: _password, ...userWithoutPassword } = user;
+    const { password: _pwd, ...userWithoutPassword } = user;
 
     res.status(201).json({
       success: true,
