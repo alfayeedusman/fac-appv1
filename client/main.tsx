@@ -114,6 +114,9 @@ const AppComponent = () => {
                 <Route path="/login-debug" element={<LoginDebug />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/auth/verify-email" element={<AuthPage />} />
+                <Route path="/auth/reset-password" element={<AuthPage />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/credential-setup" element={<CredentialSetup />} />
