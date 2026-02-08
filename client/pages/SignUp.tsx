@@ -64,7 +64,7 @@ export default function SignUp() {
     carPlateNumber: "",
     carType: "",
     branchLocation: "",
-    packageToAvail: "regular",
+    packageToAvail: "", // No default - user must select
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
