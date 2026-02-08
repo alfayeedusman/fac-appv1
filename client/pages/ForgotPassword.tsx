@@ -209,12 +209,12 @@ export default function ForgotPassword() {
                     {isLoading ? (
                       <div className="flex items-center justify-center">
                         <div className="spinner mr-3"></div>
-                        Sending Code...
+                        Sending Email...
                       </div>
                     ) : (
                       <span className="flex items-center justify-center">
                         <Mail className="h-5 w-5 mr-2" />
-                        Send Verification Code
+                        Send Reset Link
                         <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
                       </span>
                     )}
@@ -222,151 +222,39 @@ export default function ForgotPassword() {
                 </form>
               )}
 
-              {/* OTP Step */}
-              {step === "otp" && (
-                <form onSubmit={handleOTPSubmit} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="otp"
-                      className="font-bold text-foreground text-sm flex items-center"
-                    >
-                      <Shield className="h-4 w-4 mr-2 text-fac-orange-500" />
-                      Verification Code
-                    </Label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="Enter 6-digit code"
-                      value={formData.otp}
-                      onChange={(e) => handleInputChange("otp", e.target.value)}
-                      maxLength={6}
-                      className="text-center text-2xl tracking-widest py-4 border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
-                      required
-                    />
-                    <p className="text-sm text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
-                      Code sent to{" "}
-                      <span className="font-medium text-fac-orange-600">
-                        {formData.email}
-                      </span>
+              {/* Success Step */}
+              {step === "sent" && (
+                <div className="space-y-6 text-center">
+                  <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center mx-auto">
+                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold text-foreground">Email Sent!</h3>
+                    <p className="text-sm text-muted-foreground">
+                      We've sent a password reset link to:
+                    </p>
+                    <p className="text-base font-medium text-fac-orange-600">
+                      {formData.email}
                     </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300 disabled:opacity-50"
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center justify-center">
-                          <div className="spinner mr-3"></div>
-                          Verifying...
-                        </div>
-                      ) : (
-                        <span className="flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 mr-2" />
-                          Verify Code
-                          <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
-                        </span>
-                      )}
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full py-3 text-sm font-bold rounded-xl border-2 hover:bg-muted/50 transition-all duration-300"
-                      onClick={() => setStep("email")}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back to Email
-                    </Button>
-                  </div>
-                </form>
-              )}
-
-              {/* Password Reset Step */}
-              {step === "reset" && (
-                <form onSubmit={handlePasswordReset} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="newPassword"
-                      className="font-bold text-foreground text-sm flex items-center"
-                    >
-                      <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
-                      New Password
-                    </Label>
-                    <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors z-10" />
-                      <Input
-                        id="newPassword"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter new password"
-                        value={formData.newPassword}
-                        onChange={(e) =>
-                          handleInputChange("newPassword", e.target.value)
-                        }
-                        className="pl-12 pr-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-muted/50"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="font-bold text-foreground text-sm flex items-center"
-                    >
-                      <Lock className="h-4 w-4 mr-2 text-fac-orange-500" />
-                      Confirm Password
-                    </Label>
-                    <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-fac-orange-500 transition-colors z-10" />
-                      <Input
-                        id="confirmPassword"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Confirm new password"
-                        value={formData.confirmPassword}
-                        onChange={(e) =>
-                          handleInputChange("confirmPassword", e.target.value)
-                        }
-                        className="pl-12 py-4 text-foreground font-medium border-border focus:border-fac-orange-500 focus:ring-fac-orange-500 rounded-xl transition-all duration-300 hover:shadow-md focus:shadow-lg"
-                        required
-                      />
-                    </div>
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                    <p className="text-sm text-blue-900 dark:text-blue-200">
+                      <span className="font-bold">📧 Next Step:</span> Click the link in the email to reset your password. The link will expire in 24 hours.
+                    </p>
                   </div>
 
                   <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300 disabled:opacity-50"
+                    onClick={() => navigate("/login")}
+                    className="w-full py-4 text-base font-bold rounded-xl shadow-lg bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 hover:from-fac-orange-600 hover:to-fac-orange-700 text-white border-0 hover-lift group transition-all duration-300"
                   >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="spinner mr-3"></div>
-                        Resetting...
-                      </div>
-                    ) : (
-                      <span className="flex items-center justify-center">
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Reset Password
-                        <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
-                      </span>
-                    )}
+                    <span className="flex items-center justify-center">
+                      <ArrowLeft className="h-5 w-5 mr-2 rotate-180" />
+                      Back to Login
+                      <Zap className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
+                    </span>
                   </Button>
-                </form>
+                </div>
               )}
             </CardContent>
           </Card>
