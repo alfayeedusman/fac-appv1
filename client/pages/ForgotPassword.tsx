@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { supabaseAuthService } from "@/services/supabaseAuthService";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
