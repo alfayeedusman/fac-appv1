@@ -133,10 +133,9 @@ export default function SignUp() {
           "Please enter a valid Philippine phone number";
       }
 
-      if (!formData.address.trim()) {
-        newErrors.address = "Address is required";
-      } else if (formData.address.trim().length < 10) {
-        newErrors.address = "Please provide a complete address";
+      // Address is optional but if provided, should be at least 5 characters
+      if (formData.address.trim() && formData.address.trim().length < 5) {
+        newErrors.address = "Please provide a complete address (at least 5 characters)";
       }
     }
 
