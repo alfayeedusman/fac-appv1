@@ -216,25 +216,31 @@ class SupabaseAuthService {
   }
 
   /**
-   * Request password reset
+   * Request password reset via backend
    */
   async requestPasswordReset(email: string) {
     try {
       console.log(`🔄 Requesting password reset for: ${email}`);
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      const response = await fetch("/api/supabase/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        throw new Error(error.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send password reset email");
       }
 
-      console.log(`✅ Password reset email sent to ${email}`);
+      console.log(`✅ Password reset request sent for ${email}`);
 
       return {
         success: true,
-        message: "Password reset email sent! Check your inbox.",
+        message: data.message || "Password reset email sent! Check your inbox.",
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
