@@ -49,6 +49,8 @@ interface UserProfile {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
+
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
   const registeredUsers = JSON.parse(
@@ -86,6 +88,20 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const fileInputId = "profile_pic_input";
+
+  // Logout handler
+  const handleLogout = () => {
+    // Clear all user data from localStorage
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userLoggedInAt");
+    localStorage.removeItem("sessionToken");
+    localStorage.removeItem("pendingVerificationEmail");
+    localStorage.removeItem("pendingUserId");
+
+    // Redirect to login
+    navigate("/login");
+  };
 
   // Fetch subscription data from backend
   useEffect(() => {
