@@ -53,10 +53,8 @@ export default function ForgotPassword() {
           description: "Check your email for a link to reset your password",
           variant: "default",
         });
-        // Redirect to login after a short delay
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
+        // Show success message
+        setStep("sent");
       } else {
         toast({
           title: "Error",
