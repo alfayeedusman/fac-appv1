@@ -307,7 +307,6 @@ export const getCrewList: RequestHandler = async (req, res) => {
         crewExperience: schema.users.crewExperience,
         crewSkills: schema.users.crewSkills,
         isActive: schema.users.isActive,
-        lastLoginAt: schema.users.lastLoginAt,
         crewMemberId: schema.crewMembers.id,
         employeeId: schema.crewMembers.employeeId,
         groupId: schema.crewMembers.crewGroupId,
