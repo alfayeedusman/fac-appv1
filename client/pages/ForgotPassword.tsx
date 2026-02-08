@@ -21,18 +21,11 @@ import { supabaseAuthService } from "@/services/supabaseAuthService";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<"email" | "otp" | "reset">("email");
+  const [step, setStep] = useState<"email" | "sent">("email");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
-    otp: "",
-    newPassword: "",
-    confirmPassword: "",
   });
-
-  // Simulated OTP for demo purposes
-  const [generatedOTP, setGeneratedOTP] = useState("");
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
