@@ -16,6 +16,7 @@ router.post("/auth/register", neonApi.registerUser);
 router.post("/auth/logout", neonApi.logoutUser);
 router.post("/auth/revoke-session", neonApi.revokeSession);
 router.get("/auth/sessions", neonApi.getSessions);
+router.post("/auth/forgot-password", neonApi.requestPasswordReset);
 
 // ============= BOOKING ENDPOINTS =============
 router.post("/bookings", neonApi.createBooking);
