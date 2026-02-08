@@ -68,6 +68,7 @@ import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import SystemDiagnostics from "./pages/SystemDiagnostics";
+import AuthPage from "./pages/AuthPage";
 import { supabaseDbClient } from "./services/supabaseDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
 import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
