@@ -36,6 +36,9 @@ export default function AdminCustomerHub() {
     inactive: 0,
   });
 
+  const userRole = localStorage.getItem("userRole") || "admin";
+  const notificationCount = 0;
+
   useEffect(() => {
     fetchCustomers();
   }, []);
