@@ -159,15 +159,13 @@ export default function ForgotPassword() {
           <Card className="glass border-border/50 shadow-xl animate-fade-in-up animate-delay-200">
             <CardHeader className="pb-6">
               <CardTitle className="text-center">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-fac-orange-500 to-fac-orange-600 flex items-center justify-center mx-auto mb-4">
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-r flex items-center justify-center mx-auto mb-4 ${step === "sent" ? "from-green-500 to-green-600" : "from-fac-orange-500 to-fac-orange-600"}`}>
                   {step === "email" && <Mail className="h-7 w-7 text-white" />}
-                  {step === "otp" && <Shield className="h-7 w-7 text-white" />}
-                  {step === "reset" && <Lock className="h-7 w-7 text-white" />}
+                  {step === "sent" && <CheckCircle className="h-7 w-7 text-white" />}
                 </div>
                 <span className="text-xl font-bold text-foreground">
                   {step === "email" && "Enter Email"}
-                  {step === "otp" && "Verify Code"}
-                  {step === "reset" && "New Password"}
+                  {step === "sent" && "Check Email"}
                 </span>
               </CardTitle>
             </CardHeader>
