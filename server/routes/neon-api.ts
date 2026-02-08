@@ -612,14 +612,6 @@ export const loginUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Update last login
-    try {
-      await supabaseDbService.updateUser(user.id, { lastLoginAt: new Date() });
-    } catch (updateErr) {
-      console.warn("⚠️ Failed to update last login:", updateErr);
-      // Continue - this is not critical
-    }
-
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
