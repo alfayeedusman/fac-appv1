@@ -61,11 +61,43 @@ class SupabaseAuthService {
         throw new Error(authError.message);
       }
 
-      console.log(`✅ User created: ${authData.user?.id}`);
-      console.log(`📧 Verification email sent to ${credentials.email}`);
+      console.log(`✅ Auth user created: ${authData.user?.id}`);
 
-      // Store user info temporarily
+      // Now save user profile to database
       if (authData.user) {
+        try {
+          const profileResponse = await fetch("/api/supabase/auth/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+              fullName: credentials.fullName,
+              contactNumber: credentials.contactNumber || "",
+              address: credentials.address || "",
+              branchLocation: credentials.branchLocation,
+              role: credentials.role || "user",
+            }),
+          });
+
+          const profileData = await profileResponse.json();
+
+          if (!profileResponse.ok) {
+            console.warn("⚠️ Failed to save profile to database:", profileData);
+            // Don't fail the auth process if profile save fails
+          } else {
+            console.log("✅ User profile saved to database");
+          }
+        } catch (profileError) {
+          console.warn("⚠️ Error saving profile to database:", profileError);
+          // Continue - auth was successful, profile save is secondary
+        }
+
+        console.log(`📧 Verification email sent to ${credentials.email}`);
+
+        // Store user info temporarily
         localStorage.setItem("pendingVerificationEmail", credentials.email);
         localStorage.setItem("pendingUserId", authData.user.id);
       }
