@@ -31,7 +31,10 @@
     "setup:production": "npm ci --legacy-peer-deps --include=dev && npm run build && npm run build:server && npm run typecheck",
     "deploy:netlify": "bash deploy-to-netlify.sh",
     "deploy:vps": "bash deploy.sh deploy",
-    "deploy:one-click": "bash scripts/one-click-deploy.sh"
+    "deploy:one-click": "bash scripts/one-click-deploy.sh",
+    "migrate:apply": "node scripts/apply-migrations.js",
+    "migrate:apply:bash": "bash scripts/apply-supabase-migrations.sh",
+    "migrate:verify": "echo 'Run these queries in Supabase SQL Editor to verify migrations:' && cat SUPABASE_SECURITY_FIXES.md | grep -A 50 'Verification Steps'"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
