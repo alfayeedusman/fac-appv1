@@ -1447,8 +1447,9 @@ export default function POSKiosk() {
       <POSOpeningModal
         isOpen={showOpeningModal}
         onClose={() => setShowOpeningModal(false)}
-        onSessionOpened={(sessionId) => {
+        onSessionOpened={(sessionId, balance) => {
           setCurrentSessionId(sessionId);
+          setOpeningBalance(balance);
           setSessionLoaded(true);
           setShowOpeningModal(false);
           // Refresh sales data after opening session
