@@ -506,7 +506,7 @@ export default function POSKiosk() {
         },
         {
           method: paymentInfo.method,
-          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total * 1.12,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
           referenceNumber: paymentInfo.referenceNumber
         }
       );
