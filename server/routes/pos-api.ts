@@ -1166,4 +1166,79 @@ router.get("/transactions/stats/summary", async (req, res) => {
   }
 });
 
+// ============= DIAGNOSTIC ROUTES =============
+
+// Get diagnostic info about today's transactions
+router.get("/diagnostic/today", async (req, res) => {
+  try {
+    const db = await getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const today = new Date();
+    const todayStartUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0));
+    const todayEndUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+
+    const diagnosticData = {
+      serverTime: new Date().toISOString(),
+      clientTimeReceived: req.body?.clientTime || "not provided",
+      todayLocalDate: today.toLocaleDateString(),
+      todayUTCDate: today.toUTCString(),
+      dateRange: {
+        startUTC: todayStartUTC.toISOString(),
+        endUTC: todayEndUTC.toISOString(),
+      },
+      transactions: [] as any[],
+      summary: {
+        totalCount: 0,
+        totalAmount: 0,
+        byPaymentMethod: {} as Record<string, { count: number; amount: number }>,
+      },
+    };
+
+    // Get ALL transactions created today (with full details)
+    const allTransactions = await db
+      .select()
+      .from(posTransactions)
+      .orderBy(desc(posTransactions.createdAt));
+
+    // Filter for today
+    const todaysTransactions = allTransactions.filter((t) => {
+      const txTime = new Date(t.createdAt);
+      return txTime >= todayStartUTC && txTime <= todayEndUTC;
+    });
+
+    diagnosticData.transactions = todaysTransactions.map((t) => ({
+      id: t.id,
+      transactionNumber: t.transactionNumber,
+      totalAmount: t.totalAmount,
+      paymentMethod: t.paymentMethod,
+      createdAt: t.createdAt,
+      createdAtISO: new Date(t.createdAt).toISOString(),
+      status: t.status,
+    }));
+
+    diagnosticData.summary.totalCount = todaysTransactions.length;
+    diagnosticData.summary.totalAmount = todaysTransactions.reduce(
+      (sum, t) => sum + parseFloat(t.totalAmount?.toString() || "0"),
+      0
+    );
+
+    todaysTransactions.forEach((t) => {
+      const method = t.paymentMethod || "unknown";
+      if (!diagnosticData.summary.byPaymentMethod[method]) {
+        diagnosticData.summary.byPaymentMethod[method] = { count: 0, amount: 0 };
+      }
+      diagnosticData.summary.byPaymentMethod[method].count++;
+      diagnosticData.summary.byPaymentMethod[method].amount += parseFloat(t.totalAmount?.toString() || "0");
+    });
+
+    res.json(diagnosticData);
+  } catch (error) {
+    console.error("Error fetching diagnostic data:", error);
+    res.status(500).json({ error: "Failed to fetch diagnostic data", details: String(error) });
+  }
+});
+
 export default router;
