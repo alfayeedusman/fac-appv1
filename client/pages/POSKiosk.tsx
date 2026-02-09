@@ -118,6 +118,7 @@ export default function POSKiosk() {
   const cashierId = localStorage.getItem("userEmail") || "unknown";
   const branchId = "default";
 
+  // Initial data load (runs only once)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -149,8 +150,10 @@ export default function POSKiosk() {
       }
     };
     loadData();
+  }, []); // Empty dependencies - runs only on mount
 
-    // Expose debugging functions to window for console access
+  // Expose debugging functions to window (runs only once)
+  useEffect(() => {
     (window as any).posDiagnostics = {
       async checkDatabaseTransactions() {
         console.log("🔍 Checking database transactions...");
@@ -182,7 +185,7 @@ export default function POSKiosk() {
         return currentSessionId;
       },
     };
-  }, [cartItems, customerInfo, paymentInfo, currentSessionId]);
+  }, []); // Empty dependencies - runs only once on mount
 
   // Load today's sales and expenses
   const loadTodaysSalesAndExpenses = async () => {
