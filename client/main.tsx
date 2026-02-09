@@ -47,7 +47,6 @@ import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import AdminAppVersion from "./pages/AdminAppVersion";
 import PaymentHistory from "./pages/PaymentHistory";
 import POSKiosk from "./pages/POSKiosk";
-import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminCustomerHub from "./pages/AdminCustomerHub";
