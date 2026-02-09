@@ -155,12 +155,15 @@ export default function POSKiosk() {
     try {
       const today = new Date().toISOString().split("T")[0];
       console.log(`📊 Fetching sales report for ${today}...`);
+      console.log(`   Current time: ${new Date().toISOString()}`);
+
       const report = await getDailyReportAPI(today);
       console.log(`✅ Sales report loaded:`, report);
       console.log(`   Total Sales: ₱${report.totalSales}`);
       console.log(`   Total Expenses: ₱${report.totalExpenses}`);
       console.log(`   Net Income: ₱${report.totalSales - report.totalExpenses}`);
       console.log(`   Transaction Count: ${report.transactionCount}`);
+      console.log(`   Breakdown - Cash: ₱${report.totalCash}, Card: ₱${report.totalCard}, GCash: ₱${report.totalGcash}, Bank: ₱${report.totalBank}`);
 
       setTodaysSales(report.totalSales || 0);
       setTodayExpenses(report.totalExpenses || 0);
@@ -171,7 +174,7 @@ export default function POSKiosk() {
         todayExpenses: report.totalExpenses || 0
       });
     } catch (error) {
-      console.error("Error loading sales data:", error);
+      console.error("❌ Error loading sales data:", error);
       // Keep existing values on error
     }
   };
