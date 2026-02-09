@@ -315,6 +315,29 @@ export async function deleteExpense(expenseId: string): Promise<boolean> {
 
 // ============= REPORT FUNCTIONS =============
 
+// ============= DIAGNOSTIC FUNCTIONS =============
+
+export async function getDiagnosticData(): Promise<any> {
+  try {
+    console.log(`🔍 Fetching diagnostic data...`);
+    const response = await fetch(`${API_BASE}/diagnostic/today`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: Failed to fetch diagnostic data`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Diagnostic data retrieved:`, data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching diagnostic data:", error);
+    return null;
+  }
+}
+
 export async function getDailySalesReport(date: string): Promise<DailySalesReport> {
   const maxRetries = 3;
   let lastError: any = null;
