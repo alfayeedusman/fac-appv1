@@ -49,7 +49,7 @@ CREATE POLICY "users_select_policy" ON users
 
 DROP POLICY IF EXISTS "users_update_policy" ON users;
 CREATE POLICY "users_update_policy" ON users
-  FOR UPDATE USING ((SELECT auth.uid()) = id);
+  FOR UPDATE USING ((SELECT auth.uid())::text = id::text);
 
 -- User Vehicles
 DROP POLICY IF EXISTS "user_vehicles_select_policy" ON user_vehicles;
