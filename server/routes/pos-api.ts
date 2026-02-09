@@ -363,27 +363,35 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     // All sales and expenses are recorded and locked
     const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
 
-    const updateResult = await db
-      .update(posSessions)
-      .set({
-        status: "closed",
-        closedAt: new Date(),
-        closingBalance: closingBalance.toString(),
-        totalCashSales: totalCashSales.toString(),
-        totalCardSales: totalCardSales.toString(),
-        totalGcashSales: totalGcashSales.toString(),
-        totalBankSales: totalBankSales.toString(),
-        totalExpenses: totalExpenses.toString(),
-        expectedCash: expectedCash.toString(),
-        actualCash: actualCashAmount.toString(),
-        cashVariance: cashVariance.toString(),
-        expectedDigital: expectedDigital.toString(),
-        actualDigital: actualDigitalAmount.toString(),
-        digitalVariance: digitalVariance.toString(),
-        remittanceNotes,
-        isBalanced,
-      })
-      .where(eq(posSessions.id, sessionId));
+    console.log(`📝 Updating session status to closed...`);
+    let updateResult: any;
+    try {
+      updateResult = await db
+        .update(posSessions)
+        .set({
+          status: "closed",
+          closedAt: new Date(),
+          closingBalance: closingBalance.toString(),
+          totalCashSales: totalCashSales.toString(),
+          totalCardSales: totalCardSales.toString(),
+          totalGcashSales: totalGcashSales.toString(),
+          totalBankSales: totalBankSales.toString(),
+          totalExpenses: totalExpenses.toString(),
+          expectedCash: expectedCash.toString(),
+          actualCash: actualCashAmount.toString(),
+          cashVariance: cashVariance.toString(),
+          expectedDigital: expectedDigital.toString(),
+          actualDigital: actualDigitalAmount.toString(),
+          digitalVariance: digitalVariance.toString(),
+          remittanceNotes,
+          isBalanced,
+        })
+        .where(eq(posSessions.id, sessionId));
+      console.log(`✅ Session updated successfully`);
+    } catch (updateError: any) {
+      console.error(`❌ Error updating session:`, updateError?.message || String(updateError));
+      throw new Error(`Failed to update session status: ${updateError?.message || String(updateError)}`);
+    }
 
     // Create comprehensive closure report
     const closureReport = {
