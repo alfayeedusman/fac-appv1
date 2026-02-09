@@ -617,6 +617,9 @@ export default function POSKiosk() {
 
       // Sales data will be updated automatically via Pusher for real-time updates
       console.log("✅ Payment processed - Pusher will update sales data automatically");
+      console.log(`🔍 PAYMENT COMPLETED SUCCESSFULLY`);
+      console.log(`   Transaction ID: ${transactionResult.transactionId}`);
+      console.log(`   Check console above for refresh completion time`);
     } catch (error) {
       console.error("Payment error:", error);
       notificationManager.error(
