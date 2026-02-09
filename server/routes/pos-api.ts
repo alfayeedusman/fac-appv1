@@ -457,10 +457,27 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
   } catch (error: any) {
     console.error("❌ Error closing POS session:", error);
     const errorMessage = error?.message || error?.toString() || "Unknown error";
+    const errorDetails = {
+      message: errorMessage,
+      code: error?.code || error?.sqlState || "UNKNOWN",
+      timestamp: new Date().toISOString(),
+    };
+    console.error("Error details:", JSON.stringify(errorDetails, null, 2));
     console.error("Error stack:", error?.stack);
+
+    // Provide more specific error messages
+    let userFriendlyMessage = "Failed to close POS session";
+    if (errorMessage.includes("pos_expenses")) {
+      userFriendlyMessage = "Failed to read expenses. The session may not have expenses recorded yet - this is okay.";
+    } else if (errorMessage.includes("pos_sessions")) {
+      userFriendlyMessage = "Failed to update session. Please check if the session still exists.";
+    }
+
     res.status(500).json({
-      error: "Failed to close POS session",
+      success: false,
+      error: userFriendlyMessage,
       details: errorMessage,
+      code: errorDetails.code,
     });
   }
 });
