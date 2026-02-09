@@ -239,14 +239,15 @@ main() {
     echo -e "${BLUE}  Fayeed Auto Care Deployment   ${NC}"
     echo -e "${BLUE}================================${NC}"
     echo ""
-    
+
     check_requirements
     backup_database
     deploy_application
     initialize_database
+    run_database_migrations
     health_check
     show_summary
-    
+
     echo -e "${GREEN}✨ Deployment completed successfully!${NC}"
 }
 
