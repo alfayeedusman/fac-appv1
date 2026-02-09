@@ -60,11 +60,12 @@ export default function POSOpeningModal({
       );
 
       if (result.success && result.sessionId) {
+        const balanceAmount = parseFloat(openingBalance);
         notificationManager.success(
           "Success",
-          `POS opened with opening balance ₱${parseFloat(openingBalance).toFixed(2)}`
+          `POS opened with opening balance ₱${balanceAmount.toFixed(2)}`
         );
-        onSessionOpened(result.sessionId);
+        onSessionOpened(result.sessionId, balanceAmount);
         setOpeningBalance("");
         onClose();
       } else {
