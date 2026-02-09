@@ -8,7 +8,7 @@ import { notificationManager } from "@/components/NotificationModal";
 interface POSOpeningModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSessionOpened: (sessionId: string) => void;
+  onSessionOpened: (sessionId: string, openingBalance: number) => void;
   cashierInfo: { id: string; name: string };
   branchId: string;
 }
