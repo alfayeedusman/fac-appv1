@@ -1735,14 +1735,43 @@ export async function migrate() {
   }
 
   try {
-    await runMigrations();
+    // Initialize migration tracking (idempotent)
+    await initializeMigrationTracking();
+
+    // Check current migration status
+    const stats = await getMigrationStats();
+    console.log(`📊 Migration Status: ${stats.succeeded} succeeded, ${stats.failed} failed`);
+    console.log(stats.lastRun ? `⏰ Last migration: ${stats.lastRun.toLocaleString()}` : "⏰ No migrations run yet");
+
+    // Only run if we haven't completed initial migrations
+    const executed = await getExecutedMigrations();
+    const needsMigrations = executed.size === 0; // Only run if no migrations have been executed
+
+    if (needsMigrations) {
+      console.log("🚀 Running initial database migrations...");
+      const startTime = Date.now();
+      await runMigrations();
+      const duration = Date.now() - startTime;
+      await logMigration("initial_migration", duration, "success");
+    } else {
+      console.log("✅ Database already migrated - skipping migrations");
+    }
+
+    // Seed initial data (idempotent check inside seedInitialData)
+    const seedStartTime = Date.now();
     await seedInitialData();
+    const seedDuration = Date.now() - seedStartTime;
+    await logMigration("seed_initial_data", seedDuration, "success");
 
     // Seed premium users and test accounts
     try {
+      const premiumStartTime = Date.now();
       await seedPremiumUsers();
+      const premiumDuration = Date.now() - premiumStartTime;
+      await logMigration("seed_premium_users", premiumDuration, "success");
     } catch (err) {
       console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+      await logMigration("seed_premium_users", 0, "failed");
     }
   } catch (error) {
     console.error("❌ Database migration failed:", error);
