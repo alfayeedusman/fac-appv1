@@ -45,7 +45,7 @@ CREATE POLICY "crew_locations_insert_policy" ON crew_locations
 -- Users Table
 DROP POLICY IF EXISTS "users_select_policy" ON users;
 CREATE POLICY "users_select_policy" ON users
-  FOR SELECT USING ((SELECT auth.uid()) = id OR (SELECT auth.role()) = 'admin');
+  FOR SELECT USING ((SELECT auth.uid())::text = id::text OR (SELECT auth.role()) = 'admin');
 
 DROP POLICY IF EXISTS "users_update_policy" ON users;
 CREATE POLICY "users_update_policy" ON users
