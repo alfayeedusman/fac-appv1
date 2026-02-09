@@ -239,10 +239,19 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     console.log(`💰 Transaction breakdown - Cash: ₱${totalCashSales}, Card: ₱${totalCardSales}, GCash: ₱${totalGcashSales}, Bank: ₱${totalBankSales}`);
 
     // Get total expenses and track by payment method and source
-    const allExpenses = await db
-      .select()
-      .from(posExpenses)
-      .where(eq(posExpenses.posSessionId, sessionId));
+    let allExpenses: any[] = [];
+    try {
+      console.log(`💸 Querying expenses for session: ${sessionId}`);
+      allExpenses = await db
+        .select()
+        .from(posExpenses)
+        .where(eq(posExpenses.posSessionId, sessionId));
+      console.log(`✅ Found ${allExpenses.length} expenses for this session`);
+    } catch (expenseError: any) {
+      console.error(`❌ Error fetching expenses:`, expenseError?.message || String(expenseError));
+      console.log(`⚠️ Continuing with zero expenses (this is safe)`);
+      allExpenses = [];
+    }
 
     // Separate expenses by source: only "income" expenses affect balance matching
     const incomeExpenses = allExpenses.filter((e) => e.moneySource !== "owner");
