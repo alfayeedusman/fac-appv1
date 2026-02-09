@@ -546,9 +546,16 @@ export default function POSKiosk() {
 
       console.log(`✅ Transaction saved successfully:`, transactionResult);
 
+      if (!transactionResult.success) {
+        throw new Error(`Transaction save failed: ${JSON.stringify(transactionResult)}`);
+      }
+
       // Immediately refresh sales data to show the transaction right away
       console.log("📊 Immediately refreshing sales data after transaction...");
+      const startRefresh = Date.now();
       await loadTodaysSalesAndExpenses();
+      const refreshTime = Date.now() - startRefresh;
+      console.log(`✅ Sales data refreshed in ${refreshTime}ms`);
 
       // Handle receipt printing based on settings
       try {
