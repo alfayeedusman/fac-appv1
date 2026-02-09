@@ -1020,7 +1020,7 @@ export default function POSKiosk() {
                         <Separator className="my-3" />
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-black text-gray-900 text-shadow-sm">Total:</span>
-                          <span className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-shadow animate-gradient">₱{(total * 1.12).toFixed(2)}</span>
+                          <span className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-shadow animate-gradient">₱{total.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
