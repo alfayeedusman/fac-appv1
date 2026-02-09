@@ -54,15 +54,15 @@ CREATE POLICY "users_update_policy" ON users
 -- User Vehicles
 DROP POLICY IF EXISTS "user_vehicles_select_policy" ON user_vehicles;
 CREATE POLICY "user_vehicles_select_policy" ON user_vehicles
-  FOR SELECT USING ((SELECT auth.uid()) = user_id);
+  FOR SELECT USING ((SELECT auth.uid())::text = user_id::text);
 
 DROP POLICY IF EXISTS "user_vehicles_insert_policy" ON user_vehicles;
 CREATE POLICY "user_vehicles_insert_policy" ON user_vehicles
-  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
+  FOR INSERT WITH CHECK ((SELECT auth.uid())::text = user_id::text);
 
 DROP POLICY IF EXISTS "user_vehicles_update_policy" ON user_vehicles;
 CREATE POLICY "user_vehicles_update_policy" ON user_vehicles
-  FOR UPDATE USING ((SELECT auth.uid()) = user_id);
+  FOR UPDATE USING ((SELECT auth.uid())::text = user_id::text);
 
 -- Bookings
 DROP POLICY IF EXISTS "bookings_select_policy" ON bookings;
@@ -140,7 +140,7 @@ CREATE POLICY "ads_select_policy" ON ads
 
 DROP POLICY IF EXISTS "ad_dismissals_select_policy" ON ad_dismissals;
 CREATE POLICY "ad_dismissals_select_policy" ON ad_dismissals
-  FOR SELECT USING ((SELECT auth.uid()) = user_email OR (SELECT auth.email()) = user_email);
+  FOR SELECT USING ((SELECT auth.email()) = user_email);
 
 DROP POLICY IF EXISTS "ad_dismissals_insert_policy" ON ad_dismissals;
 CREATE POLICY "ad_dismissals_insert_policy" ON ad_dismissals
