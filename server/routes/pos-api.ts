@@ -828,8 +828,12 @@ router.get("/reports/daily/:date", async (req, res) => {
     console.log(`📊 Generating daily report for: ${date}`);
 
     // Parse the date properly (format: YYYY-MM-DD)
-    const dateObj = new Date(date);
-    if (isNaN(dateObj.getTime())) {
+    // IMPORTANT: Parse as UTC to match database timestamps
+    const [year, month, day] = date.split('-').map(Number);
+    const startDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+
+    if (isNaN(startDate.getTime())) {
       console.error(`❌ Invalid date format: ${date}`);
       return res.json({
         error: "Invalid date format. Use YYYY-MM-DD",
@@ -846,13 +850,8 @@ router.get("/reports/daily/:date", async (req, res) => {
       });
     }
 
-    const startDate = new Date(dateObj);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(dateObj);
-    endDate.setHours(23, 59, 59, 999);
-
     console.log(`📅 Date requested: ${date}`);
-    console.log(`⏰ Query date range:`);
+    console.log(`⏰ Query date range (UTC):`);
     console.log(`   Start: ${startDate.toISOString()}`);
     console.log(`   End: ${endDate.toISOString()}`);
 
