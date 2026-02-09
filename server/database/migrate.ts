@@ -1018,6 +1018,7 @@ export async function runMigrations() {
         description VARCHAR(255) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         payment_method VARCHAR(50) NOT NULL,
+        money_source VARCHAR(50) DEFAULT 'income',
         notes TEXT,
         recorded_by TEXT NOT NULL,
         recorded_by_name VARCHAR(255) NOT NULL,
