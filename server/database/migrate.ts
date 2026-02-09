@@ -1,6 +1,12 @@
 import { getDatabase, getSqlClient, testConnection } from "./connection";
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
+import {
+  initializeMigrationTracking,
+  getExecutedMigrations,
+  logMigration,
+  getMigrationStats,
+} from "./migration-tracker";
 
 // SQL client is created lazily via connection.ts
 
