@@ -669,6 +669,15 @@ export default function POSKiosk() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
+                {openingBalance > 0 && (
+                  <>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <DollarSign className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-600">Opening: ₱{openingBalance.toFixed(2)}</span>
+                    </div>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  </>
+                )}
                 <div className="hidden sm:flex items-center space-x-2">
                   <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
                   <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Sales: ₱{todaysSales.toFixed(2)}</span>
