@@ -125,7 +125,7 @@ deploy_application() {
 # Initialize database
 initialize_database() {
     echo -e "${BLUE}🗄️  Initializing database...${NC}"
-    
+
     # Wait for MySQL to be ready
     echo "Waiting for MySQL to be ready..."
     for i in {1..30}; do
@@ -134,24 +134,57 @@ initialize_database() {
         fi
         sleep 2
     done
-    
+
     # Check if database is initialized
     if docker exec fayeed_mysql mysql -u root -p$MYSQL_ROOT_PASSWORD -e "USE fayeed_auto_care; SHOW TABLES;" &> /dev/null; then
         print_status "Database already initialized"
     else
         print_status "Setting up database schema..."
-        
+
         # Run the schema creation
         if [ -f "database/mysql/schema.sql" ]; then
             docker exec -i fayeed_mysql mysql -u root -p$MYSQL_ROOT_PASSWORD < database/mysql/schema.sql
             print_status "Database schema created"
         fi
-        
+
         # Add OTP table
         if [ -f "database/mysql/email_otp_schema.sql" ]; then
             docker exec -i fayeed_mysql mysql -u root -p$MYSQL_ROOT_PASSWORD fayeed_auto_care < database/mysql/email_otp_schema.sql
             print_status "OTP table created"
         fi
+    fi
+}
+
+# Run database migrations
+run_database_migrations() {
+    echo -e "${BLUE}🔧 Running database migrations...${NC}"
+
+    # Check if migrations exist
+    if [ ! -d "server/database/migrations" ]; then
+        print_warning "Migrations directory not found - skipping migrations"
+        return 0
+    fi
+
+    MIGRATION_COUNT=$(find server/database/migrations -name "*.sql" 2>/dev/null | wc -l)
+
+    if [ "$MIGRATION_COUNT" -eq 0 ]; then
+        print_warning "No migration files found - skipping migrations"
+        return 0
+    fi
+
+    print_status "Found $MIGRATION_COUNT migration file(s)"
+
+    # Run migrations using Node.js script
+    if [ -f "scripts/apply-migrations.js" ]; then
+        if node scripts/apply-migrations.js; then
+            print_status "Migrations completed successfully"
+        else
+            print_warning "Some migrations may have failed - check logs"
+            return 1
+        fi
+    else
+        print_warning "Migration script not found at scripts/apply-migrations.js"
+        return 0
     fi
 }
 
