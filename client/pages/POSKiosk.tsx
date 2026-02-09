@@ -1063,7 +1063,7 @@ export default function POSKiosk() {
                             <CreditCard className="h-5 w-5 mr-2" />
                             Process Payment
                             <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-sm">
-                              ₱{(total * 1.12).toFixed(2)}
+                              ₱{total.toFixed(2)}
                             </div>
                           </>
                         )}
