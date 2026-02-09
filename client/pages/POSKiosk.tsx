@@ -149,7 +149,40 @@ export default function POSKiosk() {
       }
     };
     loadData();
-  }, []);
+
+    // Expose debugging functions to window for console access
+    (window as any).posDiagnostics = {
+      async checkDatabaseTransactions() {
+        console.log("🔍 Checking database transactions...");
+        const diag = await getDiagnosticData();
+        if (diag) {
+          console.table(diag.transactions);
+          console.log("Summary:", diag.summary);
+        }
+        return diag;
+      },
+      async refreshSalesNow() {
+        console.log("🔄 Manually refreshing sales...");
+        return loadTodaysSalesAndExpenses();
+      },
+      getCartItems() {
+        console.log("🛒 Current cart items:", cartItems);
+        return cartItems;
+      },
+      getCustomerInfo() {
+        console.log("👤 Current customer info:", customerInfo);
+        return customerInfo;
+      },
+      getPaymentInfo() {
+        console.log("💳 Current payment info:", paymentInfo);
+        return paymentInfo;
+      },
+      getCurrentSessionId() {
+        console.log("🔑 Current session ID:", currentSessionId);
+        return currentSessionId;
+      },
+    };
+  }, [cartItems, customerInfo, paymentInfo, currentSessionId]);
 
   // Load today's sales and expenses
   const loadTodaysSalesAndExpenses = async () => {
