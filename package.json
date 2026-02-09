@@ -32,6 +32,9 @@
     "deploy:netlify": "bash deploy-to-netlify.sh",
     "deploy:vps": "bash deploy.sh deploy",
     "deploy:one-click": "bash scripts/one-click-deploy.sh",
+    "setup-and-migrate": "bash scripts/setup-and-migrate.sh",
+    "setup:migrate-only": "bash scripts/setup-and-migrate.sh migrate-only",
+    "setup:verify": "bash scripts/setup-and-migrate.sh verify",
     "migrate:apply": "node scripts/apply-migrations.js",
     "migrate:apply:bash": "bash scripts/apply-supabase-migrations.sh",
     "migrate:verify": "echo 'Run these queries in Supabase SQL Editor to verify migrations:' && cat SUPABASE_SECURITY_FIXES.md | grep -A 50 'Verification Steps'"
