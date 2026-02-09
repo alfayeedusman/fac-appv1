@@ -79,15 +79,25 @@ function readMigration(filePath) {
  */
 async function executeMigration(sql, migrationName, sql_client) {
     try {
-        // Split SQL into individual statements and execute them
-        const statements = sql
-            .split(';')
-            .map(stmt => stmt.trim())
-            .filter(stmt => stmt.length > 0);
+        // Execute the entire SQL file as one transaction
+        // Remove comments and extra whitespace
+        const cleanedSql = sql
+            .split('\n')
+            .map(line => {
+                // Remove comments
+                const commentIndex = line.indexOf('--');
+                return commentIndex !== -1 ? line.substring(0, commentIndex) : line;
+            })
+            .join('\n')
+            .trim();
 
-        for (const statement of statements) {
-            await sql_client.unsafe(statement + ';');
+        if (cleanedSql.length === 0) {
+            logSuccess(`${migrationName} (empty) - skipped`);
+            return true;
         }
+
+        // Execute as a single query to maintain transaction integrity
+        await sql_client.unsafe(cleanedSql);
 
         logSuccess(`${migrationName} applied successfully`);
         return true;
