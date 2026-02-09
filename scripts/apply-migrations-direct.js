@@ -75,19 +75,83 @@ function readMigration(filePath) {
 }
 
 /**
+ * Split SQL into individual statements, respecting quotes and special syntax
+ */
+function splitSqlStatements(sql) {
+    const statements = [];
+    let currentStatement = '';
+    let inString = false;
+    let stringChar = '';
+    let inComment = false;
+
+    for (let i = 0; i < sql.length; i++) {
+        const char = sql[i];
+        const nextChar = sql[i + 1];
+
+        // Handle line comments
+        if (char === '-' && nextChar === '-' && !inString) {
+            inComment = true;
+            currentStatement += char;
+            continue;
+        }
+
+        if (inComment && char === '\n') {
+            inComment = false;
+            currentStatement += char;
+            continue;
+        }
+
+        if (inComment) {
+            currentStatement += char;
+            continue;
+        }
+
+        // Handle strings
+        if ((char === "'" || char === '"') && !inString) {
+            inString = true;
+            stringChar = char;
+            currentStatement += char;
+            continue;
+        }
+
+        if (char === stringChar && inString && sql[i - 1] !== '\\') {
+            inString = false;
+            currentStatement += char;
+            continue;
+        }
+
+        // Handle statement terminator
+        if (char === ';' && !inString) {
+            currentStatement += char;
+            const trimmed = currentStatement.trim();
+            if (trimmed.length > 0) {
+                statements.push(trimmed);
+            }
+            currentStatement = '';
+            continue;
+        }
+
+        currentStatement += char;
+    }
+
+    // Add any remaining statement
+    const trimmed = currentStatement.trim();
+    if (trimmed.length > 0) {
+        statements.push(trimmed);
+    }
+
+    return statements;
+}
+
+/**
  * Execute migration SQL
  */
 async function executeMigration(sql, migrationName, sql_client) {
     try {
-        // Execute the entire SQL file as one transaction
-        // Remove comments and extra whitespace
+        // Remove SQL comments (lines starting with --)
         const cleanedSql = sql
             .split('\n')
-            .map(line => {
-                // Remove comments
-                const commentIndex = line.indexOf('--');
-                return commentIndex !== -1 ? line.substring(0, commentIndex) : line;
-            })
+            .filter(line => !line.trim().startsWith('--'))
             .join('\n')
             .trim();
 
@@ -96,8 +160,16 @@ async function executeMigration(sql, migrationName, sql_client) {
             return true;
         }
 
-        // Execute as a single query to maintain transaction integrity
-        await sql_client.unsafe(cleanedSql);
+        // Split into individual statements
+        const statements = splitSqlStatements(cleanedSql);
+
+        // Execute each statement
+        for (const statement of statements) {
+            if (statement.trim().length > 0) {
+                logInfo(`  Executing: ${statement.substring(0, 50)}...`);
+                await sql_client.unsafe(statement);
+            }
+        }
 
         logSuccess(`${migrationName} applied successfully`);
         return true;
