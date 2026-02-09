@@ -1,4 +1,4 @@
-import { getDatabase, getSqlClient } from "./connection";
+import { getSqlClient } from "./connection";
 
 interface MigrationRecord {
   id: string;
