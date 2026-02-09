@@ -495,58 +495,70 @@ router.post("/transactions", async (req, res) => {
     const transactionId = createId();
     const now = new Date();
     console.log(`⏱️ Current server time: ${now.toISOString()}`);
+    console.log(`⏱️ Time in UTC: ${new Date().toUTCString()}`);
 
-    const insertResult = await db.insert(posTransactions).values({
-      id: transactionId,
-      transactionNumber,
-      customerId: customerInfo?.id,
-      customerName: customerInfo?.name,
-      customerEmail: customerInfo?.email,
-      customerPhone: customerInfo?.phone,
-      type: "sale",
-      status: "completed",
-      branchId: branchId || "default",
-      cashierId: cashierInfo?.id || "unknown",
-      cashierName: cashierInfo?.name || "Unknown",
-      subtotal: subtotal?.toString() || "0",
-      taxAmount: (taxAmount || 0).toString(),
-      discountAmount: (discountAmount || 0).toString(),
-      totalAmount: totalAmount.toString(),
-      paymentMethod,
-      paymentReference,
-      amountPaid: amountPaid?.toString() || totalAmount.toString(),
-      changeAmount: (changeAmount || 0).toString(),
-      receiptData: JSON.stringify({
-        items,
-        customerInfo,
-        timestamp: new Date(),
-      }),
-    });
+    try {
+      const insertResult = await db.insert(posTransactions).values({
+        id: transactionId,
+        transactionNumber,
+        customerId: customerInfo?.id,
+        customerName: customerInfo?.name,
+        customerEmail: customerInfo?.email,
+        customerPhone: customerInfo?.phone,
+        type: "sale",
+        status: "completed",
+        branchId: branchId || "default",
+        cashierId: cashierInfo?.id || "unknown",
+        cashierName: cashierInfo?.name || "Unknown",
+        subtotal: subtotal?.toString() || "0",
+        taxAmount: (taxAmount || 0).toString(),
+        discountAmount: (discountAmount || 0).toString(),
+        totalAmount: totalAmount.toString(),
+        paymentMethod,
+        paymentReference,
+        amountPaid: amountPaid?.toString() || totalAmount.toString(),
+        changeAmount: (changeAmount || 0).toString(),
+        receiptData: JSON.stringify({
+          items,
+          customerInfo,
+          timestamp: new Date(),
+        }),
+      });
 
-    console.log(`💾 Transaction inserted:`, {
-      id: transactionId,
-      transactionNumber,
-      totalAmount,
-      status: "completed",
-      branchId: branchId || "default",
-      insertedAt: now.toISOString(),
-    });
+      console.log(`💾 Transaction inserted:`, {
+        id: transactionId,
+        transactionNumber,
+        totalAmount,
+        status: "completed",
+        branchId: branchId || "default",
+        insertedAt: now.toISOString(),
+      });
+    } catch (insertError) {
+      console.error(`❌ Failed to insert transaction:`, insertError);
+      throw insertError;
+    }
 
     // Insert transaction items
     if (items && items.length > 0) {
-      for (const item of items) {
-        await db.insert(posTransactionItems).values({
-          id: createId(),
-          transactionId,
-          productId: item.id,
-          itemName: item.name,
-          itemSku: item.sku,
-          itemCategory: item.category,
-          unitPrice: item.price.toString(),
-          quantity: item.quantity,
-          subtotal: (item.price * item.quantity).toString(),
-          finalPrice: (item.price * item.quantity).toString(),
-        });
+      try {
+        for (const item of items) {
+          await db.insert(posTransactionItems).values({
+            id: createId(),
+            transactionId,
+            productId: item.id,
+            itemName: item.name,
+            itemSku: item.sku,
+            itemCategory: item.category,
+            unitPrice: item.price.toString(),
+            quantity: item.quantity,
+            subtotal: (item.price * item.quantity).toString(),
+            finalPrice: (item.price * item.quantity).toString(),
+          });
+        }
+        console.log(`✅ ${items.length} transaction items inserted`);
+      } catch (itemError) {
+        console.error(`❌ Failed to insert transaction items:`, itemError);
+        // Don't throw - transaction was already saved, items are secondary
       }
     }
 
