@@ -1238,8 +1238,6 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_cashier ON pos_sessions(cashier_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_status ON pos_sessions(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_date ON pos_sessions(session_date);`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_pos_expenses_session ON pos_expenses(pos_session_id);`;
-
     // Image Management indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_images_category ON images(category);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_images_active ON images(is_active);`;
