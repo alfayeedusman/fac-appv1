@@ -50,6 +50,7 @@ import {
   deleteExpense as deleteExpenseAPI,
   getDailySalesReport as getDailyReportAPI,
   getCurrentPOSSession,
+  getDiagnosticData,
 } from "@/utils/posApiService";
 import { receiptPrintService } from "@/services/receiptPrintService";
 import POSOpeningModal from "@/components/POSOpeningModal";
