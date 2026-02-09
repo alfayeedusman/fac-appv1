@@ -517,6 +517,10 @@ export default function POSKiosk() {
       console.log(`   Transaction #${transactionNumber}`);
       console.log(`   Amount: ₱${total.toFixed(2)}`);
       console.log(`   Items: ${cartItems.length}`);
+      console.log(`   Customer: ${customerInfo.name} (ID: ${customerInfo.uniqueId})`);
+      console.log(`   Payment Method: ${paymentInfo.method}`);
+      console.log(`   Branch ID: ${branchId}`);
+      console.log(`   Cashier: ${cashierName} (ID: ${cashierId})`);
 
       const transactionResult = await saveTransactionAPI({
         transactionNumber,
