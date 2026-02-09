@@ -1027,6 +1027,15 @@ export async function runMigrations() {
       );
     `;
 
+    // Ensure money_source column exists (add if missing from existing tables)
+    await sql`
+      ALTER TABLE IF EXISTS pos_expenses
+      ADD COLUMN IF NOT EXISTS money_source VARCHAR(50) DEFAULT 'income';
+    `;
+
+    // Create index on pos_session_id for faster lookups
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_expenses_session ON pos_expenses(pos_session_id);`;
+
     // ============= IMAGE MANAGEMENT SYSTEM =============
 
     // Create images table
