@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, CreditCard, Loader, QrCode, X, Phone, Mail } from 'lucide-react';
 
 interface CustomerInfo {
   uniqueId: string;
@@ -22,6 +22,8 @@ interface SimplePaymentModalProps {
   total: number;
   change: number;
   onPayment: () => void;
+  isProcessing?: boolean;
+  onOpenCustomerSearch?: () => void;
 }
 
 export function SimplePaymentModal({
@@ -33,8 +35,13 @@ export function SimplePaymentModal({
   setPaymentInfo,
   total,
   change,
-  onPayment
+  onPayment,
+  isProcessing = false,
+  onOpenCustomerSearch,
 }: SimplePaymentModalProps) {
+  const [showQRInput, setShowQRInput] = useState(false);
+  const [qrInput, setQrInput] = useState("");
+
   if (!isOpen) return null;
 
   return (
@@ -46,38 +53,114 @@ export function SimplePaymentModal({
         </div>
 
         <div className="space-y-4">
-          {/* Customer ID */}
-          <div>
-            <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
-              Customer ID/Phone *
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                id="customer-id"
-                type="text"
-                placeholder="Enter customer ID or phone number"
-                value={customerInfo.uniqueId}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          {/* Customer Info Display/Edit */}
+          {customerInfo.uniqueId && customerInfo.name ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-semibold text-gray-900">{customerInfo.name}</div>
+                  <div className="text-sm text-gray-600">ID: {customerInfo.uniqueId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCustomerInfo({ uniqueId: "", name: "" })}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Customer Search Options */}
+              <div className="space-y-2">
+                {/* Search Button */}
+                {onOpenCustomerSearch && (
+                  <button
+                    type="button"
+                    onClick={onOpenCustomerSearch}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Search Customer</span>
+                  </button>
+                )}
 
-          {/* Customer Name */}
-          <div>
-            <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
-              Customer Name (Optional)
-            </label>
-            <input
-              id="customer-name"
-              type="text"
-              placeholder="Enter customer name"
-              value={customerInfo.name}
-              onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+                {/* QR Code Scanner Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowQRInput(!showQRInput)}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium"
+                >
+                  <QrCode className="h-4 w-4" />
+                  <span>Scan QR Code</span>
+                </button>
+              </div>
+
+              {/* QR Code Input */}
+              {showQRInput && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Scan or paste QR code:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Scan QR code or paste customer ID..."
+                    value={qrInput}
+                    onChange={(e) => setQrInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && qrInput.trim()) {
+                        setCustomerInfo({ uniqueId: qrInput.trim(), name: qrInput.trim() });
+                        setQrInput("");
+                        setShowQRInput(false);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-600">Press Enter to use this customer ID</p>
+                </div>
+              )}
+
+              {/* Manual Entry */}
+              {!showQRInput && (
+                <>
+                  {/* Customer ID */}
+                  <div>
+                    <label htmlFor="customer-id" className="block text-sm font-medium mb-2">
+                      Customer ID/Phone *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        id="customer-id"
+                        type="text"
+                        placeholder="Enter customer ID or phone number"
+                        value={customerInfo.uniqueId}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, uniqueId: e.target.value })}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer Name */}
+                  <div>
+                    <label htmlFor="customer-name" className="block text-sm font-medium mb-2">
+                      Customer Name (Optional)
+                    </label>
+                    <input
+                      id="customer-name"
+                      type="text"
+                      placeholder="Enter customer name"
+                      value={customerInfo.name}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
 
           {/* Payment Method */}
           <div>
@@ -149,16 +232,27 @@ export function SimplePaymentModal({
         <div className="mt-6 flex space-x-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isProcessing}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={onPayment}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
+            disabled={isProcessing}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            <CreditCard className="h-4 w-4 mr-2" />
-            Complete Payment
+            {isProcessing ? (
+              <>
+                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4 mr-2" />
+                Complete Payment
+              </>
+            )}
           </button>
         </div>
       </div>

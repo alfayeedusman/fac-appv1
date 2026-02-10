@@ -31,10 +31,17 @@
     "setup:production": "npm ci --legacy-peer-deps --include=dev && npm run build && npm run build:server && npm run typecheck",
     "deploy:netlify": "bash deploy-to-netlify.sh",
     "deploy:vps": "bash deploy.sh deploy",
-    "deploy:one-click": "bash scripts/one-click-deploy.sh"
+    "deploy:one-click": "bash scripts/one-click-deploy.sh",
+    "setup-and-migrate": "bash scripts/setup-and-migrate.sh",
+    "setup:migrate-only": "bash scripts/setup-and-migrate.sh migrate-only",
+    "setup:verify": "bash scripts/setup-and-migrate.sh verify",
+    "migrate:apply": "node scripts/apply-migrations.js",
+    "migrate:apply:bash": "bash scripts/apply-supabase-migrations.sh",
+    "migrate:verify": "echo 'Run these queries in Supabase SQL Editor to verify migrations:' && cat SUPABASE_SECURITY_FIXES.md | grep -A 50 'Verification Steps'"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
+    "@supabase/supabase-js": "^2.95.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/mapbox-gl": "^3.4.1",
     "@types/multer": "^2.0.0",
@@ -50,7 +57,7 @@
     "mapbox-gl": "^3.14.0",
     "multer": "^2.0.2",
     "mysql2": "^3.14.4",
-    "nodemailer": "^7.0.12",
+    "nodemailer": "^7.0.13",
     "postgres": "^3.4.7",
     "react-is": "^19.1.0",
     "react-map-gl": "^7.1.7",

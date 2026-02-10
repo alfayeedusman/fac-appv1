@@ -307,7 +307,6 @@ export const getCrewList: RequestHandler = async (req, res) => {
         crewExperience: schema.users.crewExperience,
         crewSkills: schema.users.crewSkills,
         isActive: schema.users.isActive,
-        lastLoginAt: schema.users.lastLoginAt,
         crewMemberId: schema.crewMembers.id,
         employeeId: schema.crewMembers.employeeId,
         groupId: schema.crewMembers.crewGroupId,
@@ -1078,19 +1077,68 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
     },
   };
 
+  let start = now;
+  let end = now;
+
   try {
     res.setHeader("Content-Type", "application/json");
 
     const { startDate, endDate } = req.query;
-    const db = await requireDb(res);
-    if (!db) {
-      return res.json(defaultFallback);
+    start = startDate ? new Date(startDate as string) : now;
+    end = endDate ? new Date(endDate as string) : now;
+
+    const { getSqlClient } = await import("../database/connection");
+    const sql = await getSqlClient();
+
+    if (!sql) {
+      console.warn("Database not available for crew commission summary");
+      return res.json({
+        success: true,
+        summary: {
+          period: {
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+          },
+          totalBookings: 0,
+          totalRevenue: 0,
+          totalCommission: 0,
+          crewCount: 0,
+          crew: [],
+          breakdown: [],
+        },
+      });
     }
 
-    let start = startDate ? new Date(startDate as string) : now;
-    let end = endDate ? new Date(endDate as string) : now;
+    // Get commission entries for the period
+    const commissionData = await sql`
+      SELECT
+        ce.crew_user_id as "crewUserId",
+        u.full_name as "crewName",
+        COUNT(*) as "count",
+        COALESCE(SUM(ce.amount), 0) as "totalAmount"
+      FROM crew_commission_entries ce
+      LEFT JOIN users u ON ce.crew_user_id = u.id
+      WHERE ce.entry_date >= ${start.toISOString()}
+        AND ce.entry_date <= ${end.toISOString()}
+      GROUP BY ce.crew_user_id, u.full_name
+      ORDER BY "totalAmount" DESC
+    `.catch(() => []);
 
-    // Quick return with fallback data
+    // Get total commission for the period
+    const totals = await sql`
+      SELECT
+        COUNT(*) as "totalEntries",
+        COALESCE(SUM(amount), 0) as "totalCommission"
+      FROM crew_commission_entries
+      WHERE entry_date >= ${start.toISOString()}
+        AND entry_date <= ${end.toISOString()}
+    `.catch(() => [{ totalEntries: 0, totalCommission: 0 }]);
+
+    const totalData = totals[0] || { totalEntries: 0, totalCommission: 0 };
+
+    // Get crew count
+    const crewCount = commissionData.length;
+
     return res.json({
       success: true,
       summary: {
@@ -1098,29 +1146,45 @@ export const getCrewCommissionSummary: RequestHandler = async (req, res) => {
           startDate: start.toISOString(),
           endDate: end.toISOString(),
         },
-        totalBookings: 0,
+        totalBookings: parseInt(totalData.totalEntries || 0, 10),
         totalRevenue: 0,
-        totalCommission: 0,
-        crewCount: 0,
-        crew: [],
-        breakdown: [],
+        totalCommission: parseFloat(totalData.totalCommission || 0),
+        crewCount: crewCount,
+        crew: commissionData.map((item: any) => ({
+          crewId: item.crewUserId,
+          crewName: item.crewName || "Unknown",
+          commission: parseFloat(item.totalAmount || 0),
+          entries: parseInt(item.count || 0, 10),
+        })),
+        breakdown: commissionData.map((item: any) => ({
+          type: "crew_commission",
+          name: item.crewName || "Unknown",
+          amount: parseFloat(item.totalAmount || 0),
+          percentage: totalData.totalCommission > 0
+            ? ((parseFloat(item.totalAmount || 0) / parseFloat(totalData.totalCommission || 1)) * 100).toFixed(2)
+            : 0,
+        })),
       },
     });
   } catch (error) {
     console.error("Error fetching crew commission summary:", error);
     // Return fallback response with safe dates
     try {
-      const fallbackWithDates = {
-        ...defaultFallback,
+      return res.json({
+        success: true,
         summary: {
-          ...defaultFallback.summary,
           period: {
-            startDate: start?.toISOString?.() || now.toISOString(),
-            endDate: end?.toISOString?.() || now.toISOString(),
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
           },
+          totalBookings: 0,
+          totalRevenue: 0,
+          totalCommission: 0,
+          crewCount: 0,
+          crew: [],
+          breakdown: [],
         },
-      };
-      return res.json(fallbackWithDates);
+      });
     } catch (fallbackError) {
       console.error(
         "Error in crew commission summary fallback:",

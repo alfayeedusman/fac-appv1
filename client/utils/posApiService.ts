@@ -42,6 +42,7 @@ export interface POSExpense {
   description: string;
   amount: number;
   paymentMethod: string;
+  moneySource?: "income" | "owner"; // 'income' = from sales | 'owner' = owner paid it
   notes?: string;
   recordedByInfo?: {
     id: string;
@@ -88,6 +89,7 @@ export async function openPOSSession(
   openingBalance: number
 ): Promise<{ sessionId: string; success: boolean }> {
   try {
+    console.log(`🔓 Opening POS session for cashier: ${cashierName} (${cashierId}) in branch: ${branchId}`);
     const response = await fetch(`${API_BASE}/sessions/open`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,10 +101,17 @@ export async function openPOSSession(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to open POS session");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to open POS session: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to open POS session`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ POS session opened successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error opening POS session:", error);
+    console.error("Error opening POS session:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
@@ -111,14 +120,22 @@ export async function getCurrentPOSSession(
   cashierId: string
 ): Promise<POSSession | null> {
   try {
+    console.log(`🔍 Fetching current POS session for cashier: ${cashierId}`);
     const response = await fetch(
       `${API_BASE}/sessions/current/${cashierId}`
     );
-    if (!response.ok) throw new Error("Failed to fetch POS session");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to fetch POS session: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to fetch POS session`);
+    }
+
     const data = await response.json();
-    return data.session;
+    console.log(`✅ POS session response received:`, data);
+    return data.session || null;
   } catch (error) {
-    console.error("Error fetching current POS session:", error);
+    console.error("Error fetching current POS session:", error instanceof Error ? error.message : String(error));
     return null;
   }
 }
@@ -188,6 +205,8 @@ export async function saveTransaction(
 ): Promise<{ transactionId: string; success: boolean }> {
   try {
     const transactionNumber = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`💳 Saving transaction: ${transactionNumber}, Amount: ₱${transaction.totalAmount}`);
+
     const response = await fetch(`${API_BASE}/transactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -197,10 +216,17 @@ export async function saveTransaction(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to save transaction");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to save transaction: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to save transaction`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Transaction saved successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error saving transaction:", error);
+    console.error("Error saving transaction:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
@@ -239,16 +265,24 @@ export async function saveExpense(
   expense: POSExpense
 ): Promise<{ expenseId: string; success: boolean }> {
   try {
+    console.log(`💰 Saving expense: ${expense.category} - ₱${expense.amount}`);
     const response = await fetch(`${API_BASE}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(expense),
     });
 
-    if (!response.ok) throw new Error("Failed to save expense");
-    return await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Failed to save expense: HTTP ${response.status}`, errorText);
+      throw new Error(`HTTP ${response.status}: Failed to save expense`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Expense saved successfully:`, data);
+    return data;
   } catch (error) {
-    console.error("Error saving expense:", error);
+    console.error("Error saving expense:", error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
@@ -280,6 +314,29 @@ export async function deleteExpense(expenseId: string): Promise<boolean> {
 }
 
 // ============= REPORT FUNCTIONS =============
+
+// ============= DIAGNOSTIC FUNCTIONS =============
+
+export async function getDiagnosticData(): Promise<any> {
+  try {
+    console.log(`🔍 Fetching diagnostic data...`);
+    const response = await fetch(`${API_BASE}/diagnostic/today`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: Failed to fetch diagnostic data`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Diagnostic data retrieved:`, data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching diagnostic data:", error);
+    return null;
+  }
+}
 
 export async function getDailySalesReport(date: string): Promise<DailySalesReport> {
   const maxRetries = 3;

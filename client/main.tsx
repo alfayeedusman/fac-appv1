@@ -14,9 +14,7 @@ import ChatWidget from "@/components/ChatWidget";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import SimpleLogin from "./pages/SimpleLogin";
 import TestPage from "./pages/TestPage";
-import LoginDebug from "./pages/LoginDebug";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
 import ForgotPassword from "./pages/ForgotPassword";
 import SignUp from "./pages/SignUp";
@@ -49,9 +47,9 @@ import AdminSubscriptionApproval from "./pages/AdminSubscriptionApproval";
 import AdminAppVersion from "./pages/AdminAppVersion";
 import PaymentHistory from "./pages/PaymentHistory";
 import POSKiosk from "./pages/POSKiosk";
-import InventoryManagement from "./pages/InventoryManagement";
 import EnhancedInventoryManagement from "./pages/EnhancedInventoryManagement";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import AdminCustomerHub from "./pages/AdminCustomerHub";
 import AdminReceiptDesigner from "./pages/AdminReceiptDesigner";
 import AdminSessions from "./pages/AdminSessions";
 import AdminHomeService from "./pages/AdminHomeService";
@@ -68,6 +66,7 @@ import AdminLoginTest from "./components/AdminLoginTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DiagnosticsPage from "./pages/DiagnosticsPage";
 import SystemDiagnostics from "./pages/SystemDiagnostics";
+import AuthPage from "./pages/AuthPage";
 import { supabaseDbClient } from "./services/supabaseDatabaseService";
 import "./utils/networkDiagnostics"; // Load network diagnostics tool
 import { setupGlobalErrorCatching } from "./utils/globalErrorHandler";
@@ -110,9 +109,11 @@ const AppComponent = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/test" element={<TestPage />} />
-                <Route path="/login-debug" element={<LoginDebug />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/auth/verify-email" element={<AuthPage />} />
+                <Route path="/auth/reset-password" element={<AuthPage />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/credential-setup" element={<CredentialSetup />} />
@@ -328,6 +329,14 @@ const AppComponent = () => {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminUserManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin-customer-hub"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminCustomerHub />
                     </ProtectedRoute>
                   }
                 />

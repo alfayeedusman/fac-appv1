@@ -635,7 +635,8 @@ export default function AdminDashboard() {
       // Initialize sample ads for demonstration
       initializeSampleAds();
 
-      // Load real statistics from database
+      // Load real statistics from database first
+      console.log("📊 Loading initial stats...");
       loadRealStats();
 
       // Load crew commission summary
@@ -644,53 +645,168 @@ export default function AdminDashboard() {
       // Load real-time crew and customer statistics
       loadRealtimeStats();
 
-      // Subscribe to realtime events (booking, pos, inventory, dashboard stats)
+      // Subscribe to realtime events (booking, pos, inventory, dashboard stats, subscriptions, customers, inventory)
       const subs: Array<() => void> = [];
-      try {
-        subs.push(
-          realtimeService.subscribe("dashboard-stats", (d: any) => {
-            if (d && d.stats) {
-              setRealtimeStats({
-                onlineCrew: d.stats.onlineCrew || 0,
-                busyCrew: d.stats.busyCrew || 0,
-                activeCustomers: d.stats.activeCustomers || 0,
-                activeGroups: d.stats.activeGroups || 0,
+
+      // IMPORTANT: Set a small delay to ensure Pusher is initialized before subscribing
+      const subscriptionTimer = setTimeout(() => {
+        console.log("🔌 Setting up Pusher subscriptions for admin dashboard...");
+        try {
+          // Dashboard stats updates
+          subs.push(
+            realtimeService.subscribe("dashboard-stats", (d: any) => {
+              if (d && d.stats) {
+                setRealtimeStats({
+                  onlineCrew: d.stats.onlineCrew || 0,
+                  busyCrew: d.stats.busyCrew || 0,
+                  activeCustomers: d.stats.activeCustomers || 0,
+                  activeGroups: d.stats.activeGroups || 0,
+                });
+              }
+            }),
+          );
+
+          // Booking created - updates total online bookings and washes
+          subs.push(
+            realtimeService.subscribe("booking.created", (d: any) => {
+              console.log("📅 Real-time booking created:", d);
+              setStats((prev) => ({
+                ...prev,
+                totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1,
+                totalWashes: (prev.totalWashes || 0) + 1,
+              }));
+            }),
+          );
+
+          // Booking updated - for washes count
+          subs.push(
+            realtimeService.subscribe("booking.updated", (d: any) => {
+              console.log("📅 Real-time booking updated:", d);
+              // Re-fetch stats to get accurate counts
+              loadRealStats(timeFilter);
+            }),
+          );
+
+          // POS transaction created - updates total revenue and net income
+          subs.push(
+            realtimeService.subscribe("pos.transaction.created", (d: any) => {
+              console.log("💰✅ Real-time POS transaction received in dashboard:", d);
+              const amount = parseFloat(d.totalAmount) || 0;
+              console.log(`💰 Adding ₱${amount} to revenue`);
+              setStats((prev) => {
+                const newStats = {
+                  ...prev,
+                  totalRevenue: (prev.totalRevenue || 0) + amount,
+                  netIncome: (prev.netIncome || 0) + amount,
+                };
+                console.log("📈 Updated stats:", newStats);
+                return newStats;
               });
-            }
-          }),
-        );
+            }),
+          );
 
-        subs.push(
-          realtimeService.subscribe("booking.created", (d: any) => {
-            setStats((prev) => ({
-              ...prev,
-              totalOnlineBookings: (prev.totalOnlineBookings || 0) + 1,
-            }));
-          }),
-        );
+          // POS expense created - updates net income
+          subs.push(
+            realtimeService.subscribe("pos.expense.created", (d: any) => {
+              console.log("💸 Real-time POS expense created:", d);
+              const amount = parseFloat(d.amount) || 0;
+              setStats((prev) => ({
+                ...prev,
+                totalExpenses: (prev.totalExpenses || 0) + amount,
+                netIncome: (prev.netIncome || 0) - amount,
+              }));
+            }),
+          );
 
-        subs.push(
-          realtimeService.subscribe("pos.transaction.created", (d: any) => {
-            setStats((prev) => ({
-              ...prev,
-              totalRevenue:
-                (prev.totalRevenue || 0) + (parseFloat(d.totalAmount) || 0),
-            }));
-          }),
-        );
+          // New customer created - updates total customers
+          subs.push(
+            realtimeService.subscribe("user.created", (d: any) => {
+              console.log("👤 Real-time new user/customer created:", d);
+              setStats((prev) => ({
+                ...prev,
+                totalCustomers: (prev.totalCustomers || 0) + 1,
+              }));
+              // Also reload customers list
+              loadRealCustomers().catch((e) => console.error("Failed to reload customers:", e));
+            }),
+          );
 
-        subs.push(
-          realtimeService.subscribe("inventory.updated", (d: any) => {
-            // simple UI hint: trigger a toast
-            toast({
-              title: "Inventory updated",
-              description: d.item?.name || "An inventory item was updated",
-            });
-          }),
-        );
-      } catch (e) {
-        console.warn("Realtime subscription failed:", e);
-      }
+          // New subscription created - updates active subscriptions and new subscriptions count
+          subs.push(
+            realtimeService.subscribe("subscription.created", (d: any) => {
+              console.log("🎁 Real-time new subscription created:", d);
+              setStats((prev) => ({
+                ...prev,
+                activeSubscriptions: (prev.activeSubscriptions || 0) + 1,
+                newSubscriptions: (prev.newSubscriptions || 0) + 1,
+                totalSubscriptionRevenue:
+                  (prev.totalSubscriptionRevenue || 0) +
+                  (parseFloat(d.amount) || 0),
+              }));
+            }),
+          );
+
+          // Subscription upgraded - updates account upgrades count
+          subs.push(
+            realtimeService.subscribe("subscription.upgraded", (d: any) => {
+              console.log("⬆️ Real-time subscription upgraded:", d);
+              setStats((prev) => ({
+                ...prev,
+                subscriptionUpgrades: (prev.subscriptionUpgrades || 0) + 1,
+              }));
+            }),
+          );
+
+          // Inventory updated
+          subs.push(
+            realtimeService.subscribe("inventory.updated", (d: any) => {
+              console.log("📦 Real-time inventory updated:", d);
+              // Trigger a toast notification
+              toast({
+                title: "Inventory updated",
+                description: d.item?.name || "An inventory item was updated",
+              });
+            }),
+          );
+
+          // Inventory created
+          subs.push(
+            realtimeService.subscribe("inventory.created", (d: any) => {
+              console.log("📦 Real-time inventory created:", d);
+              toast({
+                title: "New inventory item",
+                description: d.item?.name || "A new item was added to inventory",
+              });
+            }),
+          );
+
+          // New notification
+          subs.push(
+            realtimeService.subscribe("notification.created", (d: any) => {
+              console.log("🔔 Real-time notification received:", d);
+              // Add to notifications list
+              setNotifications((prev) => [
+                {
+                  id: d.id || new Date().getTime().toString(),
+                  type: d.type || "notification",
+                  title: d.title || "New Notification",
+                  message: d.message || "",
+                  timestamp: new Date(d.timestamp || new Date()),
+                  read: false,
+                  priority: d.priority || "medium",
+                  data: d.data || {},
+                  actionRequired: false,
+                },
+                ...prev,
+              ]);
+            }),
+          );
+
+          console.log("✅ All Pusher subscriptions set up successfully");
+        } catch (e) {
+          console.warn("⚠️ Realtime subscription failed:", e);
+        }
+      }, 500); // Wait 500ms for Pusher to initialize
 
       // Load real customer data from database
       console.log("📋 About to call loadRealCustomers...");
@@ -718,8 +834,11 @@ export default function AdminDashboard() {
       // Users can manually refresh by clicking buttons
 
       return () => {
+        // Clear the subscription timer if it hasn't fired yet
+        clearTimeout(subscriptionTimer);
         // unsubscribe realtime subscriptions
         subs.forEach((u) => u && u());
+        console.log("🧹 Cleaned up Pusher subscriptions");
       };
     } else {
       navigate("/login");

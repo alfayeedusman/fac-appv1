@@ -25,7 +25,6 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  lastLoginAt?: string;
   emailVerified: boolean;
   loyaltyPoints: number;
   subscriptionStatus: "free" | "basic" | "premium" | "vip";

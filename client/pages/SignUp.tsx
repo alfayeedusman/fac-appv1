@@ -64,7 +64,7 @@ export default function SignUp() {
     carPlateNumber: "",
     carType: "",
     branchLocation: "",
-    packageToAvail: "regular",
+    packageToAvail: "", // No default - user must select
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,8 +89,13 @@ export default function SignUp() {
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^(\+?63|0)?[0-9]{10}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ""));
+    // Remove spaces and dashes
+    const cleaned = phone.replace(/[\s\-()]/g, "");
+    // Philippine phone patterns:
+    // 09XXXXXXXXX (starts with 09, 11 digits total)
+    // +639XXXXXXXXX (starts with +639, 12 chars)
+    const phoneRegex = /^(\+639|09)\d{9}$/;
+    return phoneRegex.test(cleaned);
   };
 
   const validateStep = (
@@ -115,9 +120,6 @@ export default function SignUp() {
         newErrors.password = "Password is required";
       } else if (formData.password.length < 6) {
         newErrors.password = "Password must be at least 6 characters long";
-      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-        newErrors.password =
-          "Password must contain at least one uppercase letter, one lowercase letter, and one number";
       }
 
       if (!formData.confirmPassword) {
@@ -133,10 +135,9 @@ export default function SignUp() {
           "Please enter a valid Philippine phone number";
       }
 
-      if (!formData.address.trim()) {
-        newErrors.address = "Address is required";
-      } else if (formData.address.trim().length < 10) {
-        newErrors.address = "Please provide a complete address";
+      // Address is optional but if provided, should be at least 5 characters
+      if (formData.address.trim() && formData.address.trim().length < 5) {
+        newErrors.address = "Please provide a complete address (at least 5 characters)";
       }
     }
 
@@ -393,13 +394,13 @@ export default function SignUp() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-black text-foreground mb-2">
-              <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                Fayeed Auto Care
-              </span>
-            </h1>
-            <h2 className="text-xl font-black text-foreground">
+          <div className="flex-1">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2F4c2591f24e704059a0760c169fa7d698?format=webp&width=800&height=1200"
+              alt="Fayeed Autocare Logo"
+              className="h-12 object-contain mb-2"
+            />
+            <h2 className="text-lg font-black text-foreground">
               Join{" "}
               <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
                 FAC 2026
@@ -848,6 +849,13 @@ export default function SignUp() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Selection instruction */}
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                    <p className="text-sm text-blue-900 dark:text-blue-200">
+                      <span className="font-bold">📌 Required:</span> Please select a plan below and click <span className="font-bold">"JOIN THE FUTURE"</span> to proceed with registration.
+                    </p>
+                  </div>
+
                   <div className="space-y-4">
                     {packages.map((pkg) => (
                       <div
@@ -908,6 +916,15 @@ export default function SignUp() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Error message for step 3 */}
+          {currentStep === 3 && errors.packageToAvail && (
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-900 dark:text-red-200">
+                <span className="font-bold">❌ {errors.packageToAvail}</span>
+              </p>
             </div>
           )}
 

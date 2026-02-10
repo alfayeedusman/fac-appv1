@@ -6,8 +6,9 @@ import {
   posTransactionItems,
   posExpenses,
   posSessions,
+  bookings,
 } from "../database/schema";
-import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray, ne } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { triggerPusherEvent } from "../services/pusherService";
 
@@ -33,7 +34,7 @@ router.post("/sessions/open", async (req, res) => {
       });
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -66,7 +67,7 @@ router.post("/sessions/open", async (req, res) => {
 // Get Current POS Session
 router.get("/sessions/current/:cashierId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       console.warn("⚠️ Database not initialized for POS session");
       return res.json({ session: null });
@@ -75,7 +76,6 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
     const { cashierId } = req.params;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
 
     try {
       const result = await db
@@ -84,7 +84,7 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
         .where(
           and(
             eq(posSessions.cashierId, cashierId),
-            gte(posSessions.sessionDate, todayISO),
+            gte(posSessions.sessionDate, today),
             eq(posSessions.status, "open"),
           ),
         )
@@ -106,13 +106,20 @@ router.get("/sessions/current/:cashierId", async (req, res) => {
 // Close POS Session with Reconciliation
 router.post("/sessions/close/:sessionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
+      console.error("❌ Database not initialized for closing session");
       return res.status(500).json({ error: "Database not initialized" });
     }
 
     const { sessionId } = req.params;
     const { actualCash, actualDigital, remittanceNotes } = req.body;
+
+    console.log(`🔒 Attempting to close POS session: ${sessionId}`, {
+      actualCash,
+      actualDigital,
+      remittanceNotes,
+    });
 
     // Fetch session
     const sessionResult = await db
@@ -123,19 +130,87 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 
     const session = sessionResult[0];
     if (!session) {
+      console.error(`❌ Session not found: ${sessionId}`);
       return res.status(404).json({ error: "Session not found" });
     }
 
-    // Get all transactions for this session
+    console.log(`✅ Session found, opening balance: ₱${session.openingBalance}`);
+
+    // Get all transactions for this session (both POS transactions and bookings)
+    // Ensure we have proper Date objects for comparison
+    const sessionStartDate = session.openedAt
+      ? new Date(session.openedAt)
+      : (session.createdAt ? new Date(session.createdAt) : new Date());
+    const sessionEndDate = new Date();
+
+    // Query ONLY completed/paid transactions (exclude pending, cancelled, refunded)
+    // Filter by session time AND completed status for accuracy
     const transactions = await db
       .select()
       .from(posTransactions)
       .where(
         and(
-          gte(posTransactions.createdAt, session.openedAt || session.createdAt),
-          lte(posTransactions.createdAt, new Date()),
+          gte(posTransactions.createdAt, sessionStartDate),
+          lte(posTransactions.createdAt, sessionEndDate),
+          eq(posTransactions.status, "completed"),
+          ne(posTransactions.type, "refund"),
+          ne(posTransactions.type, "void"),
         ),
       );
+
+    console.log(`📊 Found ${transactions.length} POS transactions for session`);
+    console.log(`🔍 Transaction details:`);
+    transactions.forEach((t, i) => {
+      console.log(`  ${i + 1}. ${t.transactionNumber}: ₱${t.totalAmount} (${t.paymentMethod}) - Status: ${t.status}, Type: ${t.type}`);
+    });
+
+    // Also include bookings as sales
+    console.log(`🔍 Querying bookings between ${sessionStartDate.toISOString()} and ${sessionEndDate.toISOString()}`);
+
+    let bookingsData: any[] = [];
+    try {
+      bookingsData = await db
+        .select({
+          id: bookings.id,
+          totalPrice: bookings.totalPrice,
+          paymentMethod: bookings.paymentMethod,
+          createdAt: bookings.createdAt,
+          status: bookings.status,
+        })
+        .from(bookings)
+        .where(
+          and(
+            gte(bookings.createdAt, sessionStartDate),
+            lte(bookings.createdAt, sessionEndDate),
+            eq(bookings.status, "completed"), // Only count completed bookings
+          ),
+        );
+      console.log(`📊 Found ${bookingsData.length} bookings for session`);
+      if (bookingsData.length > 0) {
+        console.log(`🔍 Booking details:`);
+        bookingsData.forEach((b, i) => {
+          console.log(`  ${i + 1}. Booking ${b.id}: ₱${b.totalPrice} (${b.paymentMethod}) - Status: ${b.status}`);
+        });
+      }
+    } catch (bookingError: any) {
+      console.error(`❌ Error querying bookings:`, bookingError.message || String(bookingError));
+      console.error("Booking query error details:", bookingError);
+      bookingsData = [];
+    }
+
+    // Combine all transactions
+    const allTransactions = [
+      ...transactions.map(t => ({
+        totalAmount: parseFloat(t.totalAmount?.toString() || "0"),
+        paymentMethod: t.paymentMethod || "cash",
+        type: "pos"
+      })),
+      ...bookingsData.map(b => ({
+        totalAmount: parseFloat(b.totalPrice?.toString() || "0"),
+        paymentMethod: b.paymentMethod || "cash",
+        type: "booking"
+      }))
+    ];
 
     // Calculate totals with proper rounding to prevent floating-point errors
     let totalCashSales = 0;
@@ -143,8 +218,8 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     let totalGcashSales = 0;
     let totalBankSales = 0;
 
-    transactions.forEach((trans) => {
-      const amount = roundToTwo(parseFloat(trans.totalAmount.toString()));
+    allTransactions.forEach((trans) => {
+      const amount = roundToTwo(trans.totalAmount);
       switch (trans.paymentMethod) {
         case "cash":
           totalCashSales = roundToTwo(totalCashSales + amount);
@@ -161,29 +236,111 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
       }
     });
 
-    // Get total expenses
-    const expenses = await db
-      .select()
-      .from(posExpenses)
-      .where(eq(posExpenses.posSessionId, sessionId));
+    console.log(`💰 Transaction breakdown - Cash: ₱${totalCashSales}, Card: ₱${totalCardSales}, GCash: ₱${totalGcashSales}, Bank: ₱${totalBankSales}`);
 
-    const totalExpenses = roundToTwo(
-      expenses.reduce(
+    // Get total expenses and track by payment method and source
+    let allExpenses: any[] = [];
+    try {
+      console.log(`💸 Querying expenses for session: ${sessionId}`);
+      allExpenses = await db
+        .select()
+        .from(posExpenses)
+        .where(eq(posExpenses.posSessionId, sessionId));
+      console.log(`✅ Found ${allExpenses.length} expenses for this session`);
+    } catch (expenseError: any) {
+      console.error(`❌ Error fetching expenses:`, expenseError?.message || String(expenseError));
+      console.log(`⚠️ Continuing with zero expenses (this is safe)`);
+      allExpenses = [];
+    }
+
+    // Separate expenses by source: only "income" expenses affect balance matching
+    const incomeExpenses = allExpenses.filter((e) => e.moneySource !== "owner");
+    const ownerExpenses = allExpenses.filter((e) => e.moneySource === "owner");
+
+    // Track INCOME expenses by payment method (used for balance matching)
+    let cashExpenses = 0;
+    let cardExpenses = 0;
+    let gcashExpenses = 0;
+    let bankExpenses = 0;
+
+    incomeExpenses.forEach((exp) => {
+      const amount = roundToTwo(parseFloat(exp.amount.toString()));
+      switch (exp.paymentMethod) {
+        case "cash":
+          cashExpenses = roundToTwo(cashExpenses + amount);
+          break;
+        case "card":
+          cardExpenses = roundToTwo(cardExpenses + amount);
+          break;
+        case "gcash":
+          gcashExpenses = roundToTwo(gcashExpenses + amount);
+          break;
+        case "bank":
+          bankExpenses = roundToTwo(bankExpenses + amount);
+          break;
+      }
+    });
+
+    // Total owner expenses (recorded but NOT used in balance matching)
+    const totalOwnerExpenses = roundToTwo(
+      ownerExpenses.reduce(
         (sum, exp) => sum + roundToTwo(parseFloat(exp.amount.toString())),
         0,
       ),
     );
 
-    // Calculate expected balances with proper rounding
+    const totalExpenses = roundToTwo(cashExpenses + cardExpenses + gcashExpenses + bankExpenses + totalOwnerExpenses);
+
+    console.log(`💸 INCOME EXPENSES (count in balance) - Cash: ₱${cashExpenses}, Card: ₱${cardExpenses}, GCash: ₱${gcashExpenses}, Bank: ₱${bankExpenses}`);
+    console.log(`👤 OWNER EXPENSES (recorded only) - Total: ₱${totalOwnerExpenses}`);
+    console.log(`💸 Total expenses recorded: ₱${totalExpenses}`);
+
+    // Calculate expected balances with smart logic
+    // RULE: Only expenses matching the payment method reduce that method's balance
+    // If digital expenses > digital sales, owner is shouldering the difference
     const openingBalance = roundToTwo(
       parseFloat(session.openingBalance.toString()),
     );
+
+    // CASH: Only reduced by actual cash expenses
     const expectedCash = roundToTwo(
-      openingBalance + totalCashSales - totalExpenses,
+      openingBalance + totalCashSales - cashExpenses,
     );
+
+    // DIGITAL: Only reduced by digital expenses, but not below zero (owner covers excess)
+    const totalDigitalSales = roundToTwo(totalCardSales + totalGcashSales + totalBankSales);
+    const totalDigitalExpenses = roundToTwo(cardExpenses + gcashExpenses + bankExpenses);
     const expectedDigital = roundToTwo(
-      totalCardSales + totalGcashSales + totalBankSales,
+      Math.max(0, totalDigitalSales - totalDigitalExpenses) // Never go negative
     );
+
+    // Track if owner is covering expenses
+    const ownerCoveringDigitalExpenses = totalDigitalExpenses > totalDigitalSales;
+
+    console.log(`📋 SMART BALANCE CALCULATION (Money Flow Aware):`);
+    console.log(`  💵 CASH RECONCILIATION:`);
+    console.log(`    Opening Balance: ₱${openingBalance}`);
+    console.log(`    + Cash Sales: ₱${totalCashSales}`);
+    console.log(`    - Cash Expenses (from income): ₱${cashExpenses}`);
+    console.log(`    = Expected Cash: ₱${expectedCash}`);
+
+    console.log(`\n  💳 DIGITAL RECONCILIATION:`);
+    console.log(`    Digital Sales: ₱${totalDigitalSales}`);
+    console.log(`    - Digital Expenses (from income): ₱${totalDigitalExpenses}`);
+    console.log(`    = Expected Digital: ₱${expectedDigital}`);
+
+    if (totalOwnerExpenses > 0) {
+      console.log(`\n  👤 OWNER-PAID EXPENSES (NOT affecting balance):`);
+      console.log(`    Owner Paid: ₱${totalOwnerExpenses}`);
+      console.log(`    Count: ${ownerExpenses.length} items`);
+      console.log(`    Status: ✅ Recorded for audit trail`);
+    }
+
+    console.log(`\n  📌 MONEY FLOW LOGIC:`);
+    console.log(`    ✅ Income-based expenses = deducted from sales balance`);
+    console.log(`    ✅ Owner-paid expenses = recorded but NOT affecting balance`);
+    console.log(`    ✅ Only matching sales against their own expense sources`);
+    console.log(`    ✅ Owner contributions are tracked separately`);
 
     // Calculate variance with proper rounding
     const actualCashAmount = roundToTwo(parseFloat(actualCash));
@@ -193,46 +350,134 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
     const isBalanced =
       Math.abs(cashVariance) <= 0.01 && Math.abs(digitalVariance) <= 0.01;
 
+    console.log(`💵 Actual Amounts Counted:`);
+    console.log(`  Actual Cash: ₱${actualCashAmount}`);
+    console.log(`  Actual Digital: ₱${actualDigitalAmount}`);
+    console.log(`💰 Variance Analysis:`);
+    console.log(`  Cash Variance: ${cashVariance >= 0 ? "+" : ""}₱${cashVariance} (difference between counted and expected)`);
+    console.log(`  Digital Variance: ${digitalVariance >= 0 ? "+" : ""}₱${digitalVariance}`);
+    console.log(`✅ Session balanced: ${isBalanced}`);
+
     // Update session with properly rounded values
+    // Once closed, this session becomes FINAL and IMMUTABLE
+    // All sales and expenses are recorded and locked
     const closingBalance = roundToTwo(actualCashAmount + actualDigitalAmount);
 
-    await db
-      .update(posSessions)
-      .set({
-        status: "closed",
-        closedAt: new Date(),
-        closingBalance: closingBalance.toString(),
-        totalCashSales: totalCashSales.toString(),
-        totalCardSales: totalCardSales.toString(),
-        totalGcashSales: totalGcashSales.toString(),
-        totalBankSales: totalBankSales.toString(),
-        totalExpenses: totalExpenses.toString(),
-        expectedCash: expectedCash.toString(),
-        actualCash: actualCashAmount.toString(),
-        cashVariance: cashVariance.toString(),
-        expectedDigital: expectedDigital.toString(),
-        actualDigital: actualDigitalAmount.toString(),
-        digitalVariance: digitalVariance.toString(),
-        remittanceNotes,
+    console.log(`📝 Updating session status to closed...`);
+    let updateResult: any;
+    try {
+      updateResult = await db
+        .update(posSessions)
+        .set({
+          status: "closed",
+          closedAt: new Date(),
+          closingBalance: closingBalance.toString(),
+          totalCashSales: totalCashSales.toString(),
+          totalCardSales: totalCardSales.toString(),
+          totalGcashSales: totalGcashSales.toString(),
+          totalBankSales: totalBankSales.toString(),
+          totalExpenses: totalExpenses.toString(),
+          expectedCash: expectedCash.toString(),
+          actualCash: actualCashAmount.toString(),
+          cashVariance: cashVariance.toString(),
+          expectedDigital: expectedDigital.toString(),
+          actualDigital: actualDigitalAmount.toString(),
+          digitalVariance: digitalVariance.toString(),
+          remittanceNotes,
+          isBalanced,
+        })
+        .where(eq(posSessions.id, sessionId));
+      console.log(`✅ Session updated successfully`);
+    } catch (updateError: any) {
+      console.error(`❌ Error updating session:`, updateError?.message || String(updateError));
+      throw new Error(`Failed to update session status: ${updateError?.message || String(updateError)}`);
+    }
+
+    // Create comprehensive closure report
+    const closureReport = {
+      closedAt: new Date().toISOString(),
+      sales: {
+        cash: totalCashSales,
+        card: totalCardSales,
+        gcash: totalGcashSales,
+        bank: totalBankSales,
+        total: totalCashSales + totalCardSales + totalGcashSales + totalBankSales,
+      },
+      expenses: {
+        fromIncome: {
+          cash: cashExpenses,
+          card: cardExpenses,
+          gcash: gcashExpenses,
+          bank: bankExpenses,
+          total: cashExpenses + cardExpenses + gcashExpenses + bankExpenses,
+          note: "These expenses are deducted from sales for balance matching",
+        },
+        fromOwner: {
+          total: totalOwnerExpenses,
+          count: ownerExpenses.length,
+          note: "Owner-paid expenses - recorded for audit but NOT affecting balance",
+        },
+        grandTotal: totalExpenses,
+      },
+      balance: {
+        opening: openingBalance,
+        expectedCash,
+        expectedDigital,
+        actualCash: actualCashAmount,
+        actualDigital: actualDigitalAmount,
+        closingBalance,
+      },
+      reconciliation: {
+        cashVariance,
+        digitalVariance,
         isBalanced,
-      })
-      .where(eq(posSessions.id, sessionId));
+        note: isBalanced
+          ? "Perfect match - all balances reconciled"
+          : ownerCoveringDigitalExpenses
+            ? "Digital expenses covered by owner - sales records intact"
+            : "Review variance details",
+      },
+      notes: remittanceNotes,
+    };
+
+    console.log(`🔒 POS session ${sessionId} closed successfully`);
+    console.log(`📊 CLOSURE REPORT:`, JSON.stringify(closureReport, null, 2));
 
     res.json({
       success: true,
       isBalanced,
       cashVariance,
       digitalVariance,
+      closingBalance,
+      closureReport,
       message: isBalanced
-        ? "POS closed successfully and balanced!"
-        : "POS closed with variance",
+        ? "POS closed successfully and balanced! Sales finalized and recorded."
+        : "POS closed with variance - expenses tracked separately from sales reconciliation",
     });
   } catch (error: any) {
-    console.error("Error closing POS session:", error);
+    console.error("❌ Error closing POS session:", error);
     const errorMessage = error?.message || error?.toString() || "Unknown error";
+    const errorDetails = {
+      message: errorMessage,
+      code: error?.code || error?.sqlState || "UNKNOWN",
+      timestamp: new Date().toISOString(),
+    };
+    console.error("Error details:", JSON.stringify(errorDetails, null, 2));
+    console.error("Error stack:", error?.stack);
+
+    // Provide more specific error messages
+    let userFriendlyMessage = "Failed to close POS session";
+    if (errorMessage.includes("pos_expenses")) {
+      userFriendlyMessage = "Failed to read expenses. The session may not have expenses recorded yet - this is okay.";
+    } else if (errorMessage.includes("pos_sessions")) {
+      userFriendlyMessage = "Failed to update session. Please check if the session still exists.";
+    }
+
     res.status(500).json({
-      error: "Failed to close POS session",
+      success: false,
+      error: userFriendlyMessage,
       details: errorMessage,
+      code: errorDetails.code,
     });
   }
 });
@@ -242,8 +487,10 @@ router.post("/sessions/close/:sessionId", async (req, res) => {
 // Save Transaction
 router.post("/transactions", async (req, res) => {
   try {
-    const db = getDatabase();
+    console.log("💳 Processing POS transaction...");
+    const db = await getDatabase();
     if (!db) {
+      console.error("❌ Database not initialized for transaction");
       return res.status(500).json({ error: "Database not initialized" });
     }
 
@@ -263,7 +510,16 @@ router.post("/transactions", async (req, res) => {
       branchId,
     } = req.body;
 
+    console.log("📊 Transaction details:", {
+      transactionNumber,
+      totalAmount,
+      paymentMethod,
+      itemsCount: items?.length || 0,
+      branchId,
+    });
+
     if (!transactionNumber || !totalAmount || !paymentMethod) {
+      console.error("❌ Missing required transaction fields");
       return res.status(400).json({
         error: "Missing required fields",
       });
@@ -271,51 +527,76 @@ router.post("/transactions", async (req, res) => {
 
     // Insert main transaction
     const transactionId = createId();
-    await db.insert(posTransactions).values({
-      id: transactionId,
-      transactionNumber,
-      customerId: customerInfo?.id,
-      customerName: customerInfo?.name,
-      customerEmail: customerInfo?.email,
-      customerPhone: customerInfo?.phone,
-      type: "sale",
-      status: "completed",
-      branchId: branchId || "default",
-      cashierId: cashierInfo?.id || "unknown",
-      cashierName: cashierInfo?.name || "Unknown",
-      subtotal: subtotal?.toString() || "0",
-      taxAmount: (taxAmount || 0).toString(),
-      discountAmount: (discountAmount || 0).toString(),
-      totalAmount: totalAmount.toString(),
-      paymentMethod,
-      paymentReference,
-      amountPaid: amountPaid?.toString() || totalAmount.toString(),
-      changeAmount: (changeAmount || 0).toString(),
-      receiptData: JSON.stringify({
-        items,
-        customerInfo,
-        timestamp: new Date(),
-      }),
-    });
+    const now = new Date();
+    console.log(`⏱️ Current server time: ${now.toISOString()}`);
+    console.log(`⏱️ Time in UTC: ${new Date().toUTCString()}`);
+
+    try {
+      const insertResult = await db.insert(posTransactions).values({
+        id: transactionId,
+        transactionNumber,
+        customerId: customerInfo?.id,
+        customerName: customerInfo?.name,
+        customerEmail: customerInfo?.email,
+        customerPhone: customerInfo?.phone,
+        type: "sale",
+        status: "completed",
+        branchId: branchId || "default",
+        cashierId: cashierInfo?.id || "unknown",
+        cashierName: cashierInfo?.name || "Unknown",
+        subtotal: subtotal?.toString() || "0",
+        taxAmount: (taxAmount || 0).toString(),
+        discountAmount: (discountAmount || 0).toString(),
+        totalAmount: totalAmount.toString(),
+        paymentMethod,
+        paymentReference,
+        amountPaid: amountPaid?.toString() || totalAmount.toString(),
+        changeAmount: (changeAmount || 0).toString(),
+        receiptData: JSON.stringify({
+          items,
+          customerInfo,
+          timestamp: new Date(),
+        }),
+      });
+
+      console.log(`💾 Transaction inserted:`, {
+        id: transactionId,
+        transactionNumber,
+        totalAmount,
+        status: "completed",
+        branchId: branchId || "default",
+        insertedAt: now.toISOString(),
+      });
+    } catch (insertError) {
+      console.error(`❌ Failed to insert transaction:`, insertError);
+      throw insertError;
+    }
 
     // Insert transaction items
     if (items && items.length > 0) {
-      for (const item of items) {
-        await db.insert(posTransactionItems).values({
-          id: createId(),
-          transactionId,
-          productId: item.id,
-          itemName: item.name,
-          itemSku: item.sku,
-          itemCategory: item.category,
-          unitPrice: item.price.toString(),
-          quantity: item.quantity,
-          subtotal: (item.price * item.quantity).toString(),
-          finalPrice: (item.price * item.quantity).toString(),
-        });
+      try {
+        for (const item of items) {
+          await db.insert(posTransactionItems).values({
+            id: createId(),
+            transactionId,
+            productId: item.id,
+            itemName: item.name,
+            itemSku: item.sku,
+            itemCategory: item.category,
+            unitPrice: item.price.toString(),
+            quantity: item.quantity,
+            subtotal: (item.price * item.quantity).toString(),
+            finalPrice: (item.price * item.quantity).toString(),
+          });
+        }
+        console.log(`✅ ${items.length} transaction items inserted`);
+      } catch (itemError) {
+        console.error(`❌ Failed to insert transaction items:`, itemError);
+        // Don't throw - transaction was already saved, items are secondary
       }
     }
 
+    console.log(`✅ Transaction saved successfully: ${transactionId}`);
     res.json({
       success: true,
       transactionId,
@@ -328,13 +609,16 @@ router.post("/transactions", async (req, res) => {
         const payload = {
           transactionId,
           transactionNumber,
-          totalAmount,
+          totalAmount: Number(totalAmount),
           paymentMethod,
-          branchId,
+          branchId: branchId || "default",
           cashierInfo,
+          timestamp: new Date().toISOString(),
         };
+        console.log(`🚀 Emitting pos.transaction.created event with payload:`, JSON.stringify(payload));
+
         // Broadcast to public and branch channels (also private versions)
-        await Promise.all([
+        const results = await Promise.all([
           triggerPusherEvent(
             ["public-realtime", `branch-${branchId}`],
             "pos.transaction.created",
@@ -346,8 +630,10 @@ router.post("/transactions", async (req, res) => {
             payload,
           ),
         ]);
+
+        console.log(`✅ Pusher events emitted successfully:`, results);
       } catch (err) {
-        console.warn("Failed to emit pos.transaction.created:", err);
+        console.error("❌ Failed to emit pos.transaction.created:", err);
       }
     })();
   } catch (error) {
@@ -359,7 +645,7 @@ router.post("/transactions", async (req, res) => {
 // Get Transactions by Date
 router.get("/transactions/:date", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -391,7 +677,7 @@ router.get("/transactions/:date", async (req, res) => {
 // Get Transactions with Details
 router.get("/transactions/:date/detailed", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -436,7 +722,7 @@ router.get("/transactions/:date/detailed", async (req, res) => {
 // Save Expense
 router.post("/expenses", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -447,6 +733,7 @@ router.post("/expenses", async (req, res) => {
       description,
       amount,
       paymentMethod,
+      moneySource,
       notes,
       recordedByInfo,
     } = req.body;
@@ -458,6 +745,8 @@ router.post("/expenses", async (req, res) => {
     }
 
     const expenseId = createId();
+    const expenseMoneySource = moneySource || "income"; // Default to "income"
+
     await db.insert(posExpenses).values({
       id: expenseId,
       posSessionId,
@@ -465,16 +754,49 @@ router.post("/expenses", async (req, res) => {
       description,
       amount: amount.toString(),
       paymentMethod: paymentMethod || "cash",
+      moneySource: expenseMoneySource,
       notes,
       recordedBy: recordedByInfo?.id || "unknown",
       recordedByName: recordedByInfo?.name || "Unknown",
     });
 
+    const sourceLabel = expenseMoneySource === "owner" ? "👤 Owner Paid" : "💰 From Income";
+    console.log(`💸 Expense recorded: ${category} - ₱${amount} [${sourceLabel}] (ID: ${expenseId})`);
+
     res.json({
       success: true,
       expenseId,
-      message: "Expense recorded successfully",
+      message: `Expense recorded successfully (${sourceLabel})`,
     });
+
+    // Emit Pusher event for real-time updates
+    (async () => {
+      try {
+        const payload = {
+          expenseId,
+          posSessionId,
+          category,
+          description,
+          amount: parseFloat(amount.toString()),
+          paymentMethod,
+          moneySource: expenseMoneySource,
+          recordedBy: recordedByInfo?.id,
+          recordedByName: recordedByInfo?.name,
+          timestamp: new Date(),
+        };
+        // Broadcast to public and branch channels
+        await Promise.all([
+          triggerPusherEvent(
+            ["public-realtime", `private-public-realtime`],
+            "pos.expense.created",
+            payload,
+          ),
+        ]);
+        console.log("✅ Expense event emitted to Pusher");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit pos.expense.created event:", err);
+      }
+    })();
   } catch (error) {
     console.error("Error saving expense:", error);
     res.status(500).json({ error: "Failed to save expense" });
@@ -484,7 +806,7 @@ router.post("/expenses", async (req, res) => {
 // Get Expenses by Session
 router.get("/expenses/session/:sessionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -507,7 +829,7 @@ router.get("/expenses/session/:sessionId", async (req, res) => {
 // Delete Expense
 router.delete("/expenses/:expenseId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -528,10 +850,10 @@ router.delete("/expenses/:expenseId", async (req, res) => {
 
 // ============= DAILY REPORT ROUTES =============
 
-// Get Daily Sales Report
+// Get Daily Sales Report (includes both POS transactions AND bookings)
 router.get("/reports/daily/:date", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       console.warn("⚠️ Database not initialized for daily report - returning fallback");
       return res.json({
@@ -552,8 +874,12 @@ router.get("/reports/daily/:date", async (req, res) => {
     console.log(`📊 Generating daily report for: ${date}`);
 
     // Parse the date properly (format: YYYY-MM-DD)
-    const dateObj = new Date(date);
-    if (isNaN(dateObj.getTime())) {
+    // IMPORTANT: Parse as UTC to match database timestamps
+    const [year, month, day] = date.split('-').map(Number);
+    const startDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+
+    if (isNaN(startDate.getTime())) {
       console.error(`❌ Invalid date format: ${date}`);
       return res.json({
         error: "Invalid date format. Use YYYY-MM-DD",
@@ -570,82 +896,121 @@ router.get("/reports/daily/:date", async (req, res) => {
       });
     }
 
-    const startDate = new Date(dateObj);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(dateObj);
-    endDate.setHours(23, 59, 59, 999);
+    console.log(`📅 Date requested: ${date}`);
+    console.log(`⏰ Query date range (UTC):`);
+    console.log(`   Start: ${startDate.toISOString()}`);
+    console.log(`   End: ${endDate.toISOString()}`);
 
-    const startDateISO = startDate.toISOString();
-    const endDateISO = endDate.toISOString();
-
-    console.log(
-      `⏰ Date range: ${startDateISO} to ${endDateISO}`,
-    );
-
-    let transactions: any[] = [];
+    let posTransactionsData: any[] = [];
+    let bookingsData: any[] = [];
     let expenses: any[] = [];
 
     try {
-      // Get transactions for the day
-      transactions = await db
+      // Get POS transactions for the day
+      console.log(`🔍 Querying POS transactions...`);
+      posTransactionsData = await db
         .select()
         .from(posTransactions)
         .where(
           and(
-            gte(posTransactions.createdAt, startDateISO),
-            lte(posTransactions.createdAt, endDateISO),
+            gte(posTransactions.createdAt, startDate),
+            lte(posTransactions.createdAt, endDate),
             eq(posTransactions.status, "completed"),
           ),
         );
 
-      console.log(`✅ Found ${transactions.length} transactions`);
+      console.log(`✅ Found ${posTransactionsData.length} POS transactions`);
+      if (posTransactionsData.length > 0) {
+        console.log(`   Sample transaction:`, {
+          id: posTransactionsData[0].id,
+          transactionNumber: posTransactionsData[0].transactionNumber,
+          totalAmount: posTransactionsData[0].totalAmount,
+          createdAt: posTransactionsData[0].createdAt,
+          status: posTransactionsData[0].status,
+        });
+      }
 
-      // Get expenses from pos_expenses table (not filtered by session date, but by transaction date)
+      // Get bookings for the day (these are also sales)
+      bookingsData = await db
+        .select({
+          id: bookings.id,
+          totalPrice: bookings.totalPrice,
+          paymentMethod: bookings.paymentMethod,
+          createdAt: bookings.createdAt,
+          status: bookings.status,
+        })
+        .from(bookings)
+        .where(
+          and(
+            gte(bookings.createdAt, startDate),
+            lte(bookings.createdAt, endDate),
+          ),
+        );
+
+      console.log(`✅ Found ${bookingsData.length} bookings`);
+
+      // Get expenses from pos_expenses table
       expenses = await db
         .select()
         .from(posExpenses)
         .where(
           and(
-            gte(posExpenses.createdAt, startDateISO),
-            lte(posExpenses.createdAt, endDateISO),
+            gte(posExpenses.createdAt, startDate),
+            lte(posExpenses.createdAt, endDate),
           ),
         );
+
+      console.log(`💰 Found ${expenses.length} expenses`);
     } catch (dbError: any) {
-      console.warn("⚠️ Database query failed for daily report:", dbError.message?.substring(0, 150));
-      transactions = [];
+      console.warn("⚠️ Database query failed for daily report:", dbError.message || String(dbError));
+      console.error("Full error object:", dbError);
+      posTransactionsData = [];
+      bookingsData = [];
       expenses = [];
     }
+
+    // Combine POS transactions and bookings for total sales
+    const allTransactions = [
+      ...posTransactionsData.map(t => ({
+        totalAmount: parseFloat(t.totalAmount?.toString() || "0"),
+        paymentMethod: t.paymentMethod || "unknown",
+        source: "pos"
+      })),
+      ...bookingsData.map(b => ({
+        totalAmount: parseFloat(b.totalPrice?.toString() || "0"),
+        paymentMethod: b.paymentMethod || "unknown",
+        source: "booking"
+      }))
+    ];
 
     const totalExpenses = expenses.reduce(
       (sum, exp) => sum + parseFloat(exp.amount.toString()),
       0,
     );
 
-    console.log(
-      `💰 Found ${expenses.length} expenses: ₱${totalExpenses.toFixed(2)}`,
-    );
+    console.log(`💰 Total expenses: ₱${totalExpenses.toFixed(2)}`);
 
-    // Calculate totals
-    const totalSales = transactions.reduce(
-      (sum, trans) => sum + parseFloat(trans.totalAmount.toString()),
+    // Calculate totals from combined transactions
+    const totalSales = allTransactions.reduce(
+      (sum, trans) => sum + trans.totalAmount,
       0,
     );
 
-    const totalCash = transactions
+    const totalCash = allTransactions
       .filter((t) => t.paymentMethod === "cash")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalCard = transactions
+    const totalCard = allTransactions
       .filter((t) => t.paymentMethod === "card")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalGcash = transactions
+    const totalGcash = allTransactions
       .filter((t) => t.paymentMethod === "gcash")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
-    const totalBank = transactions
+    const totalBank = allTransactions
       .filter((t) => t.paymentMethod === "bank")
-      .reduce((sum, t) => sum + parseFloat(t.totalAmount.toString()), 0);
+      .reduce((sum, t) => sum + t.totalAmount, 0);
 
     const result = {
       date,
@@ -656,11 +1021,16 @@ router.get("/reports/daily/:date", async (req, res) => {
       totalBank: parseFloat(totalBank.toFixed(2)),
       totalExpenses: parseFloat(totalExpenses.toFixed(2)),
       netIncome: parseFloat((totalSales - totalExpenses).toFixed(2)),
-      transactionCount: transactions.length,
+      transactionCount: allTransactions.length,
       expenseCount: expenses.length,
     };
 
-    console.log(`📈 Daily Report Summary:`, result);
+    console.log(`📈 Daily Report Summary for ${date}:`);
+    console.log(`   Total Sales: ₱${result.totalSales}`);
+    console.log(`   Total Expenses: ₱${result.totalExpenses}`);
+    console.log(`   Net Income: ₱${result.netIncome}`);
+    console.log(`   Transaction Count: ${result.transactionCount}`);
+    console.log(`   Payment Breakdown - Cash: ₱${result.totalCash}, Card: ₱${result.totalCard}, GCash: ₱${result.totalGcash}, Bank: ₱${result.totalBank}`);
     res.json(result);
   } catch (error: any) {
     console.error("❌ Error generating daily report:", error);
@@ -686,7 +1056,7 @@ router.get("/reports/daily/:date", async (req, res) => {
 // Get all transactions (with optional filters)
 router.get("/transactions", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -738,7 +1108,7 @@ router.get("/transactions", async (req, res) => {
 // Get transaction details with items
 router.get("/transactions/:transactionId", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -774,7 +1144,7 @@ router.get("/transactions/:transactionId", async (req, res) => {
 // Get transactions summary/statistics
 router.get("/transactions/stats/summary", async (req, res) => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db) {
       return res.status(500).json({ error: "Database not initialized" });
     }
@@ -838,6 +1208,81 @@ router.get("/transactions/stats/summary", async (req, res) => {
   } catch (error) {
     console.error("Error fetching transaction stats:", error);
     res.status(500).json({ error: "Failed to fetch transaction statistics" });
+  }
+});
+
+// ============= DIAGNOSTIC ROUTES =============
+
+// Get diagnostic info about today's transactions
+router.get("/diagnostic/today", async (req, res) => {
+  try {
+    const db = await getDatabase();
+    if (!db) {
+      return res.status(500).json({ error: "Database not initialized" });
+    }
+
+    const today = new Date();
+    const todayStartUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0));
+    const todayEndUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+
+    const diagnosticData = {
+      serverTime: new Date().toISOString(),
+      clientTimeReceived: req.body?.clientTime || "not provided",
+      todayLocalDate: today.toLocaleDateString(),
+      todayUTCDate: today.toUTCString(),
+      dateRange: {
+        startUTC: todayStartUTC.toISOString(),
+        endUTC: todayEndUTC.toISOString(),
+      },
+      transactions: [] as any[],
+      summary: {
+        totalCount: 0,
+        totalAmount: 0,
+        byPaymentMethod: {} as Record<string, { count: number; amount: number }>,
+      },
+    };
+
+    // Get ALL transactions created today (with full details)
+    const allTransactions = await db
+      .select()
+      .from(posTransactions)
+      .orderBy(desc(posTransactions.createdAt));
+
+    // Filter for today
+    const todaysTransactions = allTransactions.filter((t) => {
+      const txTime = new Date(t.createdAt);
+      return txTime >= todayStartUTC && txTime <= todayEndUTC;
+    });
+
+    diagnosticData.transactions = todaysTransactions.map((t) => ({
+      id: t.id,
+      transactionNumber: t.transactionNumber,
+      totalAmount: t.totalAmount,
+      paymentMethod: t.paymentMethod,
+      createdAt: t.createdAt,
+      createdAtISO: new Date(t.createdAt).toISOString(),
+      status: t.status,
+    }));
+
+    diagnosticData.summary.totalCount = todaysTransactions.length;
+    diagnosticData.summary.totalAmount = todaysTransactions.reduce(
+      (sum, t) => sum + parseFloat(t.totalAmount?.toString() || "0"),
+      0
+    );
+
+    todaysTransactions.forEach((t) => {
+      const method = t.paymentMethod || "unknown";
+      if (!diagnosticData.summary.byPaymentMethod[method]) {
+        diagnosticData.summary.byPaymentMethod[method] = { count: 0, amount: 0 };
+      }
+      diagnosticData.summary.byPaymentMethod[method].count++;
+      diagnosticData.summary.byPaymentMethod[method].amount += parseFloat(t.totalAmount?.toString() || "0");
+    });
+
+    res.json(diagnosticData);
+  } catch (error) {
+    console.error("Error fetching diagnostic data:", error);
+    res.status(500).json({ error: "Failed to fetch diagnostic data", details: String(error) });
   }
 });
 

@@ -27,7 +27,7 @@ const XENDIT_WEBHOOK_TOKEN = process.env.XENDIT_WEBHOOK_TOKEN || "";
 const XENDIT_API_URL = "https://api.xendit.co/v2";
 
 // Helper function to get database
-const getDb = () => getDatabase();
+const getDb = async () => await getDatabase();
 
 // Cache for available payment methods to speed up responses
 const PAYMENT_METHODS_CACHE_TTL = Number(
@@ -441,7 +441,7 @@ export const confirmOfflinePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    const db = getDb();
+    const db = await getDb();
     if (!db) {
       return res.status(503).json({
         success: false,
@@ -523,7 +523,7 @@ export const handleWebhook: RequestHandler = async (req, res) => {
       event?.type || event?.event || "unknown",
     );
 
-    const db = getDb();
+    const db = await getDb();
     const externalId = event.external_id;
     const eventId = event.id || event.reference_id || `xendit-${Date.now()}`; // Use webhook event ID or fallback
 
@@ -917,7 +917,7 @@ export const checkBookingPaymentStatus: RequestHandler = async (req, res) => {
         .json({ success: false, error: "bookingId required" });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const [booking] = await db
       .select()
       .from(schema.bookings)
@@ -956,7 +956,7 @@ export const checkSubscriptionPaymentStatus: RequestHandler = async (
         .json({ success: false, error: "subscriptionId required" });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const [subscription] = await db
       .select()
       .from(schema.packageSubscriptions)

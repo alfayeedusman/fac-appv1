@@ -44,23 +44,12 @@ export default function Index() {
       </button>
 
       {/* Logo */}
-      <div className="mb-8 text-center relative">
-        <div className="inline-block relative">
-          <div className="text-4xl md:text-5xl font-black text-center" style={{ color: "#f97316" }}>
-            FAYEED
-          </div>
-          <div className="text-3xl md:text-4xl font-black text-center text-gray-900 dark:text-white">
-            AUTOCARE
-          </div>
-          <div className="absolute -top-2 -right-8 bg-fac-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-            Premium
-          </div>
-          <div className="flex justify-center gap-1 mt-1">
-            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
-            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
-            <div className="w-8 h-1 bg-fac-orange-500 rounded"></div>
-          </div>
-        </div>
+      <div className="mb-6 text-center relative">
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets%2Ff7cf3f8f1c944fbfa1f5031abc56523f%2F4c2591f24e704059a0760c169fa7d698?format=webp&width=800&height=1200"
+          alt="Fayeed Autocare Logo"
+          className="h-20 md:h-24 object-contain mx-auto"
+        />
       </div>
 
       {/* Main Heading */}

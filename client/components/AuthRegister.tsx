@@ -1,0 +1,324 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { AlertCircle, Mail, Lock, User, Phone, MapPin, Building } from "lucide-react";
+import { supabaseAuthService } from "@/services/supabaseAuthService";
+import { notificationManager } from "@/components/NotificationModal";
+import { validateRegistrationForm } from "@/utils/validationUtils";
+
+interface AuthRegisterProps {
+  onSuccess?: (email: string) => void;
+  onSwitchToLogin?: () => void;
+}
+
+export const AuthRegister: React.FC<AuthRegisterProps> = ({
+  onSuccess,
+  onSwitchToLogin,
+}) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+    contactNumber: "",
+    address: "",
+    branchLocation: "default",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const validation = validateRegistrationForm({
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      fullName: formData.fullName,
+      contactNumber: formData.contactNumber,
+      address: formData.address,
+      branchLocation: formData.branchLocation,
+    });
+
+    setErrors(validation.errors);
+    return validation.isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      notificationManager.error("Validation Error", "Please fill in all required fields correctly");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await supabaseAuthService.signUp({
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        branchLocation: formData.branchLocation,
+        role: "user",
+      });
+
+      if (result.success) {
+        notificationManager.success(
+          "Registration Successful",
+          "A verification email has been sent to your inbox. Please verify your email to continue."
+        );
+
+        if (onSuccess) {
+          onSuccess(formData.email);
+        }
+      } else {
+        // Check if error is validation error with field details
+        if (typeof result.message === 'object') {
+          // Backend returned field-level validation errors
+          const validationErrors = result.message as Record<string, string>;
+          setErrors(validationErrors);
+          const errorMessages = Object.values(validationErrors).join(", ");
+          notificationManager.error("Validation Error", errorMessages);
+        } else {
+          notificationManager.error("Registration Failed", result.message);
+        }
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      console.error("Registration error:", errorMessage);
+
+      // Try to parse validation errors if it's a JSON error message
+      try {
+        const parsedError = JSON.parse(errorMessage);
+        if (typeof parsedError === 'object') {
+          setErrors(parsedError);
+          const errorMessages = Object.values(parsedError).join(", ");
+          notificationManager.error("Validation Error", errorMessages);
+        } else {
+          notificationManager.error("Error", errorMessage);
+        }
+      } catch {
+        notificationManager.error("Error", errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-2 rounded-lg">
+            <User className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <CardTitle>Create Account</CardTitle>
+            <p className="text-sm text-gray-600">Sign up to get started</p>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="John Doe"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
+                className={`pl-10 ${errors.fullName ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.fullName && (
+              <p className="text-sm text-red-500 mt-1">{errors.fullName}</p>
+            )}
+          </div>
+
+          {/* Contact Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Contact Number (Optional)
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="tel"
+                placeholder="+63 9XX XXX XXXX or 09XX XXX XXXX"
+                value={formData.contactNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactNumber: e.target.value })
+                }
+                className={`pl-10 ${errors.contactNumber ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.contactNumber && (
+              <p className="text-sm text-red-500 mt-1">{errors.contactNumber}</p>
+            )}
+            {!errors.contactNumber && (
+              <p className="text-xs text-gray-500 mt-1">Format: 09XX XXX XXXX or +63 9XX XXX XXXX</p>
+            )}
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Address (Optional)
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Street address, City, Province"
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                className={`pl-10 ${errors.address ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.address && (
+              <p className="text-sm text-red-500 mt-1">{errors.address}</p>
+            )}
+            {!errors.address && (
+              <p className="text-xs text-gray-500 mt-1">e.g., 123 Main St, Manila, Metro Manila</p>
+            )}
+          </div>
+
+          {/* Branch Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Branch Location
+            </label>
+            <div className="relative">
+              <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <select
+                value={formData.branchLocation}
+                onChange={(e) =>
+                  setFormData({ ...formData, branchLocation: e.target.value })
+                }
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="default">Select a branch</option>
+                <option value="manila">Manila</option>
+                <option value="cebu">Cebu</option>
+                <option value="davao">Davao</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <Separator className="my-4" />
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                className={`pl-10 ${errors.password ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.password && (
+              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
+                className={`pl-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+            )}
+          </div>
+
+          {/* Info Box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex space-x-2">
+            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800">
+              📧 A verification email will be sent to your inbox. Please verify your email before logging in.
+            </p>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium py-2 rounded-lg transition-all duration-200"
+          >
+            {isLoading ? "Creating Account..." : "Create Account"}
+          </Button>
+        </form>
+
+        {/* Switch to Login */}
+        <div className="text-center pt-4 border-t">
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <button
+              onClick={onSwitchToLogin}
+              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              Log In
+            </button>
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

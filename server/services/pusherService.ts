@@ -7,6 +7,14 @@ const PUSHER_CLUSTER = process.env.PUSHER_CLUSTER || 'mt1';
 
 if (!PUSHER_APP_ID || !PUSHER_KEY || !PUSHER_SECRET) {
   console.warn('⚠️ Pusher credentials not fully configured. Pusher will be disabled.');
+  console.warn('  PUSHER_APP_ID:', PUSHER_APP_ID ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_KEY:', PUSHER_KEY ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_SECRET:', PUSHER_SECRET ? '✅ Set' : '❌ Missing');
+  console.warn('  PUSHER_CLUSTER:', PUSHER_CLUSTER);
+} else {
+  console.log('✅ Pusher credentials configured successfully');
+  console.log('  APP_ID:', PUSHER_APP_ID);
+  console.log('  CLUSTER:', PUSHER_CLUSTER);
 }
 
 const buildQueryString = (obj: Record<string, string>) =>
@@ -21,10 +29,12 @@ export async function triggerPusherEvent(
   data: any,
 ): Promise<{ success: boolean; response?: any; error?: string }> {
   if (!PUSHER_APP_ID || !PUSHER_KEY || !PUSHER_SECRET) {
+    console.error('❌ Pusher not configured - cannot trigger event:', eventName);
     return { success: false, error: 'Pusher not configured' };
   }
 
   const channelList = Array.isArray(channels) ? channels : [channels];
+  console.log(`📡 Triggering Pusher event "${eventName}" on channels:`, channelList);
 
   const body = JSON.stringify({ name: eventName, channels: channelList, data });
   const bodyMd5 = crypto.createHash('md5').update(body).digest('hex');
@@ -62,12 +72,17 @@ export async function triggerPusherEvent(
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      return { success: false, error: `Pusher API responded with ${res.status}: ${text}` };
+      const errorMsg = `Pusher API responded with ${res.status}: ${text}`;
+      console.error('❌', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     const json = await res.json().catch(() => ({}));
+    console.log('✅ Pusher event triggered successfully');
     return { success: true, response: json };
   } catch (error: any) {
-    return { success: false, error: error?.message || String(error) };
+    const errorMsg = error?.message || String(error);
+    console.error('❌ Failed to trigger Pusher event:', errorMsg);
+    return { success: false, error: errorMsg };
   }
 }

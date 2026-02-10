@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   User,
   Mail,
@@ -24,6 +24,7 @@ import {
   Settings,
   Trophy,
   CreditCard,
+  LogOut,
 } from "lucide-react";
 import VehicleSelector from "@/components/VehicleSelector";
 import StickyHeader from "@/components/StickyHeader";
@@ -48,6 +49,8 @@ interface UserProfile {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
+
   // Get real user data from localStorage
   const userEmail = localStorage.getItem("userEmail") || "";
   const registeredUsers = JSON.parse(
@@ -85,6 +88,20 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const fileInputId = "profile_pic_input";
+
+  // Logout handler
+  const handleLogout = () => {
+    // Clear all user data from localStorage
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userLoggedInAt");
+    localStorage.removeItem("sessionToken");
+    localStorage.removeItem("pendingVerificationEmail");
+    localStorage.removeItem("pendingUserId");
+
+    // Redirect to login
+    navigate("/login");
+  };
 
   // Fetch subscription data from backend
   useEffect(() => {
@@ -281,18 +298,30 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Button
-                onClick={() => setIsEditing(!isEditing)}
-                className="w-10 h-10 p-0"
-                variant="outline"
-                size="icon"
-              >
-                {isEditing ? (
-                  <X className="h-4 w-4" />
-                ) : (
-                  <Edit className="h-4 w-4" />
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="w-10 h-10 p-0"
+                  variant="outline"
+                  size="icon"
+                  title="Edit profile"
+                >
+                  {isEditing ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Edit className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  className="w-10 h-10 p-0 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                  variant="outline"
+                  size="icon"
+                  title="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
         </Card>

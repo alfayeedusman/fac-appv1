@@ -11,6 +11,7 @@ import { triggerPusherEvent } from "../services/pusherService"; // Fire events t
 import * as schema from "../database/schema";
 import { and, eq, gte, lte, desc } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { sendPasswordResetEmail } from "../services/emailService";
 
 const emitPusher = async (
   channels: string | string[],
@@ -612,14 +613,6 @@ export const loginUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Update last login
-    try {
-      await supabaseDbService.updateUser(user.id, { lastLoginAt: new Date() });
-    } catch (updateErr) {
-      console.warn("⚠️ Failed to update last login:", updateErr);
-      // Continue - this is not critical
-    }
-
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
@@ -669,7 +662,7 @@ export const loginUser: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const userData = req.body;
-    const { subscriptionPackage } = userData;
+    const { subscriptionPackage, password: _password } = userData;
 
     console.log("📝 User registration initiated:", {
       email: userData.email,
@@ -685,12 +678,32 @@ export const registerUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Create user (excluding subscriptionPackage from user data)
-    const { subscriptionPackage: _ignore, ...userDataWithoutPackage } =
+    // Create user profile (excluding subscriptionPackage and password)
+    const { subscriptionPackage: _ignore, password: _pass, ...userDataForProfile } =
       userData;
-    const user = await supabaseDbService.createUser(userDataWithoutPackage);
+    const user = await supabaseDbService.createUserProfile(userDataForProfile);
 
     console.log("✅ User created:", user.id);
+
+    // Emit user.created event for real-time dashboard update
+    (async () => {
+      try {
+        await triggerPusherEvent(
+          ["public-realtime", "private-public-realtime"],
+          "user.created",
+          {
+            userId: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            subscriptionStatus: user.subscriptionStatus,
+            timestamp: new Date(),
+          }
+        );
+        console.log("✅ user.created event emitted");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit user.created event:", err);
+      }
+    })();
 
     // Create subscription if a package was selected
     let subscription = null;
@@ -709,6 +722,27 @@ export const registerUser: RequestHandler = async (req, res) => {
           autoRenew: true,
         });
         console.log("✅ Subscription created:", subscription.id);
+
+        // Emit subscription.created event for real-time dashboard update
+        (async () => {
+          try {
+            await triggerPusherEvent(
+              ["public-realtime", "private-public-realtime"],
+              "subscription.created",
+              {
+                subscriptionId: subscription.id,
+                userId: user.id,
+                packageId: subscriptionPackage,
+                amount: getPackagePrice(subscriptionPackage),
+                status: "pending",
+                timestamp: new Date(),
+              }
+            );
+            console.log("✅ subscription.created event emitted");
+          } catch (err) {
+            console.warn("⚠️ Failed to emit subscription.created event:", err);
+          }
+        })();
       } catch (subError) {
         console.warn("⚠️ Failed to create subscription:", subError);
         // Continue - subscription creation failure should not block registration
@@ -716,7 +750,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     }
 
     // Remove password from response
-    const { password: _password, ...userWithoutPassword } = user;
+    const { password: _pwd, ...userWithoutPassword } = user;
 
     res.status(201).json({
       success: true,
@@ -729,6 +763,77 @@ export const registerUser: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Registration failed",
+    });
+  }
+};
+
+// Request password reset
+export const requestPasswordReset: RequestHandler = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "Email is required",
+      });
+    }
+
+    console.log("🔄 Password reset requested for:", email);
+
+    // Check if user exists in database
+    const user = await supabaseDbService.getUserByEmail(email);
+
+    if (!user) {
+      // For security, don't reveal if email exists or not
+      console.log("❌ User not found:", email);
+      return res.status(404).json({
+        success: false,
+        error: "Email not found in our records",
+      });
+    }
+
+    console.log("✅ User found:", email);
+
+    // Generate a password reset token (valid for 24 hours)
+    const resetToken = Math.random().toString(36).substring(2, 15) +
+                      Math.random().toString(36).substring(2, 15);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    console.log("🔐 Password reset token generated for:", email);
+
+    // Generate reset link
+    const resetLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    console.log("📧 Password reset link:", resetLink);
+    console.log("⏰ Token expires at:", expiresAt);
+
+    // Send password reset email
+    const emailSent = await sendPasswordResetEmail({
+      email,
+      resetLink,
+      userName: user.fullName || undefined,
+    });
+
+    if (!emailSent) {
+      console.warn("⚠️ Failed to send password reset email");
+      return res.status(500).json({
+        success: false,
+        error: "Failed to send password reset email. Please check email configuration.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Password reset email sent successfully. Check your inbox.",
+      // In development, include the link for testing
+      ...(process.env.NODE_ENV === "development" && { resetLink }),
+    });
+  } catch (error) {
+    console.error("Password reset error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to process password reset request",
     });
   }
 };
@@ -751,7 +856,7 @@ export const updateSubscription: RequestHandler = async (req, res) => {
     });
 
     // Update user's subscription status
-    const updatedUser = await neonDbService.updateUser(userId, {
+    const updatedUser = await supabaseDbService.updateUser(userId, {
       subscriptionStatus: newStatus,
     });
 
@@ -760,6 +865,26 @@ export const updateSubscription: RequestHandler = async (req, res) => {
       newStatus,
       email: updatedUser.email,
     });
+
+    // Emit subscription.upgraded event for real-time dashboard update
+    (async () => {
+      try {
+        await triggerPusherEvent(
+          ["public-realtime", "private-public-realtime"],
+          "subscription.upgraded",
+          {
+            userId,
+            newStatus,
+            oldStatus: updatedUser.subscriptionStatus,
+            email: updatedUser.email,
+            timestamp: new Date(),
+          }
+        );
+        console.log("✅ subscription.upgraded event emitted");
+      } catch (err) {
+        console.warn("⚠️ Failed to emit subscription.upgraded event:", err);
+      }
+    })();
 
     res.json({
       success: true,
@@ -792,9 +917,9 @@ export const fetchUserSubscription: RequestHandler = async (req, res) => {
 
     let user;
     if (userId) {
-      user = await neonDbService.getUserById(userId as string);
+      user = await supabaseDbService.getUserById(userId as string);
     } else {
-      user = await neonDbService.getUserByEmail(email as string);
+      user = await supabaseDbService.getUserByEmail(email as string);
     }
 
     if (!user) {
@@ -2167,6 +2292,52 @@ export const getStaffUsers: RequestHandler = async (req, res) => {
     console.error("❌ Error fetching staff:", error);
     // Return fallback empty array on error
     return res.json({ success: true, users: [] });
+  }
+};
+
+// Customer search endpoint - search by ID, phone, name, or QR code
+export const searchCustomers: RequestHandler = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ success: false, error: "Query parameter required" });
+    }
+
+    console.log(`🔍 Searching customers for: ${query}`);
+    const allUsers = await supabaseDbService.getAllUsers();
+    const customers = allUsers.filter((user) => user.role === "user");
+
+    // Search by phone, name, email, or ID (case-insensitive)
+    const searchTerm = query.toLowerCase().trim();
+    const results = customers.filter((customer) => {
+      const phone = customer.contactNumber || customer.phone || "";
+      const email = customer.email || "";
+      const fullName = customer.fullName || customer.name || "";
+      const id = customer.id || "";
+
+      return (
+        phone.toLowerCase().includes(searchTerm) ||
+        email.toLowerCase().includes(searchTerm) ||
+        fullName.toLowerCase().includes(searchTerm) ||
+        id.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    console.log(`✅ Found ${results.length} matching customers`);
+    return res.json({
+      success: true,
+      customers: results.map(c => ({
+        id: c.id,
+        name: c.fullName || c.name || "Unknown",
+        email: c.email,
+        phone: c.contactNumber || c.phone,
+        qrCode: c.qrCode || `CUST-${c.id}`, // Generate QR code identifier if not present
+      }))
+    });
+  } catch (error) {
+    console.error("❌ Error searching customers:", error);
+    return res.json({ success: false, customers: [] });
   }
 };
 

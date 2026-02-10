@@ -35,6 +35,10 @@ export async function initializeDatabase(
   // Prevent concurrent connection attempts
   if (isConnecting) {
     console.log("⏳ Connection attempt already in progress");
+    // Return existing connection if available, even if currently connecting
+    if (db && sql) {
+      return db;
+    }
     return null;
   }
 
@@ -61,16 +65,16 @@ export async function initializeDatabase(
     sql = postgres(databaseUrl, {
       ssl: { rejectUnauthorized: false },
       prepare: false,
-      connect_timeout: 10, // 10 second connection timeout
+      connect_timeout: 30, // 30 second connection timeout
       idle_timeout: 20, // Close idle connections after 20 seconds
       max_lifetime: 60 * 30, // Max connection lifetime 30 minutes
     });
 
     db = drizzle(sql, { schema });
 
-    // Test the connection with a timeout
+    // Test the connection with a timeout (30 seconds for slow connections)
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Connection test timeout")), 10000);
+      setTimeout(() => reject(new Error("Connection test timeout")), 30000);
     });
 
     await Promise.race([sql`SELECT 1 as test`, timeoutPromise]);

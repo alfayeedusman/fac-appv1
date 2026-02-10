@@ -50,10 +50,14 @@ import {
   deleteExpense as deleteExpenseAPI,
   getDailySalesReport as getDailyReportAPI,
   getCurrentPOSSession,
+  getDiagnosticData,
 } from "@/utils/posApiService";
 import { receiptPrintService } from "@/services/receiptPrintService";
 import POSOpeningModal from "@/components/POSOpeningModal";
 import POSClosingModal from "@/components/POSClosingModal";
+import { CustomerSearchModal } from "@/components/CustomerSearchModal";
+import { Customer } from "@/utils/customerService";
+import realtimeService from "@/services/realtimeService";
 
 // Create a proper cart item interface that matches what we need
 interface CartItem {
@@ -72,6 +76,7 @@ export default function POSKiosk() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -99,6 +104,7 @@ export default function POSKiosk() {
     amount: "",
     paymentMethod: "cash",
     notes: "",
+    moneySource: "income" as "income" | "owner",
   });
   const [todayExpenses, setTodayExpenses] = useState(0);
   const [showOpeningModal, setShowOpeningModal] = useState(false);
@@ -112,6 +118,7 @@ export default function POSKiosk() {
   const cashierId = localStorage.getItem("userEmail") || "unknown";
   const branchId = "default";
 
+  // Initial data load (runs only once)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -143,23 +150,114 @@ export default function POSKiosk() {
       }
     };
     loadData();
-  }, []);
+  }, []); // Empty dependencies - runs only on mount
+
+  // Expose debugging functions to window (runs only once)
+  useEffect(() => {
+    (window as any).posDiagnostics = {
+      async checkDatabaseTransactions() {
+        console.log("🔍 Checking database transactions...");
+        const diag = await getDiagnosticData();
+        if (diag) {
+          console.table(diag.transactions);
+          console.log("Summary:", diag.summary);
+        }
+        return diag;
+      },
+      async refreshSalesNow() {
+        console.log("🔄 Manually refreshing sales...");
+        return loadTodaysSalesAndExpenses();
+      },
+      getCartItems() {
+        console.log("🛒 Current cart items:", cartItems);
+        return cartItems;
+      },
+      getCustomerInfo() {
+        console.log("👤 Current customer info:", customerInfo);
+        return customerInfo;
+      },
+      getPaymentInfo() {
+        console.log("💳 Current payment info:", paymentInfo);
+        return paymentInfo;
+      },
+      getCurrentSessionId() {
+        console.log("🔑 Current session ID:", currentSessionId);
+        return currentSessionId;
+      },
+    };
+  }, []); // Empty dependencies - runs only once on mount
 
   // Load today's sales and expenses
   const loadTodaysSalesAndExpenses = async () => {
     try {
       const today = new Date().toISOString().split("T")[0];
+      console.log(`📊 Fetching sales report for ${today}...`);
+      console.log(`   Current time: ${new Date().toISOString()}`);
+
       const report = await getDailyReportAPI(today);
-      setTodaysSales(report.totalSales);
-      setTodayExpenses(report.totalExpenses);
+      console.log(`✅ Sales report loaded:`, report);
+      console.log(`   Total Sales: ₱${report.totalSales}`);
+      console.log(`   Total Expenses: ₱${report.totalExpenses}`);
+      console.log(`   Net Income: ₱${report.totalSales - report.totalExpenses}`);
+      console.log(`   Transaction Count: ${report.transactionCount}`);
+      console.log(`   Breakdown - Cash: ₱${report.totalCash}, Card: ₱${report.totalCard}, GCash: ₱${report.totalGcash}, Bank: ₱${report.totalBank}`);
+
+      setTodaysSales(report.totalSales || 0);
+      setTodayExpenses(report.totalExpenses || 0);
+
+      // Log the state update
+      console.log(`📈 Sales state updated:`, {
+        todaysSales: report.totalSales || 0,
+        todayExpenses: report.totalExpenses || 0
+      });
     } catch (error) {
-      console.error("Error loading sales data:", error);
+      console.error("❌ Error loading sales data:", error);
+      // Keep existing values on error
     }
   };
 
   useEffect(() => {
+    // Load initial sales data
     loadTodaysSalesAndExpenses();
-    // Load once on mount - avoid continuous polling to prevent lag
+
+    // Set up Pusher real-time subscriptions for live updates
+    console.log("🔌 Setting up Pusher subscriptions for POS Kiosk...");
+
+    // Subscribe to POS transaction events (real-time sales)
+    const unsubscribePOSTransaction = realtimeService.subscribe("pos.transaction.created", (data: any) => {
+      console.log("📈 New POS transaction via Pusher:", data);
+      console.log(`   Transaction #${data.transactionNumber}, Amount: ₱${data.totalAmount}`);
+      // Refresh sales data when new transaction is created
+      console.log("🔄 Refreshing sales data...");
+      loadTodaysSalesAndExpenses();
+    });
+
+    // Subscribe to booking creation events (also tracked as sales)
+    const unsubscribeBooking = realtimeService.subscribe("booking.created", (data: any) => {
+      console.log("📅 New booking via Pusher:", data);
+      // Refresh sales data when new booking is created
+      loadTodaysSalesAndExpenses();
+    });
+
+    // Subscribe to expense creation events (real-time expenses)
+    const unsubscribeExpense = realtimeService.subscribe("pos.expense.created", (data: any) => {
+      console.log("💸 New POS expense via Pusher:", data);
+      // Refresh sales and expense data when new expense is created
+      loadTodaysSalesAndExpenses();
+    });
+
+    // Subscribe to inventory updates
+    const unsubscribeInventory = realtimeService.subscribe("inventory.updated", (data: any) => {
+      console.log("📦 Inventory updated via Pusher:", data);
+    });
+
+    return () => {
+      // Unsubscribe from all Pusher events when component unmounts
+      unsubscribePOSTransaction();
+      unsubscribeBooking();
+      unsubscribeExpense();
+      unsubscribeInventory();
+    };
   }, []);
 
   useEffect(() => {
@@ -271,6 +369,16 @@ export default function POSKiosk() {
 
   const addToCart = async (product: Product) => {
     try {
+      // Check if POS session is opened
+      if (!currentSessionId) {
+        notificationManager.error(
+          "POS Not Opened",
+          "You must open POS first before adding items to cart. The opening modal should appear automatically."
+        );
+        setShowOpeningModal(true);
+        return;
+      }
+
       if (!product || !product.id) {
         console.error("Invalid product:", product);
         return;
@@ -301,10 +409,8 @@ export default function POSKiosk() {
           },
         ]);
       }
-      notificationManager.success(
-        "Added to Cart",
-        `${product.name} added to cart`
-      );
+      // Silent notification - no popup to slow down workflow
+      console.log(`✅ ${product.name} added to cart`);
     } catch (error) {
       console.error("Error adding to cart:", error);
       notificationManager.error(
@@ -353,12 +459,31 @@ export default function POSKiosk() {
     0
   );
 
-  const change = paymentInfo.method === "cash" 
+  const change = paymentInfo.method === "cash"
     ? Math.max(0, parseFloat(paymentInfo.amountPaid || "0") - total)
     : 0;
 
+  const handleCustomerSelected = (customer: Customer) => {
+    console.log(`👤 Customer selected:`, customer);
+    setCustomerInfo({
+      uniqueId: customer.id,
+      name: customer.name,
+    });
+    setShowCustomerSearch(false);
+  };
+
   const handlePayment = async () => {
     try {
+      // Check if POS session is opened
+      if (!currentSessionId) {
+        notificationManager.error(
+          "POS Not Opened",
+          "You must open POS before processing payments. Please open POS first."
+        );
+        setShowOpeningModal(true);
+        return;
+      }
+
       setIsProcessingPayment(true);
 
       if (cartItems.length === 0) {
@@ -421,14 +546,23 @@ export default function POSKiosk() {
         },
         {
           method: paymentInfo.method,
-          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total * 1.12,
+          amountPaid: paymentInfo.method === "cash" ? parseFloat(paymentInfo.amountPaid) : total,
           referenceNumber: paymentInfo.referenceNumber
         }
       );
 
       // Save transaction to database
       const transactionNumber = `TXN-${Date.now()}`;
-      await saveTransactionAPI({
+      console.log(`💾 Saving transaction to database...`);
+      console.log(`   Transaction #${transactionNumber}`);
+      console.log(`   Amount: ₱${total.toFixed(2)}`);
+      console.log(`   Items: ${cartItems.length}`);
+      console.log(`   Customer: ${customerInfo.name} (ID: ${customerInfo.uniqueId})`);
+      console.log(`   Payment Method: ${paymentInfo.method}`);
+      console.log(`   Branch ID: ${branchId}`);
+      console.log(`   Cashier: ${cashierName} (ID: ${cashierId})`);
+
+      const transactionResult = await saveTransactionAPI({
         transactionNumber,
         customerInfo: {
           id: customerInfo.uniqueId,
@@ -449,6 +583,19 @@ export default function POSKiosk() {
         },
         branchId,
       });
+
+      console.log(`✅ Transaction saved successfully:`, transactionResult);
+
+      if (!transactionResult.success) {
+        throw new Error(`Transaction save failed: ${JSON.stringify(transactionResult)}`);
+      }
+
+      // Immediately refresh sales data to show the transaction right away
+      console.log("📊 Immediately refreshing sales data after transaction...");
+      const startRefresh = Date.now();
+      await loadTodaysSalesAndExpenses();
+      const refreshTime = Date.now() - startRefresh;
+      console.log(`✅ Sales data refreshed in ${refreshTime}ms`);
 
       // Handle receipt printing based on settings
       try {
@@ -495,9 +642,6 @@ export default function POSKiosk() {
         "Payment processed successfully! Receipt printing..."
       );
 
-      // Reload today's sales
-      loadTodaysSalesAndExpenses();
-
       // Reset form
       clearCart();
       setCustomerInfo({ uniqueId: "", name: "" });
@@ -507,6 +651,12 @@ export default function POSKiosk() {
         referenceNumber: "",
       });
       setShowPaymentModal(false);
+
+      // Sales data will be updated automatically via Pusher for real-time updates
+      console.log("✅ Payment processed - Pusher will update sales data automatically");
+      console.log(`🔍 PAYMENT COMPLETED SUCCESSFULLY`);
+      console.log(`   Transaction ID: ${transactionResult.transactionId}`);
+      console.log(`   Check console above for refresh completion time`);
     } catch (error) {
       console.error("Payment error:", error);
       notificationManager.error(
@@ -520,6 +670,27 @@ export default function POSKiosk() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-4 font-display">
+      {/* POS Status Banner */}
+      {!currentSessionId && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-red-600 animate-pulse" />
+              <div>
+                <h3 className="font-bold text-red-900">POS Not Opened</h3>
+                <p className="text-sm text-red-700">You must open a POS session before using this kiosk. Opening balance is required (zero is acceptable).</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowOpeningModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white whitespace-nowrap"
+            >
+              Open POS Now
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
         <div className="glass rounded-2xl shadow-xl border border-white/50 p-6 mb-8 hover-lift">
@@ -552,6 +723,15 @@ export default function POSKiosk() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 px-4 py-2 rounded-xl">
+                {openingBalance > 0 && (
+                  <>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <DollarSign className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-600">Opening: ₱{openingBalance.toFixed(2)}</span>
+                    </div>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  </>
+                )}
                 <div className="hidden sm:flex items-center space-x-2">
                   <Sparkles className="h-4 w-4 text-orange-600 animate-pulse-gentle" />
                   <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Sales: ₱{todaysSales.toFixed(2)}</span>
@@ -579,7 +759,17 @@ export default function POSKiosk() {
                 Add Expense
               </Button>
               <Button
-                onClick={() => setShowCarWashModal(true)}
+                onClick={() => {
+                  if (!currentSessionId) {
+                    notificationManager.error(
+                      "POS Not Opened",
+                      "You must open POS first before adding car wash services"
+                    );
+                    setShowOpeningModal(true);
+                    return;
+                  }
+                  setShowCarWashModal(true);
+                }}
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 px-6"
               >
                 <Droplet className="h-4 w-4 mr-2" />
@@ -661,7 +851,7 @@ export default function POSKiosk() {
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-2">
+              <CardContent className={`pt-2 transition-opacity duration-300 ${!currentSessionId ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                 {isLoading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(6)].map((_, i) => (
@@ -791,7 +981,7 @@ export default function POSKiosk() {
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className={`space-y-6 transition-opacity duration-300 ${!currentSessionId ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                 {cartItems.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="relative">
@@ -803,7 +993,7 @@ export default function POSKiosk() {
                       </div>
                     </div>
                     <h3 className="text-lg font-bold text-gray-700 mb-2 text-shadow-sm">Your cart is empty</h3>
-                    <p className="text-gray-400 text-sm">Add some products to get started</p>
+                    <p className="text-gray-400 text-sm">{!currentSessionId ? 'Open POS first before adding products' : 'Add some products to get started'}</p>
                   </div>
                 ) : (
                   <>
@@ -884,7 +1074,7 @@ export default function POSKiosk() {
                         <Separator className="my-3" />
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-black text-gray-900 text-shadow-sm">Total:</span>
-                          <span className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-shadow animate-gradient">₱{(total * 1.12).toFixed(2)}</span>
+                          <span className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-shadow animate-gradient">₱{total.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -899,6 +1089,17 @@ export default function POSKiosk() {
                         <Trash2 className="h-4 w-4 mr-2" />
                         Clear Cart
                       </Button>
+
+                      {!customerInfo.uniqueId && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCustomerSearch(true)}
+                          className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 rounded-xl py-3"
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Select Customer
+                        </Button>
+                      )}
 
                       <Button
                         onClick={() => setShowPaymentModal(true)}
@@ -916,7 +1117,7 @@ export default function POSKiosk() {
                             <CreditCard className="h-5 w-5 mr-2" />
                             Process Payment
                             <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-sm">
-                              ₱{(total * 1.12).toFixed(2)}
+                              ₱{total.toFixed(2)}
                             </div>
                           </>
                         )}
@@ -941,6 +1142,18 @@ export default function POSKiosk() {
         total={total}
         change={change}
         onPayment={handlePayment}
+        isProcessing={isProcessingPayment}
+        onOpenCustomerSearch={() => {
+          setShowPaymentModal(false);
+          setShowCustomerSearch(true);
+        }}
+      />
+
+      {/* Customer Search Modal */}
+      <CustomerSearchModal
+        isOpen={showCustomerSearch}
+        onClose={() => setShowCustomerSearch(false)}
+        onSelectCustomer={handleCustomerSelected}
       />
 
       {/* Car Wash Service Modal */}
@@ -1174,6 +1387,42 @@ export default function POSKiosk() {
                 </select>
               </div>
 
+              {/* Money Source */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">💰 Money Flow</label>
+                <div className="space-y-3">
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{borderColor: expenseForm.moneySource === "income" ? "#3b82f6" : "#d1d5db", backgroundColor: expenseForm.moneySource === "income" ? "#eff6ff" : "transparent"}}>
+                    <input
+                      type="radio"
+                      name="moneySource"
+                      value="income"
+                      checked={expenseForm.moneySource === "income"}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, moneySource: e.target.value as "income" | "owner" })}
+                      className="w-4 h-4 accent-blue-500 cursor-pointer"
+                    />
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900">From Current Income</p>
+                      <p className="text-xs text-gray-600">Expense will be deducted from today's sales for balance matching</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{borderColor: expenseForm.moneySource === "owner" ? "#f97316" : "#d1d5db", backgroundColor: expenseForm.moneySource === "owner" ? "#fff7ed" : "transparent"}}>
+                    <input
+                      type="radio"
+                      name="moneySource"
+                      value="owner"
+                      checked={expenseForm.moneySource === "owner"}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, moneySource: e.target.value as "income" | "owner" })}
+                      className="w-4 h-4 accent-orange-500 cursor-pointer"
+                    />
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900">Shouldered by Owner</p>
+                      <p className="text-xs text-gray-600">Expense is paid by owner, not deducted from sales balance</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
@@ -1203,34 +1452,48 @@ export default function POSKiosk() {
                       return;
                     }
 
-                    saveExpenseAPI({
-                      posSessionId: currentSessionId || "temp",
-                      category: expenseForm.category,
-                      description: expenseForm.description,
-                      amount: parseFloat(expenseForm.amount),
-                      paymentMethod: expenseForm.paymentMethod,
-                      notes: expenseForm.notes,
-                      recordedByInfo: {
-                        id: cashierId,
-                        name: cashierName,
-                      },
-                    });
+                    (async () => {
+                      try {
+                        await saveExpenseAPI({
+                          posSessionId: currentSessionId || "temp",
+                          category: expenseForm.category,
+                          description: expenseForm.description,
+                          amount: parseFloat(expenseForm.amount),
+                          paymentMethod: expenseForm.paymentMethod,
+                          moneySource: expenseForm.moneySource,
+                          notes: expenseForm.notes,
+                          recordedByInfo: {
+                            id: cashierId,
+                            name: cashierName,
+                          },
+                        });
 
-                    notificationManager.success(
-                      "Success",
-                      `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
-                    );
+                        notificationManager.success(
+                          "Success",
+                          `Expense of ₱${parseFloat(expenseForm.amount).toFixed(2)} recorded`
+                        );
 
-                    // Reset form
-                    setExpenseForm({
-                      category: "supplies",
-                      description: "",
-                      amount: "",
-                      paymentMethod: "cash",
-                      notes: "",
-                    });
-                    setShowExpenseModal(false);
-                    loadTodaysSalesAndExpenses();
+                        // Reset form
+                        setExpenseForm({
+                          category: "supplies",
+                          description: "",
+                          amount: "",
+                          paymentMethod: "cash",
+                          notes: "",
+                          moneySource: "income",
+                        });
+                        setShowExpenseModal(false);
+
+                        // Sales data will be updated automatically via Pusher
+                        console.log("✅ Expense saved - Pusher will update sales data automatically");
+                      } catch (error) {
+                        console.error("Error saving expense:", error);
+                        notificationManager.error(
+                          "Error",
+                          "Failed to save expense. Please try again."
+                        );
+                      }
+                    })();
                   }}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 font-medium transition-all duration-200"
                 >
@@ -1247,10 +1510,13 @@ export default function POSKiosk() {
       <POSOpeningModal
         isOpen={showOpeningModal}
         onClose={() => setShowOpeningModal(false)}
-        onSessionOpened={(sessionId) => {
+        onSessionOpened={(sessionId, balance) => {
           setCurrentSessionId(sessionId);
+          setOpeningBalance(balance);
           setSessionLoaded(true);
           setShowOpeningModal(false);
+          // Refresh sales data after opening session
+          loadTodaysSalesAndExpenses();
         }}
         cashierInfo={{ id: cashierId, name: cashierName }}
         branchId={branchId}
@@ -1261,9 +1527,15 @@ export default function POSKiosk() {
         isOpen={showClosingModal}
         onClose={() => setShowClosingModal(false)}
         onSessionClosed={() => {
-          setCurrentSessionId(null);
-          setSessionLoaded(false);
-          navigate("/admin-dashboard");
+          // Refresh sales data before navigating
+          loadTodaysSalesAndExpenses().then(() => {
+            setCurrentSessionId(null);
+            setSessionLoaded(false);
+            // Delay navigation slightly to ensure data is updated
+            setTimeout(() => {
+              navigate("/admin-dashboard");
+            }, 500);
+          });
         }}
         sessionId={currentSessionId || ""}
         openingBalance={openingBalance}

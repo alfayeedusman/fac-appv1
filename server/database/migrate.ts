@@ -1,6 +1,12 @@
 import { getDatabase, getSqlClient, testConnection } from "./connection";
 import bcrypt from "bcryptjs";
 import { seedPremiumUsers } from "./seed-premium-users";
+import {
+  initializeMigrationTracking,
+  getExecutedMigrations,
+  logMigration,
+  getMigrationStats,
+} from "./migration-tracker";
 
 // SQL client is created lazily via connection.ts
 
@@ -1012,6 +1018,7 @@ export async function runMigrations() {
         description VARCHAR(255) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         payment_method VARCHAR(50) NOT NULL,
+        money_source VARCHAR(50) DEFAULT 'income',
         notes TEXT,
         recorded_by TEXT NOT NULL,
         recorded_by_name VARCHAR(255) NOT NULL,
@@ -1019,6 +1026,15 @@ export async function runMigrations() {
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Ensure money_source column exists (add if missing from existing tables)
+    await sql`
+      ALTER TABLE IF EXISTS pos_expenses
+      ADD COLUMN IF NOT EXISTS money_source VARCHAR(50) DEFAULT 'income';
+    `;
+
+    // Create index on pos_session_id for faster lookups
+    await sql`CREATE INDEX IF NOT EXISTS idx_pos_expenses_session ON pos_expenses(pos_session_id);`;
 
     // ============= IMAGE MANAGEMENT SYSTEM =============
 
@@ -1222,8 +1238,6 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_cashier ON pos_sessions(cashier_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_status ON pos_sessions(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_date ON pos_sessions(session_date);`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_pos_expenses_session ON pos_expenses(pos_session_id);`;
-
     // Image Management indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_images_category ON images(category);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_images_active ON images(is_active);`;
@@ -1729,14 +1743,43 @@ export async function migrate() {
   }
 
   try {
-    await runMigrations();
+    // Initialize migration tracking (idempotent)
+    await initializeMigrationTracking();
+
+    // Check current migration status
+    const stats = await getMigrationStats();
+    console.log(`📊 Migration Status: ${stats.succeeded} succeeded, ${stats.failed} failed`);
+    console.log(stats.lastRun ? `⏰ Last migration: ${stats.lastRun.toLocaleString()}` : "⏰ No migrations run yet");
+
+    // Only run if we haven't completed initial migrations
+    const executed = await getExecutedMigrations();
+    const needsMigrations = executed.size === 0; // Only run if no migrations have been executed
+
+    if (needsMigrations) {
+      console.log("🚀 Running initial database migrations...");
+      const startTime = Date.now();
+      await runMigrations();
+      const duration = Date.now() - startTime;
+      await logMigration("initial_migration", duration, "success");
+    } else {
+      console.log("✅ Database already migrated - skipping migrations");
+    }
+
+    // Seed initial data (idempotent check inside seedInitialData)
+    const seedStartTime = Date.now();
     await seedInitialData();
+    const seedDuration = Date.now() - seedStartTime;
+    await logMigration("seed_initial_data", seedDuration, "success");
 
     // Seed premium users and test accounts
     try {
+      const premiumStartTime = Date.now();
       await seedPremiumUsers();
+      const premiumDuration = Date.now() - premiumStartTime;
+      await logMigration("seed_premium_users", premiumDuration, "success");
     } catch (err) {
       console.warn("⚠️ Premium user seeding failed (non-critical):", err);
+      await logMigration("seed_premium_users", 0, "failed");
     }
   } catch (error) {
     console.error("❌ Database migration failed:", error);

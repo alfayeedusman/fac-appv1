@@ -34,6 +34,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nextjs:nodejs /app/database ./database
+COPY --from=builder --chown=nextjs:nodejs /app/server/database ./server/database
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
 # Verify the dist structure
 RUN ls -la /app/dist/ 2>/dev/null || echo "dist directory not found"
@@ -42,6 +44,9 @@ RUN ls -la /app/dist/server 2>/dev/null || echo "dist/server not found"
 
 # Create necessary directories
 RUN mkdir -p /app/logs && chown nextjs:nodejs /app/logs
+
+# Make entrypoint script executable
+RUN chmod +x /app/scripts/docker-entrypoint.sh
 
 # Switch to non-root user
 USER nextjs
@@ -53,6 +58,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Start the application
+# Start the application with entrypoint that handles migrations
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/server/node-build.mjs"]
+CMD ["sh", "scripts/docker-entrypoint.sh"]
