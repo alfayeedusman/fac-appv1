@@ -116,7 +116,7 @@ export default function SwipeablePackageModal({
     subscriptionRequestStatus?.hasRequest &&
     subscriptionRequestStatus?.status === "pending";
 
-  const currentPackage = packages[currentIndex];
+  const currentPackage = packages.length > 0 ? packages[currentIndex] : null;
 
   const nextSlide = () => {
     if (isAnimating) return;
@@ -214,8 +214,18 @@ export default function SwipeablePackageModal({
         </DialogHeader>
 
         <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex-1 overflow-y-auto">
+          {/* Loading State */}
+          {loading && !currentPackage && (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading packages...</p>
+              </div>
+            </div>
+          )}
+
           {/* Pending Request Warning */}
-          {isPending && (
+          {isPending && currentPackage && (
             <Card className="mb-4 sm:mb-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center space-x-3">
@@ -235,6 +245,8 @@ export default function SwipeablePackageModal({
             </Card>
           )}
 
+          {currentPackage && (
+            <>
           {/* Package Indicators */}
           <div className="flex justify-center space-x-2 mb-4 sm:mb-6">
             {packages.map((_, index) => (
@@ -445,6 +457,8 @@ export default function SwipeablePackageModal({
               </div>
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
