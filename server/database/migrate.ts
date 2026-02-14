@@ -1137,6 +1137,9 @@ export async function runMigrations() {
     await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
     await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
 
+    // Add guest_info field if not exists
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_info JSONB;`;
+
     // ============= PUSH NOTIFICATION SYSTEM =============
 
     // Create fcm_tokens table
@@ -1238,6 +1241,16 @@ export async function runMigrations() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_cashier ON pos_sessions(cashier_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_status ON pos_sessions(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pos_sessions_date ON pos_sessions(session_date);`;
+    // Ensure associated columns exist before creating index
+    await sql`
+      ALTER TABLE IF EXISTS images
+      ADD COLUMN IF NOT EXISTS associated_with VARCHAR(50);
+    `;
+    await sql`
+      ALTER TABLE IF EXISTS images
+      ADD COLUMN IF NOT EXISTS associated_id TEXT;
+    `;
+
     // Image Management indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_images_category ON images(category);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_images_active ON images(is_active);`;

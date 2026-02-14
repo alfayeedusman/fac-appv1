@@ -40,6 +40,7 @@
     "migrate:verify": "echo 'Run these queries in Supabase SQL Editor to verify migrations:' && cat SUPABASE_SECURITY_FIXES.md | grep -A 50 'Verification Steps'"
   },
   "dependencies": {
+    "@builder.io/react": "^9.1.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@supabase/supabase-js": "^2.95.3",
     "@types/bcryptjs": "^2.4.6",

@@ -37,66 +37,86 @@ export default function SwipeablePackageModal({
   onSelectPackage,
   subscriptionRequestStatus,
 }: SwipeablePackageModalProps) {
-  const [currentIndex, setCurrentIndex] = useState(1); // Start with VIP Gold (popular)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [packages, setPackages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const packages = [
-    {
-      id: "classic",
-      name: "Classic",
-      price: 500,
-      originalPrice: null,
-      color: "from-blue-500 to-cyan-500",
-      icon: <Shield className="h-8 w-8" />,
-      features: [
-        "4 classic wash sessions",
-        "Basic member benefits",
-        "Online booking access",
-        "Customer support",
-      ],
-    },
-    {
-      id: "vip-gold",
-      name: "VIP Gold",
-      price: 2100,
-      originalPrice: 3000,
-      discount: "30% OFF",
-      popular: true,
-      color: "from-fac-orange-500 to-yellow-500",
-      icon: <Crown className="h-8 w-8" />,
-      features: [
-        "Unlimited classic washes",
-        "5 VIP ProMax sessions",
-        "1 Premium wash session",
-        "Priority booking",
-        "Exclusive benefits",
-        "Premium support",
-      ],
-    },
-    {
-      id: "vip-silver",
-      name: "VIP Silver",
-      price: 1050,
-      originalPrice: 1500,
-      discount: "30% OFF",
-      color: "from-purple-500 to-pink-500",
-      icon: <Star className="h-8 w-8" />,
-      features: [
-        "8 classic wash sessions",
-        "2 VIP ProMax sessions",
-        "Member discounts",
-        "Priority support",
-        "Loyalty points",
-      ],
-    },
-  ];
+  // Fetch packages from API when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchPackages();
+    }
+  }, [isOpen]);
+
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/supabase/packages");
+      const data = await response.json();
+
+      if (data.success && data.packages) {
+        const fetchedPackages = data.packages.map((pkg: any, index: number) => ({
+          id: pkg.id,
+          name: pkg.name,
+          price: pkg.price || 0,
+          originalPrice: null,
+          color: index === 0 ? "from-blue-500 to-cyan-500" :
+                 index === 1 ? "from-fac-orange-500 to-yellow-500" :
+                 "from-purple-500 to-pink-500",
+          icon: index === 0 ? <Shield className="h-8 w-8" /> :
+                index === 1 ? <Crown className="h-8 w-8" /> :
+                <Star className="h-8 w-8" />,
+          features: pkg.features ? JSON.parse(typeof pkg.features === 'string' ? pkg.features : JSON.stringify(pkg.features)) : [],
+          popular: pkg.isFeatured || index === 1,
+          isActive: pkg.isActive !== false,
+        }));
+        setPackages(fetchedPackages);
+        // Find popular package or default to 0
+        const popularIndex = fetchedPackages.findIndex(p => p.popular);
+        setCurrentIndex(popularIndex >= 0 ? popularIndex : 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch packages:", error);
+      // Set default fallback packages
+      setPackages([
+        {
+          id: "classic",
+          name: "Classic",
+          price: 500,
+          color: "from-blue-500 to-cyan-500",
+          icon: <Shield className="h-8 w-8" />,
+          features: ["4 classic wash sessions", "Basic benefits"],
+        },
+        {
+          id: "vip-gold",
+          name: "VIP Gold",
+          price: 3000,
+          color: "from-fac-orange-500 to-yellow-500",
+          icon: <Crown className="h-8 w-8" />,
+          features: ["Unlimited sessions", "Premium support"],
+          popular: true,
+        },
+        {
+          id: "vip-silver",
+          name: "VIP Silver",
+          price: 1500,
+          color: "from-purple-500 to-pink-500",
+          icon: <Star className="h-8 w-8" />,
+          features: ["8 sessions", "Priority support"],
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const isPending =
     subscriptionRequestStatus?.hasRequest &&
     subscriptionRequestStatus?.status === "pending";
 
-  const currentPackage = packages[currentIndex];
+  const currentPackage = packages.length > 0 ? packages[currentIndex] : null;
 
   const nextSlide = () => {
     if (isAnimating) return;
@@ -194,8 +214,18 @@ export default function SwipeablePackageModal({
         </DialogHeader>
 
         <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex-1 overflow-y-auto">
+          {/* Loading State */}
+          {loading && !currentPackage && (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading packages...</p>
+              </div>
+            </div>
+          )}
+
           {/* Pending Request Warning */}
-          {isPending && (
+          {isPending && currentPackage && (
             <Card className="mb-4 sm:mb-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center space-x-3">
@@ -215,6 +245,8 @@ export default function SwipeablePackageModal({
             </Card>
           )}
 
+          {currentPackage && (
+            <>
           {/* Package Indicators */}
           <div className="flex justify-center space-x-2 mb-4 sm:mb-6">
             {packages.map((_, index) => (
@@ -425,6 +457,8 @@ export default function SwipeablePackageModal({
               </div>
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
