@@ -25,6 +25,9 @@ import {
   DollarSign,
   UserX,
   RefreshCw,
+  ChevronRight,
+  Eye,
+  Eye2Icon,
 } from "lucide-react";
 import SubscriptionRequestCard from "@/components/SubscriptionRequestCard";
 import {
@@ -48,6 +51,7 @@ export default function AdminSubscriptionApproval() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [customerFilter, setCustomerFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -79,19 +83,16 @@ export default function AdminSubscriptionApproval() {
   const filterAndSortRequests = () => {
     let filtered = [...requests];
 
-    // Filter by status
     if (statusFilter !== "all") {
       filtered = filtered.filter((request) => request.status === statusFilter);
     }
 
-    // Filter by customer status
     if (customerFilter !== "all") {
       filtered = filtered.filter(
         (request) => request.customerStatus === customerFilter,
       );
     }
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (request) =>
@@ -107,7 +108,6 @@ export default function AdminSubscriptionApproval() {
       );
     }
 
-    // Sort requests
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
@@ -148,7 +148,7 @@ export default function AdminSubscriptionApproval() {
       if (!result.success) {
         notificationManager.error(
           "Approval Failed",
-          result.error || "Failed to approve request. Please try again.",
+          result.error || "Failed to approve request.",
         );
         return;
       }
@@ -156,15 +156,12 @@ export default function AdminSubscriptionApproval() {
       await loadRequests();
       notificationManager.success(
         "Request Approved! 🎉",
-        "Subscription request approved successfully! Customer has been notified.",
+        "Subscription approved successfully!",
         { autoClose: 4000 },
       );
     } catch (error) {
       console.error("Error approving request:", error);
-      notificationManager.error(
-        "Approval Failed",
-        "Failed to approve request. Please try again.",
-      );
+      notificationManager.error("Approval Failed", "Please try again.");
     }
   };
 
@@ -178,7 +175,7 @@ export default function AdminSubscriptionApproval() {
       if (!result.success) {
         notificationManager.error(
           "Rejection Failed",
-          result.error || "Failed to reject request. Please try again.",
+          result.error || "Failed to reject request.",
         );
         return;
       }
@@ -186,15 +183,12 @@ export default function AdminSubscriptionApproval() {
       await loadRequests();
       notificationManager.info(
         "Request Rejected",
-        "Subscription request rejected. Customer has been notified.",
+        "Customer has been notified.",
         { autoClose: 3000 },
       );
     } catch (error) {
       console.error("Error rejecting request:", error);
-      notificationManager.error(
-        "Rejection Failed",
-        "Failed to reject request. Please try again.",
-      );
+      notificationManager.error("Rejection Failed", "Please try again.");
     }
   };
 
@@ -204,23 +198,18 @@ export default function AdminSubscriptionApproval() {
       if (!result.success) {
         notificationManager.error(
           "Ban Failed",
-          result.error || "Failed to ban customer. Please try again.",
+          result.error || "Failed to ban customer.",
         );
         return;
       }
 
       await loadRequests();
-      notificationManager.warning(
-        "Customer Banned",
-        "Customer has been banned. All their requests have been updated.",
-        { autoClose: 4000 },
-      );
+      notificationManager.warning("Customer Banned", "All requests updated.", {
+        autoClose: 4000,
+      });
     } catch (error) {
       console.error("Error banning customer:", error);
-      notificationManager.error(
-        "Ban Failed",
-        "Failed to ban customer. Please try again.",
-      );
+      notificationManager.error("Ban Failed", "Please try again.");
     }
   };
 
@@ -230,236 +219,221 @@ export default function AdminSubscriptionApproval() {
       if (!result.success) {
         notificationManager.error(
           "Unban Failed",
-          result.error || "Failed to unban customer. Please try again.",
+          result.error || "Failed to unban customer.",
         );
         return;
       }
 
       await loadRequests();
-      notificationManager.success(
-        "Customer Unbanned",
-        "Customer has been unbanned successfully.",
-        { autoClose: 3000 },
-      );
+      notificationManager.success("Customer Unbanned", "Successfully unbanned.", {
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error("Error unbanning customer:", error);
-      notificationManager.error(
-        "Unban Failed",
-        "Failed to unban customer. Please try again.",
-      );
+      notificationManager.error("Unban Failed", "Please try again.");
     }
   };
 
-  const handleMarkUnderReview = async (requestId: string) => {
-    const result = await updateSubscriptionRequest(requestId, {
-      status: "under_review",
-      reviewedBy: adminEmail,
-      reviewedDate: new Date().toISOString(),
-    });
-
-    if (!result.success) {
-      notificationManager.error(
-        "Update Failed",
-        result.error || "Failed to update request status.",
-      );
-      return;
-    }
-
-    await loadRequests();
-  };
+  const StatCard = ({
+    icon: Icon,
+    label,
+    value,
+    color,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    value: number;
+    color: string;
+  }) => (
+    <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all">
+      <div className={`absolute inset-0 opacity-5 ${color}`} />
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-3xl font-bold mt-2">{value}</p>
+          </div>
+          <div className={`p-3 rounded-xl ${color} bg-opacity-10`}>
+            {Icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 animate-fade-in-up">
-        <div className="flex items-center space-x-4">
-          <Link to="/admin-dashboard">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full glass hover-lift"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <div className="gradient-primary p-3 rounded-xl ">
-              <CreditCard className="h-6 w-6 text-white" />
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <Link to="/admin-dashboard">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:bg-muted"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
             <div>
-              <h1 className="text-3xl font-black text-foreground">
-                Subscription{" "}
-                <span className="bg-gradient-to-r from-fac-orange-500 to-purple-600 bg-clip-text text-transparent">
-                  Approvals
-                </span>
-              </h1>
-              <p className="text-muted-foreground font-medium">
-                Review and manage subscription payment requests
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-fac-orange-500 to-fac-orange-600">
+                  <CreditCard className="h-6 w-6 text-white" />
+                </div>
+                <h1 className="text-4xl font-bold">
+                  Subscription
+                  <span className="block text-xl font-semibold text-muted-foreground">
+                    Approval Center
+                  </span>
+                </h1>
+              </div>
+              <p className="text-muted-foreground">
+                Review, approve, and manage customer subscription requests
               </p>
             </div>
           </div>
+          <Button
+            onClick={loadRequests}
+            variant="outline"
+            size="lg"
+            className="gap-2 self-start md:self-auto"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
         </div>
 
-        <Button
-          onClick={loadRequests}
-          variant="outline"
-          className="flex items-center space-x-2 w-full lg:w-auto"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span>Refresh</span>
-        </Button>
-      </div>
+        {/* Statistics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <StatCard
+            icon={<Users className="h-6 w-6 text-blue-600" />}
+            label="Total Requests"
+            value={stats.total}
+            color="bg-blue-600"
+          />
+          <StatCard
+            icon={<Clock className="h-6 w-6 text-yellow-600" />}
+            label="Pending"
+            value={stats.pending}
+            color="bg-yellow-600"
+          />
+          <StatCard
+            icon={<Eye className="h-6 w-6 text-purple-600" />}
+            label="Under Review"
+            value={stats.underReview}
+            color="bg-purple-600"
+          />
+          <StatCard
+            icon={<CheckCircle className="h-6 w-6 text-green-600" />}
+            label="Approved"
+            value={stats.approved}
+            color="bg-green-600"
+          />
+          <StatCard
+            icon={<XCircle className="h-6 w-6 text-red-600" />}
+            label="Rejected"
+            value={stats.rejected}
+            color="bg-red-600"
+          />
+          <StatCard
+            icon={<UserX className="h-6 w-6 text-destructive" />}
+            label="Banned"
+            value={stats.banned}
+            color="bg-destructive"
+          />
+        </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 animate-fade-in-up animate-delay-100">
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">Total Requests</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">{stats.pending}</p>
-            <p className="text-xs text-muted-foreground">Pending</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">
-              {stats.underReview}
-            </p>
-            <p className="text-xs text-muted-foreground">Under Review</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">
-              {stats.approved}
-            </p>
-            <p className="text-xs text-muted-foreground">Approved</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">
-              {stats.rejected}
-            </p>
-            <p className="text-xs text-muted-foreground">Rejected</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardContent className="p-4 text-center">
-            <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg w-fit mx-auto mb-2">
-              <UserX className="h-5 w-5 text-red-600 dark:text-red-400" />
-            </div>
-            <p className="text-xl font-bold text-foreground">{stats.banned}</p>
-            <p className="text-xs text-muted-foreground">Banned</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters and Search */}
-      <Card className="glass border-border mb-8 animate-fade-in-up animate-delay-200">
-        <CardHeader>
-          <CardTitle className="flex items-center text-foreground">
-            <Filter className="h-5 w-5 mr-2" />
-            Filter & Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by ID, name, email, package..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="under_review">Under Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Customer Status Filter */}
-            <Select value={customerFilter} onValueChange={setCustomerFilter}>
-              <SelectTrigger className="bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500">
-                <SelectValue placeholder="Filter by customer" />
-              </SelectTrigger>
-              <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
-                <SelectItem value="all">All Customers</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="banned">Banned</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="bg-background/50 backdrop-blur-sm border-border rounded-xl focus:border-fac-orange-500 focus:ring-fac-orange-500">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent className="bg-background/90 backdrop-blur-sm border-border">
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="amount">Highest Amount</SelectItem>
-                <SelectItem value="package">Package Type</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Requests List */}
-      <div className="space-y-6 animate-fade-in-up animate-delay-300">
-        {filteredRequests.length === 0 ? (
-          <Card className="glass border-border">
-            <CardContent className="p-8 text-center">
-              <div className="bg-muted/30 p-6 rounded-full w-fit mx-auto mb-4">
-                <CreditCard className="h-12 w-12 text-muted-foreground" />
+        {/* Filters Section */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filters & Search
+              </CardTitle>
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                >
+                  Grid
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                >
+                  List
+                </Button>
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">
-                No subscription requests found
-              </h3>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search ID, name, email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 rounded-lg border-0 bg-muted/50 focus:bg-muted"
+                />
+              </div>
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="rounded-lg border-0 bg-muted/50">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="under_review">Under Review</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={customerFilter} onValueChange={setCustomerFilter}>
+                <SelectTrigger className="rounded-lg border-0 bg-muted/50">
+                  <SelectValue placeholder="Filter by customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Customers</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="banned">Banned</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="rounded-lg border-0 bg-muted/50">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="amount">Highest Amount</SelectItem>
+                  <SelectItem value="package">Package Type</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Requests Section */}
+        {filteredRequests.length === 0 ? (
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-12 text-center">
+              <div className="mb-4">
+                <CreditCard className="h-16 w-16 text-muted-foreground mx-auto opacity-50" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">No requests found</h3>
               <p className="text-muted-foreground mb-6">
-                {searchTerm ||
-                statusFilter !== "all" ||
-                customerFilter !== "all"
+                {searchTerm || statusFilter !== "all" || customerFilter !== "all"
                   ? "Try adjusting your filters or search terms."
-                  : "No subscription requests have been submitted yet."}
+                  : "No subscription requests yet."}
               </p>
               {(searchTerm ||
                 statusFilter !== "all" ||
@@ -478,32 +452,49 @@ export default function AdminSubscriptionApproval() {
             </CardContent>
           </Card>
         ) : (
-          filteredRequests.map((request) => (
-            <SubscriptionRequestCard
-              key={request.id}
-              request={request}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onBan={handleBan}
-              onUnban={handleUnban}
-            />
-          ))
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 lg:grid-cols-2 gap-6"
+                : "space-y-4"
+            }
+          >
+            {filteredRequests.map((request) => (
+              <SubscriptionRequestCard
+                key={request.id}
+                request={request}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onBan={handleBan}
+                onUnban={handleUnban}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Summary Footer */}
+        {filteredRequests.length > 0 && (
+          <div className="text-center">
+            <Card className="border-0 shadow-lg inline-block">
+              <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">
+                    {filteredRequests.length}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-foreground">
+                    {requests.length}
+                  </span>{" "}
+                  requests
+                  {statusFilter !== "all" && ` • ${statusFilter}`}
+                  {customerFilter !== "all" && ` • ${customerFilter}`}
+                  {searchTerm && ` • "${searchTerm}"`}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
-
-      {/* Summary Info */}
-      {filteredRequests.length > 0 && (
-        <div className="text-center mt-8 animate-fade-in-up animate-delay-400">
-          <div className="glass rounded-2xl p-6">
-            <p className="text-sm text-muted-foreground">
-              Showing {filteredRequests.length} of {requests.length} requests
-              {statusFilter !== "all" && ` • Status: ${statusFilter}`}
-              {customerFilter !== "all" && ` • Customer: ${customerFilter}`}
-              {searchTerm && ` • Search: "${searchTerm}"`}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
