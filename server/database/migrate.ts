@@ -1137,6 +1137,9 @@ export async function runMigrations() {
     await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(100);`;
     await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS voucher_discount DECIMAL(10,2) DEFAULT 0.00;`;
 
+    // Add guest_info field if not exists
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_info JSONB;`;
+
     // ============= PUSH NOTIFICATION SYSTEM =============
 
     // Create fcm_tokens table
