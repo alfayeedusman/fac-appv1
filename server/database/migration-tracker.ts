@@ -104,19 +104,14 @@ export async function logMigration(
     if (!sql) return;
 
     // Use INSERT ... ON CONFLICT to handle idempotency
-    await sql.unsafe(`
+    await sql`
       INSERT INTO migrations_log (id, name, duration, status)
-      VALUES (
-        ${genId()},
-        '${name}',
-        ${duration},
-        '${status}'
-      )
+      VALUES (${genId()}, ${name}, ${duration}, ${status})
       ON CONFLICT (name) DO UPDATE SET
         executed_at = CURRENT_TIMESTAMP,
         duration = ${duration},
-        status = '${status}'
-    `);
+        status = ${status}
+    `;
 
     // Clear cache so it's refreshed next time
     migrationsCached = null;
