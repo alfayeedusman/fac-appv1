@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -56,6 +57,7 @@ interface SubscriptionPlan {
   basePrice: number;
   features: string[];
   popular?: boolean;
+  isActive?: boolean;
 }
 
 interface LockInOption {
@@ -80,6 +82,7 @@ interface CurrentSubscription {
 export default function ManageSubscription() {
   const [selectedPlan, setSelectedPlan] = useState<string>("vip-gold");
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "facpay">("facpay");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFACPayModal, setShowFACPayModal] = useState(false);
@@ -95,9 +98,69 @@ export default function ManageSubscription() {
   }>({ hasRequest: false, status: null, request: null });
   const [userSubscription, setUserSubscription] =
     useState<UserSubscriptionData | null>(null);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
 
   // Get real user data
   const userEmail = localStorage.getItem("userEmail") || "";
+
+  // Fetch packages from backend
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        setLoadingPlans(true);
+        const response = await fetch("/api/supabase/packages");
+        const data = await response.json();
+
+        if (data.success && data.packages) {
+          const fetchedPlans = data.packages.map((pkg: any) => ({
+            id: pkg.id,
+            name: pkg.name,
+            basePrice: pkg.price || 0,
+            features: pkg.features ? JSON.parse(typeof pkg.features === 'string' ? pkg.features : JSON.stringify(pkg.features)) : [],
+            popular: pkg.isFeatured || false,
+            isActive: pkg.isActive !== false,
+          }));
+          setSubscriptionPlans(fetchedPlans);
+          // Set first plan as selected if no selection
+          if (fetchedPlans.length > 0 && !selectedPlan) {
+            setSelectedPlan(fetchedPlans[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch packages:", error);
+        // Fall back to default plans if fetch fails
+        setSubscriptionPlans([
+          {
+            id: "classic",
+            name: "Classic",
+            basePrice: 500,
+            features: ["4 classic wash sessions per month", "Basic member benefits"],
+            isActive: true,
+          },
+          {
+            id: "vip-silver",
+            name: "VIP Silver",
+            basePrice: 1500,
+            features: ["8 classic wash sessions", "2 VIP ProMax sessions", "Priority support"],
+            isActive: true,
+          },
+          {
+            id: "vip-gold",
+            name: "VIP Gold",
+            basePrice: 3000,
+            features: ["Unlimited classic sessions", "5 VIP ProMax sessions", "Premium support"],
+            popular: true,
+            isActive: true,
+          },
+        ]);
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    fetchPackages();
+  }, []);
 
   // Function to refresh subscription status
   const refreshSubscriptionStatus = async () => {
@@ -152,49 +215,6 @@ export default function ManageSubscription() {
         : "inactive",
   };
 
-  const subscriptionPlans: SubscriptionPlan[] = [
-    {
-      id: "classic",
-      name: "Classic",
-      basePrice: 500,
-      features: [
-        "4 classic wash sessions per month",
-        "Basic member benefits",
-        "Online booking access",
-        "Customer support",
-        "Monthly reset of all benefits",
-      ],
-    },
-    {
-      id: "vip-silver",
-      name: "VIP Silver",
-      basePrice: 1500,
-      features: [
-        "8 classic wash sessions per month",
-        "2 VIP ProMax wash sessions per month",
-        "Member discounts",
-        "Priority support",
-        "Loyalty points earning",
-        "Monthly reset of all benefits",
-      ],
-    },
-    {
-      id: "vip-gold",
-      name: "VIP Gold",
-      basePrice: 3000,
-      popular: true,
-      features: [
-        "Unlimited classic wash sessions per month",
-        "5 VIP ProMax wash sessions per month",
-        "1 Premium wash session per month",
-        "Priority booking",
-        "Exclusive member benefits",
-        "Premium customer support",
-        "Maximum loyalty points",
-        "Monthly reset of all benefits",
-      ],
-    },
-  ];
 
   const lockInOptions: LockInOption[] = [
     {
@@ -275,6 +295,16 @@ export default function ManageSubscription() {
   const handleUpgrade = () => {
     // Show swipeable package selection modal
     setShowSwipeablePackageModal(true);
+  };
+
+  const handleSubscriptionPayment = () => {
+    if (paymentMethod === "facpay") {
+      // For instant FacPay payment
+      setShowFACPayModal(true);
+    } else {
+      // For cash payment (upload receipt)
+      setShowPaymentModal(true);
+    }
   };
 
   const handleSwipeablePackageSelection = (packageId: string) => {
@@ -812,13 +842,47 @@ export default function ManageSubscription() {
                       )}
                   </div>
 
+                  <div className="pt-4 border-t border-gray-200">
+                    <Label className="text-sm font-medium text-gray-600 mb-2 block">
+                      Payment Method
+                    </Label>
+                    <Select value={paymentMethod} onValueChange={(value: any) => setPaymentMethod(value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="facpay">
+                          <div className="flex items-center">
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            FacPay (Instant)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="cash">
+                          <div className="flex items-center">
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Cash (Upload Receipt)
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div className="pt-6 mt-6 border-t border-gray-200">
                     <Button
                       className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
-                      onClick={() => setShowSubscriptionSubmission(true)}
+                      onClick={handleSubscriptionPayment}
                     >
-                      <RefreshCw className="h-5 w-5 mr-2" />
-                      Confirm Renewal - ₱{pricing.total.toLocaleString()}
+                      {paymentMethod === "facpay" ? (
+                        <>
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Pay Now with FacPay - ₱{pricing.total.toLocaleString()}
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Submit Payment Receipt - ₱{pricing.total.toLocaleString()}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>

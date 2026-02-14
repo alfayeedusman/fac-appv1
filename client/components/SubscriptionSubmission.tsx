@@ -111,26 +111,14 @@ export default function SubscriptionSubmission({
 
   const paymentMethods = [
     {
-      id: "gcash",
-      name: "GCash",
-      icon: <Smartphone className="h-4 w-4" />,
+      id: "facpay",
+      name: "FacPay (Instant)",
+      icon: <CreditCard className="h-4 w-4" />,
       color: "text-blue-600",
     },
     {
-      id: "maya",
-      name: "Maya (PayMaya)",
-      icon: <Smartphone className="h-4 w-4" />,
-      color: "text-green-600",
-    },
-    {
-      id: "bank_transfer",
-      name: "Bank Transfer",
-      icon: <Building className="h-4 w-4" />,
-      color: "text-purple-600",
-    },
-    {
-      id: "over_counter",
-      name: "Over the Counter",
+      id: "cash",
+      name: "Cash (Upload Receipt)",
       icon: <Receipt className="h-4 w-4" />,
       color: "text-orange-600",
     },
