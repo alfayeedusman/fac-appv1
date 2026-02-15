@@ -196,15 +196,28 @@ export default function SubscriptionSubmission({
 
   // Helper function to get icon for payment method
   const getPaymentMethodIcon = (methodId: string) => {
-    const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
-      card: { icon: <CreditCard className="h-5 w-5" />, color: "text-blue-600" },
-      gcash: { icon: <Smartphone className="h-5 w-5" />, color: "text-blue-500" },
-      paymaya: { icon: <Smartphone className="h-5 w-5" />, color: "text-red-500" },
-      bank_transfer: { icon: <Building className="h-5 w-5" />, color: "text-purple-600" },
-      pay_at_counter: { icon: <DollarSign className="h-5 w-5" />, color: "text-orange-600" },
-      offline: { icon: <DollarSign className="h-5 w-5" />, color: "text-orange-600" },
+    const iconMap: Record<string, { iconType: string; color: string }> = {
+      card: { iconType: "card", color: "text-blue-600" },
+      gcash: { iconType: "phone", color: "text-blue-500" },
+      paymaya: { iconType: "phone", color: "text-red-500" },
+      bank_transfer: { iconType: "building", color: "text-purple-600" },
+      pay_at_counter: { iconType: "dollar", color: "text-orange-600" },
+      offline: { iconType: "dollar", color: "text-orange-600" },
     };
-    return iconMap[methodId] || { icon: <CreditCard className="h-5 w-5" />, color: "text-gray-600" };
+    const config = iconMap[methodId] || { iconType: "card", color: "text-gray-600" };
+
+    // Render appropriate icon based on type
+    const iconMap_render = {
+      card: <CreditCard className="h-5 w-5" />,
+      phone: <Smartphone className="h-5 w-5" />,
+      building: <Building className="h-5 w-5" />,
+      dollar: <DollarSign className="h-5 w-5" />,
+    };
+
+    return {
+      icon: iconMap_render[config.iconType as keyof typeof iconMap_render] || <CreditCard className="h-5 w-5" />,
+      color: config.color,
+    };
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
