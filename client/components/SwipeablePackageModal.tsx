@@ -13,7 +13,6 @@ import {
   CheckCircle,
   Star,
   Shield,
-  X,
   Clock,
   ChevronLeft,
   ChevronRight,
@@ -195,32 +194,63 @@ export default function SwipeablePackageModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] p-0 gap-0 overflow-y-auto">
         <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold">
-              Choose Your Package
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-bold">
+            Choose Your Package
+          </DialogTitle>
           <p className="text-muted-foreground text-sm text-left">
             Swipe left or right to browse packages
           </p>
         </DialogHeader>
 
         <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex-1 overflow-y-auto">
-          {/* Loading State */}
+          {/* Loading State with Skeleton Loaders */}
           {loading && !currentPackage && (
-            <div className="flex items-center justify-center h-96">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fac-orange-500 mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading packages...</p>
+            <div className="space-y-4 sm:space-y-6">
+              {/* Indicators Skeleton */}
+              <div className="flex justify-center space-x-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"
+                    style={{ width: i === 2 ? "32px" : "8px" }}
+                  />
+                ))}
               </div>
+
+              {/* Package Card Skeleton */}
+              <Card className="border-gray-200 dark:border-gray-700">
+                {/* Popular Badge Skeleton */}
+                <div className="h-10 sm:h-12 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
+
+                <CardContent className="p-4 sm:p-6 lg:p-8">
+                  {/* Icon Skeleton */}
+                  <div className="flex justify-center mb-4 sm:mb-6">
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                  </div>
+
+                  {/* Title Skeleton */}
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 animate-pulse rounded mb-4 sm:mb-6 w-3/4 mx-auto" />
+
+                  {/* Price Skeleton */}
+                  <div className="space-y-2 mb-6 sm:mb-8">
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-2/3 mx-auto" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-1/3 mx-auto" />
+                  </div>
+
+                  {/* Features Skeleton */}
+                  <div className="space-y-3 mb-6 sm:mb-8">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center space-x-3">
+                        <div className="h-5 w-5 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse flex-shrink-0" />
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded flex-1" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Button Skeleton */}
+                  <div className="h-10 sm:h-12 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+                </CardContent>
+              </Card>
             </div>
           )}
 
