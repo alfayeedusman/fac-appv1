@@ -11,6 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+interface PaymentMethod {
+  id: string;
+  label: string;
+}
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,7 +87,7 @@ interface CurrentSubscription {
 export default function ManageSubscription() {
   const [selectedPlan, setSelectedPlan] = useState<string>("vip-gold");
   const [selectedLockIn, setSelectedLockIn] = useState<string>("flexible");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "facpay">("facpay");
+  const [paymentMethod, setPaymentMethod] = useState<string>("card");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFACPayModal, setShowFACPayModal] = useState(false);
@@ -100,9 +105,94 @@ export default function ManageSubscription() {
     useState<UserSubscriptionData | null>(null);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
 
   // Get real user data
   const userEmail = localStorage.getItem("userEmail") || "";
+
+  // Fetch payment methods from backend
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      setLoadingPaymentMethods(true);
+      try {
+        const cacheKey = "xendit_methods_cache_v1";
+        const cacheTtlMs = 1000 * 60 * 5; // 5 minutes
+
+        // Check cache first
+        try {
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (
+              parsed?.ts &&
+              Date.now() - parsed.ts < cacheTtlMs &&
+              Array.isArray(parsed.methods)
+            ) {
+              setPaymentMethods(parsed.methods);
+              // Set first available method as default
+              if (parsed.methods.length > 0) {
+                setPaymentMethod(parsed.methods[0].id);
+              }
+              setLoadingPaymentMethods(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.log("Payment methods cache parse error", e);
+        }
+
+        // Fetch from API
+        const response = await fetch(
+          "/api/supabase/payment/xendit/methods"
+        );
+        const data = await response.json();
+
+        if (response.ok && data.success && Array.isArray(data.methods)) {
+          setPaymentMethods(data.methods);
+          if (data.methods.length > 0) {
+            setPaymentMethod(data.methods[0].id);
+          }
+          // Cache the methods
+          try {
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ ts: Date.now(), methods: data.methods })
+            );
+          } catch (e) {
+            console.log("Failed to cache payment methods", e);
+          }
+        } else {
+          // Fallback methods if API fails
+          const fallbackMethods: PaymentMethod[] = [
+            { id: "card", label: "Credit / Debit Card" },
+            { id: "gcash", label: "GCash (e-wallet)" },
+            { id: "paymaya", label: "PayMaya (e-wallet)" },
+            { id: "bank_transfer", label: "Bank Transfer" },
+            { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
+          ];
+          setPaymentMethods(fallbackMethods);
+          setPaymentMethod("card");
+        }
+      } catch (error) {
+        console.error("Error fetching payment methods:", error);
+        // Fallback methods
+        const fallbackMethods: PaymentMethod[] = [
+          { id: "card", label: "Credit / Debit Card" },
+          { id: "gcash", label: "GCash (e-wallet)" },
+          { id: "paymaya", label: "PayMaya (e-wallet)" },
+          { id: "bank_transfer", label: "Bank Transfer" },
+          { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
+        ];
+        setPaymentMethods(fallbackMethods);
+        setPaymentMethod("card");
+      } finally {
+        setLoadingPaymentMethods(false);
+      }
+    };
+
+    fetchPaymentMethods();
+  }, []);
 
   // Fetch packages from backend
   useEffect(() => {
@@ -298,12 +388,15 @@ export default function ManageSubscription() {
   };
 
   const handleSubscriptionPayment = () => {
-    if (paymentMethod === "facpay") {
-      // For instant FacPay payment
-      setShowFACPayModal(true);
-    } else {
-      // For cash payment (upload receipt)
+    // Offline/Cash payments require receipt upload
+    const offlinePaymentMethods = ["pay_at_counter", "offline"];
+
+    if (offlinePaymentMethods.includes(paymentMethod)) {
+      // For cash/offline payment (upload receipt)
       setShowPaymentModal(true);
+    } else {
+      // For online payment methods (card, gcash, paymaya, etc.)
+      setShowFACPayModal(true);
     }
   };
 
@@ -312,15 +405,15 @@ export default function ManageSubscription() {
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
     setShowSwipeablePackageModal(false);
 
-    // Show payment method selection
-    const result = window.confirm(
-      "Choose Payment Method:\n\nOK = Pay with FACPay (Instant)\nCancel = Upload Receipt (Manual)",
-    );
+    // Determine payment flow based on selected method
+    const offlinePaymentMethods = ["pay_at_counter", "offline"];
 
-    if (result) {
-      setShowFACPayModal(true);
-    } else {
+    if (offlinePaymentMethods.includes(paymentMethod)) {
+      // For offline payment
       setShowPaymentModal(true);
+    } else {
+      // For online payment
+      setShowFACPayModal(true);
     }
   };
 
@@ -846,44 +939,53 @@ export default function ManageSubscription() {
                     <Label className="text-sm font-medium text-gray-600 mb-2 block">
                       Payment Method
                     </Label>
-                    <Select value={paymentMethod} onValueChange={(value: any) => setPaymentMethod(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="facpay">
-                          <div className="flex items-center">
-                            <CreditCard className="h-4 w-4 mr-2" />
-                            FacPay (Instant)
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="cash">
-                          <div className="flex items-center">
-                            <CreditCard className="h-4 w-4 mr-2" />
-                            Cash (Upload Receipt)
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {loadingPaymentMethods ? (
+                      <div className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-500">
+                        Loading payment methods...
+                      </div>
+                    ) : (
+                      <Select
+                        value={paymentMethod}
+                        onValueChange={(value: string) => setPaymentMethod(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {paymentMethods.map((method) => (
+                            <SelectItem key={method.id} value={method.id}>
+                              {method.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
 
                   <div className="pt-6 mt-6 border-t border-gray-200">
-                    <Button
-                      className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
-                      onClick={handleSubscriptionPayment}
-                    >
-                      {paymentMethod === "facpay" ? (
-                        <>
+                    {(() => {
+                      const offlinePaymentMethods = [
+                        "pay_at_counter",
+                        "offline",
+                      ];
+                      const selectedMethodLabel = paymentMethods.find(
+                        (m) => m.id === paymentMethod
+                      )?.label || paymentMethod;
+                      const isOfflinePayment =
+                        offlinePaymentMethods.includes(paymentMethod);
+
+                      return (
+                        <Button
+                          className="w-full bg-fac-blue-600 hover:bg-fac-blue-700 py-4 text-lg"
+                          onClick={handleSubscriptionPayment}
+                        >
                           <CreditCard className="h-5 w-5 mr-2" />
-                          Pay Now with FacPay - ₱{pricing.total.toLocaleString()}
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="h-5 w-5 mr-2" />
-                          Submit Payment Receipt - ₱{pricing.total.toLocaleString()}
-                        </>
-                      )}
-                    </Button>
+                          {isOfflinePayment
+                            ? `Submit Payment Receipt - ₱${pricing.total.toLocaleString()}`
+                            : `Pay Now via ${selectedMethodLabel} - ₱${pricing.total.toLocaleString()}`}
+                        </Button>
+                      );
+                    })()}
                   </div>
                 </div>
               </CardContent>

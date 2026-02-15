@@ -25,9 +25,16 @@ import {
   Receipt,
   CheckCircle,
   AlertTriangle,
+  Loader2,
+  DollarSign,
 } from "lucide-react";
 import { notificationManager } from "./NotificationModal";
 import { supabaseDbClient } from "@/services/supabaseDatabaseService";
+
+interface PaymentMethod {
+  id: string;
+  label: string;
+}
 
 interface SubscriptionSubmissionProps {
   isOpen: boolean;
@@ -54,6 +61,8 @@ export default function SubscriptionSubmission({
   const [userPhone, setUserPhone] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
   const receiptObjectUrlRef = useRef<string | null>(null);
 
   // Cleanup object URLs when component unmounts
@@ -65,6 +74,82 @@ export default function SubscriptionSubmission({
       }
     };
   }, []);
+
+  // Fetch payment methods from backend
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchPaymentMethods = async () => {
+      setLoadingPaymentMethods(true);
+      try {
+        const cacheKey = "xendit_methods_cache_v1";
+        const cacheTtlMs = 1000 * 60 * 5; // 5 minutes
+
+        // Check cache first
+        try {
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (
+              parsed?.ts &&
+              Date.now() - parsed.ts < cacheTtlMs &&
+              Array.isArray(parsed.methods)
+            ) {
+              setPaymentMethods(parsed.methods);
+              setLoadingPaymentMethods(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.log("Payment methods cache parse error", e);
+        }
+
+        // Fetch from API
+        const response = await fetch(
+          "/api/supabase/payment/xendit/methods"
+        );
+        const data = await response.json();
+
+        if (response.ok && data.success && Array.isArray(data.methods)) {
+          setPaymentMethods(data.methods);
+          // Cache the methods
+          try {
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ ts: Date.now(), methods: data.methods })
+            );
+          } catch (e) {
+            console.log("Failed to cache payment methods", e);
+          }
+        } else {
+          // Fallback methods if API fails
+          const fallbackMethods: PaymentMethod[] = [
+            { id: "card", label: "Credit / Debit Card" },
+            { id: "gcash", label: "GCash (e-wallet)" },
+            { id: "paymaya", label: "PayMaya (e-wallet)" },
+            { id: "bank_transfer", label: "Bank Transfer" },
+            { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
+          ];
+          setPaymentMethods(fallbackMethods);
+        }
+      } catch (error) {
+        console.error("Error fetching payment methods:", error);
+        // Fallback methods
+        const fallbackMethods: PaymentMethod[] = [
+          { id: "card", label: "Credit / Debit Card" },
+          { id: "gcash", label: "GCash (e-wallet)" },
+          { id: "paymaya", label: "PayMaya (e-wallet)" },
+          { id: "bank_transfer", label: "Bank Transfer" },
+          { id: "pay_at_counter", label: "Pay at Counter (Cash)" },
+        ];
+        setPaymentMethods(fallbackMethods);
+      } finally {
+        setLoadingPaymentMethods(false);
+      }
+    };
+
+    fetchPaymentMethods();
+  }, [isOpen]);
 
   const packages = [
     {
@@ -109,20 +194,18 @@ export default function SubscriptionSubmission({
     },
   ];
 
-  const paymentMethods = [
-    {
-      id: "facpay",
-      name: "FacPay (Instant)",
-      icon: <CreditCard className="h-4 w-4" />,
-      color: "text-blue-600",
-    },
-    {
-      id: "cash",
-      name: "Cash (Upload Receipt)",
-      icon: <Receipt className="h-4 w-4" />,
-      color: "text-orange-600",
-    },
-  ];
+  // Helper function to get icon for payment method
+  const getPaymentMethodIcon = (methodId: string) => {
+    const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
+      card: { icon: <CreditCard className="h-5 w-5" />, color: "text-blue-600" },
+      gcash: { icon: <Smartphone className="h-5 w-5" />, color: "text-blue-500" },
+      paymaya: { icon: <Smartphone className="h-5 w-5" />, color: "text-red-500" },
+      bank_transfer: { icon: <Building className="h-5 w-5" />, color: "text-purple-600" },
+      pay_at_counter: { icon: <DollarSign className="h-5 w-5" />, color: "text-orange-600" },
+      offline: { icon: <DollarSign className="h-5 w-5" />, color: "text-orange-600" },
+    };
+    return iconMap[methodId] || { icon: <CreditCard className="h-5 w-5" />, color: "text-gray-600" };
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -132,10 +215,23 @@ export default function SubscriptionSubmission({
   };
 
   const handleSubmit = async () => {
-    if (!selectedPackage || !paymentMethod || !receiptFile) {
+    // Check required fields based on payment method
+    const isOfflinePayment =
+      paymentMethod === "pay_at_counter" || paymentMethod === "offline";
+
+    if (!selectedPackage || !paymentMethod) {
       notificationManager.warning(
         "Missing Information",
-        "Please fill in all required fields and upload a receipt.",
+        "Please select a package and payment method.",
+      );
+      return;
+    }
+
+    // Receipt/proof of payment is required for offline payments
+    if (isOfflinePayment && !receiptFile) {
+      notificationManager.warning(
+        "Missing Information",
+        "Please upload a payment receipt for offline payment methods.",
       );
       return;
     }
@@ -157,6 +253,7 @@ export default function SubscriptionSubmission({
         packageName: selectedPkg.name,
         finalPrice: packagePrice,
         paymentMethod: paymentMethod,
+        paymentDetails: isOfflinePayment ? paymentDetails : undefined,
       });
 
       if (!upgradeResult.success) {
@@ -170,7 +267,7 @@ export default function SubscriptionSubmission({
 
       notificationManager.success(
         "Request Submitted! 🎉",
-        `Your subscription request has been submitted successfully!\n\nRequest ID: ${upgradeResult.subscription?.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\n\nYour request is now under review. You'll be notified once it's processed.`,
+        `Your subscription request has been submitted successfully!\n\nRequest ID: ${upgradeResult.subscription?.id}\nPackage: ${selectedPkg.name}\nAmount: ${selectedPkg.price}\nPayment Method: ${paymentMethods.find((m) => m.id === paymentMethod)?.label || paymentMethod}\n\nYour request is now under review. You'll be notified once it's processed.`,
         { autoClose: 6000 },
       );
 
@@ -337,26 +434,36 @@ export default function SubscriptionSubmission({
               {/* Payment Method Selection */}
               <div>
                 <Label>Select Payment Method</Label>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  {paymentMethods.map((method) => (
-                    <Card
-                      key={method.id}
-                      className={`cursor-pointer transition-all ${
-                        paymentMethod === method.id
-                          ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50"
-                          : "border-border hover:border-fac-orange-300"
-                      }`}
-                      onClick={() => setPaymentMethod(method.id)}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <div className={`${method.color} mb-2`}>
-                          {method.icon}
-                        </div>
-                        <p className="text-sm font-medium">{method.name}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                {loadingPaymentMethods ? (
+                  <div className="flex items-center justify-center py-8 mt-2">
+                    <Loader2 className="h-5 w-5 text-fac-orange-500 animate-spin mr-2" />
+                    <span className="text-sm text-gray-600">Loading payment methods...</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                    {paymentMethods.map((method) => {
+                      const methodIcon = getPaymentMethodIcon(method.id);
+                      return (
+                        <Card
+                          key={method.id}
+                          className={`cursor-pointer transition-all ${
+                            paymentMethod === method.id
+                              ? "border-fac-orange-500 bg-fac-orange-50 dark:bg-fac-orange-950/50"
+                              : "border-border hover:border-fac-orange-300"
+                          }`}
+                          onClick={() => setPaymentMethod(method.id)}
+                        >
+                          <CardContent className="p-4 text-center">
+                            <div className={`${methodIcon.color} mb-2 flex justify-center`}>
+                              {methodIcon.icon}
+                            </div>
+                            <p className="text-sm font-medium">{method.label}</p>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Payment Details */}
@@ -423,66 +530,130 @@ export default function SubscriptionSubmission({
             </div>
           )}
 
-          {/* Step 3: Receipt Upload */}
+          {/* Step 3: Receipt Upload (for offline payments) or Confirmation (for online) */}
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Upload Payment Receipt</h3>
-
-              <div className="border-2 border-dashed border-border rounded-lg p-6">
-                <div className="text-center">
-                  <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg font-medium mb-2">
+              {(paymentMethod === "pay_at_counter" ||
+                paymentMethod === "offline") ? (
+                <>
+                  <h3 className="text-lg font-semibold">
                     Upload Payment Receipt
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload a clear photo or screenshot of your payment receipt
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="receipt-upload"
-                  />
-                  <Label htmlFor="receipt-upload" className="cursor-pointer">
-                    <Button variant="outline" type="button">
-                      Choose File
-                    </Button>
-                  </Label>
-                </div>
-              </div>
+                  </h3>
 
-              {receiptFile && (
-                <Card className="bg-green-50 dark:bg-green-950/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="font-medium">{receiptFile.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(receiptFile.size / 1024 / 1024).toFixed(2)} MB
+                  <div className="border-2 border-dashed border-border rounded-lg p-6">
+                    <div className="text-center">
+                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-lg font-medium mb-2">
+                        Upload Payment Receipt
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Upload a clear photo or screenshot of your payment
+                        receipt
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="receipt-upload"
+                      />
+                      <Label
+                        htmlFor="receipt-upload"
+                        className="cursor-pointer"
+                      >
+                        <Button variant="outline" type="button">
+                          Choose File
+                        </Button>
+                      </Label>
+                    </div>
+                  </div>
+
+                  {receiptFile && (
+                    <Card className="bg-green-50 dark:bg-green-950/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="font-medium">{receiptFile.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {(receiptFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-900 dark:text-blue-100">
+                          Important Notice
+                        </p>
+                        <p className="text-blue-800 dark:text-blue-200">
+                          Please ensure your receipt clearly shows the payment
+                          amount, reference number, and date. This will help us
+                          process your request faster.
                         </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
-                <div className="flex items-start space-x-3">
-                  <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-900 dark:text-blue-100">
-                      Important Notice
-                    </p>
-                    <p className="text-blue-800 dark:text-blue-200">
-                      Please ensure your receipt clearly shows the payment
-                      amount, reference number, and date. This will help us
-                      process your request faster.
-                    </p>
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-semibold">
+                    Confirm Your Subscription
+                  </h3>
+
+                  {getSelectedPackage() && (
+                    <Card className="bg-green-50 dark:bg-green-950/30">
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Package
+                          </p>
+                          <p className="font-semibold">
+                            {getSelectedPackage()!.name}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Amount
+                          </p>
+                          <p className="text-xl font-bold text-fac-orange-500">
+                            {getSelectedPackage()!.price}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Payment Method
+                          </p>
+                          <p className="font-semibold">
+                            {paymentMethods.find((m) => m.id === paymentMethod)
+                              ?.label || paymentMethod}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-900 dark:text-blue-100">
+                          Ready to Submit
+                        </p>
+                        <p className="text-blue-800 dark:text-blue-200">
+                          Click submit to process your subscription upgrade
+                          request.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="flex space-x-2">
                 <Button variant="outline" onClick={() => setStep(2)}>
@@ -490,7 +661,12 @@ export default function SubscriptionSubmission({
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  disabled={!receiptFile || isSubmitting}
+                  disabled={
+                    (paymentMethod === "pay_at_counter" ||
+                      paymentMethod === "offline"
+                      ? !receiptFile
+                      : false) || isSubmitting
+                  }
                   className="flex-1 bg-fac-orange-500 hover:bg-fac-orange-600"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Request"}
