@@ -38,8 +38,8 @@ export default defineConfig({
         entryFileNames: "[name].mjs",
       },
     },
-    minify: false, // Keep readable for debugging
-    sourcemap: true,
+    minify: 'terser', // Minify to save memory
+    sourcemap: false, // Disable source maps to save memory
   },
   resolve: {
     alias: {

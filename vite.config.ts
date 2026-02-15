@@ -1,7 +1,6 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { visualizer } from "rollup-plugin-visualizer";
 import { createServer } from "./server/index";
 
 // https://vitejs.dev/config/
@@ -13,17 +12,33 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist/spa",
+    sourcemap: false, // Disable source maps to save memory
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
+          'icons': ['lucide-react'],
+          'utils': ['clsx', 'class-variance-authority']
+        }
+      }
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false,
+        passes: 1 // Reduce number of compression passes
+      },
+      mangle: true,
+      output: {
+        comments: false
+      }
+    }
   },
   plugins: [
     react(),
     expressPlugin(),
-    visualizer({
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-      filename: 'dist/stats.html',
-      apply: 'build' // Only apply during build, not dev
-    })
   ],
   resolve: {
     alias: {
