@@ -3,38 +3,29 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { createServer } from "./server/index";
 
-// Simpler build config for faster builds
-export default defineConfig(({ mode, command }) => {
-  const buildConfig = command === 'build' ? {
+export default defineConfig({
+  server: {
+    host: "::",
+    port: 8080,
+    middlewareMode: false,
+  },
+  build: {
     outDir: "dist/spa",
     sourcemap: false,
     minify: false,
     reportCompressedSize: false,
-    target: 'ES2020',
-  } : {
-    outDir: "dist/spa",
-    sourcemap: false,
-  };
-
-  return {
-    server: {
-      host: "::",
-      port: 8080,
-      middlewareMode: false,
+  },
+  plugins: [
+    react(),
+    expressPlugin(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./client"),
+      "@shared": path.resolve(__dirname, "./shared"),
     },
-    build: buildConfig,
-    plugins: [
-      react(),
-      expressPlugin(),
-    ],
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "./client"),
-        "@shared": path.resolve(__dirname, "./shared"),
-      },
-    },
-    appType: 'spa',
-  };
+  },
+  appType: 'spa',
 });
 
 function expressPlugin(): Plugin {
