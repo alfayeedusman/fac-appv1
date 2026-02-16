@@ -37,9 +37,14 @@ export default defineConfig({
         format: "es",
         entryFileNames: "[name].mjs",
       },
+      onwarn(warning, warn) {
+        if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+        if (warning.code === 'THIS_IS_UNDEFINED') return;
+        warn(warning);
+      }
     },
-    minify: false, // Skip minification for faster builds
-    sourcemap: false, // Disable source maps
+    minify: false,
+    sourcemap: false,
   },
   resolve: {
     alias: {

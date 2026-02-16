@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from "vite";
+import { defineConfig, Plugin, PluginOption } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { createServer } from "./server/index";
@@ -9,16 +9,42 @@ export default defineConfig({
     port: 8080,
     middlewareMode: false,
   },
+  optimizeDeps: {
+    exclude: ['node_modules']
+  },
   build: {
     outDir: "dist/spa",
     sourcemap: false,
     minify: false,
     reportCompressedSize: false,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Aggressive chunking to reduce memory during build
+          if (id.includes('node_modules/react')) return 'react-core';
+          if (id.includes('node_modules/@radix-ui')) return 'radix-ui';
+          if (id.includes('node_modules')) return 'vendor-' + id.split('node_modules/')[1].split('/')[0];
+        },
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
+      },
+      onwarn(warning, warn) {
+        // Suppress warnings about large chunks and circular deps during build
+        if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+        if (warning.code === 'EVAL') return;
+        if (warning.code === 'THIS_IS_UNDEFINED') return;
+        warn(warning);
+      }
+    }
   },
   plugins: [
     react(),
-    expressPlugin(),
-  ],
+    process.env.NODE_ENV !== 'production' && expressPlugin(),
+  ].filter(Boolean) as PluginOption[],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
