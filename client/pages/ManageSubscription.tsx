@@ -388,16 +388,8 @@ export default function ManageSubscription() {
   };
 
   const handleSubscriptionPayment = () => {
-    // Offline/Cash payments require receipt upload
-    const offlinePaymentMethods = ["pay_at_counter", "offline"];
-
-    if (offlinePaymentMethods.includes(paymentMethod)) {
-      // For cash/offline payment (upload receipt)
-      setShowPaymentModal(true);
-    } else {
-      // For online payment methods (card, gcash, paymaya, etc.)
-      setShowFACPayModal(true);
-    }
+    // Always show FACPayModal with payment method selection
+    setShowFACPayModal(true);
   };
 
   const handleSwipeablePackageSelection = (packageId: string) => {
@@ -405,16 +397,8 @@ export default function ManageSubscription() {
     setCurrentPlan(currentSubscription.plan.toLowerCase().replace(" ", "_"));
     setShowSwipeablePackageModal(false);
 
-    // Determine payment flow based on selected method
-    const offlinePaymentMethods = ["pay_at_counter", "offline"];
-
-    if (offlinePaymentMethods.includes(paymentMethod)) {
-      // For offline payment
-      setShowPaymentModal(true);
-    } else {
-      // For online payment
-      setShowFACPayModal(true);
-    }
+    // Show FACPayModal with payment method selection
+    setShowFACPayModal(true);
   };
 
   const handleCancellation = () => {
@@ -964,15 +948,9 @@ export default function ManageSubscription() {
 
                   <div className="pt-6 mt-6 border-t border-gray-200">
                     {(() => {
-                      const offlinePaymentMethods = [
-                        "pay_at_counter",
-                        "offline",
-                      ];
                       const selectedMethodLabel = paymentMethods.find(
                         (m) => m.id === paymentMethod
                       )?.label || paymentMethod;
-                      const isOfflinePayment =
-                        offlinePaymentMethods.includes(paymentMethod);
 
                       return (
                         <Button
@@ -980,9 +958,7 @@ export default function ManageSubscription() {
                           onClick={handleSubscriptionPayment}
                         >
                           <CreditCard className="h-5 w-5 mr-2" />
-                          {isOfflinePayment
-                            ? `Submit Payment Receipt - ₱${pricing.total.toLocaleString()}`
-                            : `Pay Now via ${selectedMethodLabel} - ₱${pricing.total.toLocaleString()}`}
+                          {selectedMethodLabel} - ₱{pricing.total.toLocaleString()}
                         </Button>
                       );
                     })()}
@@ -1039,6 +1015,9 @@ export default function ManageSubscription() {
         selectedPlan={selectedPlan}
         planPrice={pricing.total}
         paymentType="upgrade"
+        paymentMethods={paymentMethods}
+        selectedPaymentMethod={paymentMethod}
+        onPaymentMethodChange={(method: string) => setPaymentMethod(method)}
         onPaymentSuccess={() => {
           refreshSubscriptionStatus();
         }}
