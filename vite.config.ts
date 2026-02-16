@@ -18,26 +18,11 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Aggressively split dependencies to smaller chunks
-          if (id.includes('node_modules')) {
-            const parts = id.split('node_modules/')[1].split('/');
-            const pkg = parts[0];
-            // Each major dependency gets its own chunk
-            return `vendor-${pkg}`;
-          }
-          // Client code split by folder
-          if (id.includes('client/pages')) {
-            return 'pages-bundle';
-          }
-          if (id.includes('client/components')) {
-            return 'components-bundle';
-          }
-          return undefined;
-        },
+        manualChunks: undefined,
       },
       treeshake: {
         moduleSideEffects: false,
+        propertyReadSideEffects: false,
       },
     },
   },
