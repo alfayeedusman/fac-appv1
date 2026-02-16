@@ -11,38 +11,24 @@ export default defineConfig({
     port: 8080,
     middlewareMode: false,
   },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      'lucide-react',
-    ]
-  },
   build: {
     outDir: "dist/spa",
     sourcemap: false,
-    minify: false,
+    minify: 'esbuild',
     reportCompressedSize: false,
     emptyOutDir: true,
+    chunkSizeWarningLimit: 10000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-core': ['react', 'react-dom', 'react-router-dom'],
-          'radix': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
-          'icons': ['lucide-react'],
-        },
         chunkFileNames: 'chunks/[name].js',
         entryFileNames: 'js/[name].js',
-        assetFileNames: 'assets/[name][extname]'
+        assetFileNames: 'assets/[name][extname]',
       },
       onwarn(warning, warn) {
         if (warning.code === 'CIRCULAR_DEPENDENCY') return;
         if (warning.code === 'EVAL') return;
         if (warning.code === 'THIS_IS_UNDEFINED') return;
+        if (warning.code === 'EMPTY_BUNDLE') return;
         warn(warning);
       }
     }
