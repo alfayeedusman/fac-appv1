@@ -1,9 +1,8 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { createServer } from "./server/index";
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isBuild = process.argv.includes('build');
 
 export default defineConfig({
   server: {
@@ -19,8 +18,8 @@ export default defineConfig({
     emptyOutDir: true,
   },
   plugins: [
-    react(),
-    !isProduction && expressPlugin(),
+    !isBuild && react(),
+    expressPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -36,6 +35,8 @@ function expressPlugin(): Plugin {
     name: "express-plugin",
     apply: "serve",
     async configureServer(server) {
+      // Lazy load server only when actually needed
+      const { createServer } = await import("./server/index.js");
       const app = await createServer();
       server.middlewares.use(app);
 
