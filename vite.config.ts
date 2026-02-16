@@ -3,51 +3,39 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { createServer } from "./server/index";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    middlewareMode: false,
-  },
-  build: {
+// Simpler build config for faster builds
+export default defineConfig(({ mode, command }) => {
+  const buildConfig = command === 'build' ? {
     outDir: "dist/spa",
-    sourcemap: false, // Disable source maps to save memory
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
-          'icons': ['lucide-react'],
-          'utils': ['clsx', 'class-variance-authority']
-        }
-      }
+    sourcemap: false,
+    minify: false,
+    reportCompressedSize: false,
+    target: 'ES2020',
+  } : {
+    outDir: "dist/spa",
+    sourcemap: false,
+  };
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      middlewareMode: false,
     },
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        passes: 1 // Reduce number of compression passes
+    build: buildConfig,
+    plugins: [
+      react(),
+      expressPlugin(),
+    ],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./client"),
+        "@shared": path.resolve(__dirname, "./shared"),
       },
-      mangle: true,
-      output: {
-        comments: false
-      }
-    }
-  },
-  plugins: [
-    react(),
-    expressPlugin(),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./client"),
-      "@shared": path.resolve(__dirname, "./shared"),
     },
-  },
-  appType: 'spa', // Enable SPA fallback - serve index.html for non-existent files
-}));
+    appType: 'spa',
+  };
+});
 
 function expressPlugin(): Plugin {
   return {
