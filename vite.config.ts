@@ -14,24 +14,9 @@ export default defineConfig({
   build: {
     outDir: "dist/spa",
     sourcemap: false,
-    minify: 'esbuild',
+    minify: false,
     reportCompressedSize: false,
     emptyOutDir: true,
-    chunkSizeWarningLimit: 10000,
-    rollupOptions: {
-      output: {
-        chunkFileNames: 'chunks/[name].js',
-        entryFileNames: 'js/[name].js',
-        assetFileNames: 'assets/[name][extname]',
-      },
-      onwarn(warning, warn) {
-        if (warning.code === 'CIRCULAR_DEPENDENCY') return;
-        if (warning.code === 'EVAL') return;
-        if (warning.code === 'THIS_IS_UNDEFINED') return;
-        if (warning.code === 'EMPTY_BUNDLE') return;
-        warn(warning);
-      }
-    }
   },
   plugins: [
     react(),
