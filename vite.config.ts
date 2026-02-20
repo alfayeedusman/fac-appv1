@@ -18,16 +18,6 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 10000,
     rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // Pre-bundle vendors to reduce memory during transformation
-          if (id.includes('node_modules/@tanstack')) return 'vendor-tanstack';
-          if (id.includes('node_modules/@radix-ui')) return 'vendor-radix';
-          if (id.includes('node_modules/react-router')) return 'vendor-router';
-          if (id.includes('node_modules/react')) return 'vendor-react';
-          if (id.includes('node_modules')) return 'vendor-other';
-        },
-      },
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
