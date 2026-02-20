@@ -2,6 +2,7 @@
 import { type Booking } from "@/utils/databaseSchema";
 import FallbackService from "./fallbackService";
 import { formatError } from '../lib/errorUtils';
+import { getAdminConfig, saveAdminConfig } from "@/utils/adminConfig";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -361,7 +362,6 @@ export class DatabaseService {
   static async getAdminConfig(): Promise<any> {
     // For now, return the existing admin config
     // In the future, this could be stored in the database
-    const { getAdminConfig } = await import('@/utils/adminConfig');
     return getAdminConfig();
   }
 
@@ -369,7 +369,6 @@ export class DatabaseService {
   static async saveAdminConfig(config: any): Promise<ApiResponse> {
     // For now, save to localStorage
     // In the future, this could be stored in the database
-    const { saveAdminConfig } = await import('@/utils/adminConfig');
     saveAdminConfig(config);
     return { success: true, message: 'Admin configuration saved' };
   }

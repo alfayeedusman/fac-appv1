@@ -67,6 +67,7 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import NotificationCenter from "@/components/NotificationCenter";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { getAdminNotifications } from "@/utils/adminNotifications";
 const AnalyticsCharts = React.lazy(
   () => import("@/components/AnalyticsCharts"),
 );
@@ -823,11 +824,11 @@ export default function AdminDashboard() {
       loadSystemNotifications();
 
       // Load admin notifications from local store
-      import("@/utils/adminNotifications").then(({ getAdminNotifications }) => {
-        try {
-          setAdminNotifications(getAdminNotifications().slice(0, 50));
-        } catch (e) {}
-      });
+      try {
+        setAdminNotifications(getAdminNotifications().slice(0, 50));
+      } catch (e) {
+        // Silently handle errors
+      }
 
       // Disable polling to prevent lag - use realtime subscriptions instead
       // Stats will be updated via realtime service subscriptions above
