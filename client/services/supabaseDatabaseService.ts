@@ -151,32 +151,28 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  let timerHandle: ReturnType<typeof setTimeout> | null = null;
+  let timerHandle: NodeJS.Timeout | number | null = null;
 
-  try {
-    timerHandle = setTimeout(() => {
-      if (cleared) return;
-      try {
-        if (controller && !controller.signal.aborted) {
-          controller.abort();
-        }
-      } catch (e) {
-        console.warn("Error aborting request:", e);
+  timerHandle = setTimeout(() => {
+    if (cleared) return;
+    try {
+      if (controller?.signal && !controller.signal.aborted) {
+        controller.abort();
       }
-    }, timeoutMs);
-  } catch (e) {
-    console.warn("Error setting timeout:", e);
-  }
+    } catch (e) {
+      // Silently catch abort errors - controller may already be aborted
+    }
+  }, timeoutMs);
 
   return {
     clearTimeout: () => {
       cleared = true;
-      if (timerHandle !== null && timerHandle !== undefined) {
-        try {
+      try {
+        if (typeof timerHandle === 'number' || timerHandle) {
           clearTimeout(timerHandle);
-        } catch (e) {
-          console.warn("Error clearing timeout:", e);
         }
+      } catch (e) {
+        // Silently catch - timeout may already be cleared
       }
     },
   };
@@ -196,7 +192,12 @@ class SupabaseDatabaseClient {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/supabase`;
+
+    // Log detailed connection info for debugging
     log("🔗 SupabaseDatabaseClient baseUrl:", this.baseUrl);
+    log("📍 API Base:", apiBase);
+    log("🌐 Window location:", typeof window !== 'undefined' ? window.location.origin : 'N/A');
+
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
       warn(
@@ -256,8 +257,15 @@ class SupabaseDatabaseClient {
             `⚠️ Init request failed: ${response.status} ${response.statusText}`,
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         timeoutHandler.clearTimeout();
+        if (error?.name === 'AbortError') {
+          warn("⚠️ Init request timeout");
+        } else if (error instanceof TypeError && error.message.includes('fetch')) {
+          warn("⚠️ Network error during init:", error.message);
+        } else {
+          warn("⚠️ Init request error:", error instanceof Error ? error.message : error);
+        }
         throw error;
       }
     } catch (error) {
@@ -273,17 +281,28 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const timeoutHandler = createSafeTimeoutAbort(ac, 5000);
       try {
-        const res = await fetch(testUrl, { method: "GET", signal: ac.signal });
+        const res = await fetch(testUrl, {
+          method: "GET",
+          signal: ac.signal,
+          // Add timeout headers for better error reporting
+          headers: { 'Content-Type': 'application/json' }
+        });
         timeoutHandler.clearTimeout();
         if (res.ok) {
           const result = await res.json();
           this.isConnected = !!(result.connected || result.success);
           info(`🔗 Test connection result: ${this.isConnected}`);
           return this.isConnected;
+        } else {
+          warn(`⚠️ Test endpoint returned ${res.status}`);
         }
-      } catch (e) {
+      } catch (e: any) {
         timeoutHandler.clearTimeout();
-        throw e;
+        if (e?.name === 'AbortError') {
+          warn("⚠️ Test request timeout");
+        } else if (e instanceof TypeError && e.message.includes('fetch')) {
+          warn("⚠️ Network error during test:", e.message);
+        }
       }
     } catch (e) {
       warn("⚠️ Test request failed:", e instanceof Error ? e.message : e);
