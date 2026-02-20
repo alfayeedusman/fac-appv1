@@ -157,8 +157,8 @@ const createSafeTimeoutAbort = (
     timerHandle = setTimeout(() => {
       if (cleared) return;
       try {
-        if (!controller?.signal?.aborted) {
-          controller?.abort?.();
+        if (controller && !controller.signal.aborted) {
+          controller.abort();
         }
       } catch (e) {
         console.warn("Error aborting request:", e);
@@ -173,7 +173,7 @@ const createSafeTimeoutAbort = (
       cleared = true;
       if (timerHandle !== null && timerHandle !== undefined) {
         try {
-          clearTimeout(timerHandle as NodeJS.Timeout);
+          clearTimeout(timerHandle);
         } catch (e) {
           console.warn("Error clearing timeout:", e);
         }
