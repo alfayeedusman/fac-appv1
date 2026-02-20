@@ -16,26 +16,18 @@ export default defineConfig({
     minify: false,
     reportCompressedSize: false,
     emptyOutDir: true,
-    chunkSizeWarningLimit: 10000,
+    chunkSizeWarningLimit: 50000,
     rollupOptions: {
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+        },
       },
     },
   },
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      '@tanstack/react-query',
-      'react-router-dom',
-    ],
-    esbuildOptions: {
-      define: {
-        global: 'globalThis'
-      }
-    }
+    // Disable pre-bundling to reduce memory during build
+    disabled: 'build',
   },
   plugins: [
     !isBuild && react(),
