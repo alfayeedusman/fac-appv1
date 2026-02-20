@@ -16,18 +16,14 @@ export default defineConfig({
     minify: false,
     reportCompressedSize: false,
     emptyOutDir: true,
-    chunkSizeWarningLimit: 50000,
+    chunkSizeWarningLimit: 100000,
+    target: 'esnext',
+    // Minimal rollup options - let it handle naturally
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-        },
+        manualChunks: undefined,
       },
     },
-  },
-  optimizeDeps: {
-    // Disable pre-bundling to reduce memory during build
-    disabled: 'build',
   },
   plugins: [
     !isBuild && react(),
