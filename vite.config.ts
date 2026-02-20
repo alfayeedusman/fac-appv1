@@ -18,10 +18,22 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 100000,
     target: 'esnext',
-    // Minimal rollup options - let it handle naturally
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        // Use inline dynamic imports to reduce chunk count
+        format: 'es',
+        // Disable code splitting for smaller memory footprint
+        inlineDynamicImports: false,
+        // Optimize chunk size
+        manualChunks: (id) => {
+          // Only split the absolute largest dependencies
+          if (id.includes('node_modules/@tanstack/react-query')) return 'rq';
+          if (id.includes('node_modules/recharts')) return 'charts';
+          if (id.includes('node_modules/firebase')) return 'firebase';
+        },
+      },
+      treeshake: {
+        moduleSideEffects: false,
       },
     },
   },
