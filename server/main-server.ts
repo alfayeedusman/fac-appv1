@@ -206,6 +206,10 @@ export const createServer = async () => {
   app.get("/api/supabase/analytics", neonApiRoutes.getAnalyticsData);
 
   // Xendit Payment endpoints
+  app.get(
+    "/api/supabase/payment/xendit/methods",
+    xenditApiRoutes.listPaymentMethods,
+  );
   app.post(
     "/api/supabase/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,

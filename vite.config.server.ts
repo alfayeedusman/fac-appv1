@@ -13,33 +13,18 @@ export default defineConfig({
     outDir: "dist/server",
     target: "node22",
     ssr: true,
+    minify: false,
+    sourcemap: false,
     rollupOptions: {
       external: [
-        // Node.js built-ins
-        "fs",
-        "path",
-        "url",
-        "http",
-        "https",
-        "os",
-        "crypto",
-        "stream",
-        "util",
-        "events",
-        "buffer",
-        "querystring",
-        "child_process",
-        // External dependencies that should not be bundled
-        "express",
-        "cors",
+        "fs", "path", "url", "http", "https", "os", "crypto", "stream", "util", "events", "buffer",
+        "querystring", "child_process", "express", "cors",
       ],
       output: {
         format: "es",
         entryFileNames: "[name].mjs",
       },
     },
-    minify: false, // Keep readable for debugging
-    sourcemap: true,
   },
   resolve: {
     alias: {

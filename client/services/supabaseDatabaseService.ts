@@ -151,32 +151,28 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  let timerHandle: ReturnType<typeof setTimeout> | null = null;
+  let timerHandle: NodeJS.Timeout | number | null = null;
 
-  try {
-    timerHandle = setTimeout(() => {
-      if (cleared) return;
-      try {
-        if (!controller?.signal?.aborted) {
-          controller?.abort?.();
-        }
-      } catch (e) {
-        console.warn("Error aborting request:", e);
+  timerHandle = setTimeout(() => {
+    if (cleared) return;
+    try {
+      if (controller?.signal && !controller.signal.aborted) {
+        controller.abort();
       }
-    }, timeoutMs);
-  } catch (e) {
-    console.warn("Error setting timeout:", e);
-  }
+    } catch (e) {
+      // Silently catch abort errors - controller may already be aborted
+    }
+  }, timeoutMs);
 
   return {
     clearTimeout: () => {
       cleared = true;
-      if (timerHandle !== null && timerHandle !== undefined) {
-        try {
-          clearTimeout(timerHandle as NodeJS.Timeout);
-        } catch (e) {
-          console.warn("Error clearing timeout:", e);
+      try {
+        if (typeof timerHandle === 'number' || timerHandle) {
+          clearTimeout(timerHandle);
         }
+      } catch (e) {
+        // Silently catch - timeout may already be cleared
       }
     },
   };
@@ -196,13 +192,38 @@ class SupabaseDatabaseClient {
     // Ensure baseUrl is properly constructed
     const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
     this.baseUrl = `${apiBase}/supabase`;
+
+    // Log detailed connection info for debugging
     log("🔗 SupabaseDatabaseClient baseUrl:", this.baseUrl);
+    log("📍 API Base:", apiBase);
+    log("🌐 Window location:", typeof window !== 'undefined' ? window.location.origin : 'N/A');
+
     // Auto-initialize on construction
     this.autoInitialize().catch((err) =>
       warn(
         `⚠️ Background initialization failed: ${err?.message || JSON.stringify(err)}`,
       ),
     );
+  }
+
+  // Helper method to safely handle fetch with timeout cleanup
+  private async fetchWithTimeout(
+    url: string,
+    options?: RequestInit,
+    timeoutMs: number = 8000,
+  ): Promise<Response> {
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: ac.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(to);
+    }
   }
 
   // Initialize and test connection
@@ -236,8 +257,15 @@ class SupabaseDatabaseClient {
             `⚠️ Init request failed: ${response.status} ${response.statusText}`,
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         timeoutHandler.clearTimeout();
+        if (error?.name === 'AbortError') {
+          warn("⚠️ Init request timeout");
+        } else if (error instanceof TypeError && error.message.includes('fetch')) {
+          warn("⚠️ Network error during init:", error.message);
+        } else {
+          warn("⚠️ Init request error:", error instanceof Error ? error.message : error);
+        }
         throw error;
       }
     } catch (error) {
@@ -253,17 +281,28 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const timeoutHandler = createSafeTimeoutAbort(ac, 5000);
       try {
-        const res = await fetch(testUrl, { method: "GET", signal: ac.signal });
+        const res = await fetch(testUrl, {
+          method: "GET",
+          signal: ac.signal,
+          // Add timeout headers for better error reporting
+          headers: { 'Content-Type': 'application/json' }
+        });
         timeoutHandler.clearTimeout();
         if (res.ok) {
           const result = await res.json();
           this.isConnected = !!(result.connected || result.success);
           info(`🔗 Test connection result: ${this.isConnected}`);
           return this.isConnected;
+        } else {
+          warn(`⚠️ Test endpoint returned ${res.status}`);
         }
-      } catch (e) {
+      } catch (e: any) {
         timeoutHandler.clearTimeout();
-        throw e;
+        if (e?.name === 'AbortError') {
+          warn("⚠️ Test request timeout");
+        } else if (e instanceof TypeError && e.message.includes('fetch')) {
+          warn("⚠️ Network error during test:", e.message);
+        }
       }
     } catch (e) {
       warn("⚠️ Test request failed:", e instanceof Error ? e.message : e);
@@ -1047,6 +1086,9 @@ class SupabaseDatabaseClient {
       return { success: false, bookings: [] };
     }
 
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
+
     try {
       const queryParams = new URLSearchParams();
       if (params?.userId) queryParams.append("userId", params.userId);
@@ -1055,14 +1097,10 @@ class SupabaseDatabaseClient {
       if (params?.userEmail) queryParams.append("userEmail", params.userEmail);
       if (params?.userRole) queryParams.append("userRole", params.userRole);
 
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 8000);
-
       const response = await fetch(`${this.baseUrl}/bookings?${queryParams}`, {
         signal: ac.signal,
       });
 
-      clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -1071,6 +1109,8 @@ class SupabaseDatabaseClient {
         console.warn("Bookings fetch timed out");
       }
       return { success: false, bookings: [] };
+    } finally {
+      clearTimeout(to);
     }
   }
 
@@ -1082,10 +1122,10 @@ class SupabaseDatabaseClient {
       return { success: false };
     }
 
-    try {
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 8000);
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
 
+    try {
       const response = await fetch(`${this.baseUrl}/bookings/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -1093,7 +1133,6 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
 
-      clearTimeout(to);
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -1102,6 +1141,8 @@ class SupabaseDatabaseClient {
         console.warn("Booking update timed out");
       }
       return { success: false };
+    } finally {
+      clearTimeout(to);
     }
   }
 
@@ -1119,20 +1160,18 @@ class SupabaseDatabaseClient {
       return { success: false, subscriptions: [] };
     }
 
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.userId) queryParams.append("userId", params.userId);
+
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
+
     try {
-      const queryParams = new URLSearchParams();
-      if (params?.status) queryParams.append("status", params.status);
-      if (params?.userId) queryParams.append("userId", params.userId);
-
-      const ac = new AbortController();
-      const to = setTimeout(() => ac.abort(), 8000);
-
       const url = `${this.baseUrl}/subscriptions?${queryParams.toString()}`;
       console.log("📋 Fetching subscriptions from:", url);
 
       const response = await fetch(url, { signal: ac.signal });
-
-      clearTimeout(to);
 
       // Check response status first
       if (!response.ok) {
@@ -1203,6 +1242,8 @@ class SupabaseDatabaseClient {
         console.warn("⚠️ Subscriptions fetch timed out");
       }
       return { success: false, subscriptions: [] };
+    } finally {
+      clearTimeout(to);
     }
   }
 
@@ -1225,17 +1266,15 @@ class SupabaseDatabaseClient {
       const ac = new AbortController();
       const to = setTimeout(() => ac.abort(), 8000);
 
-      let urlString = `${this.baseUrl}/packages`;
-      if (options?.includeInactive) {
-        urlString += "?includeInactive=true";
-      }
-
       try {
+        let urlString = `${this.baseUrl}/packages`;
+        if (options?.includeInactive) {
+          urlString += "?includeInactive=true";
+        }
+
         const response = await fetch(urlString, {
           signal: ac.signal,
         });
-
-        clearTimeout(to);
 
         if (!response.ok) {
           console.warn("Packages endpoint returned error:", response.status);
@@ -1255,13 +1294,14 @@ class SupabaseDatabaseClient {
 
         return result || { success: false, packages: [] };
       } catch (fetchError: any) {
-        clearTimeout(to);
         if (fetchError?.name === "AbortError") {
           console.warn("Packages fetch timed out");
         } else {
           console.warn("Packages fetch failed:", fetchError?.message);
         }
         return { success: false, packages: [] };
+      } finally {
+        clearTimeout(to);
       }
     } catch (error: any) {
       console.error("getServicePackages error:", error?.message || error);
@@ -1493,6 +1533,10 @@ class SupabaseDatabaseClient {
       );
 
       clearTimeout(to);
+      if (!response.ok) {
+        console.error(`Failed to fetch notifications: HTTP ${response.status}`);
+        return { success: false, notifications: [] };
+      }
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -1527,6 +1571,10 @@ class SupabaseDatabaseClient {
       );
 
       clearTimeout(to);
+      if (!response.ok) {
+        console.error(`Failed to mark notification as read: HTTP ${response.status}`);
+        return { success: false };
+      }
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -2975,6 +3023,13 @@ class SupabaseDatabaseClient {
     try {
       const res = await fetch(url, { signal: ac.signal });
       clearTimeout(to);
+      if (!res.ok) {
+        return {
+          success: false,
+          error: `HTTP ${res.status}: Failed to fetch vouchers`,
+          vouchers: [],
+        };
+      }
       const json = await res.json();
       return json;
     } catch (e: any) {
@@ -3017,6 +3072,9 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
       clearTimeout(to);
+      if (!res.ok) {
+        return { success: false, error: `HTTP ${res.status}: Failed to validate voucher` };
+      }
       const json = await res.json();
       return json;
     } catch (e: any) {
@@ -3038,14 +3096,22 @@ class SupabaseDatabaseClient {
   }> {
     await this.ensureConnection();
     const url = `${this.baseUrl}/vouchers/redeem`;
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
+        signal: ac.signal,
       });
+      clearTimeout(to);
+      if (!res.ok) {
+        return { success: false, error: `HTTP ${res.status}: Failed to redeem voucher` };
+      }
       return await res.json();
     } catch (e: any) {
+      clearTimeout(to);
       return { success: false, error: e?.message || "Network error" };
     }
   }

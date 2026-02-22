@@ -1,11 +1,10 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { visualizer } from "rollup-plugin-visualizer";
-import { createServer } from "./server/index";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+const isBuild = process.argv.includes('build');
+
+export default defineConfig({
   server: {
     host: "::",
     port: 8080,
@@ -13,46 +12,53 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist/spa",
+    sourcemap: false,
+    minify: false,
+    reportCompressedSize: false,
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 100000,
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        format: 'es',
+        manualChunks: (id) => {
+          if (id.includes('node_modules/@tanstack/react-query')) return 'rq';
+          if (id.includes('node_modules/recharts')) return 'charts';
+        },
+      },
+      treeshake: {
+        moduleSideEffects: false,
+      },
+    },
   },
   plugins: [
-    react(),
+    !isBuild && react(),
     expressPlugin(),
-    visualizer({
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-      filename: 'dist/stats.html',
-      apply: 'build' // Only apply during build, not dev
-    })
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-  appType: 'spa', // Enable SPA fallback - serve index.html for non-existent files
-}));
+  appType: 'spa',
+});
 
 function expressPlugin(): Plugin {
   return {
     name: "express-plugin",
-    apply: "serve", // Only apply during development (serve mode)
+    apply: "serve",
     async configureServer(server) {
+      // Lazy load server only when actually needed
+      const { createServer } = await import("./server/index.js");
       const app = await createServer();
-
-      // Add Express app as middleware to Vite's dev server
-      // Express will handle all API routes
       server.middlewares.use(app);
 
-      // Trigger database migrations and seeding in dev mode (non-blocking)
-      // (In production, this happens when app.listen() is called)
       setTimeout(async () => {
         try {
           const { migrate } = await import("./server/database/migrate.js");
 
           console.log("🔄 Initializing database and running migrations...");
-          // Don't await - let it run in the background
           migrate().catch((error) => {
             console.error("❌ Database initialization failed:", error);
           });
@@ -62,9 +68,7 @@ function expressPlugin(): Plugin {
         } catch (error) {
           console.error("❌ Database initialization setup failed:", error);
         }
-      }, 1000); // Wait 1 second to ensure Vite is fully ready
-
-      // Vite's appType: 'spa' config will handle SPA fallback for non-API routes
+      }, 1000);
     },
   };
 }

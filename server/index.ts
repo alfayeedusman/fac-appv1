@@ -120,6 +120,10 @@ export const createServer = async () => {
   console.log("✅ POS API routes registered successfully");
 
   // ============= XENDIT PAYMENT API =============
+  app.get(
+    "/api/supabase/payment/xendit/methods",
+    xenditApiRoutes.listPaymentMethods,
+  );
   app.post(
     "/api/supabase/payment/xendit/create-invoice",
     xenditApiRoutes.createInvoice,
