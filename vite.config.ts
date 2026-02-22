@@ -20,16 +20,10 @@ export default defineConfig({
     target: 'esnext',
     rollupOptions: {
       output: {
-        // Use inline dynamic imports to reduce chunk count
         format: 'es',
-        // Disable code splitting for smaller memory footprint
-        inlineDynamicImports: false,
-        // Optimize chunk size
         manualChunks: (id) => {
-          // Only split the absolute largest dependencies
           if (id.includes('node_modules/@tanstack/react-query')) return 'rq';
           if (id.includes('node_modules/recharts')) return 'charts';
-          if (id.includes('node_modules/firebase')) return 'firebase';
         },
       },
       treeshake: {
