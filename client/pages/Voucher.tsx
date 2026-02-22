@@ -115,25 +115,57 @@ export default function Voucher() {
   const handleRedeemVoucher = async () => {
     if (!voucherCode.trim()) return;
 
-    setRedeeming(true);
-    // Simulate API call
-    setTimeout(() => {
-      const voucher = availableVouchers.find(
-        (v) => v.code === voucherCode && v.status === "available",
-      );
+    const userEmail = localStorage.getItem("userEmail") || "";
+    if (!userEmail) {
+      alert("Please log in to use vouchers");
+      return;
+    }
 
-      if (voucher) {
-        setAppliedVouchers((prev) => [...prev, voucher.code]);
-        setVoucherCode("");
-        alert(
-          `Voucher ${voucherCode} activated successfully! 🎉\nDiscount: ${voucher.discountType === "percentage" ? `${voucher.discountValue}% OFF` : `₱${voucher.discountValue} OFF`}`,
+    setRedeeming(true);
+    try {
+      // Validate voucher with backend
+      const validateResult = await supabaseDbClient.validateVoucher({
+        code: voucherCode.trim().toUpperCase(),
+        bookingAmount: 0, // User hasn't made a booking yet
+        userEmail,
+        bookingType: "registered",
+      });
+
+      if (validateResult.success && validateResult.data) {
+        const voucher = availableVouchers.find(
+          (v) => v.code === voucherCode.toUpperCase(),
         );
+
+        if (voucher && appliedVouchers.includes(voucher.code)) {
+          alert(`Voucher ${voucherCode} is already activated! ✅`);
+        } else {
+          setAppliedVouchers((prev) => [...prev, voucherCode.toUpperCase()]);
+          setVoucherCode("");
+          setAppliedVoucherData(
+            voucher || {
+              id: validateResult.data.code,
+              code: validateResult.data.code,
+              title: validateResult.data.code,
+              description: "",
+              discountType: validateResult.data.discountType as "percentage" | "fixed",
+              discountValue: validateResult.data.discountValue,
+              status: "available",
+              validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+            },
+          );
+          setShowSuccessModal(true);
+        }
       } else {
         alert(`Invalid or expired voucher code: ${voucherCode} ❌`);
       }
-
+    } catch (error: any) {
+      console.error("Failed to validate voucher:", error);
+      alert("Failed to validate voucher. Please try again.");
+    } finally {
       setRedeeming(false);
-    }, 500);
+    }
   };
 
   const handleApplyVoucher = (voucher: Voucher) => {

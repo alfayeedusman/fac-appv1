@@ -1533,6 +1533,10 @@ class SupabaseDatabaseClient {
       );
 
       clearTimeout(to);
+      if (!response.ok) {
+        console.error(`Failed to fetch notifications: HTTP ${response.status}`);
+        return { success: false, notifications: [] };
+      }
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -1567,6 +1571,10 @@ class SupabaseDatabaseClient {
       );
 
       clearTimeout(to);
+      if (!response.ok) {
+        console.error(`Failed to mark notification as read: HTTP ${response.status}`);
+        return { success: false };
+      }
       const result = await response.json();
       return result;
     } catch (error: any) {
@@ -3015,6 +3023,13 @@ class SupabaseDatabaseClient {
     try {
       const res = await fetch(url, { signal: ac.signal });
       clearTimeout(to);
+      if (!res.ok) {
+        return {
+          success: false,
+          error: `HTTP ${res.status}: Failed to fetch vouchers`,
+          vouchers: [],
+        };
+      }
       const json = await res.json();
       return json;
     } catch (e: any) {
@@ -3057,6 +3072,9 @@ class SupabaseDatabaseClient {
         signal: ac.signal,
       });
       clearTimeout(to);
+      if (!res.ok) {
+        return { success: false, error: `HTTP ${res.status}: Failed to validate voucher` };
+      }
       const json = await res.json();
       return json;
     } catch (e: any) {
@@ -3078,14 +3096,22 @@ class SupabaseDatabaseClient {
   }> {
     await this.ensureConnection();
     const url = `${this.baseUrl}/vouchers/redeem`;
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 8000);
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
+        signal: ac.signal,
       });
+      clearTimeout(to);
+      if (!res.ok) {
+        return { success: false, error: `HTTP ${res.status}: Failed to redeem voucher` };
+      }
       return await res.json();
     } catch (e: any) {
+      clearTimeout(to);
       return { success: false, error: e?.message || "Network error" };
     }
   }
