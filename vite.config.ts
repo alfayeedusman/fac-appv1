@@ -16,9 +16,9 @@ export default defineConfig({
     minify: false,
     reportCompressedSize: false,
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000000,
+    chunkSizeWarningLimit: 10000000,
     target: 'esnext',
-    cssCodeSplit: true,
+    cssCodeSplit: false,
     lib: undefined,
     rollupOptions: {
       output: {
@@ -26,12 +26,16 @@ export default defineConfig({
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/chunk-[name].[hash].js',
         assetFileNames: 'assets/[name].[hash][extname]',
-        manualChunks: (id, { getModuleInfo }) => {
-          // Split core vendor libraries
+        manualChunks: (id) => {
+          // Split core vendor libraries more aggressively
+          // Each vendor chunk is processed separately, reducing memory pressure
           if (id.includes('node_modules/react/')) return 'vendor-react';
           if (id.includes('node_modules/react-dom/')) return 'vendor-react-dom';
-          if (id.includes('node_modules/@tanstack/react-query/')) return 'vendor-react-query';
+          if (id.includes('node_modules/@tanstack/react-query/')) return 'vendor-rq';
           if (id.includes('node_modules/recharts/')) return 'vendor-charts';
+          if (id.includes('node_modules/@radix-ui/react-dialog/')) return 'vendor-radix-dialog';
+          if (id.includes('node_modules/@radix-ui/react-select/')) return 'vendor-radix-select';
+          if (id.includes('node_modules/@radix-ui/react-dropdown/')) return 'vendor-radix-dropdown';
           if (id.includes('node_modules/@radix-ui/')) return 'vendor-radix';
           if (id.includes('node_modules/lucide-react/')) return 'vendor-icons';
           if (id.includes('node_modules/date-fns/')) return 'vendor-date-fns';
@@ -41,10 +45,13 @@ export default defineConfig({
           if (id.includes('node_modules/@supabase/')) return 'vendor-supabase';
           if (id.includes('node_modules/postgres/')) return 'vendor-postgres';
           if (id.includes('node_modules/drizzle-orm/')) return 'vendor-drizzle';
+          if (id.includes('node_modules/react-router/')) return 'vendor-router';
+          if (id.includes('node_modules/pusher-js/')) return 'vendor-pusher';
         },
       },
       treeshake: {
         moduleSideEffects: false,
+        preset: 'recommended',
       },
     },
   },
