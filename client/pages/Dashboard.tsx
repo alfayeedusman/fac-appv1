@@ -164,14 +164,20 @@ export default function Dashboard() {
 
   // Fetch subscription data from backend (if endpoint is available)
   useEffect(() => {
+    if (!userEmail) return;
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    let controller: AbortController | null = null;
+
     const fetchSubscription = async () => {
       try {
-        const userEmail = localStorage.getItem("userEmail");
-        if (!userEmail) return;
-
         // Try to fetch subscription from API with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        controller = new AbortController();
+        timeoutId = setTimeout(() => {
+          if (controller) {
+            controller.abort();
+          }
+        }, 3000);
 
         const response = await fetch(
           `/api/supabase/auth/subscription?email=${encodeURIComponent(userEmail)}`,
@@ -183,7 +189,11 @@ export default function Dashboard() {
           }
         );
 
-        clearTimeout(timeoutId);
+        // Clear timeout if request completed
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
         if (response.ok) {
           const data = await response.json();
@@ -202,12 +212,26 @@ export default function Dashboard() {
         if (error instanceof Error && error.name !== "AbortError") {
           console.debug("Subscription fetch failed, using local data");
         }
+      } finally {
+        // Always clean up timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
       }
     };
 
-    if (userEmail) {
-      fetchSubscription();
-    }
+    fetchSubscription();
+
+    // Cleanup on unmount
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (controller) {
+        controller.abort();
+      }
+    };
   }, [userEmail]);
 
   // Recent activity items (bookings)

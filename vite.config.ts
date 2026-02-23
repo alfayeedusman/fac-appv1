@@ -16,14 +16,31 @@ export default defineConfig({
     minify: false,
     reportCompressedSize: false,
     emptyOutDir: true,
-    chunkSizeWarningLimit: 100000,
+    chunkSizeWarningLimit: 1000000,
     target: 'esnext',
+    cssCodeSplit: true,
+    lib: undefined,
     rollupOptions: {
       output: {
         format: 'es',
-        manualChunks: (id) => {
-          if (id.includes('node_modules/@tanstack/react-query')) return 'rq';
-          if (id.includes('node_modules/recharts')) return 'charts';
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/chunk-[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash][extname]',
+        manualChunks: (id, { getModuleInfo }) => {
+          // Split core vendor libraries
+          if (id.includes('node_modules/react/')) return 'vendor-react';
+          if (id.includes('node_modules/react-dom/')) return 'vendor-react-dom';
+          if (id.includes('node_modules/@tanstack/react-query/')) return 'vendor-react-query';
+          if (id.includes('node_modules/recharts/')) return 'vendor-charts';
+          if (id.includes('node_modules/@radix-ui/')) return 'vendor-radix';
+          if (id.includes('node_modules/lucide-react/')) return 'vendor-icons';
+          if (id.includes('node_modules/date-fns/')) return 'vendor-date-fns';
+          if (id.includes('node_modules/zod/')) return 'vendor-zod';
+          if (id.includes('node_modules/next-themes/')) return 'vendor-themes';
+          if (id.includes('node_modules/sonner/')) return 'vendor-sonner';
+          if (id.includes('node_modules/@supabase/')) return 'vendor-supabase';
+          if (id.includes('node_modules/postgres/')) return 'vendor-postgres';
+          if (id.includes('node_modules/drizzle-orm/')) return 'vendor-drizzle';
         },
       },
       treeshake: {
