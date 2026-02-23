@@ -167,12 +167,14 @@ export default function Dashboard() {
     if (!userEmail) return;
 
     const controller = new AbortController();
+    let isMounted = true;
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
     const fetchSubscription = async () => {
       try {
         // Set up timeout to abort request if it takes too long
         timeoutHandle = setTimeout(() => {
+          if (!isMounted) return;
           controller.abort();
         }, 3000);
 
@@ -189,7 +191,10 @@ export default function Dashboard() {
         // Clear timeout if request completed successfully
         if (timeoutHandle !== undefined) {
           clearTimeout(timeoutHandle);
+          timeoutHandle = undefined;
         }
+
+        if (!isMounted) return;
 
         if (response.ok) {
           const data = await response.json();
@@ -209,9 +214,10 @@ export default function Dashboard() {
           console.debug("Subscription fetch failed, using local data");
         }
       } finally {
-        // Clean up timeout
-        if (timeoutHandle !== undefined) {
+        // Clean up timeout only if component is still mounted
+        if (isMounted && timeoutHandle !== undefined) {
           clearTimeout(timeoutHandle);
+          timeoutHandle = undefined;
         }
       }
     };
@@ -220,8 +226,10 @@ export default function Dashboard() {
 
     // Cleanup on unmount or email change
     return () => {
+      isMounted = false;
       if (timeoutHandle !== undefined) {
         clearTimeout(timeoutHandle);
+        timeoutHandle = undefined;
       }
       controller.abort();
     };
