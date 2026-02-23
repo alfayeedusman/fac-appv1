@@ -1615,7 +1615,7 @@ export default function StepperBooking({
           <div className="flex-1 lg:ml-0 min-w-0">
             <div
               ref={contentContainerRef}
-              className="w-full p-3 sm:p-4 md:p-6 lg:p-8 pb-40 md:pb-8"
+              className="w-full p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8"
               style={{}}
             >
               {/* Mobile Sidebar Toggle */}
@@ -2888,15 +2888,10 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                 <Label className="text-foreground font-semibold">
                   Available Time Slots
                 </Label>
-                {loadingAvailability && (
-                  <span className="text-xs text-muted-foreground animate-pulse">
-                    Fetching...
-                  </span>
-                )}
               </div>
-              {loadingAvailability && availableSlots.length > 0 ? (
-                <div className="text-sm text-muted-foreground mb-3">
-                  Loading availability for selected slots...
+              {loadingAvailability && availableSlots.length === 0 ? (
+                <div className="text-sm text-muted-foreground mb-3 animate-pulse">
+                  ⏳ Loading available time slots...
                 </div>
               ) : null}
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
