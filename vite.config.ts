@@ -17,8 +17,17 @@ export default defineConfig({
     reportCompressedSize: false,
     emptyOutDir: true,
     chunkSizeWarningLimit: 100000000,
-    target: 'esnext',
-    cssCodeSplit: false,
+    target: "esnext",
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+        },
+      },
+    },
   },
   esbuild: {
     target: 'esnext',

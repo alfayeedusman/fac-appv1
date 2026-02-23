@@ -23,7 +23,10 @@ async function initializeHandler() {
       const app = createServer();
 
       // Wrap with serverless-http
-      cachedHandler = serverless(app);
+      // Ensure routes work behind /.netlify/functions/api
+      cachedHandler = serverless(app, {
+        basePath: "/.netlify/functions/api",
+      });
       console.log("[Netlify Function] ✅ Server initialized successfully");
       return cachedHandler;
     } catch (error) {

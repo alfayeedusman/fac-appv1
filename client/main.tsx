@@ -9,6 +9,7 @@ import AdminNotificationListener from "@/components/AdminNotificationListener";
 import DatabaseProvider from "@/components/DatabaseProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { trpc, trpcClient } from "@/lib/trpc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ChatWidget from "@/components/ChatWidget";
 import { useEffect } from "react";
@@ -106,7 +107,8 @@ const AppComponent = () => {
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
         <DatabaseProvider>
           <TooltipProvider>
             <Toaster />
@@ -565,6 +567,7 @@ const AppComponent = () => {
           </TooltipProvider>
         </DatabaseProvider>
       </QueryClientProvider>
+      </trpc.Provider>
     </ThemeProvider>
   );
 };
