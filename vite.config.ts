@@ -19,33 +19,20 @@ export default defineConfig({
     chunkSizeWarningLimit: 100000000,
     target: 'esnext',
     cssCodeSplit: false,
-    lib: undefined,
-    ssr: false,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
-    rollupOptions: {
-      output: {
-        format: 'es',
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash][extname]',
-        // Disable all manual chunking to reduce memory during transform
-        manualChunks: undefined,
-      },
-      treeshake: {
-        moduleSideEffects: false,
-      },
-    },
   },
   esbuild: {
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    target: 'esnext',
+    minify: false,
     legalComments: 'none',
+    format: 'esm',
   },
   plugins: [
+    // Only use React plugin in dev mode to avoid memory issues during build
+    // Vite will still handle JSX transformation, just without the SWC compiler optimizations
     !isBuild && react(),
     expressPlugin(),
   ].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
