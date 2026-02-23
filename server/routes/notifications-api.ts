@@ -10,6 +10,19 @@ const router = express.Router();
 // Middleware to parse JSON
 router.use(express.json());
 
+// Helper to safely get database connection
+const requireDb = async (res: any) => {
+  const db = await supabaseDbService.getDb();
+  if (!db) {
+    res.status(500).json({
+      success: false,
+      error: "Database connection not available",
+    });
+    return null;
+  }
+  return db;
+};
+
 /**
  * Get user's notifications from database
  * GET /api/notifications/list?userEmail=email@example.com
@@ -25,25 +38,15 @@ router.get("/list", async (req, res) => {
       });
     }
 
-    // Check if database is available
-    if (!supabaseDbService.db || !supabaseDbService.getConnectionStatus()) {
-      console.warn(
-        "⚠️ Database not connected, returning empty notifications with fallback",
-      );
-      return res.json({
-        success: true,
-        notifications: [],
-        total: 0,
-        message: "Database connection unavailable, using fallback",
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
     try {
       const limitNum = parseInt(limit as string, 10);
       const offsetNum = parseInt(offset as string, 10);
 
       // Get all users to find the user by email
-      const users = await supabaseDbService.db
+      const users = await db
         .select()
         .from(schema.users)
         .where(eq(schema.users.email, userEmail as string))
@@ -63,7 +66,7 @@ router.get("/list", async (req, res) => {
       const userId = users[0].id;
 
       // Get user's notifications ordered by newest first
-      const notifications = await supabaseDbService.db
+      const notifications = await db
         .select()
         .from(schema.userNotifications)
         .where(eq(schema.userNotifications.userId, userId))
@@ -76,7 +79,7 @@ router.get("/list", async (req, res) => {
         });
 
       // Get total count for pagination
-      const totalResult = await supabaseDbService.db
+      const totalResult = await db
         .select({ count: count() })
         .from(schema.userNotifications)
         .where(eq(schema.userNotifications.userId, userId))
@@ -143,18 +146,12 @@ router.put("/:id/read", async (req, res) => {
       });
     }
 
-    // Check if database is available
-    if (!supabaseDbService.db || !supabaseDbService.getConnectionStatus()) {
-      console.warn("⚠️ Database not connected, returning success without update");
-      return res.json({
-        success: true,
-        message: "Notification marked as read (database unavailable)",
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
     try {
       // Update notification as read
-      await supabaseDbService.db
+      await db
         .update(schema.userNotifications)
         .set({
           isRead: true,
@@ -198,20 +195,12 @@ router.put("/mark-all-read", async (req, res) => {
       });
     }
 
-    // Check if database is available
-    if (!supabaseDbService.db || !supabaseDbService.getConnectionStatus()) {
-      console.warn(
-        "⚠️ Database not connected, returning success without update",
-      );
-      return res.json({
-        success: true,
-        message: "All notifications marked as read (database unavailable)",
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
     try {
       // Get user by email
-      const users = await supabaseDbService.db
+      const users = await db
         .select()
         .from(schema.users)
         .where(eq(schema.users.email, userEmail))
@@ -230,7 +219,7 @@ router.put("/mark-all-read", async (req, res) => {
       const userId = users[0].id;
 
       // Update all unread notifications as read
-      await supabaseDbService.db
+      await db
         .update(schema.userNotifications)
         .set({
           isRead: true,
@@ -622,19 +611,8 @@ router.post("/track/:action", async (req, res) => {
  */
 router.get("/history", async (req, res) => {
   try {
-    // Check if database is available
-    if (!supabaseDbService.db) {
-      return res.json({
-        success: true,
-        data: [],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          pages: 0,
-        },
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
     const {
       page = "1",
@@ -675,7 +653,7 @@ router.get("/history", async (req, res) => {
     }
 
     // Get notifications
-    const notifications = await supabaseDbService.db
+    const notifications = await db
       .select()
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -684,7 +662,7 @@ router.get("/history", async (req, res) => {
       .offset(offset);
 
     // Get total count
-    const totalResult = await supabaseDbService.db
+    const totalResult = await db
       .select({ count: count() })
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
@@ -716,8 +694,8 @@ router.get("/history", async (req, res) => {
  */
 router.get("/stats", async (req, res) => {
   try {
-    // Check if database is available
-    if (!supabaseDbService.db) {
+    const db = await requireDb(res);
+    if (!db) {
       return res.json({
         success: true,
         data: {
@@ -737,7 +715,7 @@ router.get("/stats", async (req, res) => {
     startDate.setDate(startDate.getDate() - dayCount);
 
     // Get notification stats
-    const stats = await supabaseDbService.db
+    const stats = await db
       .select({
         count: count(),
         type: schema.pushNotifications.notificationType,
@@ -751,7 +729,7 @@ router.get("/stats", async (req, res) => {
       );
 
     // Get registered tokens count
-    const activeTokensResult = await supabaseDbService.db
+    const activeTokensResult = await db
       .select({ count: count() })
       .from(schema.fcmTokens)
       .where(eq(schema.fcmTokens.isActive, true));
@@ -794,7 +772,10 @@ router.get("/preferences/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const userTokens = await supabaseDbService.db
+    const db = await requireDb(res);
+    if (!db) return;
+
+    const userTokens = await db
       .select({
         notificationTypes: schema.fcmTokens.notificationTypes,
         deviceType: schema.fcmTokens.deviceType,
@@ -840,8 +821,11 @@ router.put("/preferences/:userId", async (req, res) => {
       });
     }
 
+    const db = await requireDb(res);
+    if (!db) return;
+
     // Update all user's tokens
-    await supabaseDbService.db
+    await db
       .update(schema.fcmTokens)
       .set({
         notificationTypes,

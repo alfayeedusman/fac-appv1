@@ -57,11 +57,13 @@ export default function NotificationDropdown() {
       return;
     }
 
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
     try {
       setLoading(true);
       // Make request with a timeout to avoid hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      timeoutHandle = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
       const response = await fetch(
         `/api/notifications/list?userEmail=${encodeURIComponent(userEmail)}&limit=20`,
@@ -74,7 +76,9 @@ export default function NotificationDropdown() {
         }
       );
 
-      clearTimeout(timeoutId);
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -109,6 +113,10 @@ export default function NotificationDropdown() {
       }
 
       setLoading(false);
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
     }
   };
 
@@ -120,9 +128,11 @@ export default function NotificationDropdown() {
       )
     );
 
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      timeoutHandle = setTimeout(() => controller.abort(), 3000);
 
       await fetch(`/api/notifications/${id}/read`, {
         method: "PUT",
@@ -133,11 +143,13 @@ export default function NotificationDropdown() {
         body: JSON.stringify({ userEmail }),
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
     } catch (error) {
       // Silently fail - UI is already updated optimistically
       console.debug("Background notification read update failed, UI already updated");
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
     }
   };
 
@@ -159,9 +171,11 @@ export default function NotificationDropdown() {
       }))
     );
 
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      timeoutHandle = setTimeout(() => controller.abort(), 3000);
 
       await fetch(`/api/notifications/mark-all-read`, {
         method: "PUT",
@@ -172,11 +186,13 @@ export default function NotificationDropdown() {
         body: JSON.stringify({ userEmail }),
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
     } catch (error) {
       // Silently fail - UI is already updated optimistically
       console.debug("Background mark-all-read update failed, UI already updated");
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
     }
   };
 
