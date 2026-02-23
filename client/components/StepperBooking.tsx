@@ -1544,7 +1544,7 @@ export default function StepperBooking({
   });
 
   return (
-    <div className="min-h-screen bg-transparent relative">
+    <div className="w-full bg-transparent relative">
       {/* Booking Receipt Modal */}
       {completedBooking && (
         <Suspense
@@ -1582,8 +1582,8 @@ export default function StepperBooking({
       </Sheet>
 
       {/* Container with max width and swipe support */}
-      <div className="max-w-7xl mx-auto" ref={swipeRef}>
-        <div className="flex flex-col lg:flex-row">
+      <div className="max-w-7xl mx-auto pb-40 md:pb-0" ref={swipeRef}>
+        <div className="flex flex-col lg:flex-row min-h-screen">
           {/* Sidebar (desktop only) */}
           <div
             className={`
@@ -1612,10 +1612,10 @@ export default function StepperBooking({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 lg:ml-0 min-w-0">
+          <div className="flex-1 lg:ml-0 min-w-0 w-full">
             <div
               ref={contentContainerRef}
-              className="w-full min-h-screen p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8"
+              className="w-full p-3 sm:p-4 md:p-6 lg:p-8"
               style={{}}
             >
               {/* Mobile Sidebar Toggle */}
