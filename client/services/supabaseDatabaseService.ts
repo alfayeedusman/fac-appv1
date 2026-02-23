@@ -151,9 +151,7 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  let timerHandle: ReturnType<typeof setTimeout> | undefined;
-
-  timerHandle = setTimeout(() => {
+  const timerHandle = setTimeout(() => {
     if (cleared) return;
     try {
       if (controller?.signal && !controller.signal.aborted) {
@@ -168,9 +166,7 @@ const createSafeTimeoutAbort = (
     clearTimeout: () => {
       cleared = true;
       try {
-        if (timerHandle !== undefined) {
-          clearTimeout(timerHandle);
-        }
+        clearTimeout(timerHandle);
       } catch (e) {
         // Silently catch - timeout may already be cleared
       }
