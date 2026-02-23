@@ -162,16 +162,29 @@ export default function Dashboard() {
     getUserMembershipData(),
   );
 
-  // Fetch subscription data from backend
+  // Fetch subscription data from backend (if endpoint is available)
   useEffect(() => {
     const fetchSubscription = async () => {
       try {
         const userEmail = localStorage.getItem("userEmail");
         if (!userEmail) return;
 
+        // Try to fetch subscription from API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
         const response = await fetch(
-          `/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+          `/api/supabase/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+          {
+            signal: controller.signal,
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`,
+            }
+          }
         );
+
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.subscription) {
@@ -185,8 +198,10 @@ export default function Dashboard() {
           }
         }
       } catch (error) {
-        console.warn("⚠️ Failed to fetch subscription from server:", error);
-        // Continue with local data on error
+        // Silently fail - will use localStorage data
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.debug("Subscription fetch failed, using local data");
+        }
       }
     };
 
