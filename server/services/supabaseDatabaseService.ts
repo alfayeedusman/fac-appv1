@@ -484,51 +484,53 @@ class SupabaseDatabaseService {
   }> {
     if (!this.db) throw new Error("Database not connected");
 
-    const MAX_BAYS_PER_SLOT = 5; // Maximum 5 bays per time slot
+    const MAX_CAPACITY_PER_SLOT = 5; // Maximum bookings per time slot
 
-    // Get all bookings for this date, time slot, and branch that are in active statuses
-    const bookings = await this.db
-      .select()
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.date, date),
-          eq(schema.bookings.timeSlot, timeSlot),
-          eq(schema.bookings.branch, branch),
-          // Only count bookings that are pending, confirmed, or in_progress
-          or(
-            eq(schema.bookings.status, "pending"),
-            eq(schema.bookings.status, "confirmed"),
-            eq(schema.bookings.status, "in_progress"),
+    try {
+      // Get count of active bookings for this date, time slot, and branch
+      const bookings = await this.db
+        .select({ id: schema.bookings.id })
+        .from(schema.bookings)
+        .where(
+          and(
+            eq(schema.bookings.date, date),
+            eq(schema.bookings.timeSlot, timeSlot),
+            eq(schema.bookings.branch, branch),
+            // Only count bookings that are pending, confirmed, or in_progress
+            or(
+              eq(schema.bookings.status, "pending"),
+              eq(schema.bookings.status, "confirmed"),
+              eq(schema.bookings.status, "in_progress"),
+            ),
           ),
-        ),
-      );
+        );
 
-    const currentBookings = bookings.length;
+      const currentBookings = bookings.length;
+      const isAvailable = currentBookings < MAX_CAPACITY_PER_SLOT;
 
-    // Find which bays are already occupied
-    const occupiedBays = new Set(
-      bookings
-        .filter(
-          (b: Booking) => b.bayNumber !== null && b.bayNumber !== undefined,
-        )
-        .map((b: Booking) => b.bayNumber),
-    );
-
-    // Find available bays
-    const availableBays: number[] = [];
-    for (let bay = 1; bay <= MAX_BAYS_PER_SLOT; bay++) {
-      if (!occupiedBays.has(bay)) {
-        availableBays.push(bay);
+      // Generate available slots
+      const availableBays: number[] = [];
+      for (let i = 1; i <= MAX_CAPACITY_PER_SLOT; i++) {
+        if (i > currentBookings) {
+          availableBays.push(i);
+        }
       }
-    }
 
-    return {
-      isAvailable: currentBookings < MAX_BAYS_PER_SLOT,
-      currentBookings,
-      maxCapacity: MAX_BAYS_PER_SLOT,
-      availableBays,
-    };
+      return {
+        isAvailable,
+        currentBookings,
+        maxCapacity: MAX_CAPACITY_PER_SLOT,
+        availableBays,
+      };
+    } catch (error) {
+      // If database query fails, assume slot is available
+      return {
+        isAvailable: true,
+        currentBookings: 0,
+        maxCapacity: MAX_CAPACITY_PER_SLOT,
+        availableBays: [1, 2, 3, 4, 5],
+      };
+    }
   }
 
   async assignRandomBay(
