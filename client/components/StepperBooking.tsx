@@ -1612,10 +1612,10 @@ export default function StepperBooking({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 lg:ml-0 min-w-0 h-screen overflow-y-auto">
+          <div className="flex-1 lg:ml-0 min-w-0">
             <div
               ref={contentContainerRef}
-              className="w-full p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8"
+              className="w-full min-h-screen p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8"
               style={{}}
             >
               {/* Mobile Sidebar Toggle */}
