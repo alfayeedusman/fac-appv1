@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { appRouter } from "./trpc/routers";
+import { createContext } from "./trpc/context";
 import { validateEnvironment } from "./utils/validateEnvironment";
 
 // Import routes
@@ -73,6 +76,14 @@ export const createServer = async () => {
     }
     next();
   });
+
+  app.use(
+    "/api/trpc",
+    createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    }),
+  );
 
   // Health check
   app.get("/api/health", (req, res) => {
