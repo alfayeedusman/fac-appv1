@@ -151,9 +151,7 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  let timerHandle: NodeJS.Timeout | number | null = null;
-
-  timerHandle = setTimeout(() => {
+  const timerHandle: ReturnType<typeof setTimeout> = setTimeout(() => {
     if (cleared) return;
     try {
       if (controller?.signal && !controller.signal.aborted) {
@@ -164,18 +162,17 @@ const createSafeTimeoutAbort = (
     }
   }, timeoutMs);
 
-  return {
-    clearTimeout: () => {
-      cleared = true;
-      try {
-        if (typeof timerHandle === 'number' || timerHandle) {
-          clearTimeout(timerHandle);
-        }
-      } catch (e) {
-        // Silently catch - timeout may already be cleared
-      }
-    },
+  const clearFn = () => {
+    if (cleared) return;
+    cleared = true;
+    try {
+      clearTimeout(timerHandle);
+    } catch (e) {
+      // Silently catch - timeout may already be cleared
+    }
   };
+
+  return { clearTimeout: clearFn };
 };
 
 class SupabaseDatabaseClient {

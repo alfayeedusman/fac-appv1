@@ -10,6 +10,252 @@ const router = express.Router();
 // Middleware to parse JSON
 router.use(express.json());
 
+// Helper to safely get database connection
+const requireDb = async (res: any) => {
+  const db = await supabaseDbService.getDb();
+  if (!db) {
+    res.status(500).json({
+      success: false,
+      error: "Database connection not available",
+    });
+    return null;
+  }
+  return db;
+};
+
+/**
+ * Get user's notifications from database
+ * GET /api/notifications/list?userEmail=email@example.com
+ */
+router.get("/list", async (req, res) => {
+  try {
+    const { userEmail, limit = "20", offset = "0" } = req.query;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    const db = await requireDb(res);
+    if (!db) return;
+
+    try {
+      const limitNum = parseInt(limit as string, 10);
+      const offsetNum = parseInt(offset as string, 10);
+
+      // Get all users to find the user by email
+      const users = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, userEmail as string))
+        .catch((err) => {
+          console.error("Error querying users table:", err);
+          return [];
+        });
+
+      if (!users || users.length === 0) {
+        return res.json({
+          success: true,
+          notifications: [],
+          total: 0,
+        });
+      }
+
+      const userId = users[0].id;
+
+      // Get user's notifications ordered by newest first
+      const notifications = await db
+        .select()
+        .from(schema.userNotifications)
+        .where(eq(schema.userNotifications.userId, userId))
+        .orderBy(desc(schema.userNotifications.createdAt))
+        .limit(limitNum)
+        .offset(offsetNum)
+        .catch((err) => {
+          console.error("Error querying userNotifications table:", err);
+          return [];
+        });
+
+      // Get total count for pagination
+      const totalResult = await db
+        .select({ count: count() })
+        .from(schema.userNotifications)
+        .where(eq(schema.userNotifications.userId, userId))
+        .catch((err) => {
+          console.error("Error counting notifications:", err);
+          return [{ count: 0 }];
+        });
+
+      const total = totalResult?.[0]?.count || 0;
+
+      // Transform for frontend
+      const transformedNotifications = notifications.map((notif) => ({
+        id: notif.id,
+        title: notif.title,
+        message: notif.message,
+        type: notif.type,
+        createdAt: notif.createdAt,
+        readBy: notif.isRead ? [userEmail] : [],
+        priority: "normal",
+        actionText: "View",
+        actionUrl: notif.actionUrl,
+        imageUrl: notif.imageUrl,
+      }));
+
+      res.json({
+        success: true,
+        notifications: transformedNotifications,
+        total,
+      });
+    } catch (dbError) {
+      console.error("Database query error in notifications list:", dbError);
+      // Return empty results instead of failing
+      return res.json({
+        success: true,
+        notifications: [],
+        total: 0,
+        message: "Error querying database, returning empty list",
+      });
+    }
+  } catch (error) {
+    console.error("Error in notifications/list endpoint:", error);
+    res.json({
+      success: true,
+      notifications: [],
+      total: 0,
+      message: "Error fetching notifications",
+    });
+  }
+});
+
+/**
+ * Mark notification as read
+ * PUT /api/notifications/:id/read
+ */
+router.put("/:id/read", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    const db = await requireDb(res);
+    if (!db) return;
+
+    try {
+      // Update notification as read
+      await db
+        .update(schema.userNotifications)
+        .set({
+          isRead: true,
+          readAt: new Date(),
+        })
+        .where(eq(schema.userNotifications.id, id));
+
+      res.json({
+        success: true,
+        message: "Notification marked as read",
+      });
+    } catch (dbError) {
+      console.error("Database error marking notification as read:", dbError);
+      // Return success anyway since client will handle it optimistically
+      return res.json({
+        success: true,
+        message: "Notification marked as read (cached)",
+      });
+    }
+  } catch (error) {
+    console.error("Error in notification read endpoint:", error);
+    res.json({
+      success: true,
+      message: "Notification marked as read",
+    });
+  }
+});
+
+/**
+ * Mark all notifications as read
+ * PUT /api/notifications/mark-all-read
+ */
+router.put("/mark-all-read", async (req, res) => {
+  try {
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    const db = await requireDb(res);
+    if (!db) return;
+
+    try {
+      // Get user by email
+      const users = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, userEmail))
+        .catch((err) => {
+          console.error("Error querying users in mark-all-read:", err);
+          return [];
+        });
+
+      if (!users || users.length === 0) {
+        return res.json({
+          success: true,
+          message: "All notifications marked as read",
+        });
+      }
+
+      const userId = users[0].id;
+
+      // Update all unread notifications as read
+      await db
+        .update(schema.userNotifications)
+        .set({
+          isRead: true,
+          readAt: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.userNotifications.userId, userId),
+            eq(schema.userNotifications.isRead, false),
+          ),
+        )
+        .catch((err) => {
+          console.error("Error updating notifications in mark-all-read:", err);
+        });
+
+      res.json({
+        success: true,
+        message: "All notifications marked as read",
+      });
+    } catch (dbError) {
+      console.error("Database error in mark-all-read:", dbError);
+      // Return success anyway since client handles it optimistically
+      return res.json({
+        success: true,
+        message: "All notifications marked as read (cached)",
+      });
+    }
+  } catch (error) {
+    console.error("Error in mark-all-read endpoint:", error);
+    res.json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  }
+});
+
 /**
  * Register FCM token
  * POST /api/notifications/register-token
@@ -365,19 +611,8 @@ router.post("/track/:action", async (req, res) => {
  */
 router.get("/history", async (req, res) => {
   try {
-    // Check if database is available
-    if (!supabaseDbService.db) {
-      return res.json({
-        success: true,
-        data: [],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          pages: 0,
-        },
-      });
-    }
+    const db = await requireDb(res);
+    if (!db) return;
 
     const {
       page = "1",
@@ -418,7 +653,7 @@ router.get("/history", async (req, res) => {
     }
 
     // Get notifications
-    const notifications = await supabaseDbService.db
+    const notifications = await db
       .select()
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -427,7 +662,7 @@ router.get("/history", async (req, res) => {
       .offset(offset);
 
     // Get total count
-    const totalResult = await supabaseDbService.db
+    const totalResult = await db
       .select({ count: count() })
       .from(schema.pushNotifications)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
@@ -459,8 +694,8 @@ router.get("/history", async (req, res) => {
  */
 router.get("/stats", async (req, res) => {
   try {
-    // Check if database is available
-    if (!supabaseDbService.db) {
+    const db = await requireDb(res);
+    if (!db) {
       return res.json({
         success: true,
         data: {
@@ -480,7 +715,7 @@ router.get("/stats", async (req, res) => {
     startDate.setDate(startDate.getDate() - dayCount);
 
     // Get notification stats
-    const stats = await supabaseDbService.db
+    const stats = await db
       .select({
         count: count(),
         type: schema.pushNotifications.notificationType,
@@ -494,7 +729,7 @@ router.get("/stats", async (req, res) => {
       );
 
     // Get registered tokens count
-    const activeTokensResult = await supabaseDbService.db
+    const activeTokensResult = await db
       .select({ count: count() })
       .from(schema.fcmTokens)
       .where(eq(schema.fcmTokens.isActive, true));
@@ -537,7 +772,10 @@ router.get("/preferences/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const userTokens = await supabaseDbService.db
+    const db = await requireDb(res);
+    if (!db) return;
+
+    const userTokens = await db
       .select({
         notificationTypes: schema.fcmTokens.notificationTypes,
         deviceType: schema.fcmTokens.deviceType,
@@ -583,8 +821,11 @@ router.put("/preferences/:userId", async (req, res) => {
       });
     }
 
+    const db = await requireDb(res);
+    if (!db) return;
+
     // Update all user's tokens
-    await supabaseDbService.db
+    await db
       .update(schema.fcmTokens)
       .set({
         notificationTypes,

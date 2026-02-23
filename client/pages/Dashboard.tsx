@@ -162,16 +162,40 @@ export default function Dashboard() {
     getUserMembershipData(),
   );
 
-  // Fetch subscription data from backend
+  // Fetch subscription data from backend (if endpoint is available)
   useEffect(() => {
+    if (!userEmail) return;
+
+    const controller = new AbortController();
+    let isMounted = true;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
     const fetchSubscription = async () => {
       try {
-        const userEmail = localStorage.getItem("userEmail");
-        if (!userEmail) return;
+        // Set up timeout to abort request if it takes too long
+        timeoutHandle = setTimeout(() => {
+          if (!isMounted) return;
+          controller.abort();
+        }, 3000);
 
         const response = await fetch(
-          `/api/neon/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+          `/api/supabase/auth/subscription?email=${encodeURIComponent(userEmail)}`,
+          {
+            signal: controller.signal,
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`,
+            }
+          }
         );
+
+        // Clear timeout if request completed successfully
+        if (timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
+          timeoutHandle = undefined;
+        }
+
+        if (!isMounted) return;
+
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.subscription) {
@@ -185,14 +209,30 @@ export default function Dashboard() {
           }
         }
       } catch (error) {
-        console.warn("⚠️ Failed to fetch subscription from server:", error);
-        // Continue with local data on error
+        // Silently fail - will use localStorage data
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.debug("Subscription fetch failed, using local data");
+        }
+      } finally {
+        // Clean up timeout only if component is still mounted
+        if (isMounted && timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
+          timeoutHandle = undefined;
+        }
       }
     };
 
-    if (userEmail) {
-      fetchSubscription();
-    }
+    fetchSubscription();
+
+    // Cleanup on unmount or email change
+    return () => {
+      isMounted = false;
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = undefined;
+      }
+      controller.abort();
+    };
   }, [userEmail]);
 
   // Recent activity items (bookings)
@@ -305,6 +345,9 @@ export default function Dashboard() {
   const hasActiveSubscription =
     membershipData.package !== "Regular Member" && membershipData.daysLeft > 0;
   const isVipGold = membershipData.package === "VIP Gold Ultimate";
+  // Check if user is VIP/upgraded account by email or subscription status
+  const isVipOrUpgradedAccount = userEmail.toLowerCase().includes("vip") ||
+    (membershipData.package !== "Regular Member" && membershipData.daysLeft > 0);
 
   // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
   const getStatusColor = () => {
@@ -374,8 +417,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Futuristic Regular Member Upgrade Reminder */}
-        {isRegularMember && (
+        {/* Futuristic Regular Member Upgrade Reminder - Only show for free accounts */}
+        {isRegularMember && !isVipOrUpgradedAccount && (
           <Card className="glass border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50/80 to-orange-50/80 dark:from-red-950/50 dark:to-orange-950/50 mb-6 animate-fade-in-up animate-delay-100 relative overflow-hidden hover-lift">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10"></div>
             <CardHeader className="pb-4 relative z-10">
@@ -531,7 +574,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {!hasActiveSubscription ? (
+            {!hasActiveSubscription && !isVipOrUpgradedAccount ? (
               <div className="text-center py-4">
                 <p className="text-red-600 font-semibold mb-4">
                   No active subscription

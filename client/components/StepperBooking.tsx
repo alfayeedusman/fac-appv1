@@ -1544,7 +1544,7 @@ export default function StepperBooking({
   });
 
   return (
-    <div className="min-h-screen bg-transparent relative">
+    <div className="w-full bg-transparent relative">
       {/* Booking Receipt Modal */}
       {completedBooking && (
         <Suspense
@@ -1582,8 +1582,8 @@ export default function StepperBooking({
       </Sheet>
 
       {/* Container with max width and swipe support */}
-      <div className="max-w-7xl mx-auto" ref={swipeRef}>
-        <div className="flex flex-col lg:flex-row">
+      <div className="max-w-7xl mx-auto pb-40 md:pb-0" ref={swipeRef}>
+        <div className="flex flex-col lg:flex-row min-h-screen">
           {/* Sidebar (desktop only) */}
           <div
             className={`
@@ -1612,11 +1612,11 @@ export default function StepperBooking({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 lg:ml-0 min-w-0">
+          <div className="flex-1 lg:ml-0 min-w-0 w-full">
             <div
               ref={contentContainerRef}
-              className="p-3 sm:p-4 md:p-6 lg:p-8 pb-56 md:pb-8 overflow-y-auto"
-              style={{ minHeight: "100vh" }}
+              className="w-full p-3 sm:p-4 md:p-6 lg:p-8"
+              style={{}}
             >
               {/* Mobile Sidebar Toggle */}
               <div className="lg:hidden mb-4">
@@ -1870,7 +1870,7 @@ export default function StepperBooking({
 
       {/* Mobile Sticky Action Bar - Enhanced with Back Button */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-        <div className="glass border-t-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-t-2xl shadow-2xl p-4 space-y-3">
+        <div className="glass border-t-2 border-border bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl rounded-t-2xl shadow-2xl p-3 space-y-2">
           {/* Progress Info */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -2883,11 +2883,18 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
           (bookingData.serviceType === "branch"
             ? bookingData.branch
             : true) && (
-            <div>
-              <Label className="text-foreground font-semibold">
-                Available Time Slots
-              </Label>
-              <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-foreground font-semibold">
+                  Available Time Slots
+                </Label>
+              </div>
+              {loadingAvailability && availableSlots.length === 0 ? (
+                <div className="text-sm text-muted-foreground mb-3 animate-pulse">
+                  ⏳ Loading available time slots...
+                </div>
+              ) : null}
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                 {availableSlots.map((slot) => {
                   const slotInfo =
                     slotAvailabilityCache[slot] ||
@@ -2917,16 +2924,12 @@ const ScheduleStep = ({ bookingData, updateBookingData }: any) => {
                       onClick={() =>
                         isAvailable && updateBookingData("timeSlot", slot)
                       }
-                      disabled={!isAvailable || loadingAvailability}
+                      disabled={!isAvailable}
                       className={`h-auto py-3 ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="text-center">
                         <div className="font-medium">{slot}</div>
-                        {loadingAvailability ? (
-                          <span className="block text-xs text-muted-foreground">
-                            Loading...
-                          </span>
-                        ) : !isAvailable ? (
+                        {!isAvailable ? (
                           <span className="block text-xs text-red-500 font-medium">
                             Full (All Bays)
                           </span>

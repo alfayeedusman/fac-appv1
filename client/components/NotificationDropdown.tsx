@@ -30,23 +30,127 @@ import {
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<PushNotification[]>([]);
+  const [loading, setLoading] = useState(false);
   const userEmail = localStorage.getItem("userEmail") || "";
 
   useEffect(() => {
+    if (!userEmail) return;
+
     initializePushNotifications();
+    // Load notifications on mount
     loadUserNotifications();
+
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadUserNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [userEmail]);
 
-  const loadUserNotifications = () => {
-    if (userEmail) {
+  const loadUserNotifications = async () => {
+    if (!userEmail) {
+      // Initialize with localStorage data if no email
+      const userNotifs = getUserNotifications("");
+      setNotifications(userNotifs);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      setLoading(true);
+      // Make request with a timeout to avoid hanging
+      timeoutHandle = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(
+        `/api/notifications/list?userEmail=${encodeURIComponent(userEmail)}&limit=20`,
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`,
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        }
+      );
+
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Fallback to localStorage if API response is not successful
       const userNotifs = getUserNotifications(userEmail);
       setNotifications(userNotifs);
+      setLoading(false);
+    } catch (error) {
+      // Silently handle errors and use localStorage fallback
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.debug("Notification fetch timeout, using localStorage");
+        } else {
+          console.debug("Notification fetch error (using fallback):", error.message);
+        }
+      }
+
+      // Always fallback to localStorage
+      try {
+        const userNotifs = getUserNotifications(userEmail);
+        setNotifications(userNotifs);
+      } catch (fallbackError) {
+        console.error("Error loading fallback notifications:", fallbackError);
+        setNotifications([]);
+      }
+
+      setLoading(false);
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
     }
   };
 
-  const markAsRead = (id: string) => {
-    markNotificationAsRead(id, userEmail);
-    loadUserNotifications();
+  const markAsRead = async (id: string) => {
+    // Optimistically update local state immediately
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === id ? { ...notif, readBy: [userEmail, ...notif.readBy] } : notif
+      )
+    );
+
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      timeoutHandle = setTimeout(() => controller.abort(), 3000);
+
+      await fetch(`/api/notifications/${id}/read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`,
+        },
+        body: JSON.stringify({ userEmail }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      // Silently fail - UI is already updated optimistically
+      console.debug("Background notification read update failed, UI already updated");
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
+    }
   };
 
   const handleNotificationClick = (notification: PushNotification) => {
@@ -58,13 +162,38 @@ export default function NotificationDropdown() {
     }
   };
 
-  const markAllAsRead = () => {
-    notifications.forEach((notif) => {
-      if (!notif.readBy.includes(userEmail)) {
-        markNotificationAsRead(notif.id, userEmail);
+  const markAllAsRead = async () => {
+    // Optimistically update local state immediately
+    setNotifications((prev) =>
+      prev.map((notif) => ({
+        ...notif,
+        readBy: [userEmail, ...notif.readBy],
+      }))
+    );
+
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      timeoutHandle = setTimeout(() => controller.abort(), 3000);
+
+      await fetch(`/api/notifications/mark-all-read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`,
+        },
+        body: JSON.stringify({ userEmail }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      // Silently fail - UI is already updated optimistically
+      console.debug("Background mark-all-read update failed, UI already updated");
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
       }
-    });
-    loadUserNotifications();
+    }
   };
 
   const getTimeAgo = (timestamp: string) => {

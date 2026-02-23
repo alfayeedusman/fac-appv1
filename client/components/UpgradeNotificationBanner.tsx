@@ -18,12 +18,23 @@ export default function UpgradeNotificationBanner({
   const userSubscription = JSON.parse(
     localStorage.getItem(`subscription_${userEmail}`) || "null",
   );
+
+  // Check if user is a regular/free member
   const isRegularMember =
     userSubscription?.package === "Regular Member" || !userSubscription;
-  const isSubscribed = userSubscription?.daysLeft > 0;
 
-  // Only show for regular members or inactive subscriptions
-  if (!isRegularMember && isSubscribed) {
+  // Check if user has active subscription (daysLeft > 0)
+  const hasActiveSubscription = userSubscription?.daysLeft > 0;
+
+  // Check if user is VIP/upgraded based on email or subscription status
+  const isVipOrUpgradedAccount =
+    userEmail.toLowerCase().includes("vip") ||
+    (userSubscription?.package && userSubscription.package !== "Regular Member");
+
+  // Hide banner for:
+  // 1. VIP/upgraded accounts
+  // 2. Regular members with active subscriptions
+  if (isVipOrUpgradedAccount || (!isRegularMember && hasActiveSubscription)) {
     return null;
   }
 
