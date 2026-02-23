@@ -151,7 +151,7 @@ const createSafeTimeoutAbort = (
   timeoutMs: number,
 ): { clearTimeout: () => void } => {
   let cleared = false;
-  let timerHandle: NodeJS.Timeout | number | null = null;
+  let timerHandle: ReturnType<typeof setTimeout> | undefined;
 
   timerHandle = setTimeout(() => {
     if (cleared) return;
@@ -168,7 +168,7 @@ const createSafeTimeoutAbort = (
     clearTimeout: () => {
       cleared = true;
       try {
-        if (typeof timerHandle === 'number' || timerHandle) {
+        if (timerHandle !== undefined) {
           clearTimeout(timerHandle);
         }
       } catch (e) {
