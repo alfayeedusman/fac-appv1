@@ -30,7 +30,8 @@ export default defineConfig({
     // Only use React plugin in dev mode to avoid memory issues during build
     // Vite will still handle JSX transformation, just without the SWC compiler optimizations
     !isBuild && react(),
-    expressPlugin(),
+    // Skip express plugin during build to reduce memory footprint
+    !isBuild && expressPlugin(),
   ].filter(Boolean),
 
   resolve: {
