@@ -36,7 +36,16 @@ import NotificationHistory from "./pages/NotificationHistory";
 import Settings from "./pages/Settings";
 import SecuritySettings from "./pages/SecuritySettings";
 import History from "./pages/History";
-import Voucher from "./pages/Voucher";
+import Vouchers from "./pages/Vouchers";
+import Vehicles from "./pages/Vehicles";
+import AddVehicle from "./pages/AddVehicle";
+import EditVehicle from "./pages/EditVehicle";
+import NotificationCenter from "./pages/NotificationCenter";
+import Loyalty from "./pages/Loyalty";
+import LoyaltyRewards from "./pages/LoyaltyRewards";
+import LoyaltyHistory from "./pages/LoyaltyHistory";
+import Referrals from "./pages/Referrals";
+import PaymentMethods from "./pages/PaymentMethods";
 import AdminNotifications from "./pages/AdminNotifications";
 import AdminAds from "./pages/AdminAds";
 import AdminCMS from "./pages/AdminCMS";
@@ -206,7 +215,7 @@ const AppComponent = () => {
                   path="/notifications"
                   element={
                     <ProtectedRoute>
-                      <NotificationHistory />
+                      <NotificationCenter />
                     </ProtectedRoute>
                   }
                 />
@@ -235,10 +244,82 @@ const AppComponent = () => {
                   }
                 />
                 <Route
+                  path="/vouchers"
+                  element={
+                    <ProtectedRoute>
+                      <Vouchers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/voucher"
                   element={
                     <ProtectedRoute>
-                      <Voucher />
+                      <Vouchers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/vehicles"
+                  element={
+                    <ProtectedRoute>
+                      <Vehicles />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/vehicles/add"
+                  element={
+                    <ProtectedRoute>
+                      <AddVehicle />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/vehicles/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <EditVehicle />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty"
+                  element={
+                    <ProtectedRoute>
+                      <Loyalty />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/rewards"
+                  element={
+                    <ProtectedRoute>
+                      <LoyaltyRewards />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/history"
+                  element={
+                    <ProtectedRoute>
+                      <LoyaltyHistory />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/referrals"
+                  element={
+                    <ProtectedRoute>
+                      <Referrals />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payments"
+                  element={
+                    <ProtectedRoute>
+                      <PaymentMethods />
                     </ProtectedRoute>
                   }
                 />

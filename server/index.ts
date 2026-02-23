@@ -17,6 +17,9 @@ import cmsApiRoutes from "./routes/cms-api";
 import posApiRoutes from "./routes/pos-api";
 import realtimeApiRoutes from "./routes/realtime-api";
 import appVersionRoutes from "./routes/appVersion";
+import * as vouchersApiRoutes from "./routes/vouchers-api";
+import * as referralsApiRoutes from "./routes/referrals-api";
+import * as paymentsApiRoutes from "./routes/payments-api";
 import { seedBranches } from "./database/seed-branches";
 import { seedUsers } from "./database/seed-users";
 import { migrate } from "./database/migrate";
@@ -182,6 +185,39 @@ export const createServer = async () => {
     crewApiRoutes.getCrewCommissionSummary,
   );
   app.post("/api/supabase/crew/seed", crewApiRoutes.seedCrew); // For development only
+
+  // ============= VOUCHERS API =============
+  console.log("🎟️ Registering Vouchers API routes...");
+  app.get("/api/vouchers", vouchersApiRoutes.listVouchers);
+  app.get("/api/vouchers/:id", vouchersApiRoutes.getVoucherById);
+  app.post("/api/vouchers/validate", vouchersApiRoutes.validateVoucher);
+  app.post("/api/vouchers/apply", vouchersApiRoutes.applyVoucher);
+  app.get("/api/vouchers/user/my-vouchers", vouchersApiRoutes.getUserVouchers);
+  app.post("/api/vouchers/admin/create", vouchersApiRoutes.createVoucher);
+  app.put("/api/vouchers/admin/:id", vouchersApiRoutes.updateVoucher);
+  app.delete("/api/vouchers/admin/:id", vouchersApiRoutes.deleteVoucher);
+  console.log("✅ Vouchers API routes registered successfully");
+
+  // ============= REFERRALS API =============
+  console.log("🔗 Registering Referrals API routes...");
+  app.get("/api/referrals/my-code", referralsApiRoutes.getMyCode);
+  app.post("/api/referrals/generate-code", referralsApiRoutes.generateCode);
+  app.get("/api/referrals/stats", referralsApiRoutes.getStats);
+  app.get("/api/referrals/history", referralsApiRoutes.getHistory);
+  app.post("/api/referrals/validate", referralsApiRoutes.validateCode);
+  app.post("/api/referrals/apply", referralsApiRoutes.applyCode);
+  app.post("/api/referrals/complete", referralsApiRoutes.completeReferral);
+  console.log("✅ Referrals API routes registered successfully");
+
+  // ============= PAYMENTS API =============
+  console.log("💳 Registering Payments API routes...");
+  app.get("/api/payments/methods", paymentsApiRoutes.listMethods);
+  app.post("/api/payments/methods/add", paymentsApiRoutes.addMethod);
+  app.post("/api/payments/methods/set-default", paymentsApiRoutes.setDefault);
+  app.post("/api/payments/methods/delete", paymentsApiRoutes.deleteMethod);
+  app.post("/api/payments/process", paymentsApiRoutes.processPayment);
+  app.get("/api/payments/history", paymentsApiRoutes.getPaymentHistory);
+  console.log("✅ Payments API routes registered successfully");
 
   // ============= FIREBASE PUSH NOTIFICATIONS API =============
   app.use("/api/notifications", notificationsApiRoutes);
