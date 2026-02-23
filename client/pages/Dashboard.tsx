@@ -305,6 +305,9 @@ export default function Dashboard() {
   const hasActiveSubscription =
     membershipData.package !== "Regular Member" && membershipData.daysLeft > 0;
   const isVipGold = membershipData.package === "VIP Gold Ultimate";
+  // Check if user is VIP/upgraded account by email or subscription status
+  const isVipOrUpgradedAccount = userEmail.toLowerCase().includes("vip") ||
+    (membershipData.package !== "Regular Member" && membershipData.daysLeft > 0);
 
   // Color system: Red = Not subscribed, Green = Subscribed, Orange = Premium VIP
   const getStatusColor = () => {
@@ -374,8 +377,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Futuristic Regular Member Upgrade Reminder */}
-        {isRegularMember && (
+        {/* Futuristic Regular Member Upgrade Reminder - Only show for free accounts */}
+        {isRegularMember && !isVipOrUpgradedAccount && (
           <Card className="glass border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50/80 to-orange-50/80 dark:from-red-950/50 dark:to-orange-950/50 mb-6 animate-fade-in-up animate-delay-100 relative overflow-hidden hover-lift">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10"></div>
             <CardHeader className="pb-4 relative z-10">
@@ -531,7 +534,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {!hasActiveSubscription ? (
+            {!hasActiveSubscription && !isVipOrUpgradedAccount ? (
               <div className="text-center py-4">
                 <p className="text-red-600 font-semibold mb-4">
                   No active subscription
