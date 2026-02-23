@@ -166,17 +166,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (!userEmail) return;
 
-    let timeoutId: NodeJS.Timeout | null = null;
-    let controller: AbortController | null = null;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
     const fetchSubscription = async () => {
       try {
-        // Try to fetch subscription from API with timeout
-        controller = new AbortController();
-        timeoutId = setTimeout(() => {
-          if (controller) {
-            controller.abort();
-          }
+        // Set up timeout to abort request if it takes too long
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
         }, 3000);
 
         const response = await fetch(
@@ -189,10 +186,9 @@ export default function Dashboard() {
           }
         );
 
-        // Clear timeout if request completed
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
+        // Clear timeout if request completed successfully
+        if (timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
         }
 
         if (response.ok) {
@@ -213,24 +209,21 @@ export default function Dashboard() {
           console.debug("Subscription fetch failed, using local data");
         }
       } finally {
-        // Always clean up timeout
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
+        // Clean up timeout
+        if (timeoutHandle !== undefined) {
+          clearTimeout(timeoutHandle);
         }
       }
     };
 
     fetchSubscription();
 
-    // Cleanup on unmount
+    // Cleanup on unmount or email change
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
       }
-      if (controller) {
-        controller.abort();
-      }
+      controller.abort();
     };
   }, [userEmail]);
 
