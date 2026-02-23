@@ -11,6 +11,205 @@ const router = express.Router();
 router.use(express.json());
 
 /**
+ * Get user's notifications from database
+ * GET /api/notifications/list?userEmail=email@example.com
+ */
+router.get("/list", async (req, res) => {
+  try {
+    const { userEmail, limit = "20", offset = "0" } = req.query;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    // Check if database is available
+    if (!supabaseDbService.db) {
+      return res.json({
+        success: true,
+        notifications: [],
+        total: 0,
+      });
+    }
+
+    const limitNum = parseInt(limit as string, 10);
+    const offsetNum = parseInt(offset as string, 10);
+
+    // Get all users to find the user by email
+    const users = await supabaseDbService.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, userEmail as string));
+
+    if (users.length === 0) {
+      return res.json({
+        success: true,
+        notifications: [],
+        total: 0,
+      });
+    }
+
+    const userId = users[0].id;
+
+    // Get user's notifications ordered by newest first
+    const notifications = await supabaseDbService.db
+      .select()
+      .from(schema.userNotifications)
+      .where(eq(schema.userNotifications.userId, userId))
+      .orderBy(desc(schema.userNotifications.createdAt))
+      .limit(limitNum)
+      .offset(offsetNum);
+
+    // Get total count for pagination
+    const totalResult = await supabaseDbService.db
+      .select({ count: count() })
+      .from(schema.userNotifications)
+      .where(eq(schema.userNotifications.userId, userId));
+
+    const total = totalResult[0]?.count || 0;
+
+    // Transform for frontend
+    const transformedNotifications = notifications.map((notif) => ({
+      id: notif.id,
+      title: notif.title,
+      message: notif.message,
+      type: notif.type,
+      createdAt: notif.createdAt,
+      readBy: notif.isRead ? [userEmail] : [],
+      priority: "normal",
+      actionText: "View",
+      actionUrl: notif.actionUrl,
+      imageUrl: notif.imageUrl,
+    }));
+
+    res.json({
+      success: true,
+      notifications: transformedNotifications,
+      total,
+    });
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * Mark notification as read
+ * PUT /api/notifications/:id/read
+ */
+router.put("/:id/read", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    // Check if database is available
+    if (!supabaseDbService.db) {
+      return res.json({
+        success: true,
+        message: "Notification marked as read",
+      });
+    }
+
+    // Update notification as read
+    await supabaseDbService.db
+      .update(schema.userNotifications)
+      .set({
+        isRead: true,
+        readAt: new Date(),
+      })
+      .where(eq(schema.userNotifications.id, id));
+
+    res.json({
+      success: true,
+      message: "Notification marked as read",
+    });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * Mark all notifications as read
+ * PUT /api/notifications/mark-all-read
+ */
+router.put("/mark-all-read", async (req, res) => {
+  try {
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: "User email is required",
+      });
+    }
+
+    // Check if database is available
+    if (!supabaseDbService.db) {
+      return res.json({
+        success: true,
+        message: "All notifications marked as read",
+      });
+    }
+
+    // Get user by email
+    const users = await supabaseDbService.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, userEmail));
+
+    if (users.length === 0) {
+      return res.json({
+        success: true,
+        message: "All notifications marked as read",
+      });
+    }
+
+    const userId = users[0].id;
+
+    // Update all unread notifications as read
+    await supabaseDbService.db
+      .update(schema.userNotifications)
+      .set({
+        isRead: true,
+        readAt: new Date(),
+      })
+      .where(
+        and(
+          eq(schema.userNotifications.userId, userId),
+          eq(schema.userNotifications.isRead, false),
+        ),
+      );
+
+    res.json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
  * Register FCM token
  * POST /api/notifications/register-token
  */

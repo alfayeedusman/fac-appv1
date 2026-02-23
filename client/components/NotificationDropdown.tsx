@@ -30,23 +30,80 @@ import {
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<PushNotification[]>([]);
+  const [loading, setLoading] = useState(false);
   const userEmail = localStorage.getItem("userEmail") || "";
 
   useEffect(() => {
     initializePushNotifications();
     loadUserNotifications();
+
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(loadUserNotifications, 30000);
+    return () => clearInterval(interval);
   }, [userEmail]);
 
-  const loadUserNotifications = () => {
-    if (userEmail) {
+  const loadUserNotifications = async () => {
+    if (!userEmail) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `/api/notifications/list?userEmail=${encodeURIComponent(userEmail)}&limit=20`,
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.notifications) {
+          setNotifications(data.notifications);
+        } else {
+          // Fallback to localStorage if API fails
+          const userNotifs = getUserNotifications(userEmail);
+          setNotifications(userNotifs);
+        }
+      } else {
+        // Fallback to localStorage if API fails
+        const userNotifs = getUserNotifications(userEmail);
+        setNotifications(userNotifs);
+      }
+    } catch (error) {
+      console.warn("Failed to fetch notifications from API, using fallback:", error);
+      // Fallback to localStorage
       const userNotifs = getUserNotifications(userEmail);
       setNotifications(userNotifs);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const markAsRead = (id: string) => {
-    markNotificationAsRead(id, userEmail);
-    loadUserNotifications();
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${id}/read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify({ userEmail }),
+      });
+
+      if (response.ok) {
+        // Optimistically update local state
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            notif.id === id ? { ...notif, readBy: [userEmail, ...notif.readBy] } : notif
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      // Fallback to localStorage
+      markNotificationAsRead(id, userEmail);
+    }
   };
 
   const handleNotificationClick = (notification: PushNotification) => {
@@ -58,13 +115,36 @@ export default function NotificationDropdown() {
     }
   };
 
-  const markAllAsRead = () => {
-    notifications.forEach((notif) => {
-      if (!notif.readBy.includes(userEmail)) {
-        markNotificationAsRead(notif.id, userEmail);
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch(`/api/notifications/mark-all-read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify({ userEmail }),
+      });
+
+      if (response.ok) {
+        // Optimistically update local state
+        setNotifications((prev) =>
+          prev.map((notif) => ({
+            ...notif,
+            readBy: [userEmail, ...notif.readBy],
+          }))
+        );
       }
-    });
-    loadUserNotifications();
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      // Fallback to localStorage
+      notifications.forEach((notif) => {
+        if (!notif.readBy.includes(userEmail)) {
+          markNotificationAsRead(notif.id, userEmail);
+        }
+      });
+      loadUserNotifications();
+    }
   };
 
   const getTimeAgo = (timestamp: string) => {

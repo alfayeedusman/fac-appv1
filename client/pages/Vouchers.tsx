@@ -10,6 +10,7 @@ import { Percent, Gift, Calendar, Check, Copy, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import StickyHeader from "@/components/StickyHeader";
+import BottomNavigation from "@/components/BottomNavigation";
 import { format } from "date-fns";
 
 interface Voucher {
@@ -248,9 +249,9 @@ export default function Vouchers() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <StickyHeader title="Vouchers & Promotions" />
+      <StickyHeader title="Vouchers & Promotions" showBack={false} />
 
-      <div className="max-w-3xl mx-auto p-4 space-y-6">
+      <div className="max-w-3xl mx-auto p-4 space-y-6 pt-8">
         {/* Search and Filter */}
         <div className="space-y-4">
           <Input
@@ -335,6 +336,8 @@ export default function Vouchers() {
           </>
         )}
       </div>
+
+      <BottomNavigation />
     </div>
   );
 }
